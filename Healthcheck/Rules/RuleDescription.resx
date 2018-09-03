@@ -1,0 +1,1560 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="A_SMB2SignatureNotEnabled_Description" xml:space="preserve">
+    <value>The purpose is to ensure that the SMB version 2 protocol has the signature enabled when dialoging with domain controllers</value>
+  </data>
+  <data name="A_SMB2SignatureNotEnabled_Solution" xml:space="preserve">
+    <value>Enable the group policy "Digitally sign communications (if client agrees)" or check for any policy which may alter the server settings</value>
+  </data>
+  <data name="A_SMB2SignatureNotEnabled_Rationale" xml:space="preserve">
+    <value>{count} Domain Controller(s) have been found where SMB signature is not enabled</value>
+  </data>
+  <data name="A_SMB2SignatureNotEnabled_Detail" xml:space="preserve">
+    <value>Domain controller: {0}</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequired_Description" xml:space="preserve">
+    <value>The purpose is to ensure that the SMB version 2 protocol has the signature enforced when dialoging with domain controllers</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequired_Solution" xml:space="preserve">
+    <value>Enable the group policy "Digitally sign communications (always)" or check for any policy which may alter the server settings</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequired_Rationale" xml:space="preserve">
+    <value>{count} Domain Controller(s) have been found where SMB signature is not enforced</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequired_Detail" xml:space="preserve">
+    <value>Domain controller: {0}</value>
+  </data>
+  <data name="S_DC_SubnetMissing_Description" xml:space="preserve">
+    <value>The purpose is to ensure that the minimum set of subnet as been configured in the domain</value>
+  </data>
+  <data name="S_DC_SubnetMissing_Solution" xml:space="preserve">
+    <value>Locate the IP address which was found as not being part of declared subnet then add this subnet to the "Active Directory Sites" tool.</value>
+  </data>
+  <data name="S_DC_SubnetMissing_Rationale" xml:space="preserve">
+    <value>The subnet declaration is incomplete [{count} ip of DC not found in declared subnets]</value>
+  </data>
+  <data name="S_DC_SubnetMissing_Detail" xml:space="preserve">
+    <value>Domain Controller {0} ip address {1}</value>
+  </data>
+  <data name="A_BackupMetadata_Description" xml:space="preserve">
+    <value>The purpose is check if the backups are actually up to date in case they are needed. The alert can be triggered when a domain is back up using non recommended methods</value>
+  </data>
+  <data name="A_BackupMetadata_Solution" xml:space="preserve">
+    <value>Planify backups based on Microsoft standard. These standards depends on the Operating System. Example with the wbadmin utility: &lt;i&gt;wbadmin start systemstatebackup -backuptarget:d:&lt;/i&gt;</value>
+  </data>
+  <data name="A_BackupMetadata_Rationale" xml:space="preserve">
+    <value>Last AD backup has been performed {count} day(s) ago</value>
+  </data>
+  <data name="A_ProtectedUsers_Description" xml:space="preserve">
+    <value>The purpose is to ensure that the schema has been updated for the creation of Protected Users group.</value>
+  </data>
+  <data name="A_ProtectedUsers_Solution" xml:space="preserve">
+    <value>The Protected Users group is automatically created when a Windows 2012 R2 domain controller is installed and upgraded it as PDC (primary DC). The group is then be automatically created and replicated.
+&lt;b&gt; Warning: Do not add service account into this group as this will result in "authentication failure" messages. Use "protected accounts" instead&lt;/b&gt;</value>
+  </data>
+  <data name="A_ProtectedUsers_Rationale" xml:space="preserve">
+    <value>The Protected Users group doesn't exist on the domain.</value>
+  </data>
+  <data name="A_LAPS_Not_Installed_Description" xml:space="preserve">
+    <value>The purpose is to make sure that there is a proper password policy in place for the native local administrator account.</value>
+  </data>
+  <data name="A_LAPS_Not_Installed_Solution" xml:space="preserve">
+    <value>If you don't have any provisionning process or password solution to manage local administrators, you should install the LAPS solution. If you mitigate the risk differently, you should add this rule as an exception, as the risk is covered.</value>
+  </data>
+  <data name="A_LAPS_Not_Installed_Rationale" xml:space="preserve">
+    <value>LAPS doesn't seem to be installed</value>
+  </data>
+  <data name="S_Vuln_MS17_010_Description" xml:space="preserve">
+    <value>The purpose is to verify if Domain Controller are vulnerable to the MS17-010 vulnerability</value>
+  </data>
+  <data name="S_Vuln_MS17_010_Solution" xml:space="preserve">
+    <value>To fix the security breach, you should path the DC as soon as it has been established it was vulnerable. Another good remediation is to disable SMB v1 (see "DC Vulnerability (SMB v1)). You can verify that using the github program in the links: this program will check remotely the last startup time of the DC and evaluate the risk</value>
+  </data>
+  <data name="S_Vuln_MS17_010_Rationale" xml:space="preserve">
+    <value>Number of DC vulnerable to MS17-010 = {count} (&gt;0)</value>
+  </data>
+  <data name="S_Vuln_MS17_010_Detail" xml:space="preserve">
+    <value>Domain controller {0} based on {1}</value>
+  </data>
+  <data name="S_SMB_v1_Description" xml:space="preserve">
+    <value>The purpose is to verify if Domain Controller are vulnerable to the SMB v1 vulnerability</value>
+  </data>
+  <data name="S_SMB_v1_Solution" xml:space="preserve">
+    <value>It is highly recommended by Microsoft to disable SMB v1 whenever it is possible on both client and server side. &lt;b&gt;Do note that if you are still not following best practices regarding the usage of deprecated OS (Windows 2000, 2003, XP, CE), regarding Network printer using SMBv1 scan2shares functionnalities, or regarding software accessing Windows share with a custom implementation relying on SMB v1, you should consider fixing this issues before disabling SMB v1, as it will generates additionnal errors&lt;/b&gt;.</value>
+  </data>
+  <data name="S_SMB_v1_Rationale" xml:space="preserve">
+    <value>SMB v1 activated on {count} DC</value>
+  </data>
+  <data name="S_SMB_v1_Detail" xml:space="preserve">
+    <value>Domain controller: {0}</value>
+  </data>
+  <data name="S_Vuln_MS14_068_Description" xml:space="preserve">
+    <value>The purpose is to verify if Domain Controller are vulnerable to the MS14-068 vulnerability</value>
+  </data>
+  <data name="S_Vuln_MS14_068_Solution" xml:space="preserve">
+    <value>To fix the security breach, you should path the DC as soon as it has been established it was vulnerable. You can verify that using a program in the links: this program will check remotely the last startup time of the DC and evaluate the risk</value>
+  </data>
+  <data name="S_Vuln_MS14_068_Rationale" xml:space="preserve">
+    <value>Number of DC vulnerable to MS14-068 = {count} (&gt;0)</value>
+  </data>
+  <data name="S_Vuln_MS14_068_Detail" xml:space="preserve">
+    <value>Domain controller {0} based on {1}</value>
+  </data>
+  <data name="A_MembershipEveryone_Description" xml:space="preserve">
+    <value>The purpose is to identify if there are restricted group such as local administrators, terminal server access, … where Authenticated Users or Everyone is being ganted access by a GPO</value>
+  </data>
+  <data name="A_MembershipEveryone_Solution" xml:space="preserve">
+    <value>In order to correct the issue, you should edit the GPO and remove the "Members" security access rule. Another solution is to change the group by a more targeted one containing a limited set of users.</value>
+  </data>
+  <data name="A_MembershipEveryone_Rationale" xml:space="preserve">
+    <value>Presence of restricted group where anybody is a member: {count}</value>
+  </data>
+  <data name="A_MembershipEveryone_Detail" xml:space="preserve">
+    <value>Found in GPO {0} member of {1} user {2}</value>
+  </data>
+  <data name="P_DCOwner_Description" xml:space="preserve">
+    <value>The purpose is to perform a review of which accounts have ownership rights on domain controller and can then modify their permissions</value>
+  </data>
+  <data name="P_DCOwner_Solution" xml:space="preserve">
+    <value>To solve this security issue, you should change the ownership of the domain controller to match the "Domain Administrators" group.
+To control the ownership of domain controller objects, you can use the following powershell command: 
+&lt;i&gt;Get-ADComputer -server my.domain.to.check -LDAPFilter "(&amp;(objectCategory=computer)(|(primarygroupid=521)(primarygroupid=516)))" -properties name, ntsecuritydescriptor | select name,{$_.ntsecuritydescriptor.Owner}&lt;/i&gt;.</value>
+  </data>
+  <data name="P_DCOwner_Rationale" xml:space="preserve">
+    <value>{count} domain controller(s) have been found where the owner is not the Domain admins group or the Enterprise admins group</value>
+  </data>
+  <data name="P_DCOwner_Detail" xml:space="preserve">
+    <value>Domain controller: {0} Owner: {1}</value>
+  </data>
+  <data name="T_SIDHistoryUnknownDomain_Description" xml:space="preserve">
+    <value>The purpose is to ensure that every account having an SID History is part of an active migration.</value>
+  </data>
+  <data name="T_SIDHistoryUnknownDomain_Solution" xml:space="preserve">
+    <value>Each security descriptor of the domain (including file shares for example) should be reviewed to be rewritten with the new SID of the account. Then the SID History attribute should be removed. Please note that once the SID History has been removed, it cannot be added back again without doing a real migration. Hopefully hacking tools such as mimikatz can be used to undo a deletion with for example the lsadump::dcshadow attack.</value>
+  </data>
+  <data name="T_SIDHistoryUnknownDomain_Rationale" xml:space="preserve">
+    <value>{count} unknown domain(s) used in SIDHistory</value>
+  </data>
+  <data name="T_SIDHistoryUnknownDomain_Detail" xml:space="preserve">
+    <value>{0} [{1} object(s)]</value>
+  </data>
+  <data name="T_SIDHistorySameDomain_Description" xml:space="preserve">
+    <value>The purpose is to ensure that accounts are not linked for more privileged accounts in the same domain</value>
+  </data>
+  <data name="T_SIDHistorySameDomain_Solution" xml:space="preserve">
+    <value>It is not possible to have this occurrence except if a user from domain A has been migrated to domain B and then migrated again to domain A. This should be strongly investigated as it may be linked to a compromission of the domain.</value>
+  </data>
+  <data name="T_SIDHistorySameDomain_Rationale" xml:space="preserve">
+    <value>Account(s) with SID History matching the domain = {count}</value>
+  </data>
+  <data name="S_ADRegistration_Description" xml:space="preserve">
+    <value>The purpose is to ensure that basic users cannot register extra computers in the domain</value>
+  </data>
+  <data name="S_ADRegistration_Solution" xml:space="preserve">
+    <value>To solve the issue, the limit number of extra computers that can be registered by a basic user should be reduced by modifying the value of &lt;i&gt;ms-DS-MachineAccountQuota&lt;/i&gt; to zero (0). Another solution can be to remove altogether the authenticated users group in the domain controllers policy. Do note that if you need to set delegation to an account so it can add computers to the domain, it can be done through 2 methods: Delegation in the OU or by assigning the &lt;i&gt;SeMachineAccountPrivilege&lt;/i&gt; to a special group</value>
+  </data>
+  <data name="S_ADRegistration_Rationale" xml:space="preserve">
+    <value>Non admin users can add up to {count} computer(s) to a domain</value>
+  </data>
+  <data name="S_ADRegistration_Detail" xml:space="preserve">
+    <value>Domain controller: {0} Owner: {1}</value>
+  </data>
+  <data name="A_SHA1RootCert_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the SHA1 hashing algorithm in Root Certificate</value>
+  </data>
+  <data name="A_SHA1RootCert_Solution" xml:space="preserve">
+    <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
+  </data>
+  <data name="A_SHA1RootCert_Rationale" xml:space="preserve">
+    <value>At least one trusted ROOT certificate found has a SHA1 signature [{count}]</value>
+  </data>
+  <data name="A_SHA1RootCert_Detail" xml:space="preserve">
+    <value>Found in GPO {0} Subject is {1}</value>
+  </data>
+  <data name="A_SHA0RootCert_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the SHA0 hashing algorithm in Root Certificate</value>
+  </data>
+  <data name="A_SHA0RootCert_Solution" xml:space="preserve">
+    <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
+  </data>
+  <data name="A_SHA0RootCert_Rationale" xml:space="preserve">
+    <value>At least one trusted ROOT certificate found has a SHA0 signature [{count}]</value>
+  </data>
+  <data name="A_SHA0RootCert_Detail" xml:space="preserve">
+    <value>Found in GPO {0} Subject is {1}</value>
+  </data>
+  <data name="A_MD5RootCert_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the MD5 hashing algorithm in Root Certificate</value>
+  </data>
+  <data name="A_MD5RootCert_Solution" xml:space="preserve">
+    <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
+  </data>
+  <data name="A_MD5RootCert_Rationale" xml:space="preserve">
+    <value>At least one trusted ROOT certificate found has a MD5 signature [{count}]</value>
+  </data>
+  <data name="A_MD5RootCert_Detail" xml:space="preserve">
+    <value>Found in GPO {0} Subject is {1}</value>
+  </data>
+  <data name="A_MD4RootCert_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the MD4 hashing algorithm in Root Certificate</value>
+  </data>
+  <data name="A_MD4RootCert_Solution" xml:space="preserve">
+    <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
+  </data>
+  <data name="A_MD4RootCert_Rationale" xml:space="preserve">
+    <value>At least one trusted ROOT certificate found has a MD4 signature [{count}]</value>
+  </data>
+  <data name="A_MD4RootCert_Detail" xml:space="preserve">
+    <value>Found in GPO {0} Subject is {1}</value>
+  </data>
+  <data name="A_MD2RootCert_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the MD2 hashing algorithm in Root Certificate</value>
+  </data>
+  <data name="A_MD2RootCert_Solution" xml:space="preserve">
+    <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
+  </data>
+  <data name="A_MD2RootCert_Rationale" xml:space="preserve">
+    <value>At least one trusted ROOT certificate found has a MD2 signature [{count}]</value>
+  </data>
+  <data name="A_MD2RootCert_Detail" xml:space="preserve">
+    <value>Found in GPO {0} Subject is {1}</value>
+  </data>
+  <data name="A_WeakRSARootCert_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of a certificate using a weak RSA key</value>
+  </data>
+  <data name="A_WeakRSARootCert_Solution" xml:space="preserve">
+    <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
+  </data>
+  <data name="A_WeakRSARootCert_Rationale" xml:space="preserve">
+    <value>At least one trusted certificate found has a weak RSA key [{count}]</value>
+  </data>
+  <data name="A_WeakRSARootCert_Detail" xml:space="preserve">
+    <value>Found in GPO {0} Subject is {1} Module is {2}</value>
+  </data>
+  <data name="A_SHA0IntermediateCert_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the SHA0 hashing algorithm in Intermediate Certificate</value>
+  </data>
+  <data name="A_SHA0IntermediateCert_Solution" xml:space="preserve">
+    <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
+  </data>
+  <data name="A_SHA0IntermediateCert_Rationale" xml:space="preserve">
+    <value>At least one trusted INTERMEDIATE certificate found has a SHA0 signature [{count}]</value>
+  </data>
+  <data name="A_SHA0IntermediateCert_Detail" xml:space="preserve">
+    <value>Found in GPO {0} Subject is {1}</value>
+  </data>
+  <data name="A_MD2IntermediateCert_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the MD2 hashing algorithm in Intermediate Certificate</value>
+  </data>
+  <data name="A_MD2IntermediateCert_Solution" xml:space="preserve">
+    <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
+  </data>
+  <data name="A_MD2IntermediateCert_Rationale" xml:space="preserve">
+    <value>At least one trusted INTERMEDIATE certificate found has a MD2 signature [{count}]</value>
+  </data>
+  <data name="A_MD2IntermediateCert_Detail" xml:space="preserve">
+    <value>Found in GPO {0} Subject is {1}</value>
+  </data>
+  <data name="A_MD4IntermediateCert_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the MD4 hashing algorithm in Intermediate Certificate</value>
+  </data>
+  <data name="A_MD4IntermediateCert_Solution" xml:space="preserve">
+    <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
+  </data>
+  <data name="A_MD4IntermediateCert_Rationale" xml:space="preserve">
+    <value>At least one trusted INTERMEDIATE certificate found has a MD4 signature [{count}]</value>
+  </data>
+  <data name="A_MD4IntermediateCert_Detail" xml:space="preserve">
+    <value>Found in GPO {0} Subject is {1}</value>
+  </data>
+  <data name="S_Domain____Description" xml:space="preserve">
+    <value>The purpose is to ensure that the SID History creation is not enabled</value>
+  </data>
+  <data name="S_Domain____Solution" xml:space="preserve">
+    <value>If a migration is in progress, declare it in PingCastle so this rule won't be triggered. Else, remove this auditing group.</value>
+  </data>
+  <data name="S_Domain____Rationale" xml:space="preserve">
+    <value>The SIDHistory auditing group is present: SID History creation is enabled</value>
+  </data>
+  <data name="T_ScriptOutOfDomain_Description" xml:space="preserve">
+    <value>The purpose is to ensure that a compromise domain cannot use scripts located in it to compromise other domains</value>
+  </data>
+  <data name="T_ScriptOutOfDomain_Solution" xml:space="preserve">
+    <value>Copy the login script to a share located inside the domain and not in trusted domains.</value>
+  </data>
+  <data name="T_ScriptOutOfDomain_Rationale" xml:space="preserve">
+    <value>Number of login scripts hosted in another domain: {count}</value>
+  </data>
+  <data name="T_ScriptOutOfDomain_Detail" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="A_NullSession_Description" xml:space="preserve">
+    <value>The purpose is to access without any account, aka NULL Sessions, within the Active Directory. A NULL Session is a session opened anonymously to access the AD, often used by attackers to perform a reckon operation on the AD, to identify weaknesses</value>
+  </data>
+  <data name="A_NullSession_Solution" xml:space="preserve">
+    <value>Locate other PingCastle rules such as A-PreWin2000Anonymous or A-DsHeuristicsAnonymous which triggered and  apply the solutions. You can use the PingCastle scanner mode to do a manual check and proove the extraction of the data.</value>
+  </data>
+  <data name="A_NullSession_Rationale" xml:space="preserve">
+    <value>Number of DC with NULL SESSION enabled: {count}</value>
+  </data>
+  <data name="A_NullSession_Detail" xml:space="preserve">
+    <value>DC involved: {0}</value>
+  </data>
+  <data name="A_PreWin2000Anonymous_Description" xml:space="preserve">
+    <value>The purpose is to identify domains that which allows access without any account because of a pre-Windows 2000 compatibility. </value>
+  </data>
+  <data name="A_PreWin2000Anonymous_Solution" xml:space="preserve">
+    <value>Remove the "EveryOne" and "Anonymous" from the PreWin2000 group while making sure that the group "Authenticated Users" is present. Then reboot each DC</value>
+  </data>
+  <data name="A_PreWin2000Anonymous_Rationale" xml:space="preserve">
+    <value>The group Everyone and/or Anonymous is present in the Pre Windows 2000 group.</value>
+  </data>
+  <data name="A_SHA1IntermediateCert_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the SHA1 hashing algorithm in Intermediate Certificate</value>
+  </data>
+  <data name="A_SHA1IntermediateCert_Solution" xml:space="preserve">
+    <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
+  </data>
+  <data name="A_SHA1IntermediateCert_Rationale" xml:space="preserve">
+    <value>At least one trusted INTERMEDIATE certificate found has a SHA1 signature [{count}]</value>
+  </data>
+  <data name="A_SHA1IntermediateCert_Detail" xml:space="preserve">
+    <value>Found in GPO {0} Subject is {1}</value>
+  </data>
+  <data name="A_MD5IntermediateCert_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the MD5 hashing algorithm in Intermediate Certificate</value>
+  </data>
+  <data name="A_MD5IntermediateCert_Solution" xml:space="preserve">
+    <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
+  </data>
+  <data name="A_MD5IntermediateCert_Rationale" xml:space="preserve">
+    <value>At least one trusted INTERMEDIATE certificate found has a MD5 signature [{count}]</value>
+  </data>
+  <data name="A_MD5IntermediateCert_Detail" xml:space="preserve">
+    <value>Found in GPO {0} Subject is {1}</value>
+  </data>
+  <data name="A_NoServicePolicy_Description" xml:space="preserve">
+    <value>The purpose is to give information regarding a best practice for the Service Account password policy. Indeed, having a 20+ characters password for this account greatly helps reducing the risk behind Kerberoast attack (offline crack of the TGS tickets)</value>
+  </data>
+  <data name="A_NoServicePolicy_Solution" xml:space="preserve">
+    <value> The recommended way to handle service account is to use "Managed service accounts" introduced since Windows 2008 R2 (search for "msDS-ManagedServiceAccount").
+To solve the anomaly, you should implement a PSO or GPO password guarantying a 20+ length password.</value>
+  </data>
+  <data name="A_NoServicePolicy_Rationale" xml:space="preserve">
+    <value>No password policy for service account found (MinimumPasswordLength&gt;=20)</value>
+  </data>
+  <data name="A_NoServicePolicy_Detail" xml:space="preserve">
+    <value>Found in GPO {0}</value>
+  </data>
+  <data name="A_LimitBlankPasswordUse_Description" xml:space="preserve">
+    <value>The purpose is to identify if accounts without password are allowed to be accessed from the network. This represents a high risk, as an account without a password is essentialy an account that cannot be assign to anyone. </value>
+  </data>
+  <data name="A_LimitBlankPasswordUse_Solution" xml:space="preserve">
+    <value>Locate the policy having the setting "Limit local account use of blank passwords to console logon only" disabled and enabled the setting.</value>
+  </data>
+  <data name="A_LimitBlankPasswordUse_Rationale" xml:space="preserve">
+    <value>One policy has been found where the account having an empty password can be accessed from the network</value>
+  </data>
+  <data name="A_LimitBlankPasswordUse_Detail" xml:space="preserve">
+    <value>GPO: {0}</value>
+  </data>
+  <data name="A_AnonymousAuthorizedGPO_Description" xml:space="preserve">
+    <value>The purpose is to identify domains having a GPO which allows access to the domain without any account </value>
+  </data>
+  <data name="A_AnonymousAuthorizedGPO_Solution" xml:space="preserve">
+    <value>In order to remove the anonymous access, we advise to identify the GPO indicated by the program and change the setting restrictanonymous and restrictanonymoussam</value>
+  </data>
+  <data name="A_AnonymousAuthorizedGPO_Rationale" xml:space="preserve">
+    <value>{count} policies have been found where anonymous accesses can be used</value>
+  </data>
+  <data name="A_AnonymousAuthorizedGPO_Detail" xml:space="preserve">
+    <value>Found in GPO {0}</value>
+  </data>
+  <data name="A_LMHashAuthorized_Description" xml:space="preserve">
+    <value>The authentication protocol NTLM v1 can use the LM password hash algorithm which is weak if enabled by a GPO.</value>
+  </data>
+  <data name="A_LMHashAuthorized_Solution" xml:space="preserve">
+    <value>a GPO explicitely disable the default security policy LmCompatibilityLevel or NoLMHash. Using the information provided, identify the setting modified in the GPO and fix it.</value>
+  </data>
+  <data name="A_LMHashAuthorized_Rationale" xml:space="preserve">
+    <value>One policy has been found where the LM hash can be used [{count}]</value>
+  </data>
+  <data name="A_LMHashAuthorized_Detail" xml:space="preserve">
+    <value>Found in GPO {0}</value>
+  </data>
+  <data name="A_MinPwdLen_Description" xml:space="preserve">
+    <value>The purpose is to verify if the password policy of the domain enforces users to have at least 8 characters in their password</value>
+  </data>
+  <data name="A_MinPwdLen_Solution" xml:space="preserve">
+    <value>To solve the issue, the best way is to either remove the GPO enabling short password, or to modify it in order to increase the password length to at least 8 characters</value>
+  </data>
+  <data name="A_MinPwdLen_Rationale" xml:space="preserve">
+    <value>Policy where the password complexity is less than 8 characters: {count}</value>
+  </data>
+  <data name="A_MinPwdLen_Detail" xml:space="preserve">
+    <value>Found in GPO {0}</value>
+  </data>
+  <data name="A_ReversiblePwd_Description" xml:space="preserve">
+    <value>The purpose is to verify if a GPO alters the password policy of the domain to enable reversible passwords</value>
+  </data>
+  <data name="A_ReversiblePwd_Solution" xml:space="preserve">
+    <value>In order to remove the anonymous access, we advise to identify the GPO indicated by the program and change the setting  "Store passwords using reversible encryption"</value>
+  </data>
+  <data name="A_ReversiblePwd_Rationale" xml:space="preserve">
+    <value>One policy has been found where the reversible encryption has been enabled</value>
+  </data>
+  <data name="A_ReversiblePwd_Detail" xml:space="preserve">
+    <value>GPO: {0}</value>
+  </data>
+  <data name="A_SmartCardRequired_Description" xml:space="preserve">
+    <value>The purpose is to make sure the requirement of Smart Cards doesn't degrade password rotation</value>
+  </data>
+  <data name="A_SmartCardRequired_Solution" xml:space="preserve">
+    <value>There are 3 solutions to fix this issue, the most obvious being to change the user password on a regular basis. The fastest way is to check if the domain has the attribute &lt;i&gt;msDS-ExpirePasswordsOnSmartCardOnlyAccounts&lt;/i&gt;, which is available for Windows 2016 and later versions and handle periodically hash change. Another possibility instead of changing the password is to disable the flag "this account requires a smart card" then re-enable it which will trigger internally a password hash change.</value>
+  </data>
+  <data name="A_SmartCardRequired_Rationale" xml:space="preserve">
+    <value>Number of account using a smart card whose password is not changed: {count}</value>
+  </data>
+  <data name="A_PwdGPO_Description" xml:space="preserve">
+    <value>The purpose is to alert when a clear text password has been identified in the GPO. Regardless of whether the password is present or not, both the account and password should be considered compromised</value>
+  </data>
+  <data name="A_PwdGPO_Solution" xml:space="preserve">
+    <value>In order to solve this issue, you should manually change the password to a new one. If this password is shared on many systems, each system should have a different password. If the GPO was used to define the native local administrator account, it is recommended to install a password solution manager such as the LAPS solution. </value>
+  </data>
+  <data name="A_PwdGPO_Rationale" xml:space="preserve">
+    <value>Number of passwords found in GPO: {count}</value>
+  </data>
+  <data name="A_PwdGPO_Detail" xml:space="preserve">
+    <value>GPO: {0} login: {1} password: {2}</value>
+  </data>
+  <data name="A_AdminSDHolder_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no rogue admin accounts in the Active Directory</value>
+  </data>
+  <data name="A_AdminSDHolder_Solution" xml:space="preserve">
+    <value>These accounts should be reviewed, especially in regards with their past activities and have the admincount attribute removed. In order to identify which accounts are detected by this rule, we advise to run a Powershell command that will show you all users having this flag set: &lt;i&gt;get-adobject -ldapfilter "(admincount=1)"&lt;/i&gt;
+    Do not forget to look at the section AdminSDHolder below.</value>
+  </data>
+  <data name="A_AdminSDHolder_Rationale" xml:space="preserve">
+    <value>Suspicious admin activities detected on {count} user(s)</value>
+  </data>
+  <data name="A_Krbtgt_Description" xml:space="preserve">
+    <value>The purpose is to alert when the password for the krbtgt account can be used to compromise the whole domain. This password can be used to sign every kerberos ticket, and monitoring it closely often mitigates the risk of golden ticket attacks greatly.</value>
+  </data>
+  <data name="A_Krbtgt_Solution" xml:space="preserve">
+    <value>The password of the krbtgt account should be changed twice to invalidate the golden ticket attack.
+&lt;b&gt;Beware: two changes of the krbtgt password not replicated to domain controllers can break these domain controllers&lt;/b&gt;
+There are several possibilities to change the krbtgt password. First, a Microsoft script can be run in order to guarantee the correct replication of these secrets. Unfortunately this script supports only English operating systems. Second, a more manual way is to essentialy reset the password manually once, then to wait 3 days, then to reset it again. This is the safest way as it ensures the password is no longer usable by the Golden ticket attack.</value>
+  </data>
+  <data name="A_Krbtgt_Rationale" xml:space="preserve">
+    <value>Last change of the Kerberos password: {count} day(s) ago</value>
+  </data>
+  <data name="P_DangerousExtendedRight_Description" xml:space="preserve">
+    <value>The purpose is to verify the presence of dangerous rights when a part of the domain is delegated to a third party</value>
+  </data>
+  <data name="P_DangerousExtendedRight_Solution" xml:space="preserve">
+    <value>Unless there is a strong justification of their presence, these delegations should be removed. In addition, if the origin of this delegation cannot be found, their creation should be investigated as it can be related to a compromission of the domain</value>
+  </data>
+  <data name="P_DangerousExtendedRight_Rationale" xml:space="preserve">
+    <value>Presence of dangerous extended right in delegation: {count}</value>
+  </data>
+  <data name="P_DangerousExtendedRight_Detail" xml:space="preserve">
+    <value>Found in DN {0} for account {1} and right {2}</value>
+  </data>
+  <data name="P_DelegationEveryone_Description" xml:space="preserve">
+    <value>The purpose is to verify that there is no delegation granted to "Everyone" and to "Authenticated Users"</value>
+  </data>
+  <data name="P_DelegationEveryone_Solution" xml:space="preserve">
+    <value>Review the delegation to remove this permission and if needed, set a more targeted group as recipient of the delegation.</value>
+  </data>
+  <data name="P_DelegationEveryone_Rationale" xml:space="preserve">
+    <value>Presence of delegation where anybody can act: {count}</value>
+  </data>
+  <data name="P_DelegationEveryone_Detail" xml:space="preserve">
+    <value>DN: {0} delegation: {1} right: {2}</value>
+  </data>
+  <data name="P_UnkownDelegation_Description" xml:space="preserve">
+    <value>The purpose is to verify that each delegation are linked to an account which exists</value>
+  </data>
+  <data name="P_UnkownDelegation_Solution" xml:space="preserve">
+    <value>To reduce the risk, the easiest way is essentialy to remove the delegation</value>
+  </data>
+  <data name="P_UnkownDelegation_Rationale" xml:space="preserve">
+    <value>Presence of unknown account in delegation: {count}</value>
+  </data>
+  <data name="P_UnkownDelegation_Detail" xml:space="preserve">
+    <value>DN: {0} delegation: {1} right: {2}</value>
+  </data>
+  <data name="P_SchemaAdmin_Description" xml:space="preserve">
+    <value>The purpose is to ensure that no account can make unexpected modifications to the schema</value>
+  </data>
+  <data name="P_SchemaAdmin_Solution" xml:space="preserve">
+    <value>Remove the accounts or groups belonging to the "schema administrators" group.</value>
+  </data>
+  <data name="P_SchemaAdmin_Rationale" xml:space="preserve">
+    <value>The group Schema Admins is not empty: {count} account(s)</value>
+  </data>
+  <data name="P_ServiceDomainAdmin_Description" xml:space="preserve">
+    <value>The purpose is to check for "Service Accounts" in the "Domain Administrator" group</value>
+  </data>
+  <data name="P_ServiceDomainAdmin_Solution" xml:space="preserve">
+    <value>To mitigate the security risk, it is strongly advised to lower the privileges of the "Service Accounts", meaning that they should be removed of the "Domain Administrator" group, while ensuring that the password of each and every "Service Account" is higher than 20 characters</value>
+  </data>
+  <data name="P_ServiceDomainAdmin_Rationale" xml:space="preserve">
+    <value>Presence of service accounts in the domain admin group (at least {threshold} accounts have a password which never expire): {count}</value>
+  </data>
+  <data name="P_Delegated_Description" xml:space="preserve">
+    <value>The purpose is to ensure that all Administrator Accounts have the configuration flag "this account is sensitive and cannot be delegated"</value>
+  </data>
+  <data name="P_Delegated_Solution" xml:space="preserve">
+    <value>To correct the situation, you should make sure that all your Administrator Accounts has the checkbox "This account is sensitive and cannot be delegated" active.</value>
+  </data>
+  <data name="P_Delegated_Rationale" xml:space="preserve">
+    <value>Presence of Admin accounts which have not the flag "this account is sensitive and cannot be delegated": {count}</value>
+  </data>
+  <data name="P_Delegated_Detail" xml:space="preserve">
+    <value>Domain controller {0} based on {1}</value>
+  </data>
+  <data name="P_Inactive_Description" xml:space="preserve">
+    <value>The purpose is to ensure that the Administrator Accounts in the AD are all necessary and used</value>
+  </data>
+  <data name="P_Inactive_Solution" xml:space="preserve">
+    <value>To correct the situation, you should make sure that all your Administrator Account are "Active", meaning that you should remove Administator rights if an account is set as not "Active"</value>
+  </data>
+  <data name="P_Inactive_Rationale" xml:space="preserve">
+    <value>More than {threshold}% of admins are inactive: {count}%</value>
+  </data>
+  <data name="P_AdminNum_Description" xml:space="preserve">
+    <value>The purpose is to verify if the number of administrator accounts is not disproportionate. Very few users should have domain admin accounts</value>
+  </data>
+  <data name="P_AdminNum_Solution" xml:space="preserve">
+    <value>It is strongly advised to perform a review of which users have domain administrator rights, and to ensure that these rights are actually needed. Indeed, the end goal is to remove as much domain administrator as possible, as very few users actually need these high level rights</value>
+  </data>
+  <data name="P_AdminNum_Rationale" xml:space="preserve">
+    <value>Users in Admins groups = {count} (more than {threshold}% of all active users)</value>
+  </data>
+  <data name="P_AdminLogin_Description" xml:space="preserve">
+    <value>The purpose is to verify if the Native Administrator account is used.</value>
+  </data>
+  <data name="P_AdminLogin_Solution" xml:space="preserve">
+    <value>To mitigate the security risk, a good practice is to use the Native Administrator account only for emergency, while the daily work is performed through other accounts. It is indeed strongly recommended to not use this account but to use nominative account for administrators and dedicated account for services.Do note that the anomaly will be removed 35 days after the last native administrator login.</value>
+  </data>
+  <data name="P_AdminLogin_Rationale" xml:space="preserve">
+    <value>The native administrator account has been used recently: {count} day(s) ago</value>
+  </data>
+  <data name="A_DsHeuristicsAnonymous_Description" xml:space="preserve">
+    <value>The purpose is to identify domains having a forest setting which allows access to the domain without any account </value>
+  </data>
+  <data name="A_DsHeuristicsAnonymous_Solution" xml:space="preserve">
+    <value>The easiest and fastest way to correct this issue is to &lt;b&gt;replace the seventh (7th) character of the DsHeuristics attribute&lt;/b&gt;. If it is a 2, replace by 0 to fix the issue.</value>
+  </data>
+  <data name="A_DsHeuristicsAnonymous_Rationale" xml:space="preserve">
+    <value>DsHeuristics has been set to allow anonymous sessions.</value>
+  </data>
+  <data name="T_Inactive_Description" xml:space="preserve">
+    <value>The purpose is to verify that every trust has a remote domain which is active.</value>
+  </data>
+  <data name="T_Inactive_Solution" xml:space="preserve">
+    <value>Check for network connectivity issues from the remote domain or if the remote domain still exists. If it doesn't exist anymore, the trust should be removed. Indeed the secret used by the trust can be used to issue fake kerberos tickets and be used as a backdoor.</value>
+  </data>
+  <data name="T_Inactive_Rationale" xml:space="preserve">
+    <value>At least one inactive trust has been found: {count}</value>
+  </data>
+  <data name="T_Inactive_Detail" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="T_Downlevel_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no NT4 compatible trusts</value>
+  </data>
+  <data name="T_Downlevel_Solution" xml:space="preserve">
+    <value>Unless the remote party of the trust is a NT4 domain, this trust shouldn't exist. It should be recreated.</value>
+  </data>
+  <data name="T_Downlevel_Rationale" xml:space="preserve">
+    <value>At least one trust DownLevel has been found. This is a NT4 compatible trust: {count}</value>
+  </data>
+  <data name="T_Downlevel_Detail" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="S_DC_2003_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 2003 as Domain Controller within the domain</value>
+  </data>
+  <data name="S_DC_2003_Solution" xml:space="preserve">
+    <value>To resolve this security risk, the only way is to decomission DC running Windows 2003 OS, in order to use new versions that are more secured and that are still being patched regarding new security threats</value>
+  </data>
+  <data name="S_DC_2003_Rationale" xml:space="preserve">
+    <value>Presence of Windows 2003 as DC = {count}</value>
+  </data>
+  <data name="S_DC_2000_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 2000 as Domain Controller within the domain</value>
+  </data>
+  <data name="S_DC_2000_Solution" xml:space="preserve">
+    <value>To resolve this security risk, the only way is to decomission DC running Windows 2000 OS, in order to use new versions that are more secured and that are still being patched regarding new security threats</value>
+  </data>
+  <data name="S_DC_2000_Rationale" xml:space="preserve">
+    <value>Presence of Windows 2000 as DC = {count}</value>
+  </data>
+  <data name="S_OS_2003_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 2003 for the workstations within the domain</value>
+  </data>
+  <data name="S_OS_2003_Solution" xml:space="preserve">
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following powershell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap –Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+  </data>
+  <data name="S_OS_2003_Rationale" xml:space="preserve">
+    <value>Presence of Windows 2003 = {count}</value>
+  </data>
+  <data name="S_OS_2000_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 2000 for the workstations within the domain</value>
+  </data>
+  <data name="S_OS_2000_Solution" xml:space="preserve">
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following powershell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap –Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+  </data>
+  <data name="S_OS_2000_Rationale" xml:space="preserve">
+    <value>Presence of Windows 2000 = {count}</value>
+  </data>
+  <data name="S_OS_XP_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows XP for the workstations within the domain</value>
+  </data>
+  <data name="S_OS_XP_Solution" xml:space="preserve">
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following powershell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap –Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+  </data>
+  <data name="S_OS_XP_Rationale" xml:space="preserve">
+    <value>Presence of Windows XP = {count}</value>
+  </data>
+  <data name="S_OS_NT_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows NT for the workstations within the domain</value>
+  </data>
+  <data name="S_OS_NT_Solution" xml:space="preserve">
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following powershell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap –Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+  </data>
+  <data name="S_OS_NT_Rationale" xml:space="preserve">
+    <value>Presence of Windows NT = {count}</value>
+  </data>
+  <data name="S_DC_NotUpdated_Description" xml:space="preserve">
+    <value>The purpose is to ensure that all the Domain Controllers are updated regularly. This is done by checking if a DC has been rebooted in the past 6 months. If not, it means it has not be patched as well in these 6 monthes</value>
+  </data>
+  <data name="S_DC_NotUpdated_Solution" xml:space="preserve">
+    <value>Frequently updating the DC should be part of the AD policies, as there should be a dedicated timeslot for the servers to reboot and apply security patches</value>
+  </data>
+  <data name="S_DC_NotUpdated_Rationale" xml:space="preserve">
+    <value>Number of DC not updated = {count}</value>
+  </data>
+  <data name="S_DC_NotUpdated_Detail" xml:space="preserve">
+    <value>Domain controller {0} based on {1}</value>
+  </data>
+  <data name="T_SIDFiltering_Description" xml:space="preserve">
+    <value>The purpose is to check if all trusts are protected using the functionality named SID Filtering</value>
+  </data>
+  <data name="T_SIDFiltering_Solution" xml:space="preserve">
+    <value>A trust without SID Filtering means either that a migration is in progress or that the domain can be compromised instantly via the trust.
+The solution is to complete exisring migration ASAP and enable the SID Filtering feature
+
+If the trust is a domain trust, you should use netdom /quarantine and set it to yes
+If the trust is a forest trust, you should use netdom /enablesidhistory and set it to no
+Do not apply /quarantine on a forest trust: you will break the transitivity of the trust.</value>
+  </data>
+  <data name="T_SIDFiltering_Rationale" xml:space="preserve">
+    <value>Number of trusts without SID Filtering: {count}</value>
+  </data>
+  <data name="T_SIDFiltering_Detail" xml:space="preserve">
+    <value>trust without SID Filtering: {0}</value>
+  </data>
+  <data name="S_Duplicate_Description" xml:space="preserve">
+    <value>The purpose is to very if they currently are duplicate accounts within the domain. A duplicate account is essentially a duplicate of two objets having the same attributes.</value>
+  </data>
+  <data name="S_Duplicate_Solution" xml:space="preserve">
+    <value>Duplicate accounts often means there are weaknesses in term of processes, that is why they should be monitored and removed. To identify all duplicate accounts, you should use the following powershell commands: &lt;i&gt;get-adobject -ldapfilter "(cn=*cnf:*)"&lt;/i&gt; ; &lt;i&gt;get-adobject -ldapfilter "(sAMAccountName=$duplicate)"&lt;/i&gt;</value>
+  </data>
+  <data name="S_Duplicate_Rationale" xml:space="preserve">
+    <value>Presence of duplicate accounts = {count}</value>
+  </data>
+  <data name="S_C_Reversible_Description" xml:space="preserve">
+    <value>The purpose is to verify if there are accounts currently running with a reversible password</value>
+  </data>
+  <data name="S_C_Reversible_Solution" xml:space="preserve">
+    <value>To remove this risk, there should be no account with reversible encryption. You should remove them by removing the flag "Store password using reversible encryption" on all accounts, so that the cleartext password is removed at the next password change. You can get a list of all the possibly compromised accounts running the followinng powershell command: &lt;i&gt;get-adobject -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=128)" -properties useraccountcontrol&lt;/i&gt;</value>
+  </data>
+  <data name="S_C_Reversible_Rationale" xml:space="preserve">
+    <value>Number of computers which have a reversible password: {count}</value>
+  </data>
+  <data name="S_Reversible_Description" xml:space="preserve">
+    <value>The purpose is to verify if there are user accounts currently running with a reversible password</value>
+  </data>
+  <data name="S_Reversible_Solution" xml:space="preserve">
+    <value>To remove this risk, there should be no account with reversible encryption. You should remove them by removing the flag "Store password using reversible encryption" on all accounts, so that the cleartext password is removed at the next password change. You can get a list of all the possibly compromised accounts running the followinng powershell command: &lt;i&gt;get-adobject -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=128)" -properties useraccountcontrol&lt;/i&gt;</value>
+  </data>
+  <data name="S_Reversible_Rationale" xml:space="preserve">
+    <value>Number of accounts which have a reversible password: {count}</value>
+  </data>
+  <data name="S_PwdNotRequired_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is every account requires a password</value>
+  </data>
+  <data name="S_PwdNotRequired_Solution" xml:space="preserve">
+    <value>The best solution to solve the problem is to change the "useraccountcontrol" attribue of all the accounts that have it and that are not used in trusts. If the flag is removed while there is no password set, you will have an error. You can use this to detect passwords without any accounts. Do note that you can manually check all the accounts that need to be worked on using the following powershell command: &lt;i&gt;get-adobject -ldapfilter "(&amp;(objectCategory=person)(objectClass=user)(userAccountControl:1.2.840.113556.1.4.803:=32))" -properties useraccountcontrol&lt;/i&gt;</value>
+  </data>
+  <data name="S_PwdNotRequired_Rationale" xml:space="preserve">
+    <value>Number of accounts which can have an empty password (can be overriden by GPO): {count}</value>
+  </data>
+  <data name="S_DesEnabled_Description" xml:space="preserve">
+    <value>The purpose is to verify that no weak hashing algorithm such as DES is used to hash the password of the account.</value>
+  </data>
+  <data name="S_DesEnabled_Solution" xml:space="preserve">
+    <value>It is recommended to disable DES as an algorithm in the user configuration dialog or in the "msDSSupportedEncryptionTypes" attribute at LDAP level. It be disabled in the property of an account by unchecking the box "Use Kerberos DES encryption for this account"</value>
+  </data>
+  <data name="S_DesEnabled_Rationale" xml:space="preserve">
+    <value>Presence of Des Enabled account = {count}</value>
+  </data>
+  <data name="S_C_PrimaryGroup_Description" xml:space="preserve">
+    <value>The purpose is to check for unsual value in the primarygroupid attribute used to store group membership</value>
+  </data>
+  <data name="S_C_PrimaryGroup_Solution" xml:space="preserve">
+    <value>Unless stronly justified, change the primary group id to its default. 513 or 514 for users, 516 or 521 for domain controllers, 514 or 515 for computers. The primary group can be edited in a friendly manner by editing the account with the "Active Directory Users and Computers" and after selecting the "Member Of" tab, "set primary group".</value>
+  </data>
+  <data name="S_C_PrimaryGroup_Rationale" xml:space="preserve">
+    <value>Presence of wrong primary group: {count}</value>
+  </data>
+  <data name="S_PrimaryGroup_Description" xml:space="preserve">
+    <value>The purpose is to check for unsual value in the primarygroupid attribute used to store group membership</value>
+  </data>
+  <data name="S_PrimaryGroup_Solution" xml:space="preserve">
+    <value>Unless stronly justified, change the primary group id to its default. 513 or 514 for users, 516 or 521 for domain controllers, 514 or 515 for computers. The primary group can be edited in a friendly manner by editing the account with the "Active Directory Users and Computers" and after selecting the "Member Of" tab, "set primary group".</value>
+  </data>
+  <data name="S_PrimaryGroup_Rationale" xml:space="preserve">
+    <value>Presence of wrong primary group: {count}</value>
+  </data>
+  <data name="S_C_Inactive_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there are as few inactive computers as possible within the domain</value>
+  </data>
+  <data name="S_C_Inactive_Solution" xml:space="preserve">
+    <value>To mitigate the risk, you should monitore the number of inactive accounts and reduce it as much as possible. A list of all inactive accounts is obtainable through the command: &lt;i&gt;Search-ADaccount -ComputersOnly -AccountInactive -Timespan 180&lt;/i&gt;.</value>
+  </data>
+  <data name="S_C_Inactive_Rationale" xml:space="preserve">
+    <value>Relatively high number of inactive computer accounts: {count}% (more than {threshold}% of all computers)</value>
+  </data>
+  <data name="S_Inactive_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there are as few inactive accounts as possible within the domain</value>
+  </data>
+  <data name="S_Inactive_Solution" xml:space="preserve">
+    <value>To mitigate the risk, you should monitore the number of inactive accounts and reduce it as much as possible. A list of all inactive accounts is obtainable through the command: &lt;i&gt;Search-ADaccount -UsersOnly -AccountInactive -Timespan 180&lt;/i&gt;.</value>
+  </data>
+  <data name="S_Inactive_Rationale" xml:space="preserve">
+    <value>Relatively high number of inactive user accounts: {count}% (more than {threshold}% of all users)</value>
+  </data>
+  <data name="S_SIDHistory_Description" xml:space="preserve">
+    <value>The purpose is to ensure that a migration has been completed correctly and that the SIDHistory attribute has been cleared out from user and computer accounts. This attribute is indeed set when migrating a user or a computer from one domain to another</value>
+  </data>
+  <data name="S_SIDHistory_Solution" xml:space="preserve">
+    <value>To solve the security issue, you should remove all the SIDHistory attributes. To do so, you can list the objects having an SIDHistory attribute using the command: &lt;i&gt;get-ADObject -ldapfilter "(sidhistory=*)" -properties sidhistory&lt;/i&gt;. 
+Each security descriptor of the domain (including file shares for example) should be reviewed to be rewritten with the new SID of the account. Then, the attribute can be removed of these accounts using the migration tool or a powershell snippet &lt;i&gt;Remove-SIDHistory&lt;/i&gt; once the migration is completed. Please note that once the SID History has been removed, it cannot be added back again without doing a real migration. Hopefully hacking tools such as mimikatz can be used to undo a deletion with for example the lsadump::dcshadow attack.</value>
+  </data>
+  <data name="S_SIDHistory_Rationale" xml:space="preserve">
+    <value>{count} domain(s) used in SIDHistory</value>
+  </data>
+  <data name="S_SIDHistory_Detail" xml:space="preserve">
+    <value>{0} [{1} object(s)]</value>
+  </data>
+  <data name="P_UnkownDelegation_Title" xml:space="preserve">
+    <value>Check delegations for the recipient's existence</value>
+  </data>
+  <data name="A_PreWin2000Anonymous_Title" xml:space="preserve">
+    <value>Check for Windows 2000 compatibility which allows access to the domain without any account</value>
+  </data>
+  <data name="S_SIDHistory_Title" xml:space="preserve">
+    <value>SIDHistory check</value>
+  </data>
+  <data name="A_MinPwdLen_Title" xml:space="preserve">
+    <value>Check for Short password length in password policy</value>
+  </data>
+  <data name="P_ServiceDomainAdmin_Title" xml:space="preserve">
+    <value>Check if Service Accounts are domain administrators</value>
+  </data>
+  <data name="A_SHA1RootCert_Title" xml:space="preserve">
+    <value>Check for Root Certificates using unsafe hashing algorithm (SHA1)</value>
+  </data>
+  <data name="A_SHA0RootCert_Title" xml:space="preserve">
+    <value>Check for Root Certificates using unsafe hashing algorithm (SHA0)</value>
+  </data>
+  <data name="A_MD5RootCert_Title" xml:space="preserve">
+    <value>Check for Root Certificates using unsafe hashing algorithm (MD5)</value>
+  </data>
+  <data name="A_MD4RootCert_Title" xml:space="preserve">
+    <value>Check for Root Certificates using unsafe hashing algorithm (MD4)</value>
+  </data>
+  <data name="A_MD2RootCert_Title" xml:space="preserve">
+    <value>Check for Root Certificates using unsafe hashing algorithm (MD2)</value>
+  </data>
+  <data name="S_C_Reversible_Title" xml:space="preserve">
+    <value>Check for Reversible password used for computer accounts</value>
+  </data>
+  <data name="A_NullSession_Title" xml:space="preserve">
+    <value>Retrieve data from the domain without any account</value>
+  </data>
+  <data name="S_ADRegistration_Title" xml:space="preserve">
+    <value>Check the procesuss of registration of computers to the domain</value>
+  </data>
+  <data name="A_ProtectedUsers_Title" xml:space="preserve">
+    <value>Check for presence of the Protected users group</value>
+  </data>
+  <data name="S_PwdNotRequired_Title" xml:space="preserve">
+    <value>Check that every account requires a password</value>
+  </data>
+  <data name="A_NoServicePolicy_Title" xml:space="preserve">
+    <value>Check the Password Policy for Service Accounts (Information)</value>
+  </data>
+  <data name="A_PwdGPO_Title" xml:space="preserve">
+    <value>Find Password GPO</value>
+  </data>
+  <data name="S_OS_XP_Title" xml:space="preserve">
+    <value>Obsolete OS (Windows XP)</value>
+  </data>
+  <data name="S_OS_NT_Title" xml:space="preserve">
+    <value>Obsolete OS (Windows NT)</value>
+  </data>
+  <data name="S_OS_2003_Title" xml:space="preserve">
+    <value>Obsolete OS (Windows 2003)</value>
+  </data>
+  <data name="S_OS_2000_Title" xml:space="preserve">
+    <value>Obsolete OS (Windows 2000)</value>
+  </data>
+  <data name="S_DC_2003_Title" xml:space="preserve">
+    <value>Obsolete Domain Controller (Windows 2003)</value>
+  </data>
+  <data name="S_DC_2000_Title" xml:space="preserve">
+    <value>Obsolete Domain Controller (Windows 2000)</value>
+  </data>
+  <data name="P_AdminNum_Title" xml:space="preserve">
+    <value>Check for Number of Administrator accounts above the baseline</value>
+  </data>
+  <data name="P_AdminLogin_Title" xml:space="preserve">
+    <value>Check for Native administrator usage</value>
+  </data>
+  <data name="A_Krbtgt_Title" xml:space="preserve">
+    <value>Mitigate golden ticket attack via a regular change of the krbtgt password</value>
+  </data>
+  <data name="A_SHA1IntermediateCert_Title" xml:space="preserve">
+    <value>Check for Intermediate Certificates using unsafe hashing algorithm (SHA1)</value>
+  </data>
+  <data name="A_SHA0IntermediateCert_Title" xml:space="preserve">
+    <value>Check for Intermediate Certificates using unsafe hashing algorithm (SHA0)</value>
+  </data>
+  <data name="A_MD5IntermediateCert_Title" xml:space="preserve">
+    <value>Check for Intermediate Certificates using unsafe hashing algorithm (MD5)</value>
+  </data>
+  <data name="A_MD4IntermediateCert_Title" xml:space="preserve">
+    <value>Check for Intermediate Certificates using unsafe hashing algorithm (MD4)</value>
+  </data>
+  <data name="A_MD2IntermediateCert_Title" xml:space="preserve">
+    <value>Check for Intermediate Certificates using unsafe hashing algorithm (MD2)</value>
+  </data>
+  <data name="S_C_Inactive_Title" xml:space="preserve">
+    <value>Inactive computer check</value>
+  </data>
+  <data name="S_Inactive_Title" xml:space="preserve">
+    <value>Inactive Account check</value>
+  </data>
+  <data name="S_Duplicate_Title" xml:space="preserve">
+    <value>Duplicate Account check</value>
+  </data>
+  <data name="S_Reversible_Title" xml:space="preserve">
+    <value>Check for Reversible password used for user accounts</value>
+  </data>
+  <data name="S_DC_NotUpdated_Title" xml:space="preserve">
+    <value>Domain Controller Update</value>
+  </data>
+  <data name="S_DesEnabled_Title" xml:space="preserve">
+    <value>Check for weak algorithm in password hashing (DES algorythm)</value>
+  </data>
+  <data name="S_SMB_v1_Title" xml:space="preserve">
+    <value>DC Vulnerability (SMB v1)</value>
+  </data>
+  <data name="S_Vuln_MS17_010_Title" xml:space="preserve">
+    <value>DC Vulnerability (MS17-010) </value>
+  </data>
+  <data name="S_Vuln_MS14_068_Title" xml:space="preserve">
+    <value>DC Vulnerability (MS14-068) </value>
+  </data>
+  <data name="A_LAPS_Not_Installed_Title" xml:space="preserve">
+    <value>Check if the LAPS tool to handle the native local administrator password is installed</value>
+  </data>
+  <data name="A_MembershipEveryone_Title" xml:space="preserve">
+    <value>Check if access to a restricted group is given to anyone by a GPO</value>
+  </data>
+  <data name="A_BackupMetadata_Title" xml:space="preserve">
+    <value>Check for the last backup date according to Microsoft standard</value>
+  </data>
+  <data name="A_AdminSDHolder_Title" xml:space="preserve">
+    <value>Check for suspicious account(s) used in administrator activities</value>
+  </data>
+  <data name="A_AnonymousAuthorizedGPO_Title" xml:space="preserve">
+    <value>Check for GPO granting access to the domain without any account</value>
+  </data>
+  <data name="A_LMHashAuthorized_Title" xml:space="preserve">
+    <value>Check for GPO enabling the unsafe algorithm LM hash</value>
+  </data>
+  <data name="A_LimitBlankPasswordUse_Title" xml:space="preserve">
+    <value>Check for GPO allowing accounts without password to be accessed from the network</value>
+  </data>
+  <data name="A_DsHeuristicsAnonymous_Title" xml:space="preserve">
+    <value>Check for access without any account via a forest wide setting</value>
+  </data>
+  <data name="A_WeakRSARootCert_Title" xml:space="preserve">
+    <value>Check for Certificates using a weak signing algorithm (RSA under 1024 bits)</value>
+  </data>
+  <data name="P_DCOwner_Title" xml:space="preserve">
+    <value>At least one Domain controller is not owned correctly</value>
+  </data>
+  <data name="P_Delegated_Title" xml:space="preserve">
+    <value>At least one Administrator Account can be delegated</value>
+  </data>
+  <data name="P_Inactive_Title" xml:space="preserve">
+    <value>Check for inactive Administrator Accounts</value>
+  </data>
+  <data name="A_SmartCardRequired_Title" xml:space="preserve">
+    <value>Check for Accounts using Smart Card with unchanged password for a long time</value>
+  </data>
+  <data name="A_ReversiblePwd_Title" xml:space="preserve">
+    <value>Check for GPO which enable reversible passwords</value>
+  </data>
+  <data name="P_DelegationEveryone_Title" xml:space="preserve">
+    <value>A Delegation is granted to Everyone</value>
+  </data>
+  <data name="A_AdminSDHolder_TechnicalExplanation" xml:space="preserve">
+    <value>A check is performed non-admin accounts in order to identify if they have an attribute &lt;i&gt;admincount&lt;/i&gt; set. If they have this attribute, it means that this account, which is not supposed to be admin, has been granted administrator rights in the past. This tipically happens when an administrator gives temporary rights to a normal account, off process.</value>
+  </data>
+  <data name="A_AnonymousAuthorizedGPO_TechnicalExplanation" xml:space="preserve">
+    <value>It is possible that domains are set to authorize connection without any account, which represents a security breach. It allows potential attackers to enumerate all the users and computers belonging to a domain, in order to identify very efficiently future weak targets.
+It is possible to verify the results provided by the PingCastle solution by using a Kali distribution. You should run [rpcclient -U " target_ip_address] and press enter at the password prompt to finally type [enumdomusers].</value>
+  </data>
+  <data name="A_BackupMetadata_TechnicalExplanation" xml:space="preserve">
+    <value>A verification is done on the backups, ensuring that the backup is performed according to Microsoft standard. Indeed at each backup the DIT Database Partition Backup Signature is updated.  if for any reasons, backups are needed to perform a rollback (rebuild a domain) or to track past changes, the backups will actually be up to date. This check is equivalent to a &lt;i&gt;REPADMIN /showbackup *&lt;/i&gt;.</value>
+  </data>
+  <data name="A_DsHeuristicsAnonymous_TechnicalExplanation" xml:space="preserve">
+    <value>The way an Active Directory behave can be controlled via the attribute &lt;i&gt;DsHeuristics&lt;/i&gt; of &lt;i&gt;CN=Directory Service,CN=Windows NT,CN=Services,CN=Configuration&lt;/i&gt;. A parameter stored in its attribute and whose value is &lt;i&gt;LDAPBlockAnonOps&lt;/i&gt; can be set to allow access without any account on the &lt;b&gt;whole forest level&lt;/b&gt;.
+It is possible to verify the results provided by the PingCastle solution by using a Kali distribution. You should run &lt;i&gt;rpcclient -U " target_ip_address&lt;/i&gt; and press enter at the password prompt to finally type &lt;i&gt;enumdomusers&lt;/i&gt;.</value>
+  </data>
+  <data name="A_Krbtgt_TechnicalExplanation" xml:space="preserve">
+    <value>Kerberos is an authentication protocol. It is using to sign its tickets a secret stored as the password of the krbtgt account. If the hash of the password of the krbtgt account is retrieved, it can be use to generate authentication tickets at will.
+To mitigate this attack, it is recommanded to change the krbtgt password every 40 days. If it not the case, every backups done until the last password change of the krbtgt account can be used to emit Goldent tickets, compromising the entiere domain.
+Retrieval of this secret is one of the highest priority in an attack, as this password is rarely changed and offer a long term backdoor.
+Also this attack can also be performed using the former password of the krbtgt account</value>
+  </data>
+  <data name="A_LAPS_Not_Installed_TechnicalExplanation" xml:space="preserve">
+    <value>LAPS (Local Administrator Password Solution) is the advised solution to handle passwords for the native local administrator account on all workstations, as it is a simple way to handle most of the subject.</value>
+  </data>
+  <data name="A_LimitBlankPasswordUse_TechnicalExplanation" xml:space="preserve">
+    <value>This rule verifies if there is a GPO with the setting "Limit local account use of blank passwords to console logon only" disabled.</value>
+  </data>
+  <data name="A_LMHashAuthorized_TechnicalExplanation" xml:space="preserve">
+    <value>LM hash, or LAN Manager hash is a hash algorithm developped by Microsot since Windows 3.1. Due to flaw design, hashes retrieved from the network can be reverted to the clear text password in a matter of seconds.</value>
+  </data>
+  <data name="A_MD2IntermediateCert_TechnicalExplanation" xml:space="preserve">
+    <value>The MD2 hashing algorithm is not considered as safe. There are design flaws inherent to the algorithm that allow an attacker to generate a hash collision in less than a brute-force time</value>
+  </data>
+  <data name="A_MD2RootCert_TechnicalExplanation" xml:space="preserve">
+    <value>The MD2 hashing algorithm is not considered as safe. There are design flaws inherent to the algorithm that allow an attacker to generate a hash collision in less than a brute-force time. Nevertheless, the root certificate algorithm has no direct impact on the security, but it can be used indirectly to force the use of this algorithm in the issued certificate</value>
+  </data>
+  <data name="A_MD4IntermediateCert_TechnicalExplanation" xml:space="preserve">
+    <value>The MD4 hashing algorithm is not considered as safe.  There are design flaws inherent to the algorithm that allow an attacker to generate a hash collision in less than a brute-force time</value>
+  </data>
+  <data name="A_MD4RootCert_TechnicalExplanation" xml:space="preserve">
+    <value>The MD4 hashing algorithm is not considered as safe.  There are design flaws inherent to the algorithm that allow an attacker to generate a hash collision in less than a brute-force time. Nevertheless, the root certificate algorithm has no direct impact on the security, but it can be used indirectly to force the use of this algorithm in the issued certificate</value>
+  </data>
+  <data name="A_MD5IntermediateCert_TechnicalExplanation" xml:space="preserve">
+    <value>The MD5 hashing algorithm is not considered as safe.  There are design flaws inherent to the algorithm that allow an attacker to generate a hash collision in less than a brute-force time</value>
+  </data>
+  <data name="A_MD5RootCert_TechnicalExplanation" xml:space="preserve">
+    <value>The MD5 hashing algorithm is not considered as safe.  There are design flaws inherent to the algorithm that allow an attacker to generate a hash collision in less than a brute-force time. Nevertheless, the root certificate algorithm has no direct impact on the security, but it can be used indirectly to force the use of this algorithm in the issued certificate</value>
+  </data>
+  <data name="A_MembershipEveryone_TechnicalExplanation" xml:space="preserve">
+    <value>It is possible that a GPO add local membership of a restricted group. In this case the rule trigger if one is found with "Everyone" or "Authenticated Users" as members. It basically means that the Restricted Group has no restriction on belongs to it. This represents a security risk as Restricted Group are supposed to have more accesses or rights</value>
+  </data>
+  <data name="A_MinPwdLen_TechnicalExplanation" xml:space="preserve">
+    <value>A check is perfomed to identify if the GPO regarding password policy allows less than 8 characters password. Short passwords represents a high risk because they can fairly easily be brute-forced. Most CERT and agencies advises for at least 8 characters (and often this number goes up to 12)</value>
+  </data>
+  <data name="A_NoServicePolicy_TechnicalExplanation" xml:space="preserve">
+    <value>The rule is purely informative, as it gives insights regarding a best practice. It verifies if there is a GPO or PSO enforcing a 20+ characters password for the Service Account. </value>
+  </data>
+  <data name="A_NullSession_TechnicalExplanation" xml:space="preserve">
+    <value>Unless other rules which check for known cause of anonymous access, this rule try to enumerate accounts from the domain without any account. The program use two methods: MS-SAMR with a NULL connection and MS-LSAT which forces SID resolution with well known SID.
+NULL sessions are deactivated by default since Windows 2003 and Windows XP. But for compatibility reasons, a setting enabling them may be still active years after.
+It is possible to verify the results provided by the PingCastle solution by using a Kali distribution. You should run [rpcclient -U " target_ip_address] and press enter at the password prompt to finally type [enumdomusers].</value>
+  </data>
+  <data name="A_PreWin2000Anonymous_TechnicalExplanation" xml:space="preserve">
+    <value>When a Windows 2003 DC is promoted, a pre-Windows 2000 compatibility setting can be enabled through the wizard. If it is enabled, the wizard will add "Everyone" and "Anonymous" to the pre-Windows 2000 compatible access group, and by doing so, it will authorize the domain to be queried without an account (null session)
+It is possible to verify the results provided by the PingCastle solution by using a Kali distribution. You should run [rpcclient -U " target_ip_address] and press enter at the password prompt to finally type [enumdomusers].</value>
+  </data>
+  <data name="A_ProtectedUsers_TechnicalExplanation" xml:space="preserve">
+    <value>The Protected Users group is a special group which is a very effective mitigation solution to counter attacks using Credential theft starting with Windows 8.1. Older Operating System must be updated to take this protection in account such as the &lt;b&gt;Windows 7 KB2871997&lt;/b&gt; patch.</value>
+  </data>
+  <data name="A_PwdGPO_TechnicalExplanation" xml:space="preserve">
+    <value>A check is performed to identify passwords in the GPO. If a password is identified through the PingCastle solution, it means that it can be identified through many other means by attackers, and that the account should be considered compromised. 
+Do note that the AES key used to encrypt password in the GPO has been made public for interoperability reasons, which is why even an encrypted password is compromised. It has been revealed in &lt;a href="https://msdn.microsoft.com/en-us/library/cc422924.aspx"&gt;this page&lt;/a&gt;</value>
+  </data>
+  <data name="A_ReversiblePwd_TechnicalExplanation" xml:space="preserve">
+    <value>The policy "Store passwords using reversible encryption" is enabled. In this case, it means that the password is actually stored in clear text in the &lt;i&gt;supplementalCredential&lt;/i&gt; attribute of the account and that it can be retrived using DCSync attack.</value>
+  </data>
+  <data name="A_SHA0IntermediateCert_TechnicalExplanation" xml:space="preserve">
+    <value>The SHA0 hashing algorithm is not considered as safe. There are design flaws inherent to the algorithm that allow an attacker to generate a hash collision in less than a brute-force time</value>
+  </data>
+  <data name="A_SHA0RootCert_TechnicalExplanation" xml:space="preserve">
+    <value>The SHA0 hashing algorithm is not considered as safe. There are design flaws inherent to the algorithm that allow an attacker to generate a hash collision in less than a brute-force time</value>
+  </data>
+  <data name="A_SHA1IntermediateCert_TechnicalExplanation" xml:space="preserve">
+    <value>The SHA1 hashing algorithm is not considered as safe. There are design flaws inherent to the algorithm that allow an attacker to generate a hash collision in less than a brute-force time</value>
+  </data>
+  <data name="A_SHA1RootCert_TechnicalExplanation" xml:space="preserve">
+    <value>The SHA1 hashing algorithm is not considered as safe. There are design flaws inherent to the algorithm that allow an attacker to generate a hash collision in less than a brute-force time</value>
+  </data>
+  <data name="A_SmartCardRequired_TechnicalExplanation" xml:space="preserve">
+    <value>Using Smart Card to protected sensitive account is a good thing. Nevertheless, when the "Smart Card required" flag is set, the password of the account is not changed anymore by default. Internally the hash of this password is used to sign the user's kerberos tickets, making this account vulnerable to Silver ticket attacks. The rule is triggered 90 days after the last change of the attribute unicodePwd. This value is collected using the replication metadata of the attribute 589914</value>
+  </data>
+  <data name="A_WeakRSARootCert_TechnicalExplanation" xml:space="preserve">
+    <value>A RSA key certificate with a modulus under 1024 bits is considered as not safe</value>
+  </data>
+  <data name="P_AdminLogin_TechnicalExplanation" xml:space="preserve">
+    <value>The Native Administrator account is the main administrator account, and it is sharing its password with Directory Services Restore Mode password. Since it is the same password, it can be used to take control of the domain even if the account is disabled, notably through a DSync attack. The last login date is retrieved through the LastLogonTimestamp LDAP attribute retrieved from the Active Directory. There is an exception for 35 days to avoid this rule to be triggered at the domain creation.</value>
+  </data>
+  <data name="P_AdminNum_TechnicalExplanation" xml:space="preserve">
+    <value>Every domain administrator represents a possible security breach, this is why it is strongly advised to have as few domain administrator accounts as possible</value>
+  </data>
+  <data name="P_DangerousExtendedRight_TechnicalExplanation" xml:space="preserve">
+    <value>The right "REANIMATE_TOMBSTONE" used to undelete objects, "UNEXPIRE_PASSWORD" used to undo the expiration of a password, or "SID_HISTORY" used to create an alternate identity is considered dangerous. Indeed this rights can be used to trigger a backdoor.</value>
+  </data>
+  <data name="P_DCOwner_TechnicalExplanation" xml:space="preserve">
+    <value>By default, the "Domain Administrators Group" or the "Enterprise Administrators Group" are set as owners for "Domain Controllers". Nonetheless, in some cases (for instance when the server has been promoted from an existing server), the owner can be a non admin person which joined the server to the domain. If this person has still rights over this account, it can be used to take ownership over the whole domain. A chain of compromission can be designed to take control of the domain by including this account.</value>
+  </data>
+  <data name="P_Delegated_TechnicalExplanation" xml:space="preserve">
+    <value>Whitout the flag "This account is sensitive and cannot be delegated" any account can be impersonated by some service account. It is a best practice to enforce this flag on administrators accounts.</value>
+  </data>
+  <data name="P_DelegationEveryone_TechnicalExplanation" xml:space="preserve">
+    <value>To delegate control to a OU, access checks can be modified. In case of a misconfiguration, access can be granted to the group "Everyone" or "Authenticated Users".</value>
+  </data>
+  <data name="P_Inactive_TechnicalExplanation" xml:space="preserve">
+    <value>Accounts wihtin the AD have attributes indicating the creation date of the account and the last login of this account. Accounts which doesn't have a login since 6 months or created more than 6 months ago without any login are considered inactive. If an Administrator Account is set as inactive, the reason for having Administrator rights should be strongly justified.</value>
+  </data>
+  <data name="P_SchemaAdmin_TechnicalExplanation" xml:space="preserve">
+    <value>The group "Schema Admins" is used to give permissions to alter the schema. Once a modification is performed on the schema such as new objects, it cannot be undone. This can result in a rebuild of the domain. The best pratice is to have this group empty and to add an administrator when a schema update is required then to remove this group membership.</value>
+  </data>
+  <data name="P_ServiceDomainAdmin_TechnicalExplanation" xml:space="preserve">
+    <value>"Service Accounts" can imply a high security risk as their password are stored in clear text in the LSA database, which can then be easily exploited using Mimikatz or Cain&amp;Abel for instance. In addition, their passwords don't change and can be used in kerberoast attacks.</value>
+  </data>
+  <data name="P_UnkownDelegation_TechnicalExplanation" xml:space="preserve">
+    <value>In the case where a delegation has been created where the account can't be translated to a NT account, it means that the delegation is actually from another domain or that the user has been deleted. </value>
+  </data>
+  <data name="S_ADRegistration_TechnicalExplanation" xml:space="preserve">
+    <value>By default, a basic user can register up to 10 computers within the domain. This default set up represents a security issue as basic users shouldn't be able to create such accounts, this task being handled by administrators</value>
+  </data>
+  <data name="S_C_Inactive_TechnicalExplanation" xml:space="preserve">
+    <value>Inactive computers often stay in the network because of weaknesses in the decomissioning process. These staled computer accounts can be used as backdoors and therefore represents a possible security breach. </value>
+  </data>
+  <data name="S_C_PrimaryGroup_TechnicalExplanation" xml:space="preserve">
+    <value>In Active Directory, group membersip is stored on the "members" attribute and on the "primarygroupid" attribute. The default primary group value is "Domain Users" for the users, "Domain Computers" for the computers and "Domain Controllers" for the domain controllers. The primarygroupid contains the RID (last digits of a SID) of the group targeted. It can be used to store hidden membership as this attribute is not often analyzed.</value>
+  </data>
+  <data name="S_C_Reversible_TechnicalExplanation" xml:space="preserve">
+    <value>It is possible that domains have accounts with an encryption that can be reversed. In this case, it means that the password is actually stored in clear text in the &lt;i&gt;supplementalCredential&lt;/i&gt; attribute of the account and that it can be retrived using DCSync attack</value>
+  </data>
+  <data name="S_DC_2000_TechnicalExplanation" xml:space="preserve">
+    <value>The OS Windows 2000 as a DC is vulnerable to many publicly known exploits such as MS17-010 or MS14-068 and it can no longer be patched. A domain running this OS version should be considered compromised</value>
+  </data>
+  <data name="S_DC_2003_TechnicalExplanation" xml:space="preserve">
+    <value>The OS Windows 2003 as a DC is vulnerable to many publicly known exploits such as MS14-068 and it is very complicated to patch it at this date. A domain running this OS version should be considered compromised</value>
+  </data>
+  <data name="S_DC_NotUpdated_TechnicalExplanation" xml:space="preserve">
+    <value>Domain Controller needs to be updated regularly because threats to the AD evolve all the time, so assets in the AD should evolve accordingly. The date of last update is computed by getting the &lt;i&gt;StatisticsStartTime&lt;/i&gt; from &lt;i&gt;[net statistics workstation]&lt;/i&gt;. If not available, the PingCastle solution will use the &lt;i&gt;lastLogonTimestamp&lt;/i&gt; attribute which is refreshed based on the LastLogon attribute. Do note that there is a maximum delay for refresh: 14 days.</value>
+  </data>
+  <data name="S_DC_SubnetMissing_TechnicalExplanation" xml:space="preserve">
+    <value>When multiple sites are created in a domain, networks should be declared in the domain in order to optimize processes such as DC attribution. In addition, PingCastle can collect the information to be able to build a network map. This rule has been triggerd because at least one domain controller has an IP address which was not found in subnet declaration.</value>
+  </data>
+  <data name="S_DesEnabled_TechnicalExplanation" xml:space="preserve">
+    <value>DES is very weak algorithm and once assigned to an account, it can be used to sign Kerberos ticket, even though it is easily breakable. It respresents a security risk for the kerberos ticket, therefore for the whole AD</value>
+  </data>
+  <data name="S_Domain____TechnicalExplanation" xml:space="preserve">
+    <value>To migrate accounts to another domain, the attribute SID History should be added to the new account. Despite the fact that numerous hacking tools such as mimikatz allows the creation of the SID History attribute, its official creation requires the presence of a special auditing group named DOMAIN-$$$ such as TEST-$$$ for the TEST domain.</value>
+  </data>
+  <data name="S_Duplicate_TechnicalExplanation" xml:space="preserve">
+    <value>In order to identify a duplicate account, a check is performed on the "DN" and the "sAMAccountName". Indeed, when a DC detects a conflict, there is a replacement performed on the second object</value>
+  </data>
+  <data name="S_Inactive_TechnicalExplanation" xml:space="preserve">
+    <value>Inactive accounts often stay in the network because of weaknesses in the decomissioning process. These staled computer accounts can be used as backdoors and therefore represents a possible security breach. </value>
+  </data>
+  <data name="S_OS_2000_TechnicalExplanation" xml:space="preserve">
+    <value>The Windows 2000 OS is not supported any longer, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
+  </data>
+  <data name="S_OS_2003_TechnicalExplanation" xml:space="preserve">
+    <value>The Windows 2003 OS is not supported any longer, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
+  </data>
+  <data name="S_OS_NT_TechnicalExplanation" xml:space="preserve">
+    <value>The Windows NT OS is not supported any longer, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.
+</value>
+  </data>
+  <data name="S_OS_XP_TechnicalExplanation" xml:space="preserve">
+    <value>The Windows XP OS is not supported any longer, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
+  </data>
+  <data name="S_PrimaryGroup_TechnicalExplanation" xml:space="preserve">
+    <value>In Active Directory, group membersip is stored on the "members" attribute and on the "primarygroupid" attribute. The default primary group value is "Domain Users" for the users, "Domain Computers" for the computers and "Domain Controllers" for the domain controllers. The primarygroupid contains the RID (last digits of a SID) of the group targeted. It can be used to store hidden membership as this attribute is not often analyzed.</value>
+  </data>
+  <data name="S_PwdNotRequired_TechnicalExplanation" xml:space="preserve">
+    <value>An account can be set without a password if it has the flag "PASSWD_NOTREQD" set as "True" in the "useraccountcontrol" attribute. This represents a high security risk as the account is not protected at all without a password</value>
+  </data>
+  <data name="S_Reversible_TechnicalExplanation" xml:space="preserve">
+    <value>It is possible that domains have accounts with an encryption that can be reversed. In this case, it means that the password is actually stored in clear text in the &lt;i&gt;supplementalCredential&lt;/i&gt; attribute of the account and that it can be retrived using DCSync attack</value>
+  </data>
+  <data name="S_SIDHistory_TechnicalExplanation" xml:space="preserve">
+    <value>The SIDHistory attribute is useful when doing a migration because it allows to keep the reference to the former account. On the other hand, once the migration is over, it is mandatory that this attribute is removed to evaluate the permissions in regards with the new account and not the former one.</value>
+  </data>
+  <data name="S_SMB_v1_TechnicalExplanation" xml:space="preserve">
+    <value>The SMB downgrade attack is used to obtain credentials or executing commands on behalf of a user by using SMB v1 as protocol. Indeed, because SMB v1 supports old authentication protocol, the integrity can be bypassed</value>
+  </data>
+  <data name="S_Vuln_MS14_068_TechnicalExplanation" xml:space="preserve">
+    <value>MS14-068 is a critical vulnerability that was published on 2014-11-18. It can be used to very quickly compromise an entiere domain, which is why having DC still vulnerable to this publicly known vulnerability represents a high security risk.</value>
+  </data>
+  <data name="S_Vuln_MS17_010_TechnicalExplanation" xml:space="preserve">
+    <value>MS17-010 is a critical vulnerability that was published on 2014-11-18. It can be used to  compromise an entiere domain via DC compromise. This exploit has been revealed by the Shadow browkers (EternalBlue, EternalRomance, EternalSinergy) and it uses the SMB v1 vulnerability</value>
+  </data>
+  <data name="T_Downlevel_TechnicalExplanation" xml:space="preserve">
+    <value>A Downlevel trust is a special kind of trust compatible with NT4. The kind of trust can be displayed in the "Active Directory Domains and Trusts" tool.</value>
+  </data>
+  <data name="T_Inactive_TechnicalExplanation" xml:space="preserve">
+    <value>When a trust is active, it is using a shared secret to communicate to a domain. This secret is hold an a special account whose name is the remote domain name. This password is changed every month and as consequence the whenChanged attribute of this account is changed. When there is no modification of the whenChanged attribute, it can be guessed that the secret has not being changed and that there was either a problem with the remote domain or that the remote domain does not exist anymore.</value>
+  </data>
+  <data name="T_ScriptOutOfDomain_TechnicalExplanation" xml:space="preserve">
+    <value>Login script can be stored in any file share available in the network and that includes trusted domains shares. If a login script is located in a compromise domain, it can be used to compromise other domains.</value>
+  </data>
+  <data name="T_SIDFiltering_TechnicalExplanation" xml:space="preserve">
+    <value>SID Filtering is a mechanism used to block account presenting a SID History property. SID History is used to link to an existing account to another account and can be use to propagage a compromission through trusts. SID Filtering for domain to domain trust is called quarantine and is disabled by default. SID Filtering to a forest is enabled by default and disabling it is called "enabling SID History".
+
+The algorithm to compute the SID Filtering is:
+get the attribute trustDirection and TrustAttributes of the trust object.
+if the direction is 0 or 1 or if the trust is intra forest (trustattributes &amp; 32 != 0) then SID Filtering is not applicable.
+Then, if the trust is a forest trust (trusattributes &amp; 8 != 0) then
+check if /enablesidhistory has been enabled - trustattributes &amp; 64 != 0.
+If enabled: SID Filtering is deactivated.
+Else if not a forest trust (trustattributes &amp; 8 == 0) then check for the quarantined attribute (trustattributes &amp; 4 != 0).
+If the quarantine flag is set, SID Filtering is enabled.
+
+You can use the powershell command to get its status:
+&lt;i&gt;[System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().GetSidFilteringStatus('my.domain.to.test.local')&lt;/i&gt;
+</value>
+  </data>
+  <data name="T_SIDHistorySameDomain_TechnicalExplanation" xml:space="preserve">
+    <value>SID History is an attribute used in migration to link with a former account. It is not possible to have an account linked with an account belonging to the same domain. This can be analyzed by comparing the domain part of the SID History with the domain SID.</value>
+  </data>
+  <data name="T_SIDHistoryUnknownDomain_TechnicalExplanation" xml:space="preserve">
+    <value>When accounts are migrated from one domain to another, the attribute SID History can be appended to the new account to keep track of its former account. The origin can be tracked by removing the last digit of the SID to guess the SID of the origin domain. If the SID of the origin domain cannot be resolved, that means that the domain has been removed and as consequence that the SID History is not needed. This SID History information can be used to give additional rights and thus alter the real security rights.</value>
+  </data>
+  <data name="A_AdminSDHolder_Documentation" xml:space="preserve">
+    <value>https://msdn.microsoft.com/en-us/library/ms675212(v=vs.85).aspx</value>
+  </data>
+  <data name="A_AnonymousAuthorizedGPO_Documentation" xml:space="preserve">
+    <value>https://technet.microsoft.com/en-us/library/cc963223.aspx https://technet.microsoft.com/en-us/library/jj852184.aspx</value>
+  </data>
+  <data name="A_BackupMetadata_Documentation" xml:space="preserve">
+    <value>https://technet.microsoft.com/en-us/library/jj130668(v=ws.10).aspx</value>
+  </data>
+  <data name="A_DsHeuristicsAnonymous_Documentation" xml:space="preserve">
+    <value>https://msdn.microsoft.com/en-us/library/cc223560.aspx
+https://support.microsoft.com/en-us/help/326690/anonymous-ldap-operations-to-active-directory-are-disabled-on-windows</value>
+  </data>
+  <data name="A_Krbtgt_Documentation" xml:space="preserve">
+    <value>https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51</value>
+  </data>
+  <data name="A_LAPS_Not_Installed_Documentation" xml:space="preserve">
+    <value>https://www.microsoft.com/en-us/download/details.aspx?id=46899</value>
+  </data>
+  <data name="A_LimitBlankPasswordUse_Documentation" xml:space="preserve">
+    <value>https://technet.microsoft.com/en-us/library/jj852174.aspx</value>
+  </data>
+  <data name="A_LMHashAuthorized_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="A_MD2IntermediateCert_Documentation" xml:space="preserve">
+    <value>https://www.ssi.gouv.fr/archive/fr/sciences/fichiers/lcr/mu04c.pdf</value>
+  </data>
+  <data name="A_MD2RootCert_Documentation" xml:space="preserve">
+    <value>https://www.ssi.gouv.fr/archive/fr/sciences/fichiers/lcr/mu04c.pdf</value>
+  </data>
+  <data name="A_MD4IntermediateCert_Documentation" xml:space="preserve">
+    <value>https://tools.ietf.org/html/rfc6150</value>
+  </data>
+  <data name="A_MD4RootCert_Documentation" xml:space="preserve">
+    <value>https://tools.ietf.org/html/rfc6150</value>
+  </data>
+  <data name="A_MD5IntermediateCert_Documentation" xml:space="preserve">
+    <value>https://www.kb.cert.org/vuls/id/836068</value>
+  </data>
+  <data name="A_MD5RootCert_Documentation" xml:space="preserve">
+    <value>https://www.kb.cert.org/vuls/id/836068</value>
+  </data>
+  <data name="A_MembershipEveryone_Documentation" xml:space="preserve">
+    <value>http://social.technet.microsoft.com/wiki/contents/articles/20402.active-directory-group-policy-restricted-groups.aspx</value>
+  </data>
+  <data name="A_MinPwdLen_Documentation" xml:space="preserve">
+    <value>https://www.microsoft.com/en-us/research/publication/password-guidance/</value>
+  </data>
+  <data name="A_NoServicePolicy_Documentation" xml:space="preserve">
+    <value>https://www.microsoft.com/en-us/research/publication/password-guidance/</value>
+  </data>
+  <data name="A_NullSession_Documentation" xml:space="preserve">
+    <value>https://www.sans.org/reading-room/whitepapers/windows/null-sessions-nt-2000-286</value>
+  </data>
+  <data name="A_PreWin2000Anonymous_Documentation" xml:space="preserve">
+    <value>https://msdn.microsoft.com/en-us/library/cc223672.aspx</value>
+  </data>
+  <data name="A_ProtectedUsers_Documentation" xml:space="preserve">
+    <value>https://docs.microsoft.com/en-us/windows-server/security/credentials-protection-and-management/protected-users-security-group</value>
+  </data>
+  <data name="A_PwdGPO_Documentation" xml:space="preserve">
+    <value>https://msdn.microsoft.com/en-us/library/cc422924.aspx</value>
+  </data>
+  <data name="A_ReversiblePwd_Documentation" xml:space="preserve">
+    <value>https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption</value>
+  </data>
+  <data name="A_SHA0IntermediateCert_Documentation" xml:space="preserve">
+    <value>https://tools.ietf.org/html/rfc6194</value>
+  </data>
+  <data name="A_SHA0RootCert_Documentation" xml:space="preserve">
+    <value>https://tools.ietf.org/html/rfc6194</value>
+  </data>
+  <data name="A_SHA1IntermediateCert_Documentation" xml:space="preserve">
+    <value>https://tools.ietf.org/html/rfc6194</value>
+  </data>
+  <data name="A_SHA1RootCert_Documentation" xml:space="preserve">
+    <value>https://tools.ietf.org/html/rfc6194</value>
+  </data>
+  <data name="A_SmartCardRequired_Documentation" xml:space="preserve">
+    <value>https://blogs.technet.microsoft.com/positivesecurity/2017/05/17/smartcard-and-pass-the-hash/</value>
+  </data>
+  <data name="A_WeakRSARootCert_Documentation" xml:space="preserve">
+    <value>https://www.iad.gov/iad/library/ia-guidance/ia-solutions-for-classified/algorithm-guidance/commercial-national-security-algorithm-suite-factsheet.cfm</value>
+  </data>
+  <data name="P_AdminLogin_Documentation" xml:space="preserve">
+    <value>https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/implementing-least-privilege-administrative-models</value>
+  </data>
+  <data name="P_AdminNum_Documentation" xml:space="preserve">
+    <value>https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/implementing-least-privilege-administrative-models</value>
+  </data>
+  <data name="P_DangerousExtendedRight_Documentation" xml:space="preserve">
+    <value>https://technet.microsoft.com/en-us/library/ff405676.aspx</value>
+  </data>
+  <data name="P_DCOwner_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="P_Delegated_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="P_DelegationEveryone_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="P_Inactive_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="P_SchemaAdmin_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="P_ServiceDomainAdmin_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="P_UnkownDelegation_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_ADRegistration_Documentation" xml:space="preserve">
+    <value>http://support.microsoft.com/?id=243327
+http://prajwaldesai.com/allow-domain-user-to-add-computer-to-domain/
+http://blog.backslasher.net/preventing-users-from-adding-computers-to-a-domain.html</value>
+  </data>
+  <data name="S_C_Inactive_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_C_PrimaryGroup_Documentation" xml:space="preserve">
+    <value>https://support.microsoft.com/en-us/help/297951/how-to-use-the-primarygroupid-attribute-to-find-the-primary-group-for</value>
+  </data>
+  <data name="S_C_Reversible_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_DC_2000_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_DC_2003_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_DC_NotUpdated_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_DC_SubnetMissing_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_DesEnabled_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_Domain____Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_Duplicate_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_Inactive_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_OS_2000_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_OS_2003_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_OS_NT_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_OS_XP_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_PrimaryGroup_Documentation" xml:space="preserve">
+    <value>https://support.microsoft.com/en-us/help/297951/how-to-use-the-primarygroupid-attribute-to-find-the-primary-group-for</value>
+  </data>
+  <data name="S_PwdNotRequired_Documentation" xml:space="preserve">
+    <value>https://support.microsoft.com/en-us/kb/305144</value>
+  </data>
+  <data name="S_Reversible_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_SIDHistory_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_SMB_v1_Documentation" xml:space="preserve">
+    <value>https://github.com/lgandx/Responder-Windows
+https://blogs.technet.microsoft.com/josebda/2015/04/21/the-deprecation-of-smb1-you-should-be-planning-to-get-rid-of-this-old-smb-dialect
+ttps://support.microsoft.com/en-us/help/2696547/how-to-enable-and-disable-smbv1,-smbv2,-and-smbv3-in-windows-vista,-windows-server-2008,-windows-7,-windows-server-2008-r2,-windows-8,-and-windows-server-2012</value>
+  </data>
+  <data name="S_Vuln_MS14_068_Documentation" xml:space="preserve">
+    <value>https://technet.microsoft.com/en-us/library/security/ms14-068.aspx </value>
+  </data>
+  <data name="S_Vuln_MS17_010_Documentation" xml:space="preserve">
+    <value>https://blogs.technet.microsoft.com/msrc/2017/04/14/protecting-customers-and-evaluating-risk/ 
+https://github.com/misterch0c/shadowbroker/tree/master/windows/exploits </value>
+  </data>
+  <data name="T_Downlevel_Documentation" xml:space="preserve">
+    <value>https://msdn.microsoft.com/en-us/library/cc223771.aspx</value>
+  </data>
+  <data name="T_Inactive_Documentation" xml:space="preserve">
+    <value>https://msdn.microsoft.com/fr-fr/library/ms680921(v=vs.85).aspx</value>
+  </data>
+  <data name="T_ScriptOutOfDomain_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="T_SIDFiltering_Documentation" xml:space="preserve">
+    <value>https://msdn.microsoft.com/en-us/library/cc237940.aspx</value>
+  </data>
+  <data name="T_SIDHistorySameDomain_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="T_SIDHistoryUnknownDomain_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="A_SMB2SignatureNotEnabled_Title" xml:space="preserve">
+    <value>Check if the file share protocol can sign its network dialog</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequired_Title" xml:space="preserve">
+    <value>Check if the file share protocol requires its client to sign its network dialog</value>
+  </data>
+  <data name="P_DangerousExtendedRight_Title" xml:space="preserve">
+    <value>Check for Dangerous rights found in OU delegation</value>
+  </data>
+  <data name="P_SchemaAdmin_Title" xml:space="preserve">
+    <value>Avoid unexpected schema modifications which could result in domain rebuild</value>
+  </data>
+  <data name="S_C_PrimaryGroup_Title" xml:space="preserve">
+    <value>Check for hidden group membership for computer accounts</value>
+  </data>
+  <data name="S_DC_SubnetMissing_Title" xml:space="preserve">
+    <value>Check for completeness of network declaration</value>
+  </data>
+  <data name="S_Domain____Title" xml:space="preserve">
+    <value>Check if a migration is in progress</value>
+  </data>
+  <data name="S_PrimaryGroup_Title" xml:space="preserve">
+    <value>Check for hidden group membership for user accounts</value>
+  </data>
+  <data name="T_Downlevel_Title" xml:space="preserve">
+    <value>Check for trusts compatible with NT4</value>
+  </data>
+  <data name="T_Inactive_Title" xml:space="preserve">
+    <value>Check for inactive trusts</value>
+  </data>
+  <data name="T_ScriptOutOfDomain_Title" xml:space="preserve">
+    <value>Check if login scripts may be located in a trusted domain</value>
+  </data>
+  <data name="T_SIDFiltering_Title" xml:space="preserve">
+    <value>Check for Trusts whose security is not maximum</value>
+  </data>
+  <data name="T_SIDHistorySameDomain_Title" xml:space="preserve">
+    <value>Check for local backdoor stored in SID History</value>
+  </data>
+  <data name="T_SIDHistoryUnknownDomain_Title" xml:space="preserve">
+    <value>Check if the account has been migrated from a domain which doesn't exist anymore</value>
+  </data>
+  <data name="A_SMB2SignatureNotEnabled_TechnicalExplanation" xml:space="preserve">
+    <value>Python responsder is a tool used to compromise a domain by listening for SMB connections and injecting rogue data into the communications at the network level. SMB v1 does not provide a mechanism to enforce integrity and thus is compromised easily. SMB v2 (and subsequent version SMB v3) provides a way to guarantee the integrity of the network communication via a signature of each packet. By establishing a SMB v2 dialog with domain controllers, PingCastle checks the signature capability by looking at the SMB options provided by the server.</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequired_TechnicalExplanation" xml:space="preserve">
+    <value>Python responsder is a tool used to compromise a domain by listening for SMB connections and injecting rogue data into the communications at the network level. SMB v1 does not provide a mechanism to enforce integrity and thus is compromised easily. SMB v2 (and subsequent version SMB v3) provides a way to guarantee the integrity of the network communication via a signature of each packet. By establishing a SMB v2 dialog with domain controllers, PingCastle checks the signature capability by looking at the SMB options provided by the server.</value>
+  </data>
+  <data name="A_SMB2SignatureNotEnabled_Documentation" xml:space="preserve">
+    <value>https://msdn.microsoft.com/en-us/library/cc246675.aspx</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequired_Documentation" xml:space="preserve">
+    <value>https://msdn.microsoft.com/en-us/library/cc246675.aspx</value>
+  </data>
+  <data name="S_NoPreAuth_Description" xml:space="preserve">
+    <value>The purpose is to ensure that all accounts do support kerberos pre authentication</value>
+  </data>
+  <data name="S_NoPreAuth_Documentation" xml:space="preserve">
+    <value>http://www.harmj0y.net/blog/activedirectory/roasting-as-reps/</value>
+  </data>
+  <data name="S_NoPreAuth_Rationale" xml:space="preserve">
+    <value>Number of accounts which do not require kerberos pre authentication: {count}</value>
+  </data>
+  <data name="S_NoPreAuth_Solution" xml:space="preserve">
+    <value>Edit the property of the accounts and uncheck "Do not require Kerberos preauthentication"</value>
+  </data>
+  <data name="S_NoPreAuth_TechnicalExplanation" xml:space="preserve">
+    <value>Without kerberos preauthentication, an attacker can request kerberos data from the domain controller and use this data to bruteforce the account password. You can search accounts using the ldap query &lt;i&gt;(userAccountControl:1.2.840.113556.1.4.803:=4194304)&lt;/i&gt;</value>
+  </data>
+  <data name="S_NoPreAuth_Title" xml:space="preserve">
+    <value>Check if all accounts do support kerberos pre authentication</value>
+  </data>
+  <data name="P_DelegationLoginScript_Description" xml:space="preserve">
+    <value>The purpose is to ensure that standard users cannot modify login scripts</value>
+  </data>
+  <data name="P_DelegationLoginScript_Documentation" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="P_DelegationLoginScript_Rationale" xml:space="preserve">
+    <value>Number of login scripts that can be modified by any user: {count}</value>
+  </data>
+  <data name="P_DelegationLoginScript_Solution" xml:space="preserve">
+    <value>Edit the Access Control List (ACL) of the script object or the directory where the file is located. Then remove any write permission given to the group.</value>
+  </data>
+  <data name="P_DelegationLoginScript_TechnicalExplanation" xml:space="preserve">
+    <value>When the group Authenticated Users, Everyone or any similar groups have permission to modify a login script, it can be abused to take control of the accounts using this script. It can potentically lead to the compromise of the domain</value>
+  </data>
+  <data name="P_DelegationLoginScript_Title" xml:space="preserve">
+    <value>Ensure that all login scripts cannot be modified by any user</value>
+  </data>
+  <data name="P_DelegationLoginScript_Detail" xml:space="preserve">
+    <value>Script: {0} Account: {1} Right: {2}</value>
+  </data>
+</root>

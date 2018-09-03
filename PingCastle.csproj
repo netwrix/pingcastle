@@ -1,0 +1,300 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{52BBA3C2-A74E-4096-B65F-B88C38F92120}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PingCastle</RootNamespace>
+    <AssemblyName>PingCastle</AssemblyName>
+    <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publier\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>pingcastle.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Data\HealthcheckDataHelper.cs" />
+    <Compile Include="Graph\Database\IDataStorage.cs" />
+    <Compile Include="Graph\Database\LiveDataStorage.cs" />
+    <Compile Include="Graph\Database\MappingType.cs" />
+    <Compile Include="Graph\Database\RelationType.cs" />
+    <Compile Include="Graph\Export\ExportDataFromActiveDirectoryLive.cs" />
+    <Compile Include="ADWS\ADWSConnection.cs" />
+    <Compile Include="ADWS\ADConnection.cs" />
+    <Compile Include="ADWS\LDAPConnection.cs" />
+    <Compile Include="Compatibility.cs" />
+    <Compile Include="Healthcheck\ADModel.cs" />
+    <Compile Include="Healthcheck\DomainKey.cs" />
+    <Compile Include="Healthcheck\DomainLocator.cs" />
+    <Compile Include="Data\HealthcheckDataCollection.cs" />
+    <Compile Include="Data\DataHelper.cs" />
+    <Compile Include="Data\HealthcheckDataHistoryCollection.cs" />
+    <Compile Include="Healthcheck\HealthCheckEncryption.cs" />
+    <Compile Include="Data\HealthCheckBUEntityData.cs" />
+    <Compile Include="Data\CompromiseGraphData.cs" />
+    <Compile Include="Report\HealthCheckReportBase.cs" />
+    <Compile Include="Report\HealthCheckReportCompromiseGraph.cs" />
+    <Compile Include="Report\HealthCheckReportConsolidation.cs" />
+    <Compile Include="Report\HealthCheckReportSingle.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDelegationLoginScript.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalySMB2SignatureNotEnabled.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalySMB2SignatureNotRequired.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAttribute.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledDCSubnetMissing.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyBackupMetadata.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalySchemaProtectedUsers.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyLAPS.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledMS17_010.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledNoPreAuth.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledSMBv1.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledMS14_068.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyMembershipEveryone.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDCOwner.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleTrustSIDHistoryUnknownDomain.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleTrustSIDHistorySameDomain.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaleADRegistrationEnabled.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyCertSHA1Root.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyCertSHA0Root.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyCertMD5Root.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyCertMD4Root.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyCertMD2Root.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyCertWeakRSA.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyCertSHA0Intermediate.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyCertMD2Intermediate.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyCertMD4Intermediate.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleTrustSIDHistoryAuditingGroup.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleTrustLoginScriptOutOfDomain.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyNullSession.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyPreWin2000Anonymous.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyCertSHA1Intermediate.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyCertMD5Intermediate.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyServicePolicy.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyRemoteBlankPasswordUse.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyAnonymousAuthorizedGPO.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyLMHash.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyMinPasswordLen.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyReversiblePassword.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalySmartCardRequired.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyPasswordInGPO.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyAdminSDHolder.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyKrbtgt.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDangerousDelegation.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDelegationEveryone.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedUnknownDelegation.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedSchemaAdmins.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedServiceDomainAdmin.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDelegated.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedAdminInactive.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedAdminNumber.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedAdminLogin.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyDsHeuristicsAnonymous.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleTrustInactive.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleTrustDownlevel.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteDC2003.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteDC2000.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsolete2003.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsolete2000.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteXP.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteNT4.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledDCNotUpdated.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleTrustSIDFiltering.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledDuplicateObjects.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledReversibleEncryptionComputer.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledReversibleEncryption.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledPwdNotRequired.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledDesEnabled.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledPrimaryGroupComputer.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledPrimaryGroup.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledInactiveComputer.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledInactive.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleBase.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledSIDHistory.cs" />
+    <Compile Include="Healthcheck\TrustAnalyzer.cs" />
+    <Compile Include="License.cs" />
+    <Compile Include="Scanners\AccountEnumeratorViaTrust.cs" />
+    <Compile Include="Scanners\IScanner.cs" />
+    <Compile Include="Scanners\ms17_010scanner.cs" />
+    <Compile Include="Scanners\ReplicationScanner.cs" />
+    <Compile Include="Scanners\ScannerBase.cs" />
+    <Compile Include="Scanners\SmbScanner.cs" />
+    <Compile Include="Scanners\startupScanner.cs" />
+    <Compile Include="Scanners\localAdminsEnumerator.cs" />
+    <Compile Include="Scanners\localAdminsScanner.cs" />
+    <Compile Include="misc\BlockingQueue.cs" />
+    <Compile Include="Healthcheck\HealthcheckAnalyzer.cs" />
+    <Compile Include="Data\HealthcheckData.cs" />
+    <Compile Include="Report\HealthCheckReportMapBuilder.cs" />
+    <Compile Include="ADWS\ADItem.cs" />
+    <Compile Include="ADWS\ADDomainInfo.cs" />
+    <Compile Include="Graph\Export\RelationFactory.cs" />
+    <Compile Include="ADWS\ADWebService.cs" />
+    <Compile Include="Graph\Database\Relation.cs" />
+    <Compile Include="Graph\Database\Node.cs" />
+    <Compile Include="Graph\Reporting\ReportGenerator.cs" />
+    <Compile Include="ADWS\soapheader.cs" />
+    <Compile Include="ADWS\wse.cs" />
+    <Compile Include="Healthcheck\HealthcheckRules.cs" />
+    <Compile Include="misc\RegistryPolReader.cs" />
+    <Compile Include="NativeMethods.cs" />
+    <Compile Include="NullSession\lsa.cs" />
+    <Compile Include="NullSession\nativemethods.cs" />
+    <Compile Include="NullSession\nrpc.cs" />
+    <Compile Include="NullSession\nullsession.cs" />
+    <Compile Include="NullSession\rpcapi.cs" />
+    <Compile Include="NullSession\samr.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="shares\ShareEnumerator.cs" />
+    <Compile Include="shares\ShareScanner.cs" />
+    <Compile Include="Tasks.cs" />
+    <Compile Include="template\TemplateManager.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ADWS\wsdl\ActiveDirectory.wsdl" />
+    <None Include="ADWS\wsdl\ActiveDirectory1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ADWS\wsdl\activedirectorydata.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ADWS\wsdl\addressing.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ADWS\wsdl\Arrays.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ADWS\wsdl\DirectoryAccess.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ADWS\wsdl\enumeration.wsdl" />
+    <None Include="ADWS\wsdl\enumeration.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ADWS\wsdl\ldapquery.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ADWS\wsdl\Message.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ADWS\wsdl\regeneratewsdl.bat" />
+    <None Include="ADWS\wsdl\service.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ADWS\wsdl\transfer.wsdl" />
+    <None Include="ADWS\wsdl\transfer.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ADWS\wsdl\wsman.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <EmbeddedResource Include="Healthcheck\Rules\RuleDescription.resx" />
+    <EmbeddedResource Include="template\responsivetemplate.html.gz" />
+    <EmbeddedResource Include="template\vis.min.css.gz" />
+    <EmbeddedResource Include="template\vis.min.js.gz" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="changelog.txt" />
+    <Content Include="pingcastle.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

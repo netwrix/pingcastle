@@ -1,0 +1,102 @@
+2.5.2.0
+* fix a problem when a dc has been removed but not its computer account but its dns record
+* fix a problem when for the rule A-SmartCardRequired which was triggered each time a "smart card required" account was found
+* fix: the decryption process was broken as successful descryption always triggered a failure
+* fix S-DC-SubnetMissing when subnet are duplicated (contains CNF and generated from replication problem)
+* fix NT4 mismatch if the year was not present and include the word "dataceNTer"
+* add a check for "smart card required" for administrator accounts
+* reworked the menu to be more interactive
+
+2.5.0.0
+* rewrote all rules description / rationale / etc
+* added start and end date for exception
+* breaking: change the date at which the exception / migration is evaluated from current date to report generation date
+* new rules: A-SMB2SignatureNotEnabled A-SMB2SignatureNotRequired S-DC-SubnetMissing P-DelegationLoginScript
+* added an experimental scanner for replication usn check
+* allows DNS Admin group to be moved to another OU than CN=Users (as a reminder, the group is selected based on its description)
+* fix logon logoff script label inverted
+* allow users to be in the guest group for their primary group (was Domain Users only before)
+* record more details about the operating systems (and adapt the reload of previous reports)
+* the rule A-LAPS-Not-Installed, previously informative, now scores 15 points. If the local admin password is set at install, the rule should be put in exception.
+* many adaptation to be used with Ping Castle Enterprise
+
+2.4.3.1
+* add schemainfo checks
+* rework the way replication metadata is collected
+
+2.4.3.0
+* fix compatibility problem with windows 2000
+* fix bugs relative to --no-enum-limit, adminsdholder check, sidhistory without whencreated, reloading without threat model
+* add check related to replication metadata (dsasignature, KrbtgtLastVersion)
+* minor changes in the powerpoint reporting (more detail on the reporting frequency)
+* new rule for mandatory AD backup (microsoft procedure)
+* minor change in reporting (alphabetically order for risk model, ...)
+
+2.4.2.0
+* risk model in the healthcheck report
+* checking for LAPS install
+* scanner for ms17-010 (not in healthcheck)
+* small report improvements
+* small bug fixing (ex: if AdminSDHolder denied to authentiated users)
+
+2.4.1.1
+* better Samba compatibility (linux DC)
+* added smb check functionalities & scanner for workstation
+* added support for PSO
+* rewrote "scanner" functionalities to be more user friendly
+* adding dnsadmins as privileged group following https://medium.com/@esnesenon/feature-not-bug-dnsadmin-to-dc-compromise-in-one-line-a0f779b8dc83
+
+2.4.1.0
+* modified the healthcheck report and consolidation to be responsive
+* added in PingCastleReporting the risk map (link between BU & entities)
+* added in PingCastleReporting the Rules report (matched and explanation) and removed --export-hc-rule in PingCastle
+* reworked the report to add a DC view (last startup - for patches, creation date, if presence of null session)
+* add an alert for MS14-068 via startuptime
+* changed P-AdminNum to be less strict (especially for forest root) and A-Krbtgt to be less agressive
+* improve the explanation of some rules
+* various bug fixes in PingCastleReporting
+
+2.4.0.1
+* modified some KPI in PingCastleReporting overview
+* added the flag --smtptls
+* modified the score computation algorithm to take part of migration information in the past (showing evolution of score)
+* modify the bad primary group count by excluding members of guests group
+
+2.4.0.0
+* program rebranded to PingCastle
+* added PingCastleReporting for management reports (powerpoint, history, ...)
+* reworked the advanced module
+  - added the live mode for advanced report
+* handle many domains with the same FQDN (but different sid)
+* rewrote the "Unknown domain" algorithm in xls which is reusing the graph made at consolidation
+* add option to set an exception for all domains (set domain as "*" in the xls file)
+* add all --explore options
+* rules A-LoginScript, P-Disabled and S-PwdNeverExpires disabled
+* added the rule P-DCOwner to check for DC ownership
+* lowering the points to 0 for P-ServiceDomainAdmin if the passwords are changed regulary
+* add netbios / sid information for forest of domains found indirectly (for matching existing domains)
+* modify the simple node graph to add intermediate score and BU/Entity information when available
+* added mail notification option if mail is read & smtp credential on command line
+* added "details" for rules which are difficult to understand without specifics
+* added the domain root for the delegation check
+* disabled the check on dangerous permissions for migration sid history and unexpire password (too much false positives)
+* added sidhistory information for groups to the sidhistory user information (to not forget to remove sidhistory for groups)
+
+2.3.0.1 (cert-ist forum version)
+* add the reachable mode (disabled by default, enabled by default if domain=* and used in interactive mode)
+  This mode scans for domains outside trusts. Discover new domains when run on trusted domains.
+* Reworked the domain maps for visualization and inclusing of the reachable mode data.
+* Add Netbios information in the trust information to be able to match some reachable mode data.
+* Remove the requirement for ADWS. LDAP is used if ADWS is not available (LDAP is far more slower than ADWS)
+
+2.2.1.5
+fix a problem when a distinguished name of an admin contain LDAP request char
+
+2.2.1.4
+fix a problem in the consolidation
+fix a problem if a login script is invalid and cannot be parsed as a url
+
+2.2.1.3
+bug fixing (null session enabled on forest side, PreWin2000 group empty)
+Simplify full graph with bidirectional nodes & red color for unprotected trusts
+add a simplified graph

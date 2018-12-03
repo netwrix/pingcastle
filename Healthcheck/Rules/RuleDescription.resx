@@ -1044,7 +1044,7 @@ It is possible to verify the results provided by the PingCastle solution by usin
     <value>A verification is done on the backups, ensuring that the backup is performed according to Microsoft standard. Indeed at each backup the DIT Database Partition Backup Signature is updated.  if for any reasons, backups are needed to perform a rollback (rebuild a domain) or to track past changes, the backups will actually be up to date. This check is equivalent to a &lt;i&gt;REPADMIN /showbackup *&lt;/i&gt;.</value>
   </data>
   <data name="A_DsHeuristicsAnonymous_TechnicalExplanation" xml:space="preserve">
-    <value>The way an Active Directory behave can be controlled via the attribute &lt;i&gt;DsHeuristics&lt;/i&gt; of &lt;i&gt;CN=Directory Service,CN=Windows NT,CN=Services,CN=Configuration&lt;/i&gt;. A parameter stored in its attribute and whose value is &lt;i&gt;LDAPBlockAnonOps&lt;/i&gt; can be set to allow access without any account on the &lt;b&gt;whole forest level&lt;/b&gt;.
+    <value>The way an Active Directory behave can be controlled via the attribute &lt;i&gt;DsHeuristics&lt;/i&gt; of &lt;i&gt;CN=Directory Service,CN=Windows NT,CN=Services,CN=Configuration&lt;/i&gt;. A parameter stored in its attribute and whose value is &lt;i&gt;fLDAPBlockAnonOps&lt;/i&gt; can be set to allow access without any account on the &lt;b&gt;whole forest level&lt;/b&gt;.
 It is possible to verify the results provided by the PingCastle solution by using a Kali distribution. You should run &lt;i&gt;rpcclient -U " target_ip_address&lt;/i&gt; and press enter at the password prompt to finally type &lt;i&gt;enumdomusers&lt;/i&gt;.</value>
   </data>
   <data name="A_Krbtgt_TechnicalExplanation" xml:space="preserve">

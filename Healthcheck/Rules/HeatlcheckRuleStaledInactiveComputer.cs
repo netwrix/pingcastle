@@ -7,14 +7,16 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("S-C-Inactive", HealthcheckRiskRuleCategory.StaleObjects, HealthcheckRiskModelCategory.InactiveUserOrComputer)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnThreshold, 30, Threshold: 30, Order: 1)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnThreshold, 10, Threshold: 20, Order: 2)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnThreshold, 5, Threshold: 15, Order: 3)]
-    public class HeatlcheckRuleStaledInactiveComputer : HeatlcheckRuleBase
+	[RuleModel("S-C-Inactive", RiskRuleCategory.StaleObjects, RiskModelCategory.InactiveUserOrComputer)]
+	[RuleComputation(RuleComputationType.TriggerOnThreshold, 30, Threshold: 30, Order: 1)]
+	[RuleComputation(RuleComputationType.TriggerOnThreshold, 10, Threshold: 20, Order: 2)]
+	[RuleComputation(RuleComputationType.TriggerOnThreshold, 5, Threshold: 15, Order: 3)]
+	[RuleANSSI("R45", "paragraph.3.6.6.2")]
+    public class HeatlcheckRuleStaledInactiveComputer : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

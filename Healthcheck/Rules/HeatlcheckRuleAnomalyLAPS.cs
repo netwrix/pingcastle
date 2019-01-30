@@ -7,13 +7,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-LAPS-Not-Installed", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.PassTheCredential)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 15)]
-    [HeatlcheckRuleSTIG("V-36438")]
-    public class HeatlcheckRuleAnomalyLAPS : HeatlcheckRuleBase
+	[RuleModel("A-LAPS-Not-Installed", RiskRuleCategory.Anomalies, RiskModelCategory.PassTheCredential)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
+    [RuleSTIG("V-36438", "Local administrator accounts on domain systems must not share the same password.")]
+	[RuleCERTFR("CERTFR-2015-ACT-046", "SECTION00020000000000000000")]
+    public class HeatlcheckRuleAnomalyLAPS : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

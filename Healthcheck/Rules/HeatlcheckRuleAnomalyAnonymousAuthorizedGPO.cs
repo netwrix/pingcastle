@@ -7,12 +7,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-AnonymousAuthorizedGPO", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.Reconnaissance)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-    public class HeatlcheckRuleAnomalyAnonymousAuthorizedGPO : HeatlcheckRuleBase
+	[RuleModel("A-AnonymousAuthorizedGPO", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    public class HeatlcheckRuleAnomalyAnonymousAuthorizedGPO : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

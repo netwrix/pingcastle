@@ -6,16 +6,16 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Text;
 
 namespace PingCastle.ADWS
 {
-	public abstract class ADConnection
+	public abstract class ADConnection : IADConnection
 	{
 
 		public abstract void Enumerate(string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope);
-		public abstract void EnumerateUsingWorkerThread(string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope);
 		public abstract void EstablishConnection();
 
 		public string Server { get; set; }
@@ -52,10 +52,18 @@ namespace PingCastle.ADWS
 
 		public static string EncodeSidToString(string sid)
 		{
-			var realsid = new System.Security.Principal.SecurityIdentifier(sid);
-			var bytesid = new byte[realsid.BinaryLength];
-			realsid.GetBinaryForm(bytesid, 0);
-			return "\\" + BitConverter.ToString(bytesid).Replace("-", "\\");
+			try
+			{
+				var realsid = new System.Security.Principal.SecurityIdentifier(sid);
+				var bytesid = new byte[realsid.BinaryLength];
+				realsid.GetBinaryForm(bytesid, 0);
+				return "\\" + BitConverter.ToString(bytesid).Replace("-", "\\");
+			}
+			catch (ArgumentException)
+			{
+				Trace.WriteLine("Unable to encode " + sid);
+				throw;
+			}
 		}
 	}
 }

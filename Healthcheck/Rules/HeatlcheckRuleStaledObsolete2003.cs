@@ -7,14 +7,16 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("S-OS-2003", HealthcheckRiskRuleCategory.StaleObjects, HealthcheckRiskModelCategory.ObsoleteOS)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnThreshold, 30, Threshold: 15, Order: 1)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnThreshold, 25, Threshold: 6, Order: 2)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 20, Order: 3)]
-    public class HeatlcheckRuleStaledObsolete2003 : HeatlcheckRuleBase
+	[RuleModel("S-OS-2003", RiskRuleCategory.StaleObjects, RiskModelCategory.ObsoleteOS)]
+	[RuleComputation(RuleComputationType.TriggerOnThreshold, 30, Threshold: 15, Order: 1)]
+	[RuleComputation(RuleComputationType.TriggerOnThreshold, 25, Threshold: 6, Order: 2)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 20, Order: 3)]
+	[RuleCERTFR("CERTFR-2005-INF-003", "SECTION00032400000000000000")]
+    public class HeatlcheckRuleStaledObsolete2003 : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

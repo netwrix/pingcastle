@@ -7,12 +7,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-NullSession", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.Reconnaissance)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-    public class HeatlcheckRuleAnomalyNullSession : HeatlcheckRuleBase
+	[RuleModel("A-NullSession", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+	[RuleBSI("M 2.412")]
+    public class HeatlcheckRuleAnomalyNullSession : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

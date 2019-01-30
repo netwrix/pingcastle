@@ -8,12 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-MD2IntermediateCert", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.CertificateTakeOver)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-    public class HeatlcheckRuleAnomalyCertMD2Intermediate : HeatlcheckRuleBase
+	[RuleModel("A-MD2IntermediateCert", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    public class HeatlcheckRuleAnomalyCertMD2Intermediate : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

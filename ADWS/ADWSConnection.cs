@@ -327,72 +327,24 @@ namespace PingCastle.ADWS
 					{
 						foreach (XmlElement item in items.Any)
 						{
-							ADItem aditem = ADItem.Create(item);
-							callback(aditem);
+							ADItem aditem = null;
+							try
+							{
+								aditem = ADItem.Create(item);
+							}
+							catch (Exception ex)
+							{
+								Console.WriteLine("Warning: unable to process element (" + ex.Message + ")\r\n" + item.OuterXml);
+								Trace.WriteLine("Warning: unable to process element\r\n" + item.OuterXml);
+								Trace.WriteLine("Exception: " + ex.Message);
+								Trace.WriteLine(ex.StackTrace);
+							}
+							if (aditem != null)
+								callback(aditem);
 						}
 					}
 				}
 			);
-		}
-
-		// translation securitydescriptor can take of lot of CPU
-		public override void EnumerateUsingWorkerThread(string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope)
-		{
-			BlockingQueue<ItemListType> queue = new BlockingQueue<ItemListType>(600);
-			// background thread
-			Thread workingthread = null;
-			try
-			{
-				workingthread = new Thread(
-					() =>
-					{
-						ItemListType items = null;
-						for (; ; )
-						{
-							if (!queue.Dequeue(out items))
-								break;
-							foreach (XmlElement item in items.Any)
-							{
-								ADItem aditem = ADItem.Create(item);
-								try
-								{
-									callback(aditem);
-								}
-								catch (Exception ex)
-								{
-									Trace.WriteLine("Exception in workerthread:" + ex.Message);
-									Trace.WriteLine(ex.StackTrace);
-								}
-							}
-						}
-						Trace.WriteLine("Exiting worker thread");
-					}
-				);
-
-				ReceiveItems callbackInternal = (ItemListType items)
-				=>
-				{
-					if (items != null)
-					{
-						queue.Enqueue(items);
-					}
-				}
-				;
-
-				workingthread.Start();
-				EnumerateInternalWithADWS(distinguishedName, filter, properties, scope, callbackInternal);
-				Trace.WriteLine("Done enumerating objects at: " + DateTime.Now);
-				queue.Quit();
-				workingthread.Join();
-				Trace.WriteLine("Enumeration using worker thread complete");
-			}
-			finally
-			{
-				queue.Quit();
-				if (workingthread != null)
-					if (workingthread.ThreadState == System.Threading.ThreadState.Running)
-						workingthread.Abort();
-			}
 		}
 
 		XmlQualifiedName[] BuildProperties(List<string> properties)
@@ -535,7 +487,7 @@ namespace PingCastle.ADWS
 					var stringValue = Convert.ToString(stringWriter);
 					Trace.WriteLine("Detail:");
 					Trace.WriteLine(stringValue);
-                    throw new ApplicationException("An ADWS exception occured (fault:" + ex.Message + ";reason:" + ex.Reason + ").\r\nADWS is a faster protocol than LDAP but bound to a default 30 minutes limitation. If this error persists, we recommand to force the LDAP protocol. Run PingCastle with the following switches: --protocol LDAPOnly --interactive");
+					throw new PingCastleException("An ADWS exception occured (fault:" + ex.Message + ";reason:" + ex.Reason + ").\r\nADWS is a faster protocol than LDAP but bound to a default 30 minutes limitation. If this error persists, we recommand to force the LDAP protocol. Run PingCastle with the following switches: --protocol LDAPOnly --interactive");
 				}
 				Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "]Pull successful");
 				if (pullResponse.EndOfSequence != null)

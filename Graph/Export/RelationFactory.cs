@@ -5,7 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.ADWS;
-using PingCastle.Database;
+using PingCastle.Graph.Database;
 using PingCastle.misc;
 using System;
 using System.Collections.Generic;
@@ -40,26 +40,35 @@ namespace PingCastle.Export
             Credential = credential;
         }
 
-        static KeyValuePair<Guid, RelationType>[] GuidsControlExtendedRights = new KeyValuePair<Guid, RelationType>[] { 
+        public static KeyValuePair<Guid, RelationType>[] GuidsControlExtendedRights = new KeyValuePair<Guid, RelationType>[] { 
                     new KeyValuePair<Guid, RelationType>(new Guid("00299570-246d-11d0-a768-00aa006e0529"), RelationType.EXT_RIGHT_FORCE_CHANGE_PWD),
                     new KeyValuePair<Guid, RelationType>(new Guid("1131f6ad-9c07-11d1-f79f-00c04fc2dcd2"), RelationType.EXT_RIGHT_REPLICATION_GET_CHANGES_ALL),
                 };
 
-        static KeyValuePair<Guid, RelationType>[] GuidsControlValidatedWrites = new KeyValuePair<Guid, RelationType>[] { 
+		public static KeyValuePair<Guid, RelationType>[] GuidsControlValidatedWrites = new KeyValuePair<Guid, RelationType>[] { 
                         new KeyValuePair<Guid, RelationType>(new Guid("bc0ac240-79a9-11d0-9020-00c04fc2d4cf"),RelationType.WRITE_PROPSET_MEMBERSHIP),
                     };
 
-        static KeyValuePair<Guid, RelationType>[] GuidsControlProperties = new KeyValuePair<Guid, RelationType>[] { 
+		public static KeyValuePair<Guid, RelationType>[] GuidsControlProperties = new KeyValuePair<Guid, RelationType>[] { 
                         new KeyValuePair<Guid, RelationType>(new Guid("bf9679c0-0de6-11d0-a285-00aa003049e2"),RelationType.WRITE_PROP_MEMBER),
                         new KeyValuePair<Guid, RelationType>(new Guid("f30e3bbe-9ff0-11d1-b603-0000f80367c1"),RelationType.WRITE_PROP_GPLINK),
                         new KeyValuePair<Guid, RelationType>(new Guid("f30e3bc1-9ff0-11d0-b603-0000f80367c1"),RelationType.WRITE_PROP_GPC_FILE_SYS_PATH),
                     };
-        static KeyValuePair<Guid, RelationType>[] GuidsControlPropertiesSets = new KeyValuePair<Guid, RelationType>[] { 
+		public static KeyValuePair<Guid, RelationType>[] GuidsControlPropertiesSets = new KeyValuePair<Guid, RelationType>[] { 
                         new KeyValuePair<Guid, RelationType>(new Guid("bf9679c0-0de6-11d0-a285-00aa003049e2"),RelationType.VAL_WRITE_SELF_MEMBERSHIP),
                     };
 
         public void AnalyzeADObject(ADItem aditem)
         {
+			// avoid reentry which can be caused by primary group id checks
+			if (aditem.ObjectSid != null)
+			{
+				if (Storage.IsSIDAlreadyInserted(aditem.ObjectSid.Value))
+				{
+					Trace.WriteLine("Item " + aditem.DistinguishedName + " has already been analyzed");
+					return;
+				}
+			}
 			Trace.WriteLine("Working on " + aditem.DistinguishedName);
             InsertNode(aditem);
 			if (String.Equals(aditem.Class, "foreignsecurityprincipal", StringComparison.OrdinalIgnoreCase))
@@ -72,7 +81,11 @@ namespace PingCastle.Export
 
         private void InsertNode(ADItem aditem)
         {
-            string shortname = aditem.Name;
+            string shortname = aditem.DisplayName;
+			if (String.IsNullOrEmpty(shortname))
+			{
+				shortname = aditem.Name;
+			}
             //if (aditem.Class.Equals("foreignSecurityPrincipal", StringComparison.InvariantCultureIgnoreCase) && aditem.ObjectSid != null)
             //{
             //    shortname = NativeMethods.ConvertSIDToName(aditem.ObjectSid.Value, null);
@@ -86,12 +99,12 @@ namespace PingCastle.Export
                 else
                     shortname = m.Groups[1].Value;
             }
-            Storage.InsertNode(shortname, aditem.Class, aditem.DistinguishedName, (aditem.ObjectSid != null ? aditem.ObjectSid.Value : null));
+            Storage.InsertNode(shortname, aditem.Class.ToLowerInvariant(), aditem.DistinguishedName, (aditem.ObjectSid != null ? aditem.ObjectSid.Value : null), aditem);
         }
 
         public void InsertFileNode(string file)
         {
-            Storage.InsertNode(file, "file", file, null);
+			Storage.InsertNode(file, "file", file, null, null);
         }
 
         private void AddFileRelation(ADItem aditem)

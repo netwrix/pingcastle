@@ -75,6 +75,7 @@ namespace PingCastle.ADWS
 		public byte[] SchemaInfo { get; set; }
         public string ScriptPath { get; set; }
         public SecurityIdentifier SecurityIdentifier { get; set; }
+		public string[] ServicePrincipalName { get; set; }
         public SecurityIdentifier[] SIDHistory { get; set; }
         public string[] SiteObjectBL { get; set; }
         public int TrustAttributes { get; set; }
@@ -435,6 +436,9 @@ namespace PingCastle.ADWS
                     case "securityIdentifier":
                         aditem.SecurityIdentifier = ExtractSIDValue(child);
                         break;
+					case "servicePrincipalName":
+						aditem.ServicePrincipalName = ExtractStringArrayValue(child);
+						break;
                     case "sIDHistory":
                         aditem.SIDHistory = ExtractSIDArrayValue(child);
                         break;
@@ -646,6 +650,16 @@ namespace PingCastle.ADWS
                     case "securityidentifier":
                         aditem.SecurityIdentifier = new SecurityIdentifier((byte[])sr.Properties[name][0], 0);
                         break;
+					case "serviceprincipalname":
+						{
+							List<string> list = new List<string>();
+							foreach (string data in sr.Properties[name])
+							{
+								list.Add(data);
+							}
+							aditem.ServicePrincipalName = list.ToArray();
+						}
+						break;
                     case "sidhistory":
                         {
                             List<SecurityIdentifier> list = new List<SecurityIdentifier>();

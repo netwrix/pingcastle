@@ -10,12 +10,13 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-WeakRSARootCert", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.CertificateTakeOver)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-    public class HeatlcheckRuleAnomalyCertWeakRSA : HeatlcheckRuleBase
+	[RuleModel("A-WeakRSARootCert", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    public class HeatlcheckRuleAnomalyCertWeakRSA : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

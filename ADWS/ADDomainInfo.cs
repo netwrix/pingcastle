@@ -90,9 +90,10 @@ namespace PingCastle.ADWS
         public static ADDomainInfo Create(DirectoryEntry rootDSE)
         {
             ADDomainInfo info = new ADDomainInfo();
-            info.DefaultNamingContext = rootDSE.Properties["defaultNamingContext"].Value as string;
-            info.ConfigurationNamingContext = rootDSE.Properties["configurationNamingContext"].Value as string;
-            info.DnsHostName = rootDSE.Properties["dnsHostName"].Value as string;
+			Trace.WriteLine("rootDse property count: " + rootDSE.Properties.Count);
+			info.DefaultNamingContext = rootDSE.Properties["defaultNamingContext"].Value as string;
+			info.ConfigurationNamingContext = rootDSE.Properties["configurationNamingContext"].Value as string;
+			info.DnsHostName = rootDSE.Properties["dnsHostName"].Value as string;
 			if (rootDSE.Properties.Contains("domainFunctionality"))
 				info.DomainFunctionality = int.Parse(rootDSE.Properties["domainFunctionality"].Value as string);
 			if (rootDSE.Properties.Contains("forestFunctionality"))

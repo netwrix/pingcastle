@@ -78,8 +78,14 @@ namespace PingCastle
             SidTypeComputer
         }
 
+		public static string ConvertSIDToName(string sidstring, string server)
+		{
+			string referencedDomain = null;
+			return ConvertSIDToName(sidstring, server, out referencedDomain);
+		}
+
         [EnvironmentPermissionAttribute(SecurityAction.Demand, Unrestricted = true)]
-        public static string ConvertSIDToName(string sidstring, string server)
+        public static string ConvertSIDToName(string sidstring, string server, out string referencedDomain)
         {
             StringBuilder name = new StringBuilder();
             uint cchName = (uint)name.Capacity;
@@ -88,6 +94,7 @@ namespace PingCastle
             SID_NAME_USE sidUse;
 
 			SecurityIdentifier securityidentifier = null;
+			referencedDomain = null;
 			try
 			{
 				securityidentifier = new SecurityIdentifier(sidstring);
@@ -116,9 +123,15 @@ namespace PingCastle
                         err = System.Runtime.InteropServices.Marshal.GetLastWin32Error();
                 }
             }
-            if (err == 0)
-                return referencedDomainName + "\\" + name;
-                Trace.WriteLine(@"Error " + err + " when translating " + sidstring + " on " + server);
+			if (err == 0)
+			{
+				referencedDomain = referencedDomainName.ToString();
+				if (String.IsNullOrEmpty(referencedDomain))
+					return name.ToString();
+				else
+					return referencedDomainName + "\\" + name;
+			}
+            Trace.WriteLine(@"Error " + err + " when translating " + sidstring + " on " + server);
             return sidstring;
         }
 
@@ -557,5 +570,46 @@ namespace PingCastle
 				NetApiBufferFree(buffer);
 			}
 		}
+
+		[DllImport("winspool.drv", CharSet = CharSet.Unicode, EntryPoint = "OpenPrinterW", SetLastError = true)]
+		internal static extern bool OpenPrinter(string pPrinterName, out IntPtr phPrinter, IntPtr pDefault);
+
+		[DllImport("winspool.drv", CharSet = CharSet.Unicode, EntryPoint = "ClosePrinter", SetLastError = true)]
+		internal static extern bool ClosePrinter(IntPtr phPrinter);
+
+		[DllImport("Netapi32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true, CharSet = CharSet.Auto)]
+		internal static extern uint DsEnumerateDomainTrusts(string ServerName,
+									uint Flags,
+									out IntPtr Domains,
+									out uint DomainCount);
+
+		[Flags]
+		internal enum DS_DOMAIN_TRUST_TYPE : uint
+		{
+			DS_DOMAIN_IN_FOREST = 0x0001,  // Domain is a member of the forest
+			DS_DOMAIN_DIRECT_OUTBOUND = 0x0002,  // Domain is directly trusted
+			DS_DOMAIN_TREE_ROOT = 0x0004,  // Domain is root of a tree in the forest
+			DS_DOMAIN_PRIMARY = 0x0008,  // Domain is the primary domain of queried server
+			DS_DOMAIN_NATIVE_MODE = 0x0010,  // Primary domain is running in native mode
+			DS_DOMAIN_DIRECT_INBOUND = 0x0020,   // Domain is directly trusting
+			ALL = 0x003F,
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		internal struct DS_DOMAIN_TRUSTS
+		{
+			[MarshalAs(UnmanagedType.LPTStr)]
+			public string NetbiosDomainName;
+			[MarshalAs(UnmanagedType.LPTStr)]
+			public string DnsDomainName;
+			public uint Flags;
+			public uint ParentIndex;
+			public uint TrustType;
+			public uint TrustAttributes;
+			public IntPtr DomainSid;
+			public Guid DomainGuid;
+		}
+
     }
+
 }

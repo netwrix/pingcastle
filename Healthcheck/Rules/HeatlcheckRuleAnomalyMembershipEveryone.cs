@@ -7,12 +7,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-MembershipEveryone", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.LocalGroupVulnerability)]
-	[HeatlcheckRuleComputation(RuleComputationType.PerDiscover, 15)]
-    public class HeatlcheckRuleAnomalyMembershipEveryone : HeatlcheckRuleBase
+	[RuleModel("A-MembershipEveryone", RiskRuleCategory.Anomalies, RiskModelCategory.LocalGroupVulnerability)]
+	[RuleComputation(RuleComputationType.PerDiscover, 15)]
+    public class HeatlcheckRuleAnomalyMembershipEveryone : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

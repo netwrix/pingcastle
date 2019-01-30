@@ -7,12 +7,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("S-PrimaryGroup", HealthcheckRiskRuleCategory.StaleObjects, HealthcheckRiskModelCategory.ObjectConfig)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 15)]
-    public class HeatlcheckRuleStaledPrimaryGroup : HeatlcheckRuleBase
+	[RuleModel("S-PrimaryGroup", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
+    public class HeatlcheckRuleStaledPrimaryGroup : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

@@ -8,12 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("T-ScriptOutOfDomain", HealthcheckRiskRuleCategory.Trusts, HealthcheckRiskModelCategory.TrustImpermeability)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-    public class HeatlcheckRuleTrustLoginScriptOutOfDomain : HeatlcheckRuleBase
+	[RuleModel("T-ScriptOutOfDomain", RiskRuleCategory.Trusts, RiskModelCategory.TrustImpermeability)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    public class HeatlcheckRuleTrustLoginScriptOutOfDomain : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

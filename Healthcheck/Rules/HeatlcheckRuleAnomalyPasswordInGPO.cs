@@ -7,12 +7,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-PwdGPO", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.PasswordRetrieval)]
-	[HeatlcheckRuleComputation(RuleComputationType.PerDiscover, 20)]
-    public class HeatlcheckRuleAnomalyPasswordInGPO : HeatlcheckRuleBase
+	[RuleModel("A-PwdGPO", RiskRuleCategory.Anomalies, RiskModelCategory.PasswordRetrieval)]
+	[RuleComputation(RuleComputationType.PerDiscover, 20)]
+	[RuleCERTFR("CERTFR-2015-ACT-046", "SECTION00020000000000000000")]
+    public class HeatlcheckRuleAnomalyPasswordInGPO : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

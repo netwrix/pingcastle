@@ -7,12 +7,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("P-AdminLogin", HealthcheckRiskRuleCategory.PrivilegedAccounts, HealthcheckRiskModelCategory.AdminControl)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerIfLessThan, 20, Threshold: 35)]
-    public class HeatlcheckRulePrivilegedAdminLogin : HeatlcheckRuleBase
+	[RuleModel("P-AdminLogin", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AdminControl)]
+	[RuleComputation(RuleComputationType.TriggerIfLessThan, 20, Threshold: 35)]
+    public class HeatlcheckRulePrivilegedAdminLogin : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

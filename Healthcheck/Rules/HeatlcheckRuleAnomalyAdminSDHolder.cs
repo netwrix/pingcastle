@@ -7,19 +7,21 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-AdminSDHolder", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.TemporaryAdmins)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnThreshold, 50, Threshold: 50, Order: 1)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnThreshold, 45, Threshold: 45, Order: 2)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnThreshold, 40, Threshold: 40, Order: 3)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnThreshold, 35, Threshold: 35, Order: 4)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnThreshold, 30, Threshold: 30, Order: 5)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnThreshold, 25, Threshold: 25, Order: 6)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnThreshold, 20, Threshold: 20, Order: 7)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 15, Order: 8)]
-    public class HeatlcheckRuleAnomalyAdminSDHolder : HeatlcheckRuleBase
+	[RuleModel("A-AdminSDHolder", RiskRuleCategory.Anomalies, RiskModelCategory.TemporaryAdmins)]
+	[RuleComputation(RuleComputationType.TriggerOnThreshold, 50, Threshold: 50, Order: 1)]
+	[RuleComputation(RuleComputationType.TriggerOnThreshold, 45, Threshold: 45, Order: 2)]
+	[RuleComputation(RuleComputationType.TriggerOnThreshold, 40, Threshold: 40, Order: 3)]
+	[RuleComputation(RuleComputationType.TriggerOnThreshold, 35, Threshold: 35, Order: 4)]
+	[RuleComputation(RuleComputationType.TriggerOnThreshold, 30, Threshold: 30, Order: 5)]
+	[RuleComputation(RuleComputationType.TriggerOnThreshold, 25, Threshold: 25, Order: 6)]
+	[RuleComputation(RuleComputationType.TriggerOnThreshold, 20, Threshold: 20, Order: 7)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 15, Order: 8)]
+	[RuleANSSI("R40", "paragraph.3.6.3.1")]
+    public class HeatlcheckRuleAnomalyAdminSDHolder : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

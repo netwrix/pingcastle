@@ -7,13 +7,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-PreWin2000Anonymous", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.Reconnaissance)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-    [HeatlcheckRuleSTIG("V-8547")]
-    public class HeatlcheckRuleAnomalyPreWin2000Anonymous : HeatlcheckRuleBase
+	[RuleModel("A-PreWin2000Anonymous", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleSTIG("V-8547", "The Anonymous Logon and Everyone groups must not be members of the Pre-Windows 2000 Compatible Access group.")]
+	[RuleBSI("M 2.412")]
+    public class HeatlcheckRuleAnomalyPreWin2000Anonymous : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

@@ -7,12 +7,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Data;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("S-SIDHistory", HealthcheckRiskRuleCategory.StaleObjects, HealthcheckRiskModelCategory.ObjectConfig)]
-	[HeatlcheckRuleComputation(RuleComputationType.PerDiscoverWithAMinimumOf, 5, Threshold: 15)]
-    public class HeatlcheckRuleStaledSIDHistory : HeatlcheckRuleBase
+	[RuleModel("S-SIDHistory", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
+	[RuleComputation(RuleComputationType.PerDiscoverWithAMinimumOf, 5, Threshold: 15)]
+    [RuleANSSI("R15", "paragraph.3.3.1.5")]
+    public class HeatlcheckRuleStaledSIDHistory : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData, ICollection<DomainKey> SourceDomains)
         {

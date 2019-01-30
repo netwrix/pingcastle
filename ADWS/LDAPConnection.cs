@@ -28,12 +28,6 @@ namespace PingCastle.ADWS
 			EnumerateInternalWithLDAP(distinguishedName, filter, properties, scope, callback);
 		}
 
-		public override void EnumerateUsingWorkerThread(string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope)
-		{
-			EnumerateInternalWithLDAP(distinguishedName, filter, properties, scope, callback);
-		}
-
-
 		[SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
 		private void EnumerateInternalWithLDAP(string distinguishedName, string filter, string[] properties, string scope, WorkOnReturnedObjectByADWS callback)
 		{
@@ -46,11 +40,11 @@ namespace PingCastle.ADWS
 			{
 				if (Credential == null)
 				{
-					entry = new DirectoryEntry(@"LDAP://" + Server + "/" + distinguishedName, null, null, AuthenticationTypes.ServerBind | AuthenticationTypes.Secure);
+					entry = new DirectoryEntry(@"LDAP://" + Server + (Port == 0 ? null : ":" + Port) + "/" + distinguishedName, null, null, AuthenticationTypes.ServerBind | AuthenticationTypes.Secure | (Port == 636 ? AuthenticationTypes.SecureSocketsLayer:0));
 				}
 				else
 				{
-					entry = new DirectoryEntry(@"LDAP://" + Server + "/" + distinguishedName, Credential.UserName, Credential.Password, AuthenticationTypes.ServerBind | AuthenticationTypes.Secure);
+					entry = new DirectoryEntry(@"LDAP://" + Server + (Port == 0 ? null : ":" + Port) + "/" + distinguishedName, Credential.UserName, Credential.Password, AuthenticationTypes.ServerBind | AuthenticationTypes.Secure | (Port == 636 ? AuthenticationTypes.SecureSocketsLayer : 0));
 				}
 
 				DirectorySearcher clsDS = new DirectorySearcher(entry);
@@ -83,8 +77,20 @@ namespace PingCastle.ADWS
 				Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "]Calling FindAll");
 				foreach (SearchResult sr in clsDS.FindAll())
 				{
-					ADItem aditem = ADItem.Create(sr, nTSecurityDescriptor);
-					callback(aditem);
+					ADItem aditem = null;
+					try
+					{
+						aditem = ADItem.Create(sr, nTSecurityDescriptor);
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine("Warning: unable to process element (" + ex.Message + ")\r\n" + sr.Path);
+						Trace.WriteLine("Warning: unable to process element\r\n" + sr.Path);
+						Trace.WriteLine("Exception: " + ex.Message);
+						Trace.WriteLine(ex.StackTrace);
+					}
+					if (aditem != null)
+						callback(aditem);
 					numberOfObjectAlreadyExtracted++;
 				}
 				Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "]Enumeration successful");
@@ -114,6 +120,14 @@ namespace PingCastle.ADWS
 		private ADDomainInfo GetLDAPDomainInfo()
 		{
 			DirectoryEntry rootDse = new DirectoryEntry("LDAP://" + Server + "/RootDSE");
+			if (Credential == null)
+			{
+				rootDse = new DirectoryEntry(@"LDAP://" + Server + (Port == 0 ? null : ":" + Port) + "/RootDSE", null, null, AuthenticationTypes.ServerBind | AuthenticationTypes.Secure | (Port == 636 ? AuthenticationTypes.SecureSocketsLayer : 0));
+			}
+			else
+			{
+				rootDse = new DirectoryEntry(@"LDAP://" + Server + (Port == 0 ? null : ":" + Port) + "/RootDSE", Credential.UserName, Credential.Password, AuthenticationTypes.ServerBind | AuthenticationTypes.Secure | (Port == 636 ? AuthenticationTypes.SecureSocketsLayer : 0));
+			}
 			return ADDomainInfo.Create(rootDse);
 		}
 

@@ -145,7 +145,7 @@
     <value>The purpose is to ensure that the minimum set of subnet as been configured in the domain</value>
   </data>
   <data name="S_DC_SubnetMissing_Solution" xml:space="preserve">
-    <value>Locate the IP address which was found as not being part of declared subnet then add this subnet to the "Active Directory Sites" tool.</value>
+    <value>Locate the IP address which was found as not being part of declared subnet then add this subnet to the "Active Directory Sites" tool. If you found IPv6 addresses and it was not expected, you should disable in addition the protocol IPv6 on the network card.</value>
   </data>
   <data name="S_DC_SubnetMissing_Rationale" xml:space="preserve">
     <value>The subnet declaration is incomplete [{count} ip of DC not found in declared subnets]</value>
@@ -235,7 +235,8 @@
   <data name="P_DCOwner_Solution" xml:space="preserve">
     <value>To solve this security issue, you should change the ownership of the domain controller to match the "Domain Administrators" group.
 To control the ownership of domain controller objects, you can use the following powershell command: 
-&lt;i&gt;Get-ADComputer -server my.domain.to.check -LDAPFilter "(&amp;(objectCategory=computer)(|(primarygroupid=521)(primarygroupid=516)))" -properties name, ntsecuritydescriptor | select name,{$_.ntsecuritydescriptor.Owner}&lt;/i&gt;.</value>
+&lt;i&gt;Get-ADComputer -server my.domain.to.check -LDAPFilter "(&amp;(objectCategory=computer)(|(primarygroupid=521)(primarygroupid=516)))" -properties name, ntsecuritydescriptor | select name,{$_.ntsecuritydescriptor.Owner}&lt;/i&gt;.
+To change it, you can edit the owner of an object using &lt;a href="https://docs.microsoft.com/en-us/sysinternals/downloads/adexplorer"&gt;adexplorer.exe&lt;/a&gt;. First, locate the dc object then right click to select properties. Open the security tab and press the advanced button. You have then a new dialog with an owner tab. Select the owner and change it for the domain administrators group. You’re done (no reboot needed)</value>
   </data>
   <data name="P_DCOwner_Rationale" xml:space="preserve">
     <value>{count} domain controller(s) have been found where the owner is not the Domain admins group or the Enterprise admins group</value>
@@ -388,7 +389,7 @@ To control the ownership of domain controller objects, you can use the following
     <value>The purpose is to ensure that the SID History creation is not enabled</value>
   </data>
   <data name="S_Domain____Solution" xml:space="preserve">
-    <value>If a migration is in progress, declare it in PingCastle so this rule won't be triggered. Else, remove this auditing group.</value>
+    <value>If a migration is in progress, declare it in PingCastle so this rule won't be triggered. Else, remove this auditing group. You can locate it by using the LDAP query (sAMAccountNmae=*$$$)</value>
   </data>
   <data name="S_Domain____Rationale" xml:space="preserve">
     <value>The SIDHistory auditing group is present: SID History creation is enabled</value>
@@ -623,7 +624,7 @@ There are several possibilities to change the krbtgt password. First, a Microsof
     <value>The purpose is to ensure that all Administrator Accounts have the configuration flag "this account is sensitive and cannot be delegated"</value>
   </data>
   <data name="P_Delegated_Solution" xml:space="preserve">
-    <value>To correct the situation, you should make sure that all your Administrator Accounts has the checkbox "This account is sensitive and cannot be delegated" active.</value>
+    <value>To correct the situation, you should make sure that all your Administrator Accounts has the checkbox "This account is sensitive and cannot be delegated" active. Please not that there is a section bellow in this report named "Admin Groups" which give more information.</value>
   </data>
   <data name="P_Delegated_Rationale" xml:space="preserve">
     <value>Presence of Admin accounts which have not the flag "this account is sensitive and cannot be delegated": {count}</value>
@@ -653,7 +654,16 @@ There are several possibilities to change the krbtgt password. First, a Microsof
     <value>The purpose is to verify if the Native Administrator account is used.</value>
   </data>
   <data name="P_AdminLogin_Solution" xml:space="preserve">
-    <value>To mitigate the security risk, a good practice is to use the Native Administrator account only for emergency, while the daily work is performed through other accounts. It is indeed strongly recommended to not use this account but to use nominative account for administrators and dedicated account for services.Do note that the anomaly will be removed 35 days after the last native administrator login.</value>
+    <value>To mitigate the security risk, a good practice is to use the Native Administrator account only for emergency, while the daily work is performed through other accounts.
+    It is indeed strongly recommended to not use this account but to use nominative account for administrators and dedicated account for services.
+    Do note that the anomaly will be removed 35 days after the last native administrator login.
+  
+  To track where the administrator account has been used for the last time, we recommend to extract the attribute LastLogon of the administrator account on ALL domain controllers.
+  It can be done with tools such as ADSIEdit or ADExplorer.
+  Then, for each domain controller, extract the events 4624 at the date matching the LastLogon date. You will identify the computer and the process at the origin of the logon event.
+  
+  Please note that PingCastle relies on the attribute LastLogonTimestamp to perform this check. The LastLogonTimestamp attribute is replicated but has a latency of a maximum of 14 days, while LastLogon is updated at each logon and is more accurate but not replicated.
+    </value>
   </data>
   <data name="P_AdminLogin_Rationale" xml:space="preserve">
     <value>The native administrator account has been used recently: {count} day(s) ago</value>
@@ -762,7 +772,7 @@ There are several possibilities to change the krbtgt password. First, a Microsof
   </data>
   <data name="T_SIDFiltering_Solution" xml:space="preserve">
     <value>A trust without SID Filtering means either that a migration is in progress or that the domain can be compromised instantly via the trust.
-The solution is to complete exisring migration ASAP and enable the SID Filtering feature
+The solution is to complete existing migration ASAP and enable the SID Filtering feature
 
 If the trust is a domain trust, you should use netdom /quarantine and set it to yes
 If the trust is a forest trust, you should use netdom /enablesidhistory and set it to no
@@ -787,7 +797,7 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
     <value>The purpose is to verify if there are accounts currently running with a reversible password</value>
   </data>
   <data name="S_C_Reversible_Solution" xml:space="preserve">
-    <value>To remove this risk, there should be no account with reversible encryption. You should remove them by removing the flag "Store password using reversible encryption" on all accounts, so that the cleartext password is removed at the next password change. You can get a list of all the possibly compromised accounts running the followinng powershell command: &lt;i&gt;get-adobject -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=128)" -properties useraccountcontrol&lt;/i&gt;</value>
+    <value>To remove this risk, there should be no account with reversible encryption. You should remove them by removing the flag "Store password using reversible encryption" on all accounts, so that the cleartext password is removed at the next password change. You can get a list of all the possibly compromised accounts running the following powershell command: &lt;i&gt;get-adobject -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=128)" -properties useraccountcontrol&lt;/i&gt;</value>
   </data>
   <data name="S_C_Reversible_Rationale" xml:space="preserve">
     <value>Number of computers which have a reversible password: {count}</value>
@@ -796,7 +806,7 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
     <value>The purpose is to verify if there are user accounts currently running with a reversible password</value>
   </data>
   <data name="S_Reversible_Solution" xml:space="preserve">
-    <value>To remove this risk, there should be no account with reversible encryption. You should remove them by removing the flag "Store password using reversible encryption" on all accounts, so that the cleartext password is removed at the next password change. You can get a list of all the possibly compromised accounts running the followinng powershell command: &lt;i&gt;get-adobject -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=128)" -properties useraccountcontrol&lt;/i&gt;</value>
+    <value>To remove this risk, there should be no account with reversible encryption. You should remove them by removing the flag "Store password using reversible encryption" on all accounts, so that the cleartext password is removed at the next password change. You can get a list of all the possibly compromised accounts running the following powershell command: &lt;i&gt;get-adobject -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=128)" -properties useraccountcontrol&lt;/i&gt;</value>
   </data>
   <data name="S_Reversible_Rationale" xml:space="preserve">
     <value>Number of accounts which have a reversible password: {count}</value>
@@ -805,7 +815,7 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
     <value>The purpose is to ensure that there is every account requires a password</value>
   </data>
   <data name="S_PwdNotRequired_Solution" xml:space="preserve">
-    <value>The best solution to solve the problem is to change the "useraccountcontrol" attribue of all the accounts that have it and that are not used in trusts. If the flag is removed while there is no password set, you will have an error. You can use this to detect passwords without any accounts. Do note that you can manually check all the accounts that need to be worked on using the following powershell command: &lt;i&gt;get-adobject -ldapfilter "(&amp;(objectCategory=person)(objectClass=user)(userAccountControl:1.2.840.113556.1.4.803:=32))" -properties useraccountcontrol&lt;/i&gt;</value>
+    <value>The best solution to solve the problem is to change the "useraccountcontrol" attribue of all the accounts that have it and that are not used in trusts. If the flag is removed while there is no password set, you will have an error. You can use this to detect accounts without any passwords. Do note that you can manually check all the accounts that need to be worked on using the following powershell command: &lt;i&gt;get-adobject -ldapfilter "(&amp;(objectCategory=person)(objectClass=user)(userAccountControl:1.2.840.113556.1.4.803:=32))" -properties useraccountcontrol&lt;/i&gt;</value>
   </data>
   <data name="S_PwdNotRequired_Rationale" xml:space="preserve">
     <value>Number of accounts which can have an empty password (can be overriden by GPO): {count}</value>
@@ -826,7 +836,7 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
     <value>Unless stronly justified, change the primary group id to its default. 513 or 514 for users, 516 or 521 for domain controllers, 514 or 515 for computers. The primary group can be edited in a friendly manner by editing the account with the "Active Directory Users and Computers" and after selecting the "Member Of" tab, "set primary group".</value>
   </data>
   <data name="S_C_PrimaryGroup_Rationale" xml:space="preserve">
-    <value>Presence of wrong primary group: {count}</value>
+    <value>Presence of wrong primary group for computers: {count}</value>
   </data>
   <data name="S_PrimaryGroup_Description" xml:space="preserve">
     <value>The purpose is to check for unsual value in the primarygroupid attribute used to store group membership</value>
@@ -835,13 +845,13 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
     <value>Unless stronly justified, change the primary group id to its default. 513 or 514 for users, 516 or 521 for domain controllers, 514 or 515 for computers. The primary group can be edited in a friendly manner by editing the account with the "Active Directory Users and Computers" and after selecting the "Member Of" tab, "set primary group".</value>
   </data>
   <data name="S_PrimaryGroup_Rationale" xml:space="preserve">
-    <value>Presence of wrong primary group: {count}</value>
+    <value>Presence of wrong primary group for users: {count}</value>
   </data>
   <data name="S_C_Inactive_Description" xml:space="preserve">
     <value>The purpose is to ensure that there are as few inactive computers as possible within the domain</value>
   </data>
   <data name="S_C_Inactive_Solution" xml:space="preserve">
-    <value>To mitigate the risk, you should monitore the number of inactive accounts and reduce it as much as possible. A list of all inactive accounts is obtainable through the command: &lt;i&gt;Search-ADaccount -ComputersOnly -AccountInactive -Timespan 180&lt;/i&gt;.</value>
+    <value>To mitigate the risk, you should monitor the number of inactive accounts and reduce it as much as possible. A list of all inactive accounts is obtainable through the command: &lt;i&gt;Search-ADaccount -ComputersOnly -AccountInactive -Timespan 180&lt;/i&gt;.</value>
   </data>
   <data name="S_C_Inactive_Rationale" xml:space="preserve">
     <value>Relatively high number of inactive computer accounts: {count}% (more than {threshold}% of all computers)</value>
@@ -905,7 +915,7 @@ Each security descriptor of the domain (including file shares for example) shoul
     <value>Retrieve data from the domain without any account</value>
   </data>
   <data name="S_ADRegistration_Title" xml:space="preserve">
-    <value>Check the procesuss of registration of computers to the domain</value>
+    <value>Check the processus of registration of computers to the domain</value>
   </data>
   <data name="A_ProtectedUsers_Title" xml:space="preserve">
     <value>Check for presence of the Protected users group</value>
@@ -1044,7 +1054,7 @@ It is possible to verify the results provided by the PingCastle solution by usin
     <value>A verification is done on the backups, ensuring that the backup is performed according to Microsoft standard. Indeed at each backup the DIT Database Partition Backup Signature is updated.  if for any reasons, backups are needed to perform a rollback (rebuild a domain) or to track past changes, the backups will actually be up to date. This check is equivalent to a &lt;i&gt;REPADMIN /showbackup *&lt;/i&gt;.</value>
   </data>
   <data name="A_DsHeuristicsAnonymous_TechnicalExplanation" xml:space="preserve">
-    <value>The way an Active Directory behave can be controlled via the attribute &lt;i&gt;DsHeuristics&lt;/i&gt; of &lt;i&gt;CN=Directory Service,CN=Windows NT,CN=Services,CN=Configuration&lt;/i&gt;. A parameter stored in its attribute and whose value is &lt;i&gt;LDAPBlockAnonOps&lt;/i&gt; can be set to allow access without any account on the &lt;b&gt;whole forest level&lt;/b&gt;.
+    <value>The way an Active Directory behave can be controlled via the attribute &lt;i&gt;DsHeuristics&lt;/i&gt; of &lt;i&gt;CN=Directory Service,CN=Windows NT,CN=Services,CN=Configuration&lt;/i&gt;. A parameter stored in its attribute and whose value is &lt;i&gt;fLDAPBlockAnonOps&lt;/i&gt; can be set to allow access without any account on the &lt;b&gt;whole forest level&lt;/b&gt;.
 It is possible to verify the results provided by the PingCastle solution by using a Kali distribution. You should run &lt;i&gt;rpcclient -U " target_ip_address&lt;/i&gt; and press enter at the password prompt to finally type &lt;i&gt;enumdomusers&lt;/i&gt;.</value>
   </data>
   <data name="A_Krbtgt_TechnicalExplanation" xml:space="preserve">
@@ -1160,7 +1170,7 @@ Do note that the AES key used to encrypt password in the GPO has been made publi
     <value>By default, a basic user can register up to 10 computers within the domain. This default set up represents a security issue as basic users shouldn't be able to create such accounts, this task being handled by administrators</value>
   </data>
   <data name="S_C_Inactive_TechnicalExplanation" xml:space="preserve">
-    <value>Inactive computers often stay in the network because of weaknesses in the decomissioning process. These staled computer accounts can be used as backdoors and therefore represents a possible security breach. </value>
+    <value>Inactive computers often stay in the network because of weaknesses in the decomissioning process. These stale computer accounts can be used as backdoors and therefore represents a possible security breach. </value>
   </data>
   <data name="S_C_PrimaryGroup_TechnicalExplanation" xml:space="preserve">
     <value>In Active Directory, group membersip is stored on the "members" attribute and on the "primarygroupid" attribute. The default primary group value is "Domain Users" for the users, "Domain Computers" for the computers and "Domain Controllers" for the domain controllers. The primarygroupid contains the RID (last digits of a SID) of the group targeted. It can be used to store hidden membership as this attribute is not often analyzed.</value>
@@ -1178,7 +1188,7 @@ Do note that the AES key used to encrypt password in the GPO has been made publi
     <value>Domain Controller needs to be updated regularly because threats to the AD evolve all the time, so assets in the AD should evolve accordingly. The date of last update is computed by getting the &lt;i&gt;StatisticsStartTime&lt;/i&gt; from &lt;i&gt;[net statistics workstation]&lt;/i&gt;. If not available, the PingCastle solution will use the &lt;i&gt;lastLogonTimestamp&lt;/i&gt; attribute which is refreshed based on the LastLogon attribute. Do note that there is a maximum delay for refresh: 14 days.</value>
   </data>
   <data name="S_DC_SubnetMissing_TechnicalExplanation" xml:space="preserve">
-    <value>When multiple sites are created in a domain, networks should be declared in the domain in order to optimize processes such as DC attribution. In addition, PingCastle can collect the information to be able to build a network map. This rule has been triggerd because at least one domain controller has an IP address which was not found in subnet declaration.</value>
+    <value>When multiple sites are created in a domain, networks should be declared in the domain in order to optimize processes such as DC attribution. In addition, PingCastle can collect the information to be able to build a network map. This rule has been triggered because at least one domain controller has an IP address which was not found in subnet declaration. These IP addresses have been collected by querying the DC FQDN IP address in both IPv6 and IPv4 format.</value>
   </data>
   <data name="S_DesEnabled_TechnicalExplanation" xml:space="preserve">
     <value>DES is very weak algorithm and once assigned to an account, it can be used to sign Kerberos ticket, even though it is easily breakable. It respresents a security risk for the kerberos ticket, therefore for the whole AD</value>
@@ -1190,7 +1200,7 @@ Do note that the AES key used to encrypt password in the GPO has been made publi
     <value>In order to identify a duplicate account, a check is performed on the "DN" and the "sAMAccountName". Indeed, when a DC detects a conflict, there is a replacement performed on the second object</value>
   </data>
   <data name="S_Inactive_TechnicalExplanation" xml:space="preserve">
-    <value>Inactive accounts often stay in the network because of weaknesses in the decomissioning process. These staled computer accounts can be used as backdoors and therefore represents a possible security breach. </value>
+    <value>Inactive accounts often stay in the network because of weaknesses in the decomissioning process. These stale computer accounts can be used as backdoors and therefore represents a possible security breach. </value>
   </data>
   <data name="S_OS_2000_TechnicalExplanation" xml:space="preserve">
     <value>The Windows 2000 OS is not supported any longer, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
@@ -1230,7 +1240,7 @@ Do note that the AES key used to encrypt password in the GPO has been made publi
     <value>A Downlevel trust is a special kind of trust compatible with NT4. The kind of trust can be displayed in the "Active Directory Domains and Trusts" tool.</value>
   </data>
   <data name="T_Inactive_TechnicalExplanation" xml:space="preserve">
-    <value>When a trust is active, it is using a shared secret to communicate to a domain. This secret is hold an a special account whose name is the remote domain name. This password is changed every month and as consequence the whenChanged attribute of this account is changed. When there is no modification of the whenChanged attribute, it can be guessed that the secret has not being changed and that there was either a problem with the remote domain or that the remote domain does not exist anymore.</value>
+    <value>When a trust is active, it is using a shared secret to communicate to a domain. This secret is hold in a special account whose name is the remote domain name. This password is changed every month and as consequence the whenChanged attribute of this account is changed. When there is no modification of the whenChanged attribute, it can be guessed that the secret has not being changed and that there was either a problem with the remote domain or that the remote domain does not exist anymore.</value>
   </data>
   <data name="T_ScriptOutOfDomain_TechnicalExplanation" xml:space="preserve">
     <value>Login script can be stored in any file share available in the network and that includes trusted domains shares. If a login script is located in a compromise domain, it can be used to compromise other domains.</value>
@@ -1528,7 +1538,7 @@ https://github.com/misterch0c/shadowbroker/tree/master/windows/exploits </value>
     <value>Number of accounts which do not require kerberos pre authentication: {count}</value>
   </data>
   <data name="S_NoPreAuth_Solution" xml:space="preserve">
-    <value>Edit the property of the accounts and uncheck "Do not require Kerberos preauthentication"</value>
+    <value>Edit the property of the involved accounts and select the Account tab. Uncheck "Do not require Kerberos preauthentication". For computers which doesn't have the Account tab, you have to manually edit the attribute useraccountcontrol. Substract from the attribute the value 4194304.</value>
   </data>
   <data name="S_NoPreAuth_TechnicalExplanation" xml:space="preserve">
     <value>Without kerberos preauthentication, an attacker can request kerberos data from the domain controller and use this data to bruteforce the account password. You can search accounts using the ldap query &lt;i&gt;(userAccountControl:1.2.840.113556.1.4.803:=4194304)&lt;/i&gt;</value>
@@ -1556,5 +1566,399 @@ https://github.com/misterch0c/shadowbroker/tree/master/windows/exploits </value>
   </data>
   <data name="P_DelegationLoginScript_Detail" xml:space="preserve">
     <value>Script: {0} Account: {1} Right: {2}</value>
+  </data>
+  <data name="A_DC_Spooler_Title" xml:space="preserve">
+    <value>Ensure that the printer spooler cannot be abused to get the DC Credentials</value>
+  </data>
+  <data name="A_DC_Spooler_Description" xml:space="preserve">
+    <value>The purpose is to ensure that credentials cannot be extracted from the DC via its printer spooler</value>
+  </data>
+  <data name="A_DC_Spooler_Solution" xml:space="preserve">
+    <value>The spooler service should be deactived on domain controllers. Please note as a consequence that the Printer Pruning functionality (rarely used) will be unavailable.</value>
+  </data>
+  <data name="A_DC_Spooler_Rationale" xml:space="preserve">
+    <value>The spooler service is remotely acccessible from {count} DC</value>
+  </data>
+  <data name="A_DC_Spooler_TechnicalExplanation" xml:space="preserve">
+    <value>When there’s an account with unconstrained delegation configured (which is fairly common) and the Print Spooler service running on a computer, you can get that computers credentials sent to the system with unconstrained delegation as a user. With a domain controller, the TGT of the DC can be extracted allowing an attacker to reuse it with a DCSync attack and obtain all user hashes and impersonate them.</value>
+  </data>
+  <data name="A_DC_Spooler_Detail" xml:space="preserve">
+    <value>Domain Controller {0}</value>
+  </data>
+  <data name="A_DC_Spooler_Documentation" xml:space="preserve">
+    <value>https://adsecurity.org/?p=4056
+https://www.slideshare.net/harmj0y/derbycon-the-unintended-risks-of-trusting-active-directory</value>
+  </data>
+  <data name="A_NotEnoughDC_Title" xml:space="preserve">
+    <value>Ensure that there are enough DC to provide basic redundancy</value>
+  </data>
+  <data name="A_NotEnoughDC_Description" xml:space="preserve">
+    <value>The purpose is to ensure the failure of one domain controller will not stop the domain.</value>
+  </data>
+  <data name="A_NotEnoughDC_Solution" xml:space="preserve">
+    <value>Increase the number of domain controllers by installing new ones.</value>
+  </data>
+  <data name="A_NotEnoughDC_Rationale" xml:space="preserve">
+    <value>The number of DC is too small to provide redundancy: {count} DC</value>
+  </data>
+  <data name="A_NotEnoughDC_TechnicalExplanation" xml:space="preserve">
+    <value>A single domain controller failure can lead to a lack of availability of the domain if the number of servers is too low. To have a minimum redundancy, the number of DC should be at least 2. For Labs, this rule can be ignored and you can add this rule into the exception list.</value>
+  </data>
+  <data name="A_NotEnoughDC_Documentation" xml:space="preserve">
+    <value>https://social.technet.microsoft.com/wiki/contents/articles/14355.capacity-planning-for-active-directory-domain-services.aspx</value>
+  </data>
+  <data name="P_UnconstrainedDelegation_Title" xml:space="preserve">
+    <value>Ensure that no accounts are subject to unconstrained delegation</value>
+  </data>
+  <data name="P_UnconstrainedDelegation_Description" xml:space="preserve">
+    <value>The purpose is to ensure no account can impersonate any account.</value>
+  </data>
+  <data name="P_UnconstrainedDelegation_Solution" xml:space="preserve">
+    <value>Replace unconstrained delegation by contrained delegation. In practice, on the account object, tab "delegation", replace "trust this computer for delegation to any service" by "trust this computer for delegation to specified services only".</value>
+  </data>
+  <data name="P_UnconstrainedDelegation_Rationale" xml:space="preserve">
+    <value>Unconstrained delegations are configured on the domain: {count} account(s)</value>
+  </data>
+  <data name="P_UnconstrainedDelegation_TechnicalExplanation" xml:space="preserve">
+    <value>When an unconstrained delegation is configured, the kerberos ticket TGT can be captured. This TGT grant then access to any service the user has access. If the user is administor or a domain controller (a connection can be forced using the spooler service), the domain can be compromised.</value>
+  </data>
+  <data name="P_UnconstrainedDelegation_Documentation" xml:space="preserve">
+    <value>https://blogs.technet.microsoft.com/389thoughts/2017/04/18/get-rid-of-accounts-that-use-kerberos-unconstrained-delegation/
+https://adsecurity.org/?p=1667</value>
+  </data>
+  <data name="P_UnconstrainedDelegation_Detail" xml:space="preserve">
+    <value>{0},{1}</value>
+  </data>
+  <data name="P_ExchangeAdminSDHolder_Title" xml:space="preserve">
+    <value>Ensure that Exchange did not modify the AdminSDHolder object to introduce vulnerabilities</value>
+  </data>
+  <data name="P_ExchangeAdminSDHolder_Description" xml:space="preserve">
+    <value>The purpose is to ensure that no weakness has been introduced at Exchange installation.</value>
+  </data>
+  <data name="P_ExchangeAdminSDHolder_Solution" xml:space="preserve">
+    <value>After having carefuly studied the possible impact of the following change, alter the AdminSDHolder permissions to remove the Exchange objects.</value>
+  </data>
+  <data name="P_ExchangeAdminSDHolder_Rationale" xml:space="preserve">
+    <value>Exchange did alter the AdminSDHolder object</value>
+  </data>
+  <data name="P_ExchangeAdminSDHolder_TechnicalExplanation" xml:space="preserve">
+    <value>At install time, the Exchange Windows Permissions universal security group (USG) was granted the ability to modify the members attribute, the ability to change and reset passwords, and the ability to modify the permissions of any object protected by the AdminSDHolder role.
+    This security group includes all the Exchange servers.
+    As a consequence, a malicious administrator could elevate their privileges on one of this server and thus gain control of the Active Directory forest.
+    Newest versions of Exchange do not introduce this security vulnerability.</value>
+  </data>
+  <data name="P_ExchangeAdminSDHolder_Documentation" xml:space="preserve">
+    <value>https://blogs.technet.microsoft.com/exchange/2009/09/23/exchange-2010-and-resolution-of-the-adminsdholder-elevation-issue/</value>
+  </data>
+  <data name="P_DelegationKeyAdmin_Title" xml:space="preserve">
+    <value>Ensure that boggus Windows 2016 AD prep did not introduce vulnerabilities</value>
+  </data>
+  <data name="P_DelegationKeyAdmin_Description" xml:space="preserve">
+    <value>The purpose is to ensure that no weakness has been introduced at Windows 2016 installation.</value>
+  </data>
+  <data name="P_DelegationKeyAdmin_Solution" xml:space="preserve">
+    <value>After having carefuly studied the possible impact of the following change, apply the script made by MSRC and referenced in the documentation below to alter the permission.</value>
+  </data>
+  <data name="P_DelegationKeyAdmin_Rationale" xml:space="preserve">
+    <value>A bogus Windows 2016 installation has granted to much right to the Enterprise Key Admins group</value>
+  </data>
+  <data name="P_DelegationKeyAdmin_TechnicalExplanation" xml:space="preserve">
+    <value>After performing adprep /domainprep from Windows Server 2016 sources there may be an unwanted AccessControlEntry (ACE) in the DiscretionaryACL (DACL) of the targeted domain-naming-context's SecurityDescriptor (SD) that grants FullControl permission to the Enterprise Key Admins group ( SID = ending with -527 ).
+This is s a bug in ADPREP that was fixed in Windows Server 2016 RS3/1709. No official fix for those who used pre-1709.
+Note: The SID will only be resolvable after the PDC emulator role is transferred to a Windows Server 2016 domain controller.
+  </value>
+  </data>
+  <data name="P_DelegationKeyAdmin_Detail" xml:space="preserve">
+    <value>Found in DN {0} for account {1} and right {2}</value>
+  </data>
+  <data name="P_DelegationKeyAdmin_Documentation" xml:space="preserve">
+    <value>https://gallery.technet.microsoft.com/scriptcenter/Enterprise-Key-Admins-720eb270
+https://secureidentity.se/adprep-bug-in-windows-server-2016/</value>
+  </data>
+  <data name="P_OperatorsEmpty_Description" xml:space="preserve">
+    <value>The purpose is to ensure that the operator groups which can have indirect control to the domain are empty</value>
+  </data>
+  <data name="P_OperatorsEmpty_Detail" xml:space="preserve">
+    <value>Group: {0} Member counts: {1}</value>
+  </data>
+  <data name="P_OperatorsEmpty_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="P_OperatorsEmpty_Rationale" xml:space="preserve">
+    <value>{count} operator group(s) are not empty</value>
+  </data>
+  <data name="P_OperatorsEmpty_Solution" xml:space="preserve">
+    <value>It is recommended to have these groups empty. Assign administrators into administrators group. Other accounts should have proper delegation rights in OU or in the scope they are managing.</value>
+  </data>
+  <data name="P_OperatorsEmpty_TechnicalExplanation" xml:space="preserve">
+    <value>Operator groups (account operators, server operators, ...) can take indirectly the control of the domain. Indeed these groups have write access to critical resources of the domain.</value>
+  </data>
+  <data name="P_OperatorsEmpty_Title" xml:space="preserve">
+    <value>Check that operators group are empty</value>
+  </data>
+  <data name="P_DelegationGPOData_Description" xml:space="preserve">
+    <value>The purpose is to ensure that standard users cannot modify GPO</value>
+  </data>
+  <data name="P_DelegationGPOData_Documentation" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="P_DelegationGPOData_Rationale" xml:space="preserve">
+    <value>Number of gpo items that can be modified by any user: {count}</value>
+  </data>
+  <data name="P_DelegationGPOData_Solution" xml:space="preserve">
+    <value>Edit the Access Control List (ACL) of the GPO object or the directory where the items is located. Then remove any write permission given to the group.</value>
+  </data>
+  <data name="P_DelegationGPOData_TechnicalExplanation" xml:space="preserve">
+    <value>When the group Authenticated Users, Everyone or any similar groups have permission to modify a GPO, it can be abused to take control of the accounts where this GPO applies. It can potentically lead to the compromise of the domain</value>
+  </data>
+  <data name="P_DelegationGPOData_Title" xml:space="preserve">
+    <value>Ensure that GPO items cannot be modified by any user</value>
+  </data>
+  <data name="P_DelegationGPOData_Detail" xml:space="preserve">
+    <value>GPO: {0} Item: {1} Account: {2} Right: {3}</value>
+  </data>
+  <data name="P_PrivilegeEveryone_Description" xml:space="preserve">
+    <value>The purpose is to ensure that standard users are not granted dangerous privileges</value>
+  </data>
+  <data name="P_PrivilegeEveryone_Documentation" xml:space="preserve">
+    <value>https://www.romhack.io/slides/RomHack%202018%20-%20Andrea%20Pierini%20-%20whoami%20priv%20-%20show%20me%20your%20Windows%20privileges%20and%20I%20will%20lead%20you%20to%20SYSTEM.pdf
+https://www.tarlogic.com/en/blog/abusing-seloaddriverprivilege-for-privilege-escalation/
+https://github.com/decoder-it/psgetsystem</value>
+  </data>
+  <data name="P_PrivilegeEveryone_Rationale" xml:space="preserve">
+    <value>Number of privileges granted by GPO to any user: {count}</value>
+  </data>
+  <data name="P_PrivilegeEveryone_Solution" xml:space="preserve">
+    <value>Locate the GPO specified in Details and remove the privilege.
+Most of the settings are located in :
+    Computer configuration -> Policies -> Windows Settings ->Security Settings -> Local Policies -> User Rights Assignment.
+As an alternative, the file GptTmpl.inf can be manually edited.</value>
+  </data>
+  <data name="P_PrivilegeEveryone_TechnicalExplanation" xml:space="preserve">
+    <value>To perform special operations, the operating system relies on privileges. They can be displayed by running the command: whoami /all.
+SeLoadDriverPrivilege can be used to take control of the system by loading a specifically designed driver. This procedure can be performed by low privileged users as the driver can be defined in HKCU.
+SeTcbPrivilege is the privilege used to "Act on behalf the operating system". This is the privilege reserved to the SYSTEM user. This procedure allow any users to act as SYSTEM.
+SeDebugPrivilege is the privilege used to debug program and to access any program's memory. It can be used to create a new process and set the parent process to a privileged one.
+SeRestorePrivilege can be used to modifiy a service running as local system and startable by all users to a choosen one.
+SeBackupPrivilege can be used to backup Windows registry and use third party tools for extracting local NTLM hashes.
+SeTakeOwnershipPrivilege can be used to take ownership of any securable object in the system including a service registry key. Then to change its ACL to define its own service running as LocalSystem.
+SeCreateTokenPrivilege can be used to create a custom token with all privileges and thus be absued like SeTcbPrivilege 
+SeImpersonatePrivilege and SeAssignPrimaryTokenPrivilege can be abused to impersonate privileged tokens. These tokens can be retrieved by establishing security context such as Local DCOM DCE/RPC reflexion.</value>
+  </data>
+  <data name="P_PrivilegeEveryone_Title" xml:space="preserve">
+    <value>Ensure that dangerous privileges are not granted to everyone by GPO</value>
+  </data>
+  <data name="P_PrivilegeEveryone_Detail" xml:space="preserve">
+    <value>GPO: {0} Account: {1} Privilege: {2}</value>
+  </data>
+  <data name="A_AdminSDHolder_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in the &lt;a href=&quot;#admincountequalsone&quot;&gt;AdminSDHolder User List&lt;/a&gt;</value>
+  </data>
+  <data name="A_AnonymousAuthorizedGPO_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#lsasettings&quot;&gt;LSA settings&lt;/a&gt;</value>
+  </data>
+  <data name="A_BackupMetadata_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#backup&quot;&gt;Backup&lt;/a&gt;</value>
+  </data>
+  <data name="A_MD2IntermediateCert_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#certificates&quot;&gt;Certificates&lt;/a&gt;</value>
+  </data>
+  <data name="A_MD2RootCert_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#certificates&quot;&gt;Certificates&lt;/a&gt;</value>
+  </data>
+  <data name="A_MD4IntermediateCert_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#certificates&quot;&gt;Certificates&lt;/a&gt;</value>
+  </data>
+  <data name="A_MD4RootCert_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#certificates&quot;&gt;Certificates&lt;/a&gt;</value>
+  </data>
+  <data name="A_MD5IntermediateCert_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#certificates&quot;&gt;Certificates&lt;/a&gt;</value>
+  </data>
+  <data name="A_MD5RootCert_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#certificates&quot;&gt;Certificates&lt;/a&gt;</value>
+  </data>
+  <data name="A_SHA0IntermediateCert_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#certificates&quot;&gt;Certificates&lt;/a&gt;</value>
+  </data>
+  <data name="A_SHA0RootCert_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#certificates&quot;&gt;Certificates&lt;/a&gt;</value>
+  </data>
+  <data name="A_SHA1IntermediateCert_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#certificates&quot;&gt;Certificates&lt;/a&gt;</value>
+  </data>
+  <data name="A_SHA1RootCert_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#certificates&quot;&gt;Certificates&lt;/a&gt;</value>
+  </data>
+  <data name="A_WeakRSARootCert_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#certificates&quot;&gt;Certificates&lt;/a&gt;</value>
+  </data>
+  <data name="A_DC_Spooler_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#domaincontrollersection&quot;&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="A_Krbtgt_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#krbtgt&quot;&gt;Krbtgt&lt;/a&gt;</value>
+  </data>
+  <data name="A_LAPS_Not_Installed_ReportLocation" xml:space="preserve">
+  <value>The detail can be found in &lt;a href=&quot;#laps&quot;&gt;LAPS&lt;/a&gt;</value>
+  </data>
+  <data name="A_LMHashAuthorized_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#lsasettings&quot;&gt;LSA settings&lt;/a&gt;</value>
+  </data>
+  <data name="A_MinPwdLen_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#passwordpolicies&quot;&gt;Password policies&lt;/a&gt;</value>
+  </data>
+  <data name="A_NotEnoughDC_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#domaincontrollersection&quot;&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="A_NullSession_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#domaincontrollersection&quot;&gt;Domain controllers&lt;/a&gt; and  &lt;a href=&quot;#nullsession&quot;&gt;Null Session&lt;/a&gt;</value>
+  </data>
+  <data name="A_PwdGPO_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in the &lt;a href=&quot;#gpoobfuscatedpassword&quot;&gt;Obfuscated Passwords&lt;/a&gt;</value>
+  </data>
+  <data name="A_LimitBlankPasswordUse_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#lsasettings&quot;&gt;LSA settings&lt;/a&gt;</value>
+  </data>
+  <data name="A_ReversiblePwd_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#lsasettings&quot;&gt;LSA settings&lt;/a&gt;</value>
+  </data>
+  <data name="A_ProtectedUsers_ReportLocation" xml:space="preserve">
+    <value>The schema version is indicated in &lt;a href=&quot;#domaininformation&quot;&gt;Domain Information&lt;/a&gt;</value>
+  </data>
+  <data name="A_NoServicePolicy_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#passwordpolicies&quot;&gt;Password Policies&lt;/a&gt;</value>
+  </data>
+  <data name="A_SmartCardRequired_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#smartcardmandatorywithnopasswordchange&quot;&gt;Smart Card and Password&lt;/a&gt;</value>
+  </data>
+  <data name="A_SMB2SignatureNotEnabled_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#domaincontrollersection&quot;&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequired_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#domaincontrollersection&quot;&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="P_AdminNum_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#admingroups&quot;&gt;Admin Groups&lt;/a&gt;</value>
+  </data>
+  <data name="P_DangerousExtendedRight_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#admindelegation&quot;&gt;Delegations&lt;/a&gt;</value>
+  </data>
+  <data name="P_DCOwner_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#domaincontrollersection&quot;&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="P_Delegated_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#admingroups&quot;&gt;Admin Groups&lt;/a&gt;</value>
+  </data>
+  <data name="P_DelegationEveryone_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#admindelegation&quot;&gt;Delegations&lt;/a&gt;</value>
+  </data>
+  <data name="P_DelegationKeyAdmin_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#admindelegation&quot;&gt;Delegations&lt;/a&gt;</value>
+  </data>
+  <data name="P_DelegationLoginScript_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#gpologin&quot;&gt;GPO Login script&lt;/a&gt;</value>
+  </data>
+  <data name="P_ExchangeAdminSDHolder_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#admindelegation&quot;&gt;Delegations&lt;/a&gt;</value>
+  </data>
+  <data name="P_OperatorsEmpty_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#admingroups&quot;&gt;Admin Groups&lt;/a&gt;</value>
+  </data>
+  <data name="P_PrivilegeEveryone_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#gpoprivileges&quot;&gt;Privileges&lt;/a&gt;</value>
+  </data>
+  <data name="P_SchemaAdmin_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#admingroups&quot;&gt;Admin Groups&lt;/a&gt;</value>
+  </data>
+  <data name="P_ServiceDomainAdmin_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#admingroups&quot;&gt;Admin Groups&lt;/a&gt;</value>
+  </data>
+  <data name="P_UnconstrainedDelegation_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#useraccountanalysis&quot;&gt;User information&lt;/a&gt; and &lt;a href=&quot;#computeraccountanalysis&quot;&gt;Computer information&lt;/a&gt;</value>
+  </data>
+  <data name="P_UnkownDelegation_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#admindelegation&quot;&gt;Delegations&lt;/a&gt;</value>
+  </data>
+  <data name="S_DC_NotUpdated_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#domaincontrollersection&quot;&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="S_DC_SubnetMissing_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#domaincontrollersection&quot;&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="S_DesEnabled_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#useraccountanalysis&quot;&gt;User information&lt;/a&gt; and &lt;a href=&quot;#computeraccountanalysis&quot;&gt;Computer information&lt;/a&gt;</value>
+  </data>
+  <data name="S_Duplicate_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#useraccountanalysis&quot;&gt;User information&lt;/a&gt; and &lt;a href=&quot;#computeraccountanalysis&quot;&gt;Computer information&lt;/a&gt;</value>
+  </data>
+  <data name="S_Inactive_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#useraccountanalysis&quot;&gt;User information&lt;/a&gt; and &lt;a href=&quot;#computeraccountanalysis&quot;&gt;Computer information&lt;/a&gt;</value>
+  </data>
+  <data name="S_NoPreAuth_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#useraccountanalysis&quot;&gt;User information&lt;/a&gt; and &lt;a href=&quot;#computeraccountanalysis&quot;&gt;Computer information&lt;/a&gt;</value>
+  </data>
+  <data name="S_Vuln_MS14_068_ReportLocation" xml:space="preserve">
+    <value>The startup time of domain controllers can be found in &lt;a href=&quot;#domaincontrollersection&quot;&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="S_Vuln_MS17_010_ReportLocation" xml:space="preserve">
+    <value>The startup time of domain controllers can be found in &lt;a href=&quot;#domaincontrollersection&quot;&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="S_OS_2000_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#operatingsystems&quot;&gt;Operating Systems&lt;/a&gt;</value>
+  </data>
+  <data name="S_OS_2003_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#operatingsystems&quot;&gt;Operating Systems&lt;/a&gt;</value>
+  </data>
+  <data name="S_DC_2000_ReportLocation" xml:space="preserve">
+    <value>The operating system of domain controllers can be found in &lt;a href=&quot;#domaincontrollersection&quot;&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="S_DC_2003_ReportLocation" xml:space="preserve">
+    <value>The operating system of domain controllers can be found in &lt;a href=&quot;#domaincontrollersection&quot;&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="S_OS_NT_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#operatingsystems&quot;&gt;Operating Systems&lt;/a&gt;</value>
+  </data>
+  <data name="S_OS_XP_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#operatingsystems&quot;&gt;Operating Systems&lt;/a&gt;</value>
+  </data>
+  <data name="S_PrimaryGroup_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#useraccountanalysis&quot;&gt;User information&lt;/a&gt; and &lt;a href=&quot;#computeraccountanalysis&quot;&gt;Computer information&lt;/a&gt;</value>
+  </data>
+  <data name="S_C_PrimaryGroup_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#useraccountanalysis&quot;&gt;User information&lt;/a&gt; and &lt;a href=&quot;#computeraccountanalysis&quot;&gt;Computer information&lt;/a&gt;</value>
+  </data>
+  <data name="S_PwdNotRequired_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#useraccountanalysis&quot;&gt;User information&lt;/a&gt; and &lt;a href=&quot;#computeraccountanalysis&quot;&gt;Computer information&lt;/a&gt;</value>
+  </data>
+  <data name="S_Reversible_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#useraccountanalysis&quot;&gt;User information&lt;/a&gt; and &lt;a href=&quot;#computeraccountanalysis&quot;&gt;Computer information&lt;/a&gt;</value>
+  </data>
+  <data name="S_C_Reversible_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#useraccountanalysis&quot;&gt;User information&lt;/a&gt; and &lt;a href=&quot;#computeraccountanalysis&quot;&gt;Computer information&lt;/a&gt;</value>
+  </data>
+  <data name="S_SIDHistory_ReportLocation" xml:space="preserve">
+    <value>The SIDHistory detail can be found in &lt;a href=&quot;#useraccountanalysis&quot;&gt;User information&lt;/a&gt; and &lt;a href=&quot;#computeraccountanalysis&quot;&gt;Computer information&lt;/a&gt; and a quick summary in &lt;a href=&quot;#sidhistory&quot;&gt;SID History&lt;/a&gt;</value>
+  </data>
+  <data name="S_SMB_v1_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#domaincontrollersection&quot;&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="T_Downlevel_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#discovereddomains&quot;&gt;Trusts section&lt;/a&gt;</value>
+  </data>
+  <data name="T_Inactive_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#discovereddomains&quot;&gt;Trusts section&lt;/a&gt;</value>
+  </data>
+  <data name="T_ScriptOutOfDomain_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#gpologin&quot;&gt;GPO Login script&lt;/a&gt; and in &lt;a href=&quot;#logonscripts&quot;&gt;Logon Scripts&lt;/a&gt;</value>
+  </data>
+  <data name="T_SIDFiltering_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#discovereddomains&quot;&gt;Trusts section&lt;/a&gt;</value>
+  </data>
+  <data name="T_SIDHistorySameDomain" xml:space="preserve">
+    <value>The SIDHistory detail can be found in &lt;a href=&quot;#useraccountanalysis&quot;&gt;User information&lt;/a&gt; and &lt;a href=&quot;#computeraccountanalysis&quot;&gt;Computer information&lt;/a&gt; and a quick summary in &lt;a href=&quot;#sidhistory&quot;&gt;SID History&lt;/a&gt;</value>
+  </data>
+  <data name="T_SIDHistoryUnknownDomain_ReportLocation" xml:space="preserve">
+    <value>The SIDHistory detail can be found in &lt;a href=&quot;#useraccountanalysis&quot;&gt;User information&lt;/a&gt; and &lt;a href=&quot;#computeraccountanalysis&quot;&gt;Computer information&lt;/a&gt; and a quick summary in &lt;a href=&quot;#sidhistory&quot;&gt;SID History&lt;/a&gt;</value>
   </data>
 </root>

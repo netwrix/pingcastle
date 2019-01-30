@@ -5,26 +5,31 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.ADWS;
+using PingCastle.RPC;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
-namespace PingCastle.Database
+namespace PingCastle.Graph.Database
 {
     public class LiveDataStorage: IDataStorage
     {
-        Dictionary<int, Node> nodes;
+        public Dictionary<int, Node> nodes;
         int index;
         // first index = slave ; second index = master
-        Dictionary<int, Dictionary<int, Relation>> relations;
-        Dictionary<string, string> databaseInformation;
+		public Dictionary<int, Dictionary<int, Relation>> relations;
+		public Dictionary<string, string> databaseInformation;
 
         public List<string> KnownCN = new List<string>();
         public List<string> KnownSID = new List<string>();
+		public List<int> KnownPGId = new List<int>() { 513, 515 };
         public List<string> CNToInvestigate { get; private set; }
         public List<string> SIDToInvestigate { get; private set; }
+		public List<int> PGIdToInvestigate { get; private set; }
+		public List<DataStorageDomainTrusts> KnownDomains { get; private set; }
+		private string serverForSIDResolution;
 
         struct RelationOnHold
         {
@@ -45,6 +50,8 @@ namespace PingCastle.Database
             databaseInformation = new Dictionary<string, string>();
             SIDToInvestigate = new List<string>();
             CNToInvestigate = new List<string>();
+			PGIdToInvestigate = new List<int>();
+			KnownDomains = new List<DataStorageDomainTrusts>();
         }
 
         public void Initialize(ADDomainInfo domainInfo)
@@ -54,15 +61,14 @@ namespace PingCastle.Database
             databaseInformation["DomainName"] = domainInfo.DomainName;
             databaseInformation["DefaultNamingContext"] = domainInfo.DefaultNamingContext;
             databaseInformation["DomainSid"] = domainInfo.DomainSid.Value;
+			databaseInformation["DomainNetBIOS"] = domainInfo.NetBIOSName;
+			serverForSIDResolution = domainInfo.DnsHostName;
         }
 
         public List<string> GetCNToInvestigate()
         {
             List<string> output = new List<string>();
-            foreach (string s in CNToInvestigate)
-            {
-                output.Add(s);
-            }
+			output.AddRange(CNToInvestigate);
             CNToInvestigate.Clear();
             return output;
         }
@@ -70,21 +76,57 @@ namespace PingCastle.Database
         public List<string> GetSIDToInvestigate()
         {
             List<string> output = new List<string>();
-            foreach (string s in SIDToInvestigate)
-            {
-                output.Add(s);
-            }
+			output.AddRange(SIDToInvestigate);
             SIDToInvestigate.Clear();
             return output;
         }
 
-        public int InsertNode(string shortname, string objectclass, string name, string sid)
+		public List<int> GetPrimaryGroupIDToInvestigate()
+		{
+			List<int> output = new List<int>();
+			output.AddRange(PGIdToInvestigate);
+			KnownPGId.AddRange(PGIdToInvestigate);
+			PGIdToInvestigate.Clear();
+			return output;
+		}
+
+        public int InsertNode(string shortname, string objectclass, string name, string sid, ADItem adItem)
         {
-            Node node = new Node();
+			if (String.Equals(objectclass, "unknown", StringComparison.OrdinalIgnoreCase))
+			{
+				if (name.Contains(",CN=ForeignSecurityPrincipals,DC="))
+				{
+					objectclass = "foreignsecurityprincipal";
+					sid = name.Substring(3, name.IndexOf(',') - 3);
+				}
+			}
+			// reentrance from previous if
+			if (String.Equals(objectclass, "foreignsecurityprincipal", StringComparison.OrdinalIgnoreCase))
+			{
+				// avoid CREATOR OWNER (used for dynamic permissions)
+				if (String.Equals(sid, "S-1-3-0", StringComparison.OrdinalIgnoreCase))
+					return -1;
+				if (String.Equals(sid, "S-1-5-18", StringComparison.OrdinalIgnoreCase))
+					return -1;
+				string referencedDomain = null;
+				string ntaccount = NativeMethods.ConvertSIDToName(sid, serverForSIDResolution, out referencedDomain);
+				if (ntaccount == shortname)
+				{
+					if (String.IsNullOrEmpty(referencedDomain))
+						ntaccount = shortname;
+					else
+						ntaccount = referencedDomain + "\\" + shortname;
+				}
+				shortname = ntaccount;
+				name = sid;
+				adItem = null;
+			}
+			Node node = new Node();
             node.Id = index;
             node.Shortname = shortname;
             node.Type = objectclass;
             node.Dn = name;
+			node.ADItem = adItem;
             if (!String.IsNullOrEmpty(name))
             {
                 KnownCN.Add(name);
@@ -98,9 +140,31 @@ namespace PingCastle.Database
                 KnownSID.Add(sid);
                 if (SIDToInvestigate.Contains(sid))
                     SIDToInvestigate.Remove(sid);
+				// handle primary group id
+				if (objectclass == "group")
+				{
+					if (sid.StartsWith("S-1-5-21-"))
+					{
+						var part = sid.Split('-');
+						int PGId = int.Parse(part[part.Length - 1]);
+						if (!KnownPGId.Contains(PGId) && !PGIdToInvestigate.Contains(PGId))
+						{
+							PGIdToInvestigate.Add(PGId);
+						}
+					}
+				}
             }
             return index++;
         }
+
+		public bool IsSIDAlreadyInserted(string sid)
+		{
+			if (KnownSID.Contains(sid))
+			{
+				return true;
+			}
+			return false;
+		}
 
         public void InsertRelation(string mappingMaster, MappingType typeMaster, string mappingSlave, MappingType typeSlave, RelationType relationType)
         {
@@ -139,13 +203,13 @@ namespace PingCastle.Database
             }
         }
 
-        public void InsertRelationOnHold(string serverForSIDResolution)
+        public void InsertRelationOnHold()
         {
             foreach (RelationOnHold relation in relationsOnHold)
             {
 				try
 				{
-					InsertRelation(serverForSIDResolution, relation.mappingMaster, relation.typeMaster, relation.mappingSlave, relation.typeSlave, relation.relationType);
+					InsertRelationInternal(relation.mappingMaster, relation.typeMaster, relation.mappingSlave, relation.typeSlave, relation.relationType);
 				}
 				catch (Exception)
 				{
@@ -156,7 +220,7 @@ namespace PingCastle.Database
             relationsOnHold.Clear();
         }
 
-        private void InsertRelation(string serverForSIDResolution, string mappingMaster, MappingType typeMaster, string mappingSlave, MappingType typeSlave, RelationType relationType)
+        private void InsertRelationInternal(string mappingMaster, MappingType typeMaster, string mappingSlave, MappingType typeSlave, RelationType relationType)
         {
             int masteridx = GetIdx(mappingMaster, typeMaster);
             int slaveidx = GetIdx(mappingSlave, typeSlave);
@@ -165,23 +229,22 @@ namespace PingCastle.Database
             {
                 if (typeMaster == MappingType.Sid)
                 {
-                    string ntaccount = NativeMethods.ConvertSIDToName(mappingMaster, serverForSIDResolution);
-                    masteridx = InsertNode(mappingMaster, "unknown", ntaccount, mappingMaster);
+					masteridx = InsertNode(mappingMaster, "foreignsecurityprincipal", mappingMaster, mappingMaster, null);
                 }
                 else
                 {
-                    masteridx = InsertNode(mappingMaster, "unknown", mappingMaster, null);
+					masteridx = InsertNode(mappingMaster, "unknown", mappingMaster, null, null);
                 }
             }
             if (slaveidx == -1)
             {
-                if (typeMaster == MappingType.Sid)
+				if (typeSlave == MappingType.Sid)
                 {
-                    slaveidx = InsertNode(mappingSlave, "unknown", mappingSlave, mappingSlave);
+					slaveidx = InsertNode(mappingSlave, "foreignsecurityprincipal", mappingSlave, mappingSlave, null);
                 }
                 else
                 {
-                    slaveidx = InsertNode(mappingSlave, "unknown", mappingSlave, null);
+					slaveidx = InsertNode(mappingSlave, "unknown", mappingSlave, null, null);
                 }
 
             }
@@ -255,12 +318,17 @@ namespace PingCastle.Database
             return -1;
         }
 
+		public Node RetrieveNode(int id)
+		{
+			return nodes[id];
+		}
+
         public Dictionary<int, Node> RetrieveNodes(List<int> nodesQueried)
         {
             Dictionary<int, Node> output = new Dictionary<int, Node>();
             foreach (int node in nodesQueried)
             {
-                output.Add(node, nodes[node]);
+				output.Add(node, RetrieveNode(node));
             }
             return output;
         }
@@ -270,12 +338,8 @@ namespace PingCastle.Database
             return databaseInformation;
         }
 
-        public List<Relation> SearchRelations(List<int> SourceIds, List<int> knownIds, bool FromMasterToSlave)
+        public List<Relation> SearchRelations(List<int> SourceIds, List<int> knownIds)
         {
-            if (FromMasterToSlave)
-            {
-                throw new ApplicationException("reverse direction is not allowed in live mode (all Security Descriptors need to be analyzed)");
-            }
             List<Relation> output = new List<Relation>();
             foreach (int sourceId in SourceIds)
             {
@@ -284,15 +348,20 @@ namespace PingCastle.Database
                     var half = relations[sourceId];
                     foreach (int key in half.Keys)
                     {
-                        if (!knownIds.Contains(key))
-                            output.Add(half[key]);
+						if (!knownIds.Contains(key))
+						{
+							var relation = half[key];
+							output.Add(relation);
+						}
                     }
                 }
             }
             return output;
         }
 
-
-
-    }
+		public List<DataStorageDomainTrusts> GetKnownDomains()
+		{
+			return KnownDomains;
+		}
+	}
 }

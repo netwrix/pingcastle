@@ -7,13 +7,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("S-DC-2000", HealthcheckRiskRuleCategory.StaleObjects, HealthcheckRiskModelCategory.ObsoleteOS)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 40)]
-    [HeatlcheckRuleSTIG("V-8551")]
-    public class HeatlcheckRuleStaledObsoleteDC2000 : HeatlcheckRuleBase
+	[RuleModel("S-DC-2000", RiskRuleCategory.StaleObjects, RiskModelCategory.ObsoleteOS)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 40)]
+    [RuleSTIG("V-8551", "The domain functional level must be at a Windows Server version still supported by Microsoft.")]
+	[RuleANSSI("R12", "subsection.3.1")]
+    public class HeatlcheckRuleStaledObsoleteDC2000 : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

@@ -8,12 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("S-ADRegistration", HealthcheckRiskRuleCategory.StaleObjects, HealthcheckRiskModelCategory.Provisioning)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-    public class HeatlcheckRuleStaleADRegistrationEnabled : HeatlcheckRuleBase
+	[RuleModel("S-ADRegistration", RiskRuleCategory.StaleObjects, RiskModelCategory.Provisioning)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    public class HeatlcheckRuleStaleADRegistrationEnabled : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
@@ -27,7 +28,7 @@ namespace PingCastle.Healthcheck.Rules
                             || right.User == "Authenticated Users")
                         {
                             Trace.WriteLine("SeMachineAccountPrivilege found in GPO " + right.GPOName);
-                            return 1;
+							return healthcheckData.MachineAccountQuota;
                         }
                     }
                 }

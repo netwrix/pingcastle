@@ -8,9 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.Serialization;
 using System.Security.Principal;
 using System.Text;
 using System.Xml.Serialization;
+using PingCastle.Data;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck
 {
@@ -39,6 +42,8 @@ namespace PingCastle.Healthcheck
         public DateTime PwdLastSet { get; set; }
 
 		public bool SmartCardRequired { get; set; }
+
+		public bool IsService { get; set; }
     }
 
     [DebuggerDisplay("{GroupName}")]
@@ -46,11 +51,12 @@ namespace PingCastle.Healthcheck
     {
         public HealthCheckGroupData()
         {
-            Level = HealthcheckDataLevel.Full;
+            Level = PingCastleReportDataExportLevel.Full;
         }
 
-        [XmlIgnore]
-        public HealthcheckDataLevel Level { get; set; }
+		[IgnoreDataMember]
+		[XmlIgnore]
+        public PingCastleReportDataExportLevel Level { get; set; }
 
         public string GroupName { get; set; }
 
@@ -76,7 +82,9 @@ namespace PingCastle.Healthcheck
 
 		public int NumberOfSmartCardRequired { get; set; }
 
-        public bool ShouldSerializeMembers() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+		public int NumberOfServiceAccount { get; set; }
+
+        public bool ShouldSerializeMembers() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthCheckGroupMemberData> Members { get; set; }
 
     }
@@ -92,6 +100,7 @@ namespace PingCastle.Healthcheck
         public string ForestNetbios { get; set; }
 
         private DomainKey _domain;
+		[IgnoreDataMember]
         [XmlIgnore]
         public DomainKey Domain
         {
@@ -99,14 +108,15 @@ namespace PingCastle.Healthcheck
             {
                 if (_domain == null)
                 {
-                    _domain = new DomainKey(DnsName, Sid);
+                    _domain = new DomainKey(DnsName, Sid, NetbiosName);
                 }
                 return _domain;
             }
         }
 
         private DomainKey _forest;
-        [XmlIgnore]
+		[IgnoreDataMember]
+		[XmlIgnore]
         public DomainKey Forest
         {
             get
@@ -116,7 +126,7 @@ namespace PingCastle.Healthcheck
                     if (String.Equals(DnsName, ForestName, StringComparison.InvariantCultureIgnoreCase))
                         _forest = Domain;
                     else
-                        _forest = new DomainKey(ForestName, ForestSid);
+                        _forest = new DomainKey(ForestName, ForestSid, ForestNetbios);
                 }
                 return _forest;
             }
@@ -149,14 +159,15 @@ namespace PingCastle.Healthcheck
         public List<HealthCheckTrustDomainInfoData> KnownDomains { get; set; }
 
         private DomainKey _domain;
-        [XmlIgnore]
+		[IgnoreDataMember]
+		[XmlIgnore]
         public DomainKey Domain
         {
             get
             {
                 if (_domain == null)
                 {
-                    _domain = new DomainKey(TrustPartner, SID);
+                    _domain = new DomainKey(TrustPartner, SID, NetBiosName);
                 }
                 return _domain;
             }
@@ -243,7 +254,7 @@ namespace PingCastle.Healthcheck
     {
         public HealthcheckAccountData()
         {
-            Level = HealthcheckDataLevel.Full;
+            Level = PingCastleReportDataExportLevel.Full;
         }
 
         public void Add(HealthcheckAccountData x)
@@ -321,8 +332,9 @@ namespace PingCastle.Healthcheck
 			ListTrustedToAuthenticateForDelegation = null;
 		}
 
-        [XmlIgnore]
-        public HealthcheckDataLevel Level { get; set; }
+		[IgnoreDataMember]
+		[XmlIgnore]
+        public PingCastleReportDataExportLevel Level { get; set; }
 
         public int Number { get; set; }
 
@@ -334,162 +346,86 @@ namespace PingCastle.Healthcheck
 
         public int NumberInactive { get; set; }
 
-        public bool ShouldSerializeListInactive() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeListInactive() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> ListInactive { get; set; }
 
         public int NumberLocked { get; set; }
 
-        public bool ShouldSerializeListLocked() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeListLocked() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> ListLocked { get; set; }
 
         public int NumberPwdNeverExpires { get; set; }
 
-        public bool ShouldSerializeListPwdNeverExpires() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeListPwdNeverExpires() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> ListPwdNeverExpires { get; set; }
 
         public int NumberSidHistory { get; set; }
 
-        public bool ShouldSerializeListSidHistory() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeListSidHistory() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> ListSidHistory { get; set; }
 
-        public bool ShouldSerializeListDomainSidHistory() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializeListDomainSidHistory() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthcheckSIDHistoryData> ListDomainSidHistory { get; set; }
 
         public int NumberPwdNotRequired { get; set; }
 
-        public bool ShouldSerializeListPwdNotRequired() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeListPwdNotRequired() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> ListPwdNotRequired { get; set; }
 
         public int NumberBadPrimaryGroup { get; set; }
 
-        public bool ShouldSerializeListBadPrimaryGroup() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeListBadPrimaryGroup() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> ListBadPrimaryGroup { get; set; }
 
         public int NumberDesEnabled { get; set; }
 
-        public bool ShouldSerializeListDesEnabled() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeListDesEnabled() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> ListDesEnabled { get; set; }
 
         public int NumberTrustedToAuthenticateForDelegation { get; set; }
 
-        public bool ShouldSerializeListTrustedToAuthenticateForDelegation() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeListTrustedToAuthenticateForDelegation() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> ListTrustedToAuthenticateForDelegation { get; set; }
 
         public int NumberReversibleEncryption { get; set; }
         
-        public bool ShouldSerializeListReversibleEncryption() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeListReversibleEncryption() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> ListReversibleEncryption { get; set; }
 
         public int NumberDuplicate { get; set; }
         
-        public bool ShouldSerializeListDuplicate() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeListDuplicate() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> ListDuplicate { get; set; }
 
         public int NumberNoPreAuth { get; set; }
-        public bool ShouldSerializeListNoPreAuth() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeListNoPreAuth() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> ListNoPreAuth { get; set; }
 
     }
 
-    public enum HealthcheckRiskRuleCategory
-    {
-        StaleObjects,
-        PrivilegedAccounts,
-        Trusts,
-        Anomalies,
-    }
-
-	public enum HealthcheckRiskModelCategory
+    public class HealthcheckRiskRule : IRuleScore
 	{
-		Unknown = 0,
-		[Description("Inactive user or computer")]
-		InactiveUserOrComputer = 1000,
-		[Description("Vulnerability management")]
-		VulnerabilityManagement = 1001,
-		[Description("Replication")]
-		Replication = 1002,
-		[Description("Provisioning")]
-		Provisioning = 1003,
-		[Description("Old authentication protocols")]
-		OldAuthenticationProtocols = 1004,
-		[Description("Unfinished migration")]
-		UnfinishedMigration = 1005,
-		[Description("Obsolete OS")]
-		ObsoleteOS = 1006,
-		[Description("Object configuration")]
-		ObjectConfig = 1007,
-		[Description("Network topography")]
-		NetworkTopography = 1008,
-		[Description("Admin control")]
-		AdminControl = 2000,
-		[Description("Privilege control")]
-		PrivilegeControl = 2001,
-		[Description("ACL Check")]
-		ACLCheck = 2002,
-		[Description("Irreversible change")]
-		IrreversibleChange = 2003,
-		[Description("SID Filtering")]
-		SIDFiltering = 3000,
-		[Description("Trust inactive")]
-		TrustInactive = 3001,
-		[Description("Trust impermeability")]
-		TrustImpermeability = 3002,
-		[Description("SIDHistory")]
-		SIDHistory = 3003,
-		[Description("Old trust protocol")]
-		OldTrustProtocol = 3004,
-		[Description("Reconnaissance")]
-		Reconnaissance = 4000,
-		[Description("Local group vulnerability")]
-		LocalGroupVulnerability = 4001,
-		[Description("Password retrieval")]
-		PasswordRetrieval = 4002,
-		[Description("Weak password")]
-		WeakPassword = 4003,
-		[Description("Temporary admins")]
-		TemporaryAdmins = 4004,
-		[Description("Network sniffing")]
-		NetworkSniffing = 4005,
-		[Description("Certificate take over")]
-		CertificateTakeOver = 4006,
-		[Description("Pass-the-credential")]
-		PassTheCredential = 4007,
-		[Description("Golden ticket")]
-		GoldenTicket = 4008,
-		[Description("Backup")]
-		Backup = 4009,
-	}
-
-    public class HealthcheckRiskRule
-    {
         public HealthcheckRiskRule()
         {
-            Level = HealthcheckDataLevel.Full;
+            Level = PingCastleReportDataExportLevel.Full;
         }
 
-        [XmlIgnore]
-        public HealthcheckDataLevel Level { get; set; }
+		[IgnoreDataMember]
+		[XmlIgnore]
+        public PingCastleReportDataExportLevel Level { get; set; }
 
         public int Points { get; set; }
 
-        public HealthcheckRiskRuleCategory Category { get; set; }
+        public RiskRuleCategory Category { get; set; }
 
-		public HealthcheckRiskModelCategory Model { get; set; }
+		public RiskModelCategory Model { get; set; }
 
         public string RiskId { get; set; }
 
         public string Rationale { get; set; }
 
-		public bool ShouldSerializeDetails() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+		public bool ShouldSerializeDetails() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<string> Details { get; set; }
-    }
-
-    public enum HealthcheckDataLevel
-    {
-        Full,
-        Normal,
-        Light,
-        Paranoid,
     }
 
     [DebuggerDisplay("{OperatingSystem}")]
@@ -548,6 +484,8 @@ namespace PingCastle.Healthcheck
 
         public string Account { get; set; }
 
+		public string SecurityIdentifier { get; set; }
+
         public string Right { get; set; }
     }
 
@@ -559,6 +497,17 @@ namespace PingCastle.Healthcheck
 		public string Right { get; set; }
 	}
 
+	[DebuggerDisplay("{GPOName} {Account} {Right}")]
+	public class GPODelegationData
+	{
+		public string GPOName { get; set; }
+
+		public string Item { get; set; }
+
+		public string Account { get; set; }
+
+		public string Right { get; set; }
+	}
     //public class HealthcheckSiteTopologyData
     //{
 
@@ -578,19 +527,21 @@ namespace PingCastle.Healthcheck
     {
         public string DomainSid { get; set; }
         public string FriendlyName { get; set; }
+		public string NetBIOSName { get; set; }
         public DateTime FirstDate { get; set; }
         public DateTime LastDate { get; set; }
         public int Count { get; set; }
 
         private DomainKey _domain;
-        [XmlIgnore]
+		[IgnoreDataMember]
+		[XmlIgnore]
         public DomainKey Domain
         {
             get
             {
                 if (_domain == null)
                 {
-                    _domain = new DomainKey(FriendlyName,DomainSid);
+					_domain = new DomainKey(FriendlyName, DomainSid, NetBIOSName);
                 }
                 return _domain;
             }
@@ -635,6 +586,8 @@ namespace PingCastle.Healthcheck
 
 		public SMBSecurityModeEnum SMB2SecurityMode { get; set; }
 
+		public bool RemoteSpoolerDetected { get; set; }
+
         public List<string> IP { get; set; }
 	}
 
@@ -648,14 +601,29 @@ namespace PingCastle.Healthcheck
     }
 
     [DebuggerDisplay("{Domain}")]
-    public class HealthcheckData
+    public class HealthcheckData : IRiskEvaluation, IPingCastleReport
     {
         public string EngineVersion { get; set; }
         public DateTime GenerationDate { get; set; }
 
+		public string GetHumanReadableFileName()
+		{
+			return "ad_hc_" + DomainFQDN + ".html";
+		}
+
+		public string GetMachineReadableFileName()
+		{
+			return "ad_hc_" + DomainFQDN + ".xml";
+		}
+
+		public void SetExportLevel(PingCastleReportDataExportLevel level)
+		{
+			Level = level;
+		}
+
         // this property is used to limit the serialization of some properties
-        private HealthcheckDataLevel _level;
-        public HealthcheckDataLevel Level
+        private PingCastleReportDataExportLevel _level;
+        public PingCastleReportDataExportLevel Level
         {
             get
             {
@@ -709,135 +677,144 @@ namespace PingCastle.Healthcheck
         public int TrustScore { get; set; }
         public int AnomalyScore { get; set; }
 
-        public bool ShouldSerializeTrusts() { return (int)Level <= (int)HealthcheckDataLevel.Light; }
+        public bool ShouldSerializeTrusts() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
         public List<HealthCheckTrustData> Trusts { get; set; }
 
-        public bool ShouldSerializeReachableDomains() { return (int)Level <= (int)HealthcheckDataLevel.Light; }
+        public bool ShouldSerializeReachableDomains() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
         public List<HealthCheckTrustDomainInfoData> ReachableDomains { get; set; }
 
-		public bool ShouldSerializeDomainControllers() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+		public bool ShouldSerializeDomainControllers() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthcheckDomainController> DomainControllers { get; set; }
 
-        public bool ShouldSerializeSites() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializeSites() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthcheckSite> Sites { get; set; }
 
-        public bool ShouldSerializePreWindows2000AnonymousAccess() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializePreWindows2000AnonymousAccess() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public bool PreWindows2000AnonymousAccess { get; set; }
-        public bool ShouldSerializeDsHeuristicsAnonymousAccess() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializeDsHeuristicsAnonymousAccess() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public bool DsHeuristicsAnonymousAccess { get; set; }
 
-        public bool ShouldSerializeRiskRules() { return (int)Level <= (int)HealthcheckDataLevel.Light; }
+        public bool ShouldSerializeRiskRules() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
         public List<HealthcheckRiskRule> RiskRules { get; set; }
 
-        public bool ShouldSerializeUserAccountData() { return (int)Level <= (int)HealthcheckDataLevel.Light; }
+		[IgnoreDataMember]
+		[XmlIgnore]
+		public IList<IRuleScore> AllRiskRules { get { return RiskRules.ConvertAll(x => { return (IRuleScore)x; }); } }
+
+        public bool ShouldSerializeUserAccountData() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
         public HealthcheckAccountData UserAccountData { get; set; }
 
-        public bool ShouldSerializeComputerAccountData() { return (int)Level <= (int)HealthcheckDataLevel.Light; }
+        public bool ShouldSerializeComputerAccountData() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
         public HealthcheckAccountData ComputerAccountData { get; set; }
 
-        public bool ShouldSerializeOperatingSystem() { return (int)Level <= (int)HealthcheckDataLevel.Light; }
+        public bool ShouldSerializeOperatingSystem() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
         public List<HealthcheckOSData> OperatingSystem { get; set; }
 		// DO NOT USE - former data
-        public bool ShouldSerializeOperatingSystemDC() { return (int)Level <= (int)HealthcheckDataLevel.Light; }
+        public bool ShouldSerializeOperatingSystemDC() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
         public List<HealthcheckOSData> OperatingSystemDC { get; set; }
 
-        public bool ShouldSerializeLoginScript() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializeLoginScript() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthcheckLoginScriptData> LoginScript { get; set; }
 
-		public bool ShouldSerializeLastADBackup() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+		public bool ShouldSerializeLastADBackup() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
 		public DateTime LastADBackup { get; set; }
 
-		public bool ShouldSerializeLAPSInstalled() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+		public bool ShouldSerializeLAPSInstalled() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
 		public DateTime LAPSInstalled { get; set; }
 
-        public bool ShouldSerializeKrbtgtLastChangeDate() { return (int)Level <= (int)HealthcheckDataLevel.Light; }
+        public bool ShouldSerializeKrbtgtLastChangeDate() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
         public DateTime KrbtgtLastChangeDate { get; set; }
 
-		public bool ShouldSerializeKrbtgtLastVersion() { return (int)Level <= (int)HealthcheckDataLevel.Light; }
+		public bool ShouldSerializeKrbtgtLastVersion() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
 		public int KrbtgtLastVersion { get; set; }
 
-        public bool ShouldSerializeAdminLastLoginDate() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializeAdminLastLoginDate() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public DateTime AdminLastLoginDate { get; set; }
 
-        public bool ShouldSerializeAdminAccountName() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeAdminAccountName() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public string AdminAccountName { get; set; }
 
-        public bool ShouldSerializeGPPPassword() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializeGPPPassword() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<GPPPassword> GPPPassword { get; set; }
 
-        public bool ShouldSerializeGPPRightAssignment() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeGPPRightAssignment() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<GPPRightAssignment> GPPRightAssignment { get; set; }
 
-        public bool ShouldSerializeGPPPasswordPolicy() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializeGPPPasswordPolicy() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<GPPSecurityPolicy> GPPPasswordPolicy { get; set; }
 
-        public bool ShouldSerializeGPOLsaPolicy() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializeGPOLsaPolicy() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<GPPSecurityPolicy> GPOLsaPolicy { get; set; }
 
-        public bool ShouldSerializeGPOScreenSaverPolicy() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializeGPOScreenSaverPolicy() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<GPPSecurityPolicy> GPOScreenSaverPolicy { get; set; }
 
-		public bool ShouldSerializeGPOEventForwarding() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+		public bool ShouldSerializeGPOEventForwarding() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
 		public List<GPOEventForwardingInfo> GPOEventForwarding { get; set; }
 
-        public bool ShouldSerializeGPOLocalMembership() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+		public bool ShouldSerializeGPODelegation() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+		public List<GPODelegationData> GPODelegation { get; set; }
+
+        public bool ShouldSerializeGPOLocalMembership() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<GPOMembership> GPOLocalMembership { get; set; }
 
-        public bool ShouldSerializeTrustedCertificates() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializeTrustedCertificates() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthcheckCertificateData> TrustedCertificates { get; set; }
 
-        public bool ShouldSerializePrivilegedGroups() { return (int)Level <= (int)HealthcheckDataLevel.Light; }
+        public bool ShouldSerializePrivilegedGroups() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
         public List<HealthCheckGroupData> PrivilegedGroups { get; set; }
 
-        public bool ShouldSerializeAllPrivilegedMembers() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeAllPrivilegedMembers() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthCheckGroupMemberData> AllPrivilegedMembers { get; set; }
 
-        public bool ShouldSerializeAdminSDHolderNotOKCount() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializeAdminSDHolderNotOKCount() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public int AdminSDHolderNotOKCount { get; set; }
 
-        public bool ShouldSerializeAdminSDHolderNotOK() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeAdminSDHolderNotOK() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> AdminSDHolderNotOK { get; set; }
 
-        public bool ShouldSerializeSmartCardNotOKCount() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializeSmartCardNotOKCount() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public int SmartCardNotOKCount { get; set; }
 
-        public bool ShouldSerializeSmartCardNotOK() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeSmartCardNotOK() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> SmartCardNotOK { get; set; }
 
-        public bool ShouldSerializeDelegations() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeDelegations() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckDelegationData> Delegations { get; set; }
 
-        public bool ShouldSerializeGPOLoginScript() { return (int)Level <= (int)HealthcheckDataLevel.Full; }
+        public bool ShouldSerializeGPOLoginScript() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckGPOLoginScriptData> GPOLoginScript { get; set; }
 
         //public bool ShouldSerializeSiteTopology() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
         //public List<HealthcheckSiteTopologyData> SiteTopology { get; set; }
 
-        public bool ShouldSerializeDomainControllerWithNullSessionCount() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializeDomainControllerWithNullSessionCount() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public int DomainControllerWithNullSessionCount { get; set; }
 
-        public bool ShouldSerializeSIDHistoryAuditingGroupPresent() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializeSIDHistoryAuditingGroupPresent() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public bool SIDHistoryAuditingGroupPresent { get; set; }
 
-        public bool ShouldSerializeMachineAccountQuota() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
+        public bool ShouldSerializeMachineAccountQuota() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public int MachineAccountQuota { get; set; }
 
         private DomainKey _domain;
-        [XmlIgnore]
+		[IgnoreDataMember]
+		[XmlIgnore]
         public DomainKey Domain
         {
             get
             {
                 if (_domain == null)
                 {
-                    _domain = new DomainKey(DomainFQDN, DomainSid);
+                    _domain = new DomainKey(DomainFQDN, DomainSid, NetBIOSName);
                 }
                 return _domain;
             }
         }
 
         private DomainKey _forest;
-        [XmlIgnore]
+		[IgnoreDataMember]
+		[XmlIgnore]
         public DomainKey Forest
         {
             get
@@ -851,6 +828,7 @@ namespace PingCastle.Healthcheck
                     else
                     {
                         string sid = null;
+						string netbiosname = null;
                         if (Trusts != null)
                         {
                             foreach (var trust in Trusts)
@@ -860,16 +838,54 @@ namespace PingCastle.Healthcheck
                                     if (!String.IsNullOrEmpty(trust.SID))
                                     {
                                         sid = trust.SID;
+										netbiosname = trust.NetBiosName;
                                     }
                                     break;
                                 }
                             }
                         }
-                        _forest = new DomainKey(ForestFQDN, sid);
+						_forest = new DomainKey(ForestFQDN, sid, netbiosname);
                     }
                 }
                 return _forest;
             }
         }
+
+		[IgnoreDataMember]
+		[XmlIgnore]
+		public IList<DomainKey> DomainKnown
+		{
+			get
+			{
+				var output = new List<DomainKey>();
+				output.Add(Domain);
+				if (Domain.DomainName != Forest.DomainName)
+					output.Add(Forest);
+				if (Trusts != null)
+				{
+					foreach (var t in Trusts)
+					{
+						output.Add(t.Domain);
+						if (t.KnownDomains != null)
+						{
+							foreach (var d in t.KnownDomains)
+							{
+								output.Add(d.Domain);
+								output.Add(d.Forest);
+							}
+						}
+					}
+				}
+				if (ReachableDomains != null)
+				{
+					foreach (var d in ReachableDomains)
+					{
+						output.Add(d.Domain);
+						output.Add(d.Forest);
+					}
+				}
+				return output;
+			}
+		}
 	}
 }

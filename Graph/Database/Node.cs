@@ -7,8 +7,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.ADWS;
 
-namespace PingCastle.Database
+namespace PingCastle.Graph.Database
 {
     public class Node
     {
@@ -20,6 +21,8 @@ namespace PingCastle.Database
         public string Shortname { get; set; }
 
         public int Distance { get; set; }
+
+		public ADItem ADItem { get; set; }
 
         public string Name { 
             get

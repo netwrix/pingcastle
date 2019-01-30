@@ -1,0 +1,243 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="A_IndirectUser_Description" xml:space="preserve">
+    <value>The purpose is to ensure that the accounts which can have access to the resource are the member of it or being part of the administrator group.</value>
+  </data>
+  <data name="A_IndirectUser_Detail" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="A_IndirectUser_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="A_IndirectUser_GraphRationale" xml:space="preserve">
+    <value>{count} account(s) can take control of this resource without official permission</value>
+  </data>
+  <data name="A_IndirectUser_Rationale" xml:space="preserve">
+    <value>{count} critical object(s) can be put under control without official permission</value>
+  </data>
+  <data name="A_IndirectUser_Solution" xml:space="preserve">
+    <value>Review the account list. Then you should replace the account by a delegation group or an admin group.</value>
+  </data>
+  <data name="A_IndirectUser_TechnicalExplanation" xml:space="preserve">
+    <value>A member of a group has the same granted permission that the group. But a member of a helpdesk group can take control of a member of this group by resetting its password, it can have the same permission than this group without being a member of it. PingCastle checks for similar techniques to identify such accounts.</value>
+  </data>
+  <data name="A_IndirectUser_Title" xml:space="preserve">
+    <value>Check for accounts having indirect control to the resource</value>
+  </data>
+  <data name="P_OperatorsEmpty_Description" xml:space="preserve">
+    <value>The purpose is to ensure that the operator groups which can have indirect control to the domain are empty</value>
+  </data>
+  <data name="P_OperatorsEmpty_Detail" xml:space="preserve">
+    <value />
+  </data>
+  <data name="P_OperatorsEmpty_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="P_OperatorsEmpty_Rationale" xml:space="preserve">
+    <value>{count} operator group(s) are not empty</value>
+  </data>
+  <data name="P_OperatorsEmpty_Solution" xml:space="preserve">
+    <value>It is recommended to have these groups empty. Assign administrators into administrators group. Other accounts should have proper delegation rights in OU or in the scope they are managing.</value>
+  </data>
+  <data name="P_OperatorsEmpty_TechnicalExplanation" xml:space="preserve">
+    <value>Operator groups (account operators, server operators, ...) can take indirectly the control of the domain. Indeed these groups have write access to critical resources of the domain.</value>
+  </data>
+  <data name="P_OperatorsEmpty_Title" xml:space="preserve">
+    <value>Check that operators group are empty</value>
+  </data>
+  <data name="P_OperatorsEmpty_GraphRationale" xml:space="preserve">
+    <value>The group is not empty while it is recommended to be empty</value>
+  </data>
+  <data name="P_EveryoneFound_Description" xml:space="preserve">
+    <value>The purpose is to ensure that no group having a large number of users can take control of an asset</value>
+  </data>
+  <data name="P_EveryoneFound_Detail" xml:space="preserve">
+    <value />
+  </data>
+  <data name="P_EveryoneFound_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="P_EveryoneFound_GraphRationale" xml:space="preserve">
+    <value>Well known groups such as Everyone can take control of this asset</value>
+  </data>
+  <data name="P_EveryoneFound_Rationale" xml:space="preserve">
+    <value>Well known groups such as Everyone can take control of {count} asset(s)</value>
+  </data>
+  <data name="P_EveryoneFound_Solution" xml:space="preserve">
+    <value>It is recommended to analyze the control path giving access to these assets and fix it. Also such generic group should not be granted access, access control lists should be reviewed to remove them.</value>
+  </data>
+  <data name="P_EveryoneFound_TechnicalExplanation" xml:space="preserve">
+    <value>Users belongs to well known groups such as Everyone, Authenticated Users or Domain Users. PingCastle has found that one of this group can take control of at least one asset. Except for Pre-Windows 2000 Compatible Access where Authenticated Users is allowed, it should not happen.</value>
+  </data>
+  <data name="P_EveryoneFound_Title" xml:space="preserve">
+    <value>Check that any users cannot take control of an asset</value>
+  </data>
+  <data name="T_OneDomainControlCritical_Rationale" xml:space="preserve">
+    <value>No domain can take control of an admin or critical object</value>
+  </data>
+  <data name="T_MoreThanOneDomainControlCritical_Rationale" xml:space="preserve">
+    <value>No more than 1 domain can take control of an admin or critical object</value>
+  </data>
+  <data name="T_OneDomainControlUserDefined_Rationale" xml:space="preserve">
+    <value>No domain can take control of a user defined object</value>
+  </data>
+  <data name="T_ChildDomainHasPermission_Rationale" xml:space="preserve">
+    <value>No child domain of a forest should have permission on this domain</value>
+  </data>
+  <data name="A_IndirectUser_Critical_Any_Rationale" xml:space="preserve">
+    <value>"Any users" have no direct or indirect access to critical objects</value>
+  </data>
+  <data name="A_IndirectUser_Critical_100_Rationale" xml:space="preserve">
+    <value>No more than 100 users have no indirect access to critical objects</value>
+  </data>
+  <data name="A_IndirectUser_Critical_50_Rationale" xml:space="preserve">
+    <value>No more than 50 users have no indirect access to critical objects</value>
+  </data>
+  <data name="A_IndirectUser_Critical_10_Rationale" xml:space="preserve">
+    <value>No more than 10 users have no indirect access to critical objects</value>
+  </data>
+  <data name="A_IndirectUser_High_Any_Rationale" xml:space="preserve">
+    <value>"Any users" have no direct or indirect access to high value objects</value>
+  </data>
+  <data name="A_IndirectUser_High_100_Rationale" xml:space="preserve">
+    <value>No more than 100 users have no indirect access to high value objects</value>
+  </data>
+  <data name="A_IndirectUser_High_50_Rationale" xml:space="preserve">
+    <value>No more than 50 users have no indirect access to high value objects</value>
+  </data>
+  <data name="A_IndirectUser_High_10_Rationale" xml:space="preserve">
+    <value>No more than 10 users have no indirect access to high value objects</value>
+  </data>
+  <data name="A_IndirectUser_Medium_Any_Rationale" xml:space="preserve">
+    <value>"Any users" have no direct or indirect access to medium value objects</value>
+  </data>
+  <data name="A_IndirectUser_Medium_100_Rationale" xml:space="preserve">
+    <value>No more than 100 users have no indirect access to medium value objects</value>
+  </data>
+  <data name="A_IndirectUser_Medium_50_Rationale" xml:space="preserve">
+    <value>No more than 50 users have no indirect access to medium value objects</value>
+  </data>
+  <data name="A_IndirectUser_Medium_10_Rationale" xml:space="preserve">
+    <value>No more than 10 users have no indirect access to medium value objects</value>
+  </data>
+  <data name="S_PermissionsCleanup_Rationale" xml:space="preserve">
+    <value>No object should have on his control path a permission related to deleted objects</value>
+  </data>
+</root>

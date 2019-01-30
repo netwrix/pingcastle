@@ -7,12 +7,16 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("S-SMB-v1", HealthcheckRiskRuleCategory.StaleObjects, HealthcheckRiskModelCategory.OldAuthenticationProtocols)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 1)]
-    public class HeatlcheckRuleStaledSMBv1 : HeatlcheckRuleBase
+	[RuleModel("S-SMB-v1", RiskRuleCategory.StaleObjects, RiskModelCategory.OldAuthenticationProtocols)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 1)]
+	[RuleBSI("M 2.412")]
+	[RuleCERTFR("CERTFR-2017-ACT-019", "SECTION00010000000000000000")]
+	[RuleCERTFR("CERTFR-2016-ACT-039", "SECTION00010000000000000000")]
+    public class HeatlcheckRuleStaledSMBv1 : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

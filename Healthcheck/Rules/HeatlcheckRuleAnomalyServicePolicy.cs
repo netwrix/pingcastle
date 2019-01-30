@@ -7,12 +7,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-NoServicePolicy", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.WeakPassword)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 0)]
-    public class HeatlcheckRuleAnomalyServicePolicy : HeatlcheckRuleBase
+	[RuleModel("A-NoServicePolicy", RiskRuleCategory.Anomalies, RiskModelCategory.WeakPassword)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
+    public class HeatlcheckRuleAnomalyServicePolicy : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
@@ -21,17 +22,17 @@ namespace PingCastle.Healthcheck.Rules
             {
                 foreach (GPPSecurityPolicyProperty property in policy.Properties)
                 {
-                    if (!servicePolicy && property.Property == "MinimumPasswordLength")
+                    if (property.Property == "MinimumPasswordLength")
                     {
                         if (property.Value >= 20)
                         {
-							AddRawDetail(policy.GPOName);
+							servicePolicy = true;
 							break;
                         }
                     }
                 }
             }
-            return null;
+            return (servicePolicy ? 0 : 1);
         }
     }
 }

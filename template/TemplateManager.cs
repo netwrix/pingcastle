@@ -43,6 +43,26 @@ namespace PingCastle.template
 			return LoadTemplate(typeof(TemplateManager).Namespace + ".responsivetemplate.html.gz"); 
         }
 
+		public static string LoadBootstrapCss()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".bootstrap.min.css.gz");
+		}
+
+		public static string LoadBootstrapJs()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".bootstrap.min.js.gz");
+		}
+
+		public static string LoadPopperJs()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".popper.min.js.gz");
+		}
+
+		public static string LoadJqueryJs()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".jquery.min.js.gz");
+		}
+
 		public static string LoadVisJs()
 		{
 			return LoadTemplate(typeof(TemplateManager).Namespace + ".vis.min.js.gz");
@@ -51,6 +71,21 @@ namespace PingCastle.template
 		public static string LoadVisCss()
 		{
 			return LoadTemplate(typeof(TemplateManager).Namespace + ".vis.min.css.gz");
+		}
+
+		public static string LoadDatatableJs()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".dataTables.bootstrap4.min.js.gz");
+		}
+
+		public static string LoadDatatableCss()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".dataTables.bootstrap4.min.css.gz");
+		}
+
+		public static string LoadJqueryDatatableJs()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".jquery.dataTables.min.js.gz");
 		}
 	}
 }

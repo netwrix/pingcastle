@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PingCastle.Database
+namespace PingCastle.Graph.Database
 {
     public enum MappingType
     {

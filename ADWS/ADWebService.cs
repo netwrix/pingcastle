@@ -55,7 +55,8 @@ namespace PingCastle.ADWS
 
         public NetworkCredential Credential { get; set; }
 
-		private ADConnection connection { get; set; }
+		private IADConnection connection { get; set; }
+		private IADConnection fallBackConnection { get; set; }
 
         #region connection establishment
         private void EstablishConnection()
@@ -91,6 +92,7 @@ namespace PingCastle.ADWS
 						adwsConnection.EstablishConnection();
                         Trace.WriteLine("ADWS connection successful");
 						connection = adwsConnection;
+						fallBackConnection = new LDAPConnection(adwsConnection.Server, adwsConnection.Port, Credential);
                     }
                     catch (Exception ex)
                     {
@@ -117,6 +119,7 @@ namespace PingCastle.ADWS
 						ldapConnection.EstablishConnection();
                         Trace.WriteLine("LDAP connection successful");
 						connection = ldapConnection;
+						fallBackConnection = new ADWSConnection(adwsConnection.Server, adwsConnection.Port, Credential);
                     }
                     catch (Exception ex)
                     {
@@ -232,17 +235,37 @@ namespace PingCastle.ADWS
 
         public void Enumerate(string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback)
         {
-            Enumerate(distinguishedName, filter, properties, callback, "Subtree");
+            Enumerate(null, distinguishedName, filter, properties, callback, "Subtree");
         }
 
 		public void Enumerate(string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope)
 		{
-			connection.Enumerate(distinguishedName, filter, properties, callback, scope);
+			Enumerate(null, distinguishedName, filter, properties, callback, scope);
 		}
 
-		public void EnumerateUsingWorkerThread(string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope)
+		public delegate void Action();
+
+		public void Enumerate(Action preambleWithReentry, string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope)
 		{
-			connection.EnumerateUsingWorkerThread(distinguishedName, filter, properties, callback, scope);
+			if (preambleWithReentry != null)
+				preambleWithReentry();
+			try
+			{
+				connection.Enumerate(distinguishedName, filter, properties, callback, scope);
+			}
+			catch (Exception ex)
+			{
+				Trace.WriteLine("Exception: " + ex.Message);
+				Trace.WriteLine("StackTrace: " + ex.StackTrace);
+				if (fallBackConnection == null)
+					throw;
+				Console.ForegroundColor = ConsoleColor.Yellow;
+				Console.WriteLine("The AD query failed. Using the alternative protocol (" + fallBackConnection.GetType().Name + ")");
+				Console.ResetColor();
+				if (preambleWithReentry != null)
+					preambleWithReentry();
+				fallBackConnection.Enumerate(distinguishedName, filter, properties, callback, scope);
+			}
 		}
 
 		#region IDispose

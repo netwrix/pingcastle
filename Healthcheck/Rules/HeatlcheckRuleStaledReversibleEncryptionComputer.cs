@@ -7,12 +7,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("S-C-Reversible", HealthcheckRiskRuleCategory.StaleObjects, HealthcheckRiskModelCategory.ObjectConfig)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-    public class HeatlcheckRuleStaledReversibleEncryptionComputer : HeatlcheckRuleBase
+	[RuleModel("S-C-Reversible", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    public class HeatlcheckRuleStaledReversibleEncryptionComputer : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

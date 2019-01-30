@@ -28,6 +28,8 @@ namespace PingCastle.Scanners
         public abstract string Name { get; }
 		public abstract string Description { get; }
 
+		public static int ScanningMode { get; set; }
+
 		public void Initialize(string server, int port, NetworkCredential credential)
         {
             Server = server;
@@ -40,7 +42,47 @@ namespace PingCastle.Scanners
 		abstract protected string GetCsvHeader();
 		abstract protected string GetCsvData(string computer);
 
+		public bool QueryForAdditionalParameterInInteractiveMode()
+		{
+			var choices = new List<KeyValuePair<string, string>>(){ 
+				new KeyValuePair<string, string>("all","This is a domain. Scan all computers."), 
+				new KeyValuePair<string, string>("one","This is a computer. Scan only this computer."),
+			};
+			ConsoleMenu.Title = "Select the scanning mode";
+			ConsoleMenu.Information = "This scanner can collect all the active computers from a domain and scan them one by one automatically. Or scan only one computer";
+			int choice = ConsoleMenu.SelectMenu(choices);
+			if (choice == 0)
+				return false;
+			ScanningMode = choice;
+			return true;
+		}
+
 		public void Export(string filename)
+		{
+			if (ScanningMode == 1)
+			{
+				ExportAllComputers(filename);
+				return;
+			}
+			try
+			{
+				IPAddress[] ipaddresses = Dns.GetHostAddresses(Server);
+				DisplayAdvancement("Scanning " + Server + " (" + ipaddresses[0].ToString() + ")");
+			}
+			catch (Exception)
+			{
+				DisplayAdvancement("Unable to translate the server into ip");
+				throw;
+			}
+			using (StreamWriter sw = File.CreateText(filename))
+			{
+				sw.WriteLine(GetCsvHeader());
+				sw.WriteLine(GetCsvData(Server));
+			}
+			DisplayAdvancement("Done");
+		}
+
+		public void ExportAllComputers(string filename)
 		{
 			DisplayAdvancement("Getting computer list");
 			List<string> computers = GetListOfComputerToExplore();
@@ -176,19 +218,5 @@ namespace PingCastle.Scanners
 			Console.SetCursorPosition(0, currentLineCursor - 1);
 		}
 
-		public static Dictionary<string, Type> GetAllScanners()
-		{
-			var output = new Dictionary<string, Type>();
-			foreach (Type type in Assembly.GetAssembly(typeof(ScannerBase)).GetExportedTypes())
-			{
-				if (!type.IsAbstract && typeof(IScanner).IsAssignableFrom(type))
-				{
-					PropertyInfo pi = type.GetProperty("Name");
-                    IScanner scanner = (IScanner)Activator.CreateInstance(type);
-					output.Add(scanner.Name, type);
-				}
-			}
-			return output;
-		}
 	}
 }

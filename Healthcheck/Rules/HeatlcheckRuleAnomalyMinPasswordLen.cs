@@ -7,12 +7,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-MinPwdLen", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.WeakPassword)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-    public class HeatlcheckRuleAnomalyMinPasswordLen : HeatlcheckRuleBase
+	[RuleModel("A-MinPwdLen", RiskRuleCategory.Anomalies, RiskModelCategory.WeakPassword)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+	[RuleBSI("M 4.314")]
+    public class HeatlcheckRuleAnomalyMinPasswordLen : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

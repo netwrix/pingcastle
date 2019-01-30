@@ -8,12 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.Security.Principal;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("P-DCOwner", HealthcheckRiskRuleCategory.PrivilegedAccounts, HealthcheckRiskModelCategory.ACLCheck)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-    public class HeatlcheckRulePrivilegedDCOwner : HeatlcheckRuleBase
+	[RuleModel("P-DCOwner", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    public class HeatlcheckRulePrivilegedDCOwner : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

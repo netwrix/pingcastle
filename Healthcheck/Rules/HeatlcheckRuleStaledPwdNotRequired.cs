@@ -7,12 +7,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("S-PwdNotRequired", HealthcheckRiskRuleCategory.StaleObjects, HealthcheckRiskModelCategory.ObjectConfig)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 15)]
-    public class HeatlcheckRuleStaledPwdNotRequired : HeatlcheckRuleBase
+	[RuleModel("S-PwdNotRequired", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
+	[RuleANSSI("R36", "subsection.3.6")]
+    public class HeatlcheckRuleStaledPwdNotRequired : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

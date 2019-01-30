@@ -7,13 +7,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-SmartCardRequired", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.PassTheCredential)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 30)]
-    [HeatlcheckRuleSTIG("V-72821")]
-    public class HeatlcheckRuleAnomalySmartCardRequired : HeatlcheckRuleBase
+	[RuleModel("A-SmartCardRequired", RiskRuleCategory.Anomalies, RiskModelCategory.PassTheCredential)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 30)]
+    [RuleSTIG("V-72821", "All accounts, privileged and unprivileged, that require smart cards must have the underlying NT hash rotated at least every 60 days.")]
+	[RuleANSSI("R38", "paragraph.3.6.2.2")]
+    public class HeatlcheckRuleAnomalySmartCardRequired : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

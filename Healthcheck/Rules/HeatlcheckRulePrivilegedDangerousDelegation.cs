@@ -7,12 +7,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("P-DangerousExtendedRight", HealthcheckRiskRuleCategory.PrivilegedAccounts, HealthcheckRiskModelCategory.ACLCheck)]
-	[HeatlcheckRuleComputation(RuleComputationType.PerDiscover, 5)]
-    public class HeatlcheckRulePrivilegedDangerousDelegation : HeatlcheckRuleBase
+	[RuleModel("P-DangerousExtendedRight", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+	[RuleComputation(RuleComputationType.PerDiscover, 5)]
+	[RuleANSSI("R18", "subsubsection.3.3.2")]
+    public class HeatlcheckRulePrivilegedDangerousDelegation : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

@@ -8,13 +8,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("P-ServiceDomainAdmin", HealthcheckRiskRuleCategory.PrivilegedAccounts, HealthcheckRiskModelCategory.PrivilegeControl)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnThreshold, 15, Threshold: 2)]
-    [HeatlcheckRuleSTIG("V-36432")]
-    public class HeatlcheckRulePrivilegedServiceDomainAdmin : HeatlcheckRuleBase
+	[RuleModel("P-ServiceDomainAdmin", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.PrivilegeControl)]
+	[RuleComputation(RuleComputationType.TriggerOnThreshold, 15, Threshold: 2)]
+    [RuleSTIG("V-36432", "Membership to the Domain Admins group must be restricted to accounts used only to manage the Active Directory domain and domain controllers.")]
+	[RuleANSSI("R11", "subsection.2.5")]
+    public class HeatlcheckRulePrivilegedServiceDomainAdmin : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

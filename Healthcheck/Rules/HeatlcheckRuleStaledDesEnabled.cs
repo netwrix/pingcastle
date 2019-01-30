@@ -7,16 +7,17 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("S-DesEnabled", HealthcheckRiskRuleCategory.StaleObjects, HealthcheckRiskModelCategory.OldAuthenticationProtocols)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 15)]
-    public class HeatlcheckRuleStaledDesEnabled : HeatlcheckRuleBase
+	[RuleModel("S-DesEnabled", RiskRuleCategory.StaleObjects, RiskModelCategory.OldAuthenticationProtocols)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
+    public class HeatlcheckRuleStaledDesEnabled : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            return healthcheckData.UserAccountData.NumberDesEnabled;
+			return healthcheckData.UserAccountData.NumberDesEnabled + healthcheckData.ComputerAccountData.NumberDesEnabled;
         }
     }
 }

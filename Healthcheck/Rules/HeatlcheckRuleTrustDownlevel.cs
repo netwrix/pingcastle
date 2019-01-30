@@ -7,12 +7,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("T-Downlevel", HealthcheckRiskRuleCategory.Trusts, HealthcheckRiskModelCategory.OldTrustProtocol)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 20)]
-    public class HeatlcheckRuleTrustDownlevel : HeatlcheckRuleBase
+	[RuleModel("T-Downlevel", RiskRuleCategory.Trusts, RiskModelCategory.OldTrustProtocol)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
+    public class HeatlcheckRuleTrustDownlevel : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

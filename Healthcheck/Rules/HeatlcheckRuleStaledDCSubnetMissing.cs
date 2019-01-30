@@ -8,12 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("S-DC-SubnetMissing", HealthcheckRiskRuleCategory.StaleObjects, HealthcheckRiskModelCategory.NetworkTopography)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-    public class HeatlcheckRuleStaledDCSubnetMissing : HeatlcheckRuleBase
+	[RuleModel("S-DC-SubnetMissing", RiskRuleCategory.StaleObjects, RiskModelCategory.NetworkTopography)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    public class HeatlcheckRuleStaledDCSubnetMissing : RuleBase<HealthcheckData>
     {
 		private class Subnet
 		{
@@ -84,6 +85,8 @@ namespace PingCastle.Healthcheck.Rules
 					foreach (string ip in dc.IP)
 					{
 						var ipaddress = IPAddress.Parse(ip);
+						if (ipaddress.IsIPv6LinkLocal || ipaddress.IsIPv6Multicast || ipaddress.IsIPv6SiteLocal)
+							continue;
 						bool found = false;
 						foreach (var subnet in subnets)
 						{

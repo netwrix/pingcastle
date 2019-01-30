@@ -7,13 +7,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-ProtectedUsers", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.PassTheCredential)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 0)]
-    [HeatlcheckRuleSTIG("V-78131")]
-    public class HeatlcheckRuleAnomalySchemaProtectedUsers : HeatlcheckRuleBase
+	[RuleModel("A-ProtectedUsers", RiskRuleCategory.Anomalies, RiskModelCategory.PassTheCredential)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
+    [RuleSTIG("V-78131", "Accounts with domain level administrative privileges must be members of the Protected Users group in domains with a domain functional level of Windows 2012 R2 or higher.")]
+	[RuleCERTFR("CERTFR-2017-ALE-012")]
+    public class HeatlcheckRuleAnomalySchemaProtectedUsers : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

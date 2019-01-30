@@ -86,7 +86,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\HealthcheckDataHelper.cs" />
+    <Compile Include="ADWS\IADConnection.cs" />
+    <Compile Include="ConsoleMenu.cs" />
+    <Compile Include="Data\IPingCastleReport.cs" />
+    <Compile Include="Data\IPingCastleReportGenerator.cs" />
+    <Compile Include="Data\PingCastleReportHelper.cs" />
+    <Compile Include="Data\PingCastleReportDataExportLevel.cs" />
     <Compile Include="Graph\Database\IDataStorage.cs" />
     <Compile Include="Graph\Database\LiveDataStorage.cs" />
     <Compile Include="Graph\Database\MappingType.cs" />
@@ -96,23 +101,63 @@
     <Compile Include="ADWS\ADConnection.cs" />
     <Compile Include="ADWS\LDAPConnection.cs" />
     <Compile Include="Compatibility.cs" />
+    <Compile Include="Graph\Reporting\GraphObjectReference.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphRule.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectUser.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphPrivilegedOperatorsEmpty.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphTrustMoreThanOneDomainControlCritical.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphTrustOneDomainControlCritical.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphTrustOneDomainControlUserDefined.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphTrustChildDomainHasPermission.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectCriticalAny.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectCritical100.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectCritical50.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectCritical10.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectHigh10.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectHigh100.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectHigh50.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectHighAny.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectMedium10.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectMedium100.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectMedium50.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectMediumAny.cs" />
+    <Compile Include="Graph\Rules\CompromiseGraphStalePermissionsCleanup.cs" />
     <Compile Include="Healthcheck\ADModel.cs" />
-    <Compile Include="Healthcheck\DomainKey.cs" />
-    <Compile Include="Healthcheck\DomainLocator.cs" />
-    <Compile Include="Data\HealthcheckDataCollection.cs" />
+    <Compile Include="Data\DomainKey.cs" />
+    <Compile Include="ADWS\DomainLocator.cs" />
+    <Compile Include="Data\PingCastleReportCollection.cs" />
     <Compile Include="Data\DataHelper.cs" />
-    <Compile Include="Data\HealthcheckDataHistoryCollection.cs" />
+    <Compile Include="Data\PingCastleReportHistoryCollection.cs" />
     <Compile Include="Healthcheck\HealthCheckEncryption.cs" />
     <Compile Include="Data\HealthCheckBUEntityData.cs" />
     <Compile Include="Data\CompromiseGraphData.cs" />
-    <Compile Include="Report\HealthCheckReportBase.cs" />
-    <Compile Include="Report\HealthCheckReportCompromiseGraph.cs" />
-    <Compile Include="Report\HealthCheckReportConsolidation.cs" />
-    <Compile Include="Report\HealthCheckReportSingle.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedPrivilegeEveryone.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDelegationGPOData.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedOperatorsEmpty.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyNotEnoughDC.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyDCSpooler.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDelegationKeyAdmin.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedExchangeAdminSDHolder.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedUnconstrainedDelegation.cs" />
+    <Compile Include="PingCastleException.cs" />
+    <Compile Include="PingCastleFactory.cs" />
+    <Compile Include="Report\IPingCastleReportUser.cs" />
+    <Compile Include="Report\ReportBase.cs" />
+    <Compile Include="Report\ReportCompromiseGraph.cs" />
+    <Compile Include="Report\ReportCompromiseGraphConsolidation.cs" />
+    <Compile Include="Report\ReportHealthCheckConsolidation.cs" />
+    <Compile Include="Report\ReportHealthCheckSingle.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDelegationLoginScript.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalySMB2SignatureNotEnabled.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalySMB2SignatureNotRequired.cs" />
-    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAttribute.cs" />
+    <Compile Include="Report\ReportHelper.cs" />
+    <Compile Include="Report\ReportRiskControls.cs" />
+    <Compile Include="Rules\IRiskEvaluation.cs" />
+    <Compile Include="Rules\IRuleScore.cs" />
+    <Compile Include="Rules\RiskModelCategory.cs" />
+    <Compile Include="Rules\RiskModelObjective.cs" />
+    <Compile Include="Rules\RiskRuleCategory.cs" />
+    <Compile Include="Rules\RuleAttribute.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledDCSubnetMissing.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyBackupMetadata.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalySchemaProtectedUsers.cs" />
@@ -180,11 +225,20 @@
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledPrimaryGroup.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledInactiveComputer.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledInactive.cs" />
-    <Compile Include="Healthcheck\Rules\HeatlcheckRuleBase.cs" />
+    <Compile Include="Rules\RuleBase.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledSIDHistory.cs" />
     <Compile Include="Healthcheck\TrustAnalyzer.cs" />
     <Compile Include="License.cs" />
-    <Compile Include="Scanners\AccountEnumeratorViaTrust.cs" />
+    <Compile Include="RPC\spool.cs" />
+    <Compile Include="Rules\RuleSet.cs" />
+    <Compile Include="Scanners\ConsistencyScanner.cs" />
+    <Compile Include="Scanners\ACLScanner.cs" />
+    <Compile Include="Scanners\Smb1Protocol.cs" />
+    <Compile Include="Scanners\Smb2Protocol.cs" />
+    <Compile Include="Scanners\SpoolerScanner.cs" />
+    <Compile Include="Scanners\ForeignUsersScanner.cs" />
+    <Compile Include="Scanners\nullsessionTrustScanner.cs" />
+    <Compile Include="Scanners\NullSessionScanner.cs" />
     <Compile Include="Scanners\IScanner.cs" />
     <Compile Include="Scanners\ms17_010scanner.cs" />
     <Compile Include="Scanners\ReplicationScanner.cs" />
@@ -196,7 +250,7 @@
     <Compile Include="misc\BlockingQueue.cs" />
     <Compile Include="Healthcheck\HealthcheckAnalyzer.cs" />
     <Compile Include="Data\HealthcheckData.cs" />
-    <Compile Include="Report\HealthCheckReportMapBuilder.cs" />
+    <Compile Include="Report\ReportMapBuilder.cs" />
     <Compile Include="ADWS\ADItem.cs" />
     <Compile Include="ADWS\ADDomainInfo.cs" />
     <Compile Include="Graph\Export\RelationFactory.cs" />
@@ -206,15 +260,14 @@
     <Compile Include="Graph\Reporting\ReportGenerator.cs" />
     <Compile Include="ADWS\soapheader.cs" />
     <Compile Include="ADWS\wse.cs" />
-    <Compile Include="Healthcheck\HealthcheckRules.cs" />
     <Compile Include="misc\RegistryPolReader.cs" />
     <Compile Include="NativeMethods.cs" />
-    <Compile Include="NullSession\lsa.cs" />
-    <Compile Include="NullSession\nativemethods.cs" />
-    <Compile Include="NullSession\nrpc.cs" />
-    <Compile Include="NullSession\nullsession.cs" />
-    <Compile Include="NullSession\rpcapi.cs" />
-    <Compile Include="NullSession\samr.cs" />
+    <Compile Include="RPC\lsa.cs" />
+    <Compile Include="RPC\nativemethods.cs" />
+    <Compile Include="RPC\nrpc.cs" />
+    <Compile Include="RPC\nullsession.cs" />
+    <Compile Include="RPC\rpcapi.cs" />
+    <Compile Include="RPC\samr.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="shares\ShareEnumerator.cs" />
@@ -263,10 +316,22 @@
     <None Include="ADWS\wsdl\wsman.xsd">
       <SubType>Designer</SubType>
     </None>
-    <EmbeddedResource Include="Healthcheck\Rules\RuleDescription.resx" />
+    <EmbeddedResource Include="Graph\Rules\RuleDescription.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Healthcheck\Rules\RuleDescription.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="template\responsivetemplate.html.gz" />
     <EmbeddedResource Include="template\vis.min.css.gz" />
     <EmbeddedResource Include="template\vis.min.js.gz" />
+    <EmbeddedResource Include="template\dataTables.bootstrap4.min.css.gz" />
+    <EmbeddedResource Include="template\dataTables.bootstrap4.min.js.gz" />
+    <EmbeddedResource Include="template\jquery.dataTables.min.js.gz" />
+    <EmbeddedResource Include="template\bootstrap.min.css.gz" />
+    <EmbeddedResource Include="template\bootstrap.min.js.gz" />
+    <EmbeddedResource Include="template\jquery.min.js.gz" />
+    <EmbeddedResource Include="template\popper.min.js.gz" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="changelog.txt" />

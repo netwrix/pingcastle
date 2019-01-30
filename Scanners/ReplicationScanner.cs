@@ -30,6 +30,11 @@ namespace PingCastle.Scanners
             Credential = credential;
         }
 
+	   public bool QueryForAdditionalParameterInInteractiveMode()
+	   {
+		   return true;
+	   }
+
         public void Export(string filename)
         {
 

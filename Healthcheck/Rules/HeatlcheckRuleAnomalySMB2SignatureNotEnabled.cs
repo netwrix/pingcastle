@@ -7,12 +7,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-SMB2SignatureNotEnabled", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.NetworkSniffing)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-    public class HeatlcheckRuleAnomalySMB2SignatureNotEnabled : HeatlcheckRuleBase
+	[RuleModel("A-SMB2SignatureNotEnabled", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+	[RuleBSI("M 2.412")]
+	[RuleCERTFR("CERTFR-2015-ACT-021", "SECTION00010000000000000000")]
+    public class HeatlcheckRuleAnomalySMB2SignatureNotEnabled : RuleBase<HealthcheckData>
 	{
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
 		{

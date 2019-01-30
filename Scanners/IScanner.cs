@@ -11,11 +11,14 @@ using System.Text;
 
 namespace PingCastle.Scanners
 {
-    interface IScanner
-    {
-        void Initialize(string server, int port, NetworkCredential credential);
-        void Export(string filename);
-        string Name { get; }
+	public interface IScanner
+	{
+		void Initialize(string server, int port, NetworkCredential credential);
+		void Export(string filename);
+		string Name { get; }
 		string Description { get; }
-    }
+		
+		// return false if the user query has been cancelled
+		bool QueryForAdditionalParameterInInteractiveMode();
+	}
 }

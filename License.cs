@@ -88,12 +88,12 @@ namespace PingCastle
         public ADHealthCheckingLicense(string license, bool DoAKeyCheck)
         {
             if (String.IsNullOrEmpty(license))
-                throw new ApplicationException("No license has been provided");
+				throw new PingCastleException("No license has been provided");
             _licKey = license;
             Trace.WriteLine("License: " + _licKey);
             if (!VerifyKey())
             {
-                throw new ApplicationException("the license couldn't validate");
+				throw new PingCastleException("the license couldn't validate");
             }
         }
 
@@ -245,7 +245,7 @@ namespace PingCastle
                 {
                     Trace.WriteLine("loading rsa key");
                     Trace.WriteLine("verifying the signature");
-                    if (!RSA.VerifyHash(hash, "SHA1", signature))
+					if (!RSA.VerifyHash(hash, "1.3.14.3.2.26", signature))
                     {
                         throw new Exception("Invalid signature");
                     }

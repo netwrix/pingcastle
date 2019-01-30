@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 
-namespace PingCastle.Database
+namespace PingCastle.Graph.Database
 {
     // use [Description("")] attribute to change the record name in the database
     public enum RelationType

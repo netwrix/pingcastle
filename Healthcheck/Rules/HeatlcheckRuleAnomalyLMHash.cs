@@ -7,12 +7,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-LMHashAuthorized", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.NetworkSniffing)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-    public class HeatlcheckRuleAnomalyLMHash : HeatlcheckRuleBase
+	[RuleModel("A-LMHashAuthorized", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+	[RuleANSSI("R37", "paragraph.3.6.2.1")]
+	[RuleBSI("M 2.412")]
+    public class HeatlcheckRuleAnomalyLMHash : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

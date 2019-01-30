@@ -1,3 +1,34 @@
+2.6.0.0
+* fix a problem for early version of LDAP undetected : in ms-*-AdmPwd, MCS was replaced by company name
+* integrate many hidden functions into the "scanner mode" to be more easy to use
+* removing the ms17-010 scanner from the source because antivirus are so stupid that they cannot make the difference between a vulnerability scanner & an exploitation kit
+* added many scanners (aclscanner, ...)
+* breaking change: admin accounts where checks for lock, smart card, ... even if the account is disabled. This is not the case anymore.
+* tuned S-DC-SubnetMissing to avoid dealing with local ipv6 loopback address (::1)
+* added the rule A-DC-Spooler and the spooler scanner to check for print spooler accessible remotely (used to collect computer credentials via unconstrained delegation)
+* added the rule A-NotEnoughDC to check domains have at least 2 DC
+* added the rule P-UnconstrainedDelegation to check for uncontrained delegation in kerberos (the data was already reported)
+* in relation with P-UnconstrainedDelegation, change the way accounts "trusted for delegation" are selected. Change useraccountcontrol flag from 0x01000000 to 0x80000
+* fix in healthcheck report: the reversible password detail section was only displayed if there was unconstrained delegation in the domain
+* added the rule P-ExchangeAdminSDHolder to check for the Exchange modification of the AdminSDHolder object
+* added the rule P-DelegationKeyAdmin to check for boggus Windows 2016 installation
+* added the (informative) rule P-OperatorsEmpty to check the recommandation to have the account and server operators empty
+* added the rule P-DelegationGPOData to check for too large permissions granted to GPO items
+* added the rule P-PrivilegeEveryone to check for too large GPO assigned privileges
+* adjust the Domain Controller selection for tests (aka: number of DC in a domain & checks performed on them)
+* remove the --split-OU technique which was not used and add an automatic protocol fallback in case of failure (ADWS then LDAP for example)
+* allow the use of LDAPS via the --port 636 command switch
+* fix a couple of problem in PingCastleReporting (incorrect numbers, wrong label, inability to load some configuration)
+* Migrate from Bootstrap 3 to Bootstrap 4
+* fix some mono incompatibility
+* fix crash when analysing gpo where scheduled task password is being stored
+* fix A-NoServicePolicy which was triggered when i shouldn't and vice versa
+* add support for Windows 2019
+* fix DnsAdminGroup not found when moved in another OU
+* fix rootDse listing when using credential & required bind
+* extended the rule S-DesEnabled to check also computers account
+* add to the report a link in rules to sections of the report to get more insight
+
 2.5.2.0
 * fix a problem when a dc has been removed but not its computer account but its dns record
 * fix a problem when for the rule A-SmartCardRequired which was triggered each time a "smart card required" account was found

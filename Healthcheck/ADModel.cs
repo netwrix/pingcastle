@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+using PingCastle.Data;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -102,12 +103,12 @@ namespace PingCastle.Healthcheck
 
         public GraphNode GetDomain(string center)
         {
-            DomainKey key = new DomainKey(center, null);
+            DomainKey key = new DomainKey(center, null, null);
             return Locate(key);
         }
 
         // sometimes we have only the netbios name. Try to find if we know the FQDN
-        private static void EnrichDomainInfo(HealthcheckDataCollection consolidation, HealthCheckTrustDomainInfoData di)
+        private static void EnrichDomainInfo(PingCastleReportCollection<HealthcheckData> consolidation, HealthCheckTrustDomainInfoData di)
         {
             bool enriched = false;
             // search direct report
@@ -151,7 +152,7 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        static public GraphNodeCollection BuildModel(HealthcheckDataCollection consolidation, OwnerInformationReferences EntityData)
+        static public GraphNodeCollection BuildModel(PingCastleReportCollection<HealthcheckData> consolidation, OwnerInformationReferences EntityData)
         {
             GraphNodeCollection nodes = new GraphNodeCollection();
             // build links based on the most to the less reliable information
@@ -217,30 +218,34 @@ namespace PingCastle.Healthcheck
                         EnrichDomainInfo(consolidation, di);
                     }
                     // if no information was given (only Netbios name!) fallback to a forest trust
-                    if (String.IsNullOrEmpty(di.ForestName))
-                    {
-                        di.ForestName = di.DnsName;
-                    }
-                    // ignore the domain if the forest trust is known (information should be already there)
-                    if (consolidation.GetDomain(di.Forest) != null)
-                        continue;
+					if (String.IsNullOrEmpty(di.ForestName) || di.ForestName == di.DnsName)
+					{
+						GraphNode childDomain = nodes.CreateNodeIfNeeded(ref nodeNumber, di.Domain, di.NetbiosName, data.GenerationDate);
+						GraphNode myForestRoot = nodes.CreateNodeIfNeeded(ref nodeNumber, data.Forest, null, data.GenerationDate);
+						myForestRoot.LinkTwoForests(childDomain);
+						myForestRoot.SetForest(myForestRoot.Domain);
+					}
+					else
+					{
+						// ignore the domain if the forest trust is known (information should be already there)
+						if (consolidation.GetDomain(di.Forest) != null)
+							continue;
 
-                    // add the forest trust if needed
-                    GraphNode remoteForestRoot = nodes.CreateNodeIfNeeded(ref nodeNumber, di.Forest, di.ForestNetbios, data.GenerationDate);
-                    remoteForestRoot.SetForest(remoteForestRoot.Domain);
+						// add the forest trust if needed
+						GraphNode remoteForestRoot = nodes.CreateNodeIfNeeded(ref nodeNumber, di.Forest, di.ForestNetbios, data.GenerationDate);
+						remoteForestRoot.SetForest(remoteForestRoot.Domain);
 
-                    // add the forest root if needed
-                    GraphNode myForestRoot = nodes.CreateNodeIfNeeded(ref nodeNumber, data.Forest, null, data.GenerationDate);
-                    myForestRoot.LinkTwoForests(remoteForestRoot);
-                    myForestRoot.SetForest(myForestRoot.Domain);
-                    // add the trust if the domain is a child of the forest)
-                    // (ignore the trust if forest root = trust)
-                    if (di.ForestName.Equals(di.DnsName, StringComparison.InvariantCultureIgnoreCase))
-                        continue;
+						// add the forest root if needed
+						GraphNode myForestRoot = nodes.CreateNodeIfNeeded(ref nodeNumber, data.Forest, null, data.GenerationDate);
+						myForestRoot.LinkTwoForests(remoteForestRoot);
+						myForestRoot.SetForest(myForestRoot.Domain);
+						// add the trust if the domain is a child of the forest)
+						// (ignore the trust if forest root = trust)
 
-                    GraphNode childDomain = nodes.CreateNodeIfNeeded(ref nodeNumber, di.Domain, di.NetbiosName, data.GenerationDate);
-                    remoteForestRoot.LinkInsideAForest(childDomain);
-                    childDomain.SetForest(remoteForestRoot.Domain);
+						GraphNode childDomain = nodes.CreateNodeIfNeeded(ref nodeNumber, di.Domain, di.NetbiosName, data.GenerationDate);
+						remoteForestRoot.LinkInsideAForest(childDomain);
+						childDomain.SetForest(remoteForestRoot.Domain);
+					}
                 }
             }
             Trace.WriteLine("enrich forest information");

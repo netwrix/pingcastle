@@ -7,12 +7,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[HeatlcheckRuleModel("A-ReversiblePwd", HealthcheckRiskRuleCategory.Anomalies, HealthcheckRiskModelCategory.PasswordRetrieval)]
-	[HeatlcheckRuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-    public class HeatlcheckRuleAnomalyReversiblePassword : HeatlcheckRuleBase
+	[RuleModel("A-ReversiblePwd", RiskRuleCategory.Anomalies, RiskModelCategory.PasswordRetrieval)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    public class HeatlcheckRuleAnomalyReversiblePassword : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

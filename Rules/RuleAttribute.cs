@@ -40,7 +40,37 @@ namespace PingCastle.Rules
 		public RiskModelObjective Objective { get; private set; }
 	}
 
-    public enum RuleComputationType
+	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
+	public class RuleIntroducedInAttribute : Attribute
+	{
+		public RuleIntroducedInAttribute(int major, int minor, int build = 0, int revision = 0)
+		{
+			Major = major;
+			Minor = minor;
+			Build = build;
+			Revision = revision;
+		}
+
+		public int Major { get; private set; }
+		public int Minor { get; private set; }
+		public int Build { get; private set; }
+		public int Revision { get; private set; }
+
+		private Version _version;
+		public Version Version
+		{
+			get
+			{
+				if (_version == null)
+				{
+					_version = new Version(Major, Minor, Build, Revision);
+				}
+				return _version;
+			}
+		}
+	}
+
+	public enum RuleComputationType
     {
         TriggerOnThreshold,
         TriggerOnPresence,
@@ -143,25 +173,47 @@ namespace PingCastle.Rules
         }
     }
 
+	public enum STIGFramework
+	{
+		Domain,
+		Forest,
+		Windows7,
+		Windows2008,
+		ActiveDirectoryService2003,
+		ActiveDirectoryService2008
+	}
+
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public class RuleSTIGAttribute : RuleFrameworkReference
     {
-		public RuleSTIGAttribute(string id, string title = null, bool forest = false)
+		public RuleSTIGAttribute(string id, string title = null, STIGFramework framework = STIGFramework.Domain)
         {
             ID = id;
-            ForestCheck = forest;
+			Framework = framework;
 			Title = title;
         }
 
 		public string ID { get; private set; }
-		public bool ForestCheck { get; private set; }
+		public STIGFramework Framework { get; private set; }
 		public string Title { get; private set; }
 
         public override string URL { get
             {
-                if (ForestCheck)
-                    return "https://www.stigviewer.com/stig/active_directory_forest/2016-12-19/finding/" + ID;
-                return "https://www.stigviewer.com/stig/active_directory_domain/2017-12-15/finding/" + ID;
+				switch (Framework)
+				{
+					case STIGFramework.Forest:
+						return "https://www.stigviewer.com/stig/active_directory_forest/2016-12-19/finding/" + ID;
+					case STIGFramework.Windows7:
+						return "https://www.stigviewer.com/stig/windows_7/2012-08-22/finding/" + ID;
+					case STIGFramework.Windows2008:
+						return "https://www.stigviewer.com/stig/windows_2008_member_server/2018-03-07/finding/" + ID;
+					case STIGFramework.ActiveDirectoryService2003:
+						return "https://www.stigviewer.com/stig/active_directory_service_2003/2011-05-20/finding/" + ID;
+					case STIGFramework.ActiveDirectoryService2008:
+						return "https://www.stigviewer.com/stig/active_directory_service_2008/2011-05-23/finding/" + ID;
+					default:
+						return "https://www.stigviewer.com/stig/active_directory_domain/2017-12-15/finding/" + ID;
+				}
             }
         }
 

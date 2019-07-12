@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Text;
 
@@ -65,13 +66,16 @@ namespace PingCastle.ADWS
 				}
 
 				bool nTSecurityDescriptor = false;
-				foreach (string property in properties)
+				if (properties != null)
 				{
-					clsDS.PropertiesToLoad.Add(property);
-					// prepare the flag for the ntsecuritydescriptor
-					if (String.Compare("nTSecurityDescriptor", property, true) == 0)
+					foreach (string property in properties)
 					{
-						nTSecurityDescriptor = true;
+						clsDS.PropertiesToLoad.Add(property);
+						// prepare the flag for the ntsecuritydescriptor
+						if (String.Compare("nTSecurityDescriptor", property, true) == 0)
+						{
+							nTSecurityDescriptor = true;
+						}
 					}
 				}
 				Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "]Calling FindAll");
@@ -119,14 +123,38 @@ namespace PingCastle.ADWS
 		[SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
 		private ADDomainInfo GetLDAPDomainInfo()
 		{
-			DirectoryEntry rootDse = new DirectoryEntry("LDAP://" + Server + "/RootDSE");
-			if (Credential == null)
+			DirectoryEntry rootDse;
+			try
 			{
-				rootDse = new DirectoryEntry(@"LDAP://" + Server + (Port == 0 ? null : ":" + Port) + "/RootDSE", null, null, AuthenticationTypes.ServerBind | AuthenticationTypes.Secure | (Port == 636 ? AuthenticationTypes.SecureSocketsLayer : 0));
+				if (Credential == null)
+				{
+					rootDse = new DirectoryEntry(@"LDAP://" + Server + (Port == 0 ? null : ":" + Port) + "/RootDSE", null, null, AuthenticationTypes.ServerBind | AuthenticationTypes.Secure | (Port == 636 ? AuthenticationTypes.SecureSocketsLayer : 0));
+				}
+				else
+				{
+					rootDse = new DirectoryEntry(@"LDAP://" + Server + (Port == 0 ? null : ":" + Port) + "/RootDSE", Credential.UserName, Credential.Password, AuthenticationTypes.ServerBind | AuthenticationTypes.Secure | (Port == 636 ? AuthenticationTypes.SecureSocketsLayer : 0));
+				}
+				// force the connection to the LDAP server via an access to the "properties" property
+				Trace.WriteLine("rootDse property count: " + rootDse.Properties.Count);
 			}
-			else
+			catch (COMException ex)
 			{
-				rootDse = new DirectoryEntry(@"LDAP://" + Server + (Port == 0 ? null : ":" + Port) + "/RootDSE", Credential.UserName, Credential.Password, AuthenticationTypes.ServerBind | AuthenticationTypes.Secure | (Port == 636 ? AuthenticationTypes.SecureSocketsLayer : 0));
+				// Windows 2000 does not support a bind to the rootDse and returns "The server is not operational" (0x8007203A)
+				if (ex.ErrorCode == -2147016646)
+				{
+					if (Credential == null)
+					{
+						rootDse = new DirectoryEntry(@"LDAP://" + Server + (Port == 0 ? null : ":" + Port) + "/RootDSE", null, null, AuthenticationTypes.Secure | (Port == 636 ? AuthenticationTypes.SecureSocketsLayer : 0));
+					}
+					else
+					{
+						rootDse = new DirectoryEntry(@"LDAP://" + Server + (Port == 0 ? null : ":" + Port) + "/RootDSE", Credential.UserName, Credential.Password, AuthenticationTypes.Secure | (Port == 636 ? AuthenticationTypes.SecureSocketsLayer : 0));
+					}
+				}
+				else
+				{
+					throw;
+				}
 			}
 			return ADDomainInfo.Create(rootDse);
 		}

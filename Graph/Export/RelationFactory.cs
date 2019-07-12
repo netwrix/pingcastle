@@ -6,6 +6,7 @@
 //
 using PingCastle.ADWS;
 using PingCastle.Graph.Database;
+using PingCastle.Graph.Export;
 using PingCastle.misc;
 using System;
 using System.Collections.Generic;
@@ -20,24 +21,22 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace PingCastle.Export
+namespace PingCastle.Graph.Export
 {
-    
-    public class RelationFactory
+
+    public class RelationFactory : IRelationFactory
     {
 
         public IDataStorage Storage { get; set; }
         public ADDomainInfo DomainInfo { get; set; }
-        public NetworkCredential Credential { get; set; }
 
         private List<string> Files = new List<string>();
         private List<string> GPO = new List<string>();
 
-        public RelationFactory(IDataStorage storage, ADDomainInfo domainInfo, NetworkCredential credential)
+        public RelationFactory(IDataStorage storage, ADDomainInfo domainInfo)
         {
             Storage = storage;
             DomainInfo = domainInfo;
-            Credential = credential;
         }
 
         public static KeyValuePair<Guid, RelationType>[] GuidsControlExtendedRights = new KeyValuePair<Guid, RelationType>[] { 
@@ -58,12 +57,24 @@ namespace PingCastle.Export
                         new KeyValuePair<Guid, RelationType>(new Guid("bf9679c0-0de6-11d0-a285-00aa003049e2"),RelationType.VAL_WRITE_SELF_MEMBERSHIP),
                     };
 
+		public List<KeyValuePair<Guid, RelationType>> GuidsReadProperties = new List<KeyValuePair<Guid, RelationType>>();
+
+		public void Initialize(IADConnection adws)
+		{
+			string[] propertiesLaps = new string[] { "schemaIDGUID" };
+			// note: the LDAP request does not contain ms-MCS-AdmPwd because in the old time, MS consultant was installing customized version of the attriute, * being replaced by the company name
+			// check the oid instead ? (which was the same even if the attribute name was not)
+			adws.Enumerate(DomainInfo.SchemaNamingContext, "(name=ms-*-AdmPwd)", propertiesLaps, (ADItem aditem) => {
+				GuidsReadProperties.Add(new KeyValuePair<Guid,RelationType>(aditem.SchemaIDGUID, RelationType.READ_PROP_MS_MCS_ADMPWD));
+			}, "OneLevel");
+		}
+
         public void AnalyzeADObject(ADItem aditem)
         {
 			// avoid reentry which can be caused by primary group id checks
 			if (aditem.ObjectSid != null)
 			{
-				if (Storage.IsSIDAlreadyInserted(aditem.ObjectSid.Value))
+				if (Storage.SearchItem(aditem.ObjectSid.Value) != -1)
 				{
 					Trace.WriteLine("Item " + aditem.DistinguishedName + " has already been analyzed");
 					return;
@@ -102,21 +113,34 @@ namespace PingCastle.Export
             Storage.InsertNode(shortname, aditem.Class.ToLowerInvariant(), aditem.DistinguishedName, (aditem.ObjectSid != null ? aditem.ObjectSid.Value : null), aditem);
         }
 
-        public void InsertFileNode(string file)
+        private void InsertFileNode(string fileName)
         {
-			Storage.InsertNode(file, "file", file, null, null);
+			Storage.InsertNode(fileName, "file", fileName, null, null);
+        }
+
+        private string SanitizeFileName(string filename, string domainSysVolLocation)
+        {
+            if (filename.StartsWith("\\\\"))
+            {
+                return filename;
+            }
+            else
+            {
+                return ("\\\\" + DomainInfo.DomainName + "\\sysvol\\" + DomainInfo.DomainName + "\\" + domainSysVolLocation + "\\" + filename).ToLowerInvariant();
+            }
         }
 
         private void AddFileRelation(ADItem aditem)
         {
+            if (!String.IsNullOrEmpty(aditem.ScriptPath))
+            {
+                string file = SanitizeFileName(aditem.ScriptPath, "scripts");
+                Storage.InsertRelation(file, MappingType.Name, aditem.DistinguishedName, MappingType.Name, RelationType.scriptPath);
+            } 
             if (!String.IsNullOrEmpty(aditem.GPCFileSysPath))
             {
-                string path = aditem.GPCFileSysPath.ToLowerInvariant();
-                if (!GPO.Contains(path))
-                {
-                    GPO.Add(path);
-                }
-                Storage.InsertRelation(aditem.GPCFileSysPath, MappingType.Name, aditem.DistinguishedName, MappingType.Name, RelationType.gPCFileSysPath);
+                string file = SanitizeFileName(aditem.GPCFileSysPath, "Policies");
+                Storage.InsertRelation(file, MappingType.Name, aditem.DistinguishedName, MappingType.Name, RelationType.gPCFileSysPath);
             }
         }
 
@@ -149,18 +173,13 @@ namespace PingCastle.Export
             {
                 InsertSecurityDescriptorRelation(aditem);
             }
+			if (aditem.msDSAllowedToActOnBehalfOfOtherIdentity != null)
+			{
+				InsertDelegationRelation(aditem);
+			}
             if (!String.IsNullOrEmpty(aditem.GPLink))
             {
                 InsertGPORelation(aditem);
-            }
-            if (!String.IsNullOrEmpty(aditem.ScriptPath))
-            {
-                string file = ("\\\\" + DomainInfo.DomainName + "\\sysvol\\" + DomainInfo.DomainName + "\\scripts\\" + aditem.ScriptPath).ToLowerInvariant();
-                if (!Files.Contains(file))
-                {
-                    Files.Add(file);
-                }
-                Storage.InsertRelation(file, MappingType.Name, aditem.DistinguishedName, MappingType.Name, RelationType.scriptPath);
             }
             if (aditem.SIDHistory != null)
             {
@@ -170,6 +189,15 @@ namespace PingCastle.Export
                 }
             }
         }
+
+		private void InsertDelegationRelation(ADItem aditem)
+		{
+			ActiveDirectorySecurity sd = aditem.msDSAllowedToActOnBehalfOfOtherIdentity;
+			foreach (ActiveDirectoryAccessRule rule in sd.GetAccessRules(true, true, typeof(SecurityIdentifier)))
+			{
+				Storage.InsertRelation(((SecurityIdentifier)rule.IdentityReference).Value, MappingType.Sid, aditem.DistinguishedName, MappingType.Name, RelationType.msDSAllowedToActOnBehalfOfOtherIdentity);
+			}
+		}
 
 
         // utility fonction to avoid inserting duplicate relations
@@ -200,87 +228,97 @@ namespace PingCastle.Export
                     continue;
 
                 // ADS_RIGHT_GENERIC_ALL
-                if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.GenericAll) == ActiveDirectoryRights.GenericAll)
+                if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.GenericAll))
                 {
                     IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.GEN_RIGHT_ALL);
                 }
-                // ADS_RIGHT_GENERIC_WRITE
-                if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.GenericWrite) == ActiveDirectoryRights.GenericWrite)
+                else
                 {
-                    IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.GEN_RIGHT_WRITE);
-                }
-                // ADS_RIGHT_WRITE_DAC
-                if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteDacl) == ActiveDirectoryRights.WriteDacl)
-                {
-                    IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.ADS_RIGHT_WRITE_DAC);
-                }
-                // ADS_RIGHT_WRITE_OWNER
-                if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteOwner) == ActiveDirectoryRights.WriteOwner)
-                {
-                    IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.ADS_RIGHT_WRITE_OWNER);
-                }
-                if (accessrule.ObjectFlags == ObjectAceFlags.None)
-                {
-                    // ADS_RIGHT_DS_CONTROL_ACCESS
-                    if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.ExtendedRight) == ActiveDirectoryRights.ExtendedRight)
+                    // ADS_RIGHT_GENERIC_WRITE
+                    if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.GenericWrite))
                     {
-                        IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.EXT_RIGHT_ALL);
+                        IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.GEN_RIGHT_WRITE);
                     }
-                    // ADS_RIGHT_DS_SELF
-                    if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.Self) == ActiveDirectoryRights.Self)
+                    // ADS_RIGHT_WRITE_DAC
+                    if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.WriteDacl))
                     {
-                        IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.VAL_WRITE_ALL);
+                        IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.ADS_RIGHT_WRITE_DAC);
                     }
-                    // ADS_RIGHT_DS_WRITE_PROP
-                    if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteProperty) == ActiveDirectoryRights.WriteProperty)
+                    // ADS_RIGHT_WRITE_OWNER
+                    if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.WriteOwner))
                     {
-                        IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.WRITE_PROP_ALL);
+                        IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.ADS_RIGHT_WRITE_OWNER);
                     }
-                }
-                else if ((accessrule.ObjectFlags & ObjectAceFlags.ObjectAceTypePresent) == ObjectAceFlags.ObjectAceTypePresent)
-                {
-                    if (new Guid("00299570-246d-11d0-a768-00aa006e0529") == accessrule.ObjectType)
+                    if (accessrule.ObjectFlags == ObjectAceFlags.None)
                     {
-                    }
-                    // ADS_RIGHT_DS_CONTROL_ACCESS
-                    if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.ExtendedRight) == ActiveDirectoryRights.ExtendedRight)
-                    {
-                        foreach (KeyValuePair<Guid, RelationType> extendedright in GuidsControlExtendedRights)
+                        // ADS_RIGHT_DS_CONTROL_ACCESS
+                        if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.ExtendedRight))
                         {
-                            if (extendedright.Key == accessrule.ObjectType)
-                            {
-                                IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, extendedright.Value);
-                            }
+                            IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.EXT_RIGHT_ALL);
+                        }
+                        // ADS_RIGHT_DS_SELF
+                        if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.Self))
+                        {
+                            IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.VAL_WRITE_ALL);
+                        }
+                        // ADS_RIGHT_DS_WRITE_PROP
+                        if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.WriteProperty))
+                        {
+                            IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.WRITE_PROP_ALL);
                         }
                     }
-                    // ADS_RIGHT_DS_SELF
-                    if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.Self) == ActiveDirectoryRights.Self)
+                    else if ((accessrule.ObjectFlags & ObjectAceFlags.ObjectAceTypePresent) == ObjectAceFlags.ObjectAceTypePresent)
                     {
-                        foreach (KeyValuePair<Guid, RelationType> validatewrite in GuidsControlValidatedWrites)
+                        // ADS_RIGHT_DS_CONTROL_ACCESS
+                        if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.ExtendedRight))
                         {
-                            if (validatewrite.Key == accessrule.ObjectType)
+                            foreach (KeyValuePair<Guid, RelationType> extendedright in GuidsControlExtendedRights)
                             {
-                                IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, validatewrite.Value);
+                                if (extendedright.Key == accessrule.ObjectType)
+                                {
+                                    IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, extendedright.Value);
+                                }
                             }
                         }
-                    }
-                    // ADS_RIGHT_DS_WRITE_PROP
-                    if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteProperty) == ActiveDirectoryRights.WriteProperty)
-                    {
-                        foreach (KeyValuePair<Guid, RelationType> controlproperty in GuidsControlProperties)
+                        // ADS_RIGHT_DS_SELF
+                        if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.Self))
                         {
-                            if (controlproperty.Key == accessrule.ObjectType)
+                            foreach (KeyValuePair<Guid, RelationType> validatewrite in GuidsControlValidatedWrites)
                             {
-                                IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, controlproperty.Value);
+                                if (validatewrite.Key == accessrule.ObjectType)
+                                {
+                                    IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, validatewrite.Value);
+                                }
                             }
                         }
-                        foreach (KeyValuePair<Guid, RelationType> controlpropertyset in GuidsControlPropertiesSets)
+                        // ADS_RIGHT_DS_WRITE_PROP
+                        if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.WriteProperty))
                         {
-                            if (controlpropertyset.Key == accessrule.ObjectType)
+                            foreach (KeyValuePair<Guid, RelationType> controlproperty in GuidsControlProperties)
                             {
-                                IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, controlpropertyset.Value);
+                                if (controlproperty.Key == accessrule.ObjectType)
+                                {
+                                    IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, controlproperty.Value);
+                                }
+                            }
+                            foreach (KeyValuePair<Guid, RelationType> controlpropertyset in GuidsControlPropertiesSets)
+                            {
+                                if (controlpropertyset.Key == accessrule.ObjectType)
+                                {
+                                    IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, controlpropertyset.Value);
+                                }
                             }
                         }
+						if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.ReadProperty))
+						{
+							foreach (KeyValuePair<Guid, RelationType> controlproperty in GuidsReadProperties)
+							{
+								if (controlproperty.Key == accessrule.ObjectType)
+								{
+									IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, controlproperty.Value);
+								}
+							}
+						}
                     }
                 }
             }
@@ -335,139 +373,64 @@ namespace PingCastle.Export
             return m.Groups[2].Value;
         }
 
-        public void InsertFiles()
+        public void AnalyzeFile(string fileName)
         {
-            // insert relation related to the files already seen.
-            // add subdirectory / sub file is the permission is not inherited
-            WindowsIdentity identity = null;
-            WindowsImpersonationContext context = null;
-            BlockingQueue<string> queue = new BlockingQueue<string>(200);
-            int numberOfThread = 20;
-            Thread[] threads = new Thread[numberOfThread];
+            Trace.WriteLine("working on filenode=" + fileName);
             try
             {
-                if (Credential != null)
+                InsertFileNode(fileName);
+
+                // when connecting a login password, unc path starting the with domain name (<> domain controller) fails
+                // rebuild it by replacing the domain name by the domain controller name
+                Uri uri;
+                if (!Uri.TryCreate(fileName, UriKind.RelativeOrAbsolute, out uri))
                 {
-                    identity = NativeMethods.GetWindowsIdentityForUser(Credential, DomainInfo.DnsHostName);
-                    context = identity.Impersonate();
+                    Trace.WriteLine("Unable to parse the url: " + fileName);
+                    return;
+                }
+                if (!uri.IsUnc)
+                {
+                    Trace.WriteLine("File " + fileName + " is not a unc path");
+                    return;
                 }
 
-                ThreadStart threadFunction = () =>
+                // SYSVOL volume cannot be accessed with login / password login
+                // in this case, the server (aka the domain) needs to be replaced with the FQDN of the server
+                if (uri.Host.Equals(DomainInfo.DomainName, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    for (; ; )
-                    {
-                        string filenode = null;
-                        if (!queue.Dequeue(out filenode)) break;
-                        Uri uri;
-                        if (!Uri.TryCreate(filenode, UriKind.RelativeOrAbsolute, out uri))
-                        {
-                            Trace.WriteLine("Unable to parse the url: " + filenode);
-                            return;
-                        }
-                        if (!uri.IsUnc)
-                        {
-                            Trace.WriteLine("File " + filenode + " is not a unc path");
-                            InsertFileNode(filenode);
-                            return;
-                        }
-                        // when connecting a login password, unc path starting the with domain name (<> domain controller) fails
-                        // rebuild it by replacing the domain name by the domain controller name
-                        if (Credential != null)
-                        {
-                            if (uri.Host.Equals(DomainInfo.DomainName, StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                UriBuilder builder = new UriBuilder(uri);
-                                builder.Host = DomainInfo.DnsHostName;
-                                uri = builder.Uri;
-                            }
-                        }
-                        string filepath = uri.LocalPath;
-
-                        // function is safe and will never trigger an exception
-                        InsertFile(filenode, filepath);
-
-                    }
-                    Trace.WriteLine("Consumer quitting");
-                    };
-                
-                // Consumers
-                for (int i = 0; i < numberOfThread; i++)
-                {
-                    threads[i] = new Thread(threadFunction);
-                    threads[i].Start();
+                    UriBuilder builder = new UriBuilder(uri);
+                    builder.Host = DomainInfo.DnsHostName;
+                    uri = builder.Uri;
                 }
+                string alternativeFilepath = uri.LocalPath;
 
-                // do it in parallele (else time *6 !)
-                foreach (string filenode in Files)
-                {
-                    queue.Enqueue(filenode);
-                }
-                foreach (string filenode in GPO)
-                {
-                    queue.Enqueue(filenode);
-                }
-                queue.Quit();
-                Trace.WriteLine("insert file completed. Waiting for worker thread to complete");
-                for (int i = 0; i < numberOfThread; i++)
-                {
-                    threads[i].Join();
-                }
-                Trace.WriteLine("Done insert file");
-            }
-            finally
-            {
-
-                queue.Quit();
-                for (int i = 0; i < numberOfThread; i++)
-                {
-                    if (threads[i] != null)
-                        if (threads[i].ThreadState == System.Threading.ThreadState.Running)
-                            threads[i].Abort();
-                }
-                if (context != null)
-                    context.Undo();
-                if (identity != null)
-                    identity.Dispose();
-            }
-        }
-
-        // filePath is different from filenode
-        // SYSVOL volume cannot be accessed with login / password login
-        // in this case, the server (aka the domain) needs to be replaced with the FQDN of the server
-        private void InsertFile(string filenode, string filepath)
-        {
-            Trace.WriteLine("working on filenode=" + filenode);
-            try
-            {
-                InsertFileNode(filenode);
-                
                 FileSystemInfo info = null;
-                FileAttributes attr = File.GetAttributes(filepath);
+                FileAttributes attr = File.GetAttributes(alternativeFilepath);
                 FileSystemSecurity fss = null;
                 // insert relation related to security descriptor
                 if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
                 {
-                    info = new DirectoryInfo(filepath);
+                    info = new DirectoryInfo(alternativeFilepath);
                     fss = ((DirectoryInfo)info).GetAccessControl();
                 }
                 else
                 {
-                    info = new FileInfo(filepath);
+                    info = new FileInfo(alternativeFilepath);
                     fss = ((FileInfo)info).GetAccessControl();
                 }
-                InsertFileDescriptorRelation(filenode, fss, false, null);
+                InsertFileDescriptorRelation(fileName, fss, false, null);
                 // try to find illegitimate soons
                 if (info as DirectoryInfo != null)
                 {
                     // analyse SD of files in directory
-                    AnalyzeFile(filenode, (DirectoryInfo)info, fss.GetOwner(typeof(SecurityIdentifier)).Value);
+                    AnalyzeFile(fileName, (DirectoryInfo)info, fss.GetOwner(typeof(SecurityIdentifier)).Value);
                     // find hidden relations
-                    AnalyzeGPODirectory(filenode, (DirectoryInfo)info);
+                    AnalyzeGPODirectory(fileName, (DirectoryInfo)info);
                 }
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("An exception occured while working on the file '" + filenode + "':" + ex.Message);
+                Trace.WriteLine("An exception occured while working on the file '" + fileName + "':" + ex.Message);
             }
         }
 
@@ -677,34 +640,37 @@ namespace PingCastle.Export
                     continue;
 
                 // GEN_RIGHT_ALL
-                if ((accessrule.FileSystemRights & FileSystemRights.FullControl) == FileSystemRights.FullControl)
+                if (IsRightSetinAccessRule(accessrule, FileSystemRights.FullControl))
                 {
                     IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.GEN_RIGHT_ALL);
                 }
-                // GEN_RIGHT_WRITE
-                if ((accessrule.FileSystemRights & FileSystemRights.Write) == FileSystemRights.Write)
+                else
                 {
-                    IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.GEN_RIGHT_WRITE);
-                }
-                // STAND_RIGHT_WRITE_DAC
-                if ((accessrule.FileSystemRights & FileSystemRights.ChangePermissions) == FileSystemRights.ChangePermissions)
-                {
-                    IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.STAND_RIGHT_WRITE_DAC);
-                }
-                // STAND_RIGHT_WRITE_OWNER
-                if ((accessrule.FileSystemRights & FileSystemRights.TakeOwnership) == FileSystemRights.TakeOwnership)
-                {
-                    IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.STAND_RIGHT_WRITE_OWNER);
-                }
-                // FILE_WRITEDATA_ADDFILE
-                if ((accessrule.FileSystemRights & FileSystemRights.WriteData) == FileSystemRights.WriteData)
-                {
-                    IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.FS_RIGHT_WRITEDATA_ADDFILE);
-                }
-                // FILE_APPENDDATA_ADDSUBDIR
-                if ((accessrule.FileSystemRights & FileSystemRights.AppendData) == FileSystemRights.AppendData)
-                {
-                    IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.FS_RIGHT_APPENDDATA_ADDSUBDIR);
+                    // GEN_RIGHT_WRITE
+                    if (IsRightSetinAccessRule(accessrule, FileSystemRights.Write))
+                    {
+                        IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.GEN_RIGHT_WRITE);
+                    }
+                    // STAND_RIGHT_WRITE_DAC
+                    if (IsRightSetinAccessRule(accessrule, FileSystemRights.ChangePermissions))
+                    {
+                        IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.STAND_RIGHT_WRITE_DAC);
+                    }
+                    // STAND_RIGHT_WRITE_OWNER
+                    if (IsRightSetinAccessRule(accessrule, FileSystemRights.TakeOwnership))
+                    {
+                        IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.STAND_RIGHT_WRITE_OWNER);
+                    }
+                    // FILE_WRITEDATA_ADDFILE
+                    if (IsRightSetinAccessRule(accessrule, FileSystemRights.WriteData))
+                    {
+                        IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.FS_RIGHT_WRITEDATA_ADDFILE);
+                    }
+                    // FILE_APPENDDATA_ADDSUBDIR
+                    if (IsRightSetinAccessRule(accessrule, FileSystemRights.AppendData))
+                    {
+                        IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.FS_RIGHT_APPENDDATA_ADDSUBDIR);
+                    }
                 }
             }
             foreach (string target in relationToAdd.Keys)
@@ -718,7 +684,15 @@ namespace PingCastle.Export
             return newRelation;
         }
 
+        private static bool IsRightSetinAccessRule(ActiveDirectoryAccessRule accessrule, ActiveDirectoryRights right)
+        {
+            return (accessrule.ActiveDirectoryRights & right) == right;
+        }
 
+        private static bool IsRightSetinAccessRule(FileSystemAccessRule accessrule, FileSystemRights right)
+        {
+            return (accessrule.FileSystemRights & right) == right;
+        }
     }
 
 }

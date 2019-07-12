@@ -7,6 +7,26 @@ using System.Text;
 
 namespace PingCastle
 {
+
+	public class ConsoleMenuItem
+	{
+		public string Choice { get; set; }
+		public string ShortDescription { get; set; }
+		public string LongDescription { get; set; }
+
+		public ConsoleMenuItem(string choice, string shortDescription)
+			: this(choice, shortDescription, null)
+		{
+		}
+
+		public ConsoleMenuItem(string choice, string shortDescription, string longDescription)
+		{
+			Choice = choice;
+			ShortDescription = shortDescription;
+			LongDescription = longDescription;
+		}
+	}
+
 	public class ConsoleMenu
 	{
 
@@ -15,15 +35,17 @@ namespace PingCastle
 		public static string Notice { get; set; }
 		public static string Information { get; set; }
 
-		static void printSelectMenuStyle0(List<KeyValuePair<string, string>> items, int currentIndex, int top, int left)
+		static void printSelectMenuStyle0(List<ConsoleMenuItem> items, int currentIndex, int top, int left)
 		{
 			bool hasDescription = false;
+			string description = null;
 			int largerChoice = 0;
+			int maxDescription = 0;
 			for (int i = 0; i < items.Count; i++)
 			{
-				if (!String.IsNullOrEmpty(items[i].Value))
+				if (!String.IsNullOrEmpty(items[i].ShortDescription))
 					hasDescription = true;
-				int l = items[i].Key.Length;
+				int l = items[i].Choice.Length;
 				if (l > largerChoice)
 					largerChoice = l;
 			}
@@ -34,15 +56,18 @@ namespace PingCastle
 				{
 					Console.BackgroundColor = ConsoleColor.Gray;
 					Console.ForegroundColor = ConsoleColor.Black;
+					description = items[i].LongDescription;
 				}
-				Console.Write("  " + (char)(i < 9 ? i + '1' : i - 9 + 'a') + "-" + items[i].Key);
+				if (!String.IsNullOrEmpty(items[i].LongDescription) && maxDescription < items[i].LongDescription.Length)
+					maxDescription = items[i].LongDescription.Length;
+				Console.Write("  " + (char)(i < 9 ? i + '1' : i - 9 + 'a') + "-" + items[i].Choice);
 				if (hasDescription)
 				{
-					int diff = largerChoice - items[i].Key.Length;
+					int diff = largerChoice - items[i].Choice.Length;
 					if (diff > 0)
 						Console.Write(new String(' ', diff));
-					if (!String.IsNullOrEmpty(items[i].Value))
-						Console.Write("-" + items[i].Value);
+					if (!String.IsNullOrEmpty(items[i].ShortDescription))
+						Console.Write("-" + items[i].ShortDescription);
 				}
 				Console.WriteLine();
 				Console.ResetColor();
@@ -54,9 +79,24 @@ namespace PingCastle
 			}
 			Console.WriteLine("  0-Exit");
 			Console.ResetColor();
+			if (!String.IsNullOrEmpty(description))
+			{
+				Console.ForegroundColor = ConsoleColor.Yellow;
+				Console.WriteLine("==============================");
+				Console.ResetColor();
+				int currentLineCursor = Console.CursorTop;
+				Console.WriteLine(new string(' ', maxDescription));
+				Console.SetCursorPosition(0, currentLineCursor);
+				Console.WriteLine(description);
+			}
+			else
+			{
+				Console.WriteLine(new string(' ', Console.WindowWidth - 1));
+				Console.WriteLine(new string(' ', maxDescription));
+			}
 		}
 
-		static void printSelectMenuStyle1(List<KeyValuePair<string, string>> items, int currentIndex, int top, int left)
+		static void printSelectMenuStyle1(List<ConsoleMenuItem> items, int currentIndex, int top, int left)
 		{
 			string description = null;
 			Console.SetCursorPosition(left, top);
@@ -68,12 +108,12 @@ namespace PingCastle
 				{
 					Console.BackgroundColor = ConsoleColor.Gray;
 					Console.ForegroundColor = ConsoleColor.Black;
-					description = items[i].Value;
+					description = items[i].ShortDescription;
 				}
-				if (!String.IsNullOrEmpty(items[i].Value) && maxDescription < items[i].Value.Length)
-					maxDescription = items[i].Value.Length;
+				if (!String.IsNullOrEmpty(items[i].ShortDescription) && maxDescription < items[i].ShortDescription.Length)
+					maxDescription = items[i].ShortDescription.Length;
 
-				item = "  " + (char)(i < 9 ? i + '1' : i - 9 + 'a') + "-" + items[i].Key;
+				item = "  " + (char)(i < 9 ? i + '1' : i - 9 + 'a') + "-" + items[i].Choice;
 				Console.SetCursorPosition(left + (i < (items.Count + 1) / 2 ? 0 : Console.WindowWidth / 2), top + i + (i < (items.Count + 1) / 2 ? 0 : -(items.Count + 1) / 2));
 				Console.Write(item + new string(' ',Console.WindowWidth / 2 - item.Length - 1));
 				Console.ResetColor();
@@ -92,7 +132,6 @@ namespace PingCastle
 				Console.ForegroundColor = ConsoleColor.Yellow;
 				Console.WriteLine("==============================");
 				Console.ResetColor();
-				Console.WriteLine("Description:");
 				int currentLineCursor = Console.CursorTop;
 				Console.WriteLine(new string(' ', maxDescription));
 				Console.SetCursorPosition(0, currentLineCursor);
@@ -155,21 +194,21 @@ namespace PingCastle
 			return list;
 		}
 
-		public static int SelectMenu(List<KeyValuePair<string, string>> items, int defaultIndex = 1)
+		public static int SelectMenu(List<ConsoleMenuItem> items, int defaultIndex = 1)
 		{
 			DisplayHeader();
 			ClearTopic();
 			return SelectMenu(items, defaultIndex, 0);
 		}
 
-		public static int SelectMenuCompact(List<KeyValuePair<string, string>> items, int defaultIndex = 1)
+		public static int SelectMenuCompact(List<ConsoleMenuItem> items, int defaultIndex = 1)
 		{
 			DisplayHeader();
 			ClearTopic();
 			return SelectMenu(items, defaultIndex, 1);
 		}
 
-		protected static int SelectMenu(List<KeyValuePair<string, string>> items, int defaultIndex = 1, int style = 0)
+		protected static int SelectMenu(List<ConsoleMenuItem> items, int defaultIndex = 1, int style = 0)
 		{
 			int top = Console.CursorTop;
 			int left = Console.CursorLeft;

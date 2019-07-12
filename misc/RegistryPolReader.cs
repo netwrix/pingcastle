@@ -14,6 +14,7 @@ using System.Text;
 
 namespace PingCastle.misc
 {
+	[DebuggerDisplay("{Key}: {Value}")]
     public class RegistryPolRecord
     {
 
@@ -160,6 +161,19 @@ namespace PingCastle.misc
             return null;
         }
 
+		public List<RegistryPolRecord> SearchRecord(string key)
+		{
+			var output = new List<RegistryPolRecord>();
+			foreach (RegistryPolRecord record in Records)
+			{
+				if (record.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase))
+				{
+					output.Add(record);
+				}
+			}
+			return output;
+		}
+
         public bool IsValueSet(string key, string value, out string stringvalue)
         {
             RegistryPolRecord record = SearchRecord(key, value);
@@ -200,5 +214,5 @@ namespace PingCastle.misc
                 return false;
             return true;
         }
-    }
+	}
 }

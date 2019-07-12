@@ -27,7 +27,12 @@ namespace PingCastle.shares
                 if (accessrule.AccessControlType != AccessControlType.Allow)
                     continue;
                 if (((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.WorldSid)
-                    || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AuthenticatedUserSid))
+                    || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AuthenticatedUserSid)
+					|| ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.BuiltinUsersSid)
+					|| ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AccountComputersSid)
+					|| ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AccountDomainUsersSid)
+					|| ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AnonymousSid)
+					)
                 {
                     return true;
                 }

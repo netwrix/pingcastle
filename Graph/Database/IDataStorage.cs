@@ -28,18 +28,29 @@ namespace PingCastle.Graph.Database
 
     public interface IDataStorage
     {
+        // used to store various information about the domain in general (its FQDN, its SID, ...)
+        Dictionary<string, string> GetDatabaseInformation();
+        
+        // used to locate an item based on its name
         int SearchItem(string name);
-		Node RetrieveNode(int id);
+        // once, the ID located by the previous function, return the node
+        Node RetrieveNode(int id);
+        // generated lookup function
 		Dictionary<int, Node> RetrieveNodes(List<int> nodes);
-		Dictionary<string, string> GetDatabaseInformation();
-        List<Relation> SearchRelations(List<int> SourceIds, List<int> knownIds);
+        // based on a node list, return all path to other nodes (at the exclusion of the knownId ones)
+		List<Relation> SearchRelations(List<int> SourceIds, List<int> knownIds);
 
+        // create a node
         int InsertNode(string shortname, string objectclass, string name, string sid, ADItem adItem);
-
+        // create a link between 2 nodes
         void InsertRelation(string mappingMaster, MappingType typeMaster, string mappingSlave, MappingType typeSlave, RelationType relationType);
 
 		List<DataStorageDomainTrusts> GetKnownDomains();
 
-		bool IsSIDAlreadyInserted(string sid);
+        // used to retrieve objects in queue and not examined
+        List<string> GetCNToInvestigate();
+        List<string> GetSIDToInvestigate();
+        List<int> GetPrimaryGroupIDToInvestigate();
+        List<string> GetFilesToInvestigate();
 	}
 }

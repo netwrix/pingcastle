@@ -15,7 +15,8 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
 	[RuleBSI("M 2.412")]
 	[RuleCERTFR("CERTFR-2015-ACT-021", "SECTION00010000000000000000")]
-    public class HeatlcheckRuleAnomalySMB2SignatureNotEnabled : RuleBase<HealthcheckData>
+	[RuleIntroducedIn(2, 5)]
+	public class HeatlcheckRuleAnomalySMB2SignatureNotEnabled : RuleBase<HealthcheckData>
 	{
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
 		{

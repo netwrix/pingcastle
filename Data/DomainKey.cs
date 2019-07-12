@@ -13,7 +13,7 @@ using System.Text.RegularExpressions;
 
 namespace PingCastle.Data
 {
-    [DebuggerDisplay("{DomainName} {DomainSID}")]
+	[DebuggerDisplay("FQDN: {DomainName} SID: {DomainSID} NetBIOS: {DomainNetBIOS}")]
     public class DomainKey : IComparable<DomainKey>, IEquatable<DomainKey>
     {
         public string DomainName { get; set; }
@@ -27,7 +27,17 @@ namespace PingCastle.Data
 
         static Regex sidRegex = new Regex(@"(^$|^S-\d-(\d+-){1,14}\d+$)");
 
-        public DomainKey(string DnsName, string domainSid, string domainNetbios)
+		public static DomainKey Create(string DnsName, string domainSid, string domainNetbios)
+		{
+			var key = new DomainKey(DnsName, domainSid, domainNetbios);
+			if (key.DomainSID == null && key.DomainNetBIOS == key.DomainSID && key.DomainName == key.DomainNetBIOS)
+			{
+				return null;
+			}
+			return key;
+		}
+
+        protected DomainKey(string DnsName, string domainSid, string domainNetbios)
         {
 			
 			if (!string.IsNullOrEmpty(DnsName))

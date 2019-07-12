@@ -132,11 +132,11 @@ namespace PingCastle.Scanners
 		}
 
 		public override string Name { get { return "smb"; } }
-		public override string Description { get { return "Scan a computer and determiner the smb version available. Also if SMB signing is active."; } }
+		public override string Description { get { return "Scan a computer and determine the smb version available. Also if SMB signing is active."; } }
 
 		override protected string GetCsvHeader()
 		{
-			return "Computer\tSMB Port Open\tSMB1(NT LM 0.12)\tSMB1 Sign Required\tSMB2(0x0202)\tSMB2(0x0210)\tSMB3(0x0300)\tSMB3(0x0302)\tSMB3(0x0311)\tSMB2 Sign Required";
+			return "Computer\tSMB Port Open\tSMB1 with dialect NT LM 0.12\tSMB1 Sign Required\tSMB2 with dialect 0x0202\tSMB2 with dialect 0x0210\tSMB3 with dialect 0x0300\tSMB3 with dialect 0x0302\tSMB3 with dialect 0x0311\tSMB2 and SMB3 message Signature Required";
 		}
 
 		override protected string GetCsvData(string computer)

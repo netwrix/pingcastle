@@ -41,12 +41,15 @@ namespace PingCastle.Report
 			Hook(reportSB);
 
 			sb.Length = 0;
-			GenerateTitleInformation();
-			reportSB = reportSB.Replace("<%=Title%>", sb.ToString());
-
+			
 			sb.Length = 0;
+			GenerateCspMeta();
+			Add("<title>");
+			GenerateTitleInformation();
+			AddLine("</title>");
 			GenerateBaseHeaderInformation();
 			GenerateHeaderInformation();
+			Add(favicon);
 			reportSB = reportSB.Replace("<%=Header%>", sb.ToString());
 
 			sb.Length = 0;
@@ -59,24 +62,54 @@ namespace PingCastle.Report
 			reportSB = reportSB.Replace("<%=Footer%>", sb.ToString());
 
 			var html = reportSB.ToString();
-            File.WriteAllText(filename, html);
+			if (!String.IsNullOrEmpty(filename))
+			{
+				File.WriteAllText(filename, html);
+			}
             return html;
         }
 
+		string CSPScriptNonce;
+		string CSPStyleNonce;
+		private void GenerateCspMeta()
+		{
+			CSPScriptNonce = GenerateNonce();
+			CSPStyleNonce = GenerateNonce();
+			Add(@"<meta http-equiv=""Content-Security-Policy"" content=""default-src 'self'; script-src 'nonce-");
+			Add(CSPScriptNonce);
+			Add(@"' 'unsafe-inline'; style-src  'nonce-");
+			Add(CSPStyleNonce);
+			Add(@"' 'unsafe-inline'; object-src 'none'; base-uri 'none' ; img-src data:;""/>");
+		}
+
+		protected void AddBeginStyle()
+		{
+			Add(@"<style type=""text/css"" nonce='");
+			Add(CSPStyleNonce);
+			AddLine(@"'>");
+		}
+
+		protected void AddBeginScript()
+		{
+			Add(@"<script type=""text/javascript"" nonce='");
+			Add(CSPScriptNonce);
+			AddLine(@"'>");
+		}
+
 		private void GenerateBaseHeaderInformation()
 		{
-			Add(@"<style>");
-			Add(TemplateManager.LoadBootstrapCss());
-			Add(@"</style>");
+			AddBeginStyle();
+			AddLine(TemplateManager.LoadBootstrapCss());
+			AddLine(@"</style>");
 		}
 
 		private void GenerateBaseFooterInformation()
 		{
-			Add(@"<script>");
-			Add(TemplateManager.LoadJqueryJs());
-			Add(TemplateManager.LoadPopperJs());
-			Add(TemplateManager.LoadBootstrapJs());
-			Add(@"</script>");
+			AddBeginScript();
+			AddLine(TemplateManager.LoadJqueryJs());
+			AddLine(TemplateManager.LoadPopperJs());
+			AddLine(TemplateManager.LoadBootstrapJs());
+			AddLine(@"</script>");
 		}
 
 		protected virtual void Hook(StringBuilder sbHtml)
@@ -84,10 +117,25 @@ namespace PingCastle.Report
 
         }
 
-        protected void Add(int value)
-        {
-            sb.Append(value);
-        }
+		protected void AddLine(string text)
+		{
+			sb.AppendLine(text);
+		}
+
+		protected void AddLine()
+		{
+			sb.AppendLine();
+		}
+
+		protected void Add(int value)
+		{
+			sb.Append(value);
+		}
+
+		protected void Add(ulong value)
+		{
+			sb.Append(value);
+		}
 
         protected void Add(bool value)
         {
@@ -102,6 +150,11 @@ namespace PingCastle.Report
 		protected void AddEncoded(string text)
 		{
 			sb.Append(ReportHelper.Encode(text));
+		}
+
+		protected void AddJsonEncoded(string text)
+		{
+			sb.Append(ReportHelper.EscapeJsonString(text));
 		}
 
 		protected void Add(DateTime date)
@@ -122,17 +175,32 @@ namespace PingCastle.Report
         public static string GetStyleSheetTheme()
         {
             return @"
-<!-- Custom styles for this template -->
-<style type=""text/css"">
-
 body { 
 	background:#e1e1e1;
-	padding-top: 50px;
-	margin-top: 10px;
+	height: 100%;
+	min-height: 100%;
 }
-h1, h2, h3, h4
+html
 {
-color: #Fa9C1A;
+	height:100%;
+	min-height: 100%;
+}
+@media screen {
+	body {
+		padding-top: 50px;
+		margin-top: 10px;
+	}
+
+	h1, h2, h3, h4 {
+		color: #Fa9C1A;
+	}
+	a {
+		color: #fa9c1a;
+	}
+
+	a:hover {
+		color: #58595b;
+	}
 }
 #wrapper {
 	box-shadow:0 0 8px rgba(0,0,0,0.25);
@@ -146,13 +214,6 @@ color: #Fa9C1A;
 
 .unticked { color: #FF1744;}
 
-a {
-	color: #fa9c1a;
-}
-
-a:hover {
-	color: #58595b;
-}
 
 .navbar-custom {
 	background-color: #ffffff;
@@ -236,31 +297,82 @@ a:hover {
 	transition: none;
 }
 .info-mark {
-	background-color: #fff;
-	border-radius: 50%;
-	border: 1px solid #58595b;
-	color: #58595b;
 	display: inline-block;
-	font-size: 16px;
-	height: 20px;
+	font-family: sans-serif;
+	font-weight: bold;
 	text-align: center;
-	vertical-align: middle;
 	width: 20px;
-	font-style: normal;
+	height: 20px;
+	font-size: 16px;
+	line-height: 20px;
+	border-radius: 14px;
+	margin-right: 4px;
+	padding: 1px;
+	color: #fa9c1a;
+	background: white;
+	border: 1px solid #fa9c1a;
+	text-decoration: none;
+}
+
+.info-mark:hover {
+	color: white;
+	background: #fa9c1a;
+	border-color: white;
+	text-decoration: none;
 }
 .num
 {
 	text-align: right !important;
 }
-a[name] {
-  padding-top: 60px;
-  margin-top: -60px;
-  display: inline-block; /* required for webkit browsers */
+@media screen
+{
+	a[name] {
+		padding-top: 60px;
+		margin-top: -60px;
+		display: inline-block; /* required for webkit browsers */
+	}
 }
-</style>
-<link href=""data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAE10lEQVRYw71XfWwTdRhet4xBssFigMja61rafbK5bGFuiqh1ISaMP2QI++jaXtvUZGKIigUkUTTzmwUxIQtRYBZHr3e9rjYOY4zLlprMEDROJagZAzEgMYiTZJvr7zrmc0cHXekXxfWSJ9f2rvc8977P+76/X0YGDsKubiSuwh2ELy8SfPVZGek+QG4hTjkhDPUrPh8grOYJwhXlCV9tSZMAdnUDBEwRZ8HsTcivE0bxJQR1QEyJ0L8+e2EFcEWlhJFfuS3gFoIQcpG4VMcRmUbcd58wqJeJ/2FYfhGwDegG9gKrUhfAly4H0UgUAWGQTyAiw8Sl3kv6qpaDcDMwDswCQaCH5fqWpCRA8D2YQ1zK/vgCQnCprgv9j9aD8FCIfA4XAGVqAj7fIBrxg6QEMIop4i7ZADI7IIQJ8AP5qaeBobYnJ0D5O6LwsIvzrADhQWAUGHJxfEOA1TwE09LEU6EUPnsk8y4rQfO0VIqxyW+IHgh4KnVWs6HaaDI/85J9t+Z4r1Pl599ZSbjiRlz/Ec8QcD4rRdRdrCOcNlcYaE6mErS1qITxGAYkeKDzam9VsdlibWptaz8DCPp2488Wq20H8daUg/TCndGS/wN8IUWXK9YSvix2k4NaCvkdi0I+DvJ9gwcbKIOR3gXiqy2t+tk5QITvoqNODZLRONELSs9mqI/wohshJl8YbJPNF+BZk4sb/BGGOw/y1lefb1WD6DDIp8LJQwK+P9bZrIQ3hpLykFTOiq/x3F1o/QW3K+GkLhPqGgir3omS9OOmoQCrXW+hjTVtesMAyIKR5CJw7fL2DlsZxDuSEyAhAAE9SIk8I9TVZHC1Fmc9zrpL7k3yPx1rCvTthkYx39GI54Drk7TZCrNp3k2uiqSUvoJSXnbr7UG6FuQjoY4mdrcXOp59biXe7nQ88hBm4A0TBJgR3pkE5KOYO83EW50zL/8gfDuiq/105NjHFPL7aRICZlGSL2NOPCblNzr5jJhSvHmtwFfI7qgAEL4ZIWDkaI8DKTAyILiRSEC7weSYYCtLQHI5Cvk0DNoDbxXic/QSBGEF8A0wDVwBbKc+sS2maVpsOJ1IxQiIpmMJgFC//9CTqATFdxGO/xu/7YG5l8VtQvCAKKKAdfdtQkutHufqNchVN1S/9i+jrurc2aI0muitIDoBwkuRUYHAM512Won7D4DwN8kLDDWGkG8F+aK7XB2pWvCAb6W8ie3XiXUCo2Dxu/7c0ZpCq9n0AEJuB+mwWAHAWXx/an/X+3l+91v3T/Loii7Vi3B5vdD/eGYKqyP1nhhGQi4VPyAyXeLQ+XBfE2WizRtNtEWsoHWAFzgNvM5xHDqdPuXl2ZbEQ0l+DSE+Cedv7uOZfJAOhBk4AFjuZX24VjJPUouTQqfXfUIFwvMRVdR1L+tDcSidS66rUcNjfNsqELrDyCdg6m2pC3CX5krDIvFQgSeobuKpXIq1YBmI3wN6ARoClqQsQPDVZUFAbwLyvzCwdmOEL537H0pYxvHeLAj4XzYq++P0c2xeVE2o7+wF3KiobaE+ENHPqUFcq8Ucly3wVk2lQ5gn5/UAp/ywaNDgKXsatmpckThY/gitiq5J+Xap8tK3WeXLb+6UGMUvWC03EV9ddkY6D2y9cpDrN9CU1kHAgub7P7CsZhuj7eUMAAAAAElFTkSuQmCC"" rel=""icon"" type=""image/x-icon"" />
+.pagebreak { page-break-before: always; } /* page-break-after works, as well */
+
+
+.btn-default {
+	color: #58595B;
+	background-color: transparent;
+	background-image: none;
+	border-color: #58595B;
+}
+
+.btn-default:hover {
+	color: #fff;
+	background-color: #58595B;
+	border-color: #58595B;
+}
+
+.btn-default:focus, .btn-outline-primary.focus {
+	box-shadow: 0 0 0 0.2rem rgba(88, 89, 91, 0.5);
+}
+
+.btn-default.disabled, .btn-outline-primary:disabled {
+	color: #58595B;
+	background-color: transparent;
+}
+
+.btn-default:not(:disabled):not(.disabled):active, .btn-outline-primary:not(:disabled):not(.disabled).active,
+.show > .btn-default.dropdown-toggle {
+	color: #fff;
+	background-color: #58595B;
+	border-color: #58595B;
+}
+
+.btn-default:not(:disabled):not(.disabled):active:focus, .btn-default:not(:disabled):not(.disabled).active:focus,
+.show > .btn-default.dropdown-toggle:focus {
+	box-shadow: 0 0 0 0.2rem rgba(88, 89, 91, 0.5);
+}
+
 ";
         }
+
+		protected static string favicon = @"<link href=""data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAE10lEQVRYw71XfWwTdRhet4xBssFigMja61rafbK5bGFuiqh1ISaMP2QI++jaXtvUZGKIigUkUTTzmwUxIQtRYBZHr3e9rjYOY4zLlprMEDROJagZAzEgMYiTZJvr7zrmc0cHXekXxfWSJ9f2rvc8977P+76/X0YGDsKubiSuwh2ELy8SfPVZGek+QG4hTjkhDPUrPh8grOYJwhXlCV9tSZMAdnUDBEwRZ8HsTcivE0bxJQR1QEyJ0L8+e2EFcEWlhJFfuS3gFoIQcpG4VMcRmUbcd58wqJeJ/2FYfhGwDegG9gKrUhfAly4H0UgUAWGQTyAiw8Sl3kv6qpaDcDMwDswCQaCH5fqWpCRA8D2YQ1zK/vgCQnCprgv9j9aD8FCIfA4XAGVqAj7fIBrxg6QEMIop4i7ZADI7IIQJ8AP5qaeBobYnJ0D5O6LwsIvzrADhQWAUGHJxfEOA1TwE09LEU6EUPnsk8y4rQfO0VIqxyW+IHgh4KnVWs6HaaDI/85J9t+Z4r1Pl599ZSbjiRlz/Ec8QcD4rRdRdrCOcNlcYaE6mErS1qITxGAYkeKDzam9VsdlibWptaz8DCPp2488Wq20H8daUg/TCndGS/wN8IUWXK9YSvix2k4NaCvkdi0I+DvJ9gwcbKIOR3gXiqy2t+tk5QITvoqNODZLRONELSs9mqI/wohshJl8YbJPNF+BZk4sb/BGGOw/y1lefb1WD6DDIp8LJQwK+P9bZrIQ3hpLykFTOiq/x3F1o/QW3K+GkLhPqGgir3omS9OOmoQCrXW+hjTVtesMAyIKR5CJw7fL2DlsZxDuSEyAhAAE9SIk8I9TVZHC1Fmc9zrpL7k3yPx1rCvTthkYx39GI54Drk7TZCrNp3k2uiqSUvoJSXnbr7UG6FuQjoY4mdrcXOp59biXe7nQ88hBm4A0TBJgR3pkE5KOYO83EW50zL/8gfDuiq/105NjHFPL7aRICZlGSL2NOPCblNzr5jJhSvHmtwFfI7qgAEL4ZIWDkaI8DKTAyILiRSEC7weSYYCtLQHI5Cvk0DNoDbxXic/QSBGEF8A0wDVwBbKc+sS2maVpsOJ1IxQiIpmMJgFC//9CTqATFdxGO/xu/7YG5l8VtQvCAKKKAdfdtQkutHufqNchVN1S/9i+jrurc2aI0muitIDoBwkuRUYHAM512Won7D4DwN8kLDDWGkG8F+aK7XB2pWvCAb6W8ie3XiXUCo2Dxu/7c0ZpCq9n0AEJuB+mwWAHAWXx/an/X+3l+91v3T/Loii7Vi3B5vdD/eGYKqyP1nhhGQi4VPyAyXeLQ+XBfE2WizRtNtEWsoHWAFzgNvM5xHDqdPuXl2ZbEQ0l+DSE+Cedv7uOZfJAOhBk4AFjuZX24VjJPUouTQqfXfUIFwvMRVdR1L+tDcSidS66rUcNjfNsqELrDyCdg6m2pC3CX5krDIvFQgSeobuKpXIq1YBmI3wN6ARoClqQsQPDVZUFAbwLyvzCwdmOEL537H0pYxvHeLAj4XzYq++P0c2xeVE2o7+wF3KiobaE+ENHPqUFcq8Ucly3wVk2lQ5gn5/UAp/ywaNDgKXsatmpckThY/gitiq5J+Xap8tK3WeXLb+6UGMUvWC03EV9ddkY6D2y9cpDrN9CU1kHAgub7P7CsZhuj7eUMAAAAAElFTkSuQmCC"" rel=""icon"" type=""image/x-icon"" />";
 
 		protected void GenerateNavigation(string title, string domain, DateTime generationDate)
 		{
@@ -359,6 +471,7 @@ a[name] {
 		</div>
 	</div>
 </div>
+<div class=""pagebreak""> </div>
 <!-- Section " + title + @" end -->
 ");
         }
@@ -433,6 +546,10 @@ a[name] {
 					Add((int)itemCount);
 					Add(@"]</i>");
 				}
+				else if ((int)itemCount == 0)
+				{
+					Add(@"<i class=""float-right"">Informative rule</i>");
+				}
 				else
 				{
 					Add(@"<i class=""float-right"">+ ");
@@ -472,7 +589,11 @@ a[name] {
 			Add(@""" class=""nav-link ");
 			if (isActive)
 				Add(@"active");
-			Add(@""" role=""tab"" data-toggle=""tab"">");
+			Add(@""" role=""tab"" data-toggle=""tab""");
+			Add(@" id=""bs-");
+			Add(id);
+			Add(@"""");
+			Add(@">");
 			Add(title);
 			Add("</a></li>");
 		}
@@ -631,27 +752,95 @@ a[name] {
             switch (property.ToLowerInvariant())
             {
                 case "enableguestaccount":
-                    return @"<a href=""https://msdn.microsoft.com/en-us/library/hh128296.aspx"">EnableGuestAccount</a>";
+					return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/accounts-guest-account-status"">Guest account</a> (<a href=""https://msdn.microsoft.com/en-us/library/hh128296.aspx"">Technical details</a>)";
                 case "lsaanonymousnamelookup":
-                    return @"<a href=""https://msdn.microsoft.com/en-us/library/hh128296.aspx"">LSAAnonymousNameLookup</a>";
+					return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-access-allow-anonymous-sidname-translation"">Allow anonymous SID/Name translation</a> (<a href=""https://msdn.microsoft.com/en-us/library/hh128296.aspx"">Technical details</a>)";
                 case "everyoneincludesanonymous":
-                    return @"<a href=""https://support.microsoft.com/en-us/kb/278259"">EveryoneIncludesAnonymous</a>";
+					return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-access-let-everyone-permissions-apply-to-anonymous-users"">Let Everyone permissions apply to anonymous users</a> (<a href=""https://support.microsoft.com/en-us/kb/278259"">Technical details</a>)";
                 case "limitblankpassworduse":
-                    return @"<a href=""https://technet.microsoft.com/en-us/library/jj852174.aspx"">LimitBlankPasswordUse</a>";
+					return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/accounts-limit-local-account-use-of-blank-passwords-to-console-logon-only"">Limit local account use of blank passwords to console logon only</a> (<a href=""https://technet.microsoft.com/en-us/library/jj852174.aspx"">Technical details</a>)";
                 case "forceguest":
-                    return @"<a href=""https://technet.microsoft.com/en-us/library/jj852219%28v=ws.11%29.aspx"">ForceGuest</a>";
+					return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-access-sharing-and-security-model-for-local-accounts"">Sharing and security model for local accounts</a> (<a href=""https://technet.microsoft.com/en-us/library/jj852219%28v=ws.11%29.aspx"">Technical details</a>)";
                 case "lmcompatibilitylevel":
-                    return @"<a href=""https://technet.microsoft.com/en-us/library/cc960646.aspx"">LmCompatibilityLevel</a>";
-                case "NoLMHash":
-                    return @"<a href=""https://technet.microsoft.com/en-us/library/cc736342%28v=ws.10%29.aspx"">NoLMHash</a>";
+					return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-security-lan-manager-authentication-level"">LAN Manager authentication level</a> (<a href=""https://technet.microsoft.com/en-us/library/cc960646.aspx"">Technical details</a>)";
+                case "nolmhash":
+					return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-security-do-not-store-lan-manager-hash-value-on-next-password-change"">Do not store LAN Manager hash value on next password change</a> (<a href=""https://technet.microsoft.com/en-us/library/cc736342%28v=ws.10%29.aspx"">Technical details</a>)";
                 case "restrictanonymous":
-                    return @"<a href=""https://technet.microsoft.com/en-us/library/cc963223.aspx"">RestrictAnonymous</a>";
+					return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-access-do-not-allow-anonymous-enumeration-of-sam-accounts-and-shares"">Do not allow anonymous enumeration of SAM accounts and shares</a> (<a href=""https://technet.microsoft.com/en-us/library/cc963223.aspx"">Technical details</a>)";
                 case "restrictanonymoussam":
-                    return @"<a href=""https://technet.microsoft.com/en-us/library/jj852184.aspx"">RestrictAnonymousSam</a>";
-
+					return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-access-do-not-allow-anonymous-enumeration-of-sam-accounts"">Do not allow anonymous enumeration of SAM accounts</a> (<a href=""https://technet.microsoft.com/en-us/library/jj852184.aspx"">Technical details</a>)";
+				case "ldapclientintegrity":
+					return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-security-ldap-client-signing-requirements"">LDAP client signing requirements</a> (<a href=""https://support.microsoft.com/en-us/help/935834/how-to-enable-ldap-signing-in-windows-server-2008"">Technical details</a>)";
+				case "recoveryconsole_securitylevel":
+					return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/recovery-console-allow-automatic-administrative-logon"">Recovery console: Allow automatic administrative logon</a>";
+				case "refusepasswordchange":
+					return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/domain-controller-refuse-machine-account-password-changes"">Refuse machine account password changes</a> (<a href=""https://support.microsoft.com/en-us/help/154501/how-to-disable-automatic-machine-account-password-changes"">Technical details</a>)";
+				case "enablemulticast":
+					return @"<a href=""https://getadmx.com/?Category=Windows_10_2016&Policy=Microsoft.Policies.DNSClient::Turn_Off_Multicast"">Turn off multicast name resolution</a> (<a href=""https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-llmnrp/02b1d227-d7a2-4026-9fd6-27ea5651fe85"">Technical details</a>)";
+				case "enablesecuritysignature":
+					return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/smbv1-microsoft-network-server-digitally-sign-communications-if-client-agrees"">Microsoft network server: Digitally sign communications (if client agrees)</a> (<a href=""https://www.stigviewer.com/stig/windows_server_2016/2017-11-20/finding/V-73663"">Technical details</a>)";
             }
             return property;
         }
+
+		protected string GetLsaSettingsValue(string property, int value)
+		{
+			switch (property.ToLowerInvariant())
+			{
+				case "enablemulticast":
+					if (value == 0)
+					{
+						return @"<span class=""ticked"">LLMNR disabled</span>";
+					}
+					else
+					{
+						return @"<span class=""unticked"">LLMNR Enabled</span>";
+					}
+				case "lmcompatibilitylevel":
+					if (value == 0)
+					{
+						return @"<span class=""unticked"">Send LM & NTLM responses</span>";
+					}
+					else if (value == 1)
+					{
+						return @"<span class=""unticked"">Send LM & NTLM</span>";
+					}
+					else if (value == 2)
+					{
+						return @"<span class=""unticked"">Send NTLM response only</span>";
+					}
+					else if (value == 3)
+					{
+						return "Send NTLMv2 response only";
+					}
+					else if (value == 4)
+					{
+						return "Send NTLMv2 response only. Refuse LM Client devices";
+					}
+					else if (value == 5)
+					{
+						return "Send NTLMv2 response only. Refuse LM & NTLM";
+					}
+					break;
+				case "ldapclientintegrity":
+					if (value == 0)
+					{
+						return @"<span class=""unticked"">None</span> (Do not request signature)";
+					}
+					else
+					{
+						return value.ToString();
+					}
+			}
+			if (value == 0)
+			{
+				return @"<span class=""unticked"">Disabled</span>";
+			}
+			else
+			{
+				return @"<span class=""unticked"">Enabled</span>";
+			}
+		}
 
         protected void GenerateGauge(int percentage)
         {
@@ -711,5 +900,12 @@ a[name] {
 			return data.Replace("\r\n", "<br>\r\n");
 		}
 
+		protected string GenerateNonce()
+		{
+			Random rand = new Random();
+			byte[] bytes = new byte[18];
+			rand.NextBytes(bytes);
+			return Convert.ToBase64String(bytes);
+		}
 	}
 }

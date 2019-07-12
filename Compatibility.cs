@@ -42,4 +42,13 @@ namespace System.Runtime.Serialization
 			this.contractNamespace = contractNamespace;
 		}
 	}
+
+	// available in dotnet 3 but not on dotnet 2 which is needed for Windows 2000
+	[System.AttributeUsage(System.AttributeTargets.Field | System.AttributeTargets.Property, AllowMultiple=false, Inherited=false)]
+	internal sealed class IgnoreDataMemberAttribute : Attribute
+	{
+		public IgnoreDataMemberAttribute()
+		{
+		}
+	}
 }

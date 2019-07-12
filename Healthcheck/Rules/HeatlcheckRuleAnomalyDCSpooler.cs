@@ -13,7 +13,8 @@ namespace PingCastle.Healthcheck.Rules
 {
 	[RuleModel("A-DC-Spooler", RiskRuleCategory.Anomalies, RiskModelCategory.PassTheCredential)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-    public class HeatlcheckRuleAnomalyDCSpooler : RuleBase<HealthcheckData>
+	[RuleIntroducedIn(2, 6)]
+	public class HeatlcheckRuleAnomalyDCSpooler : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

@@ -11,7 +11,7 @@ using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("P-Delegated", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+	[RuleModel("P-Delegated", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AccountTakeOver)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
     [RuleSTIG("V-36435", "Delegation of privileged accounts must be prohibited.")]
     public class HeatlcheckRulePrivilegedDelegated : RuleBase<HealthcheckData>

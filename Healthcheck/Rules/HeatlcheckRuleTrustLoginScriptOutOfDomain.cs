@@ -20,7 +20,7 @@ namespace PingCastle.Healthcheck.Rules
         {
             foreach (HealthcheckLoginScriptData script in healthcheckData.LoginScript)
             {
-                if (IsForeignScript(script.LoginScript, healthcheckData))
+				if (IsForeignScript(script.LoginScript, healthcheckData) != null)
                 {
                     Trace.WriteLine("Foreignscript:" + script.LoginScript);
                     AddRawDetail(script.LoginScript);
@@ -28,7 +28,7 @@ namespace PingCastle.Healthcheck.Rules
             }
             foreach (HealthcheckGPOLoginScriptData script in healthcheckData.GPOLoginScript)
             {
-                if (IsForeignScript(script.CommandLine, healthcheckData))
+                if (IsForeignScript(script.CommandLine, healthcheckData) != null)
                 {
                     Trace.WriteLine("Foreignscript:" + script.CommandLine);
 					AddRawDetail(script.CommandLine);
@@ -37,7 +37,7 @@ namespace PingCastle.Healthcheck.Rules
             return null;
         }
 
-        private bool IsForeignScript(string uristring, HealthcheckData healthcheckData)
+        public static string IsForeignScript(string uristring, HealthcheckData healthcheckData)
         {
             if (uristring.StartsWith("\\\\", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -45,7 +45,7 @@ namespace PingCastle.Healthcheck.Rules
                 if (!Uri.TryCreate(uristring.Split(' ')[0], UriKind.RelativeOrAbsolute, out uri))
                 {
                     Trace.WriteLine("Unable to parse the url: " + uristring);
-                    return false;
+                    return null;
                 }
                 if (uri.IsUnc && uri.Host.Contains("."))
                 {
@@ -53,12 +53,12 @@ namespace PingCastle.Healthcheck.Rules
                     if (server.EndsWith(healthcheckData.DomainFQDN, StringComparison.InvariantCultureIgnoreCase)
                         || server.EndsWith(healthcheckData.ForestFQDN, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        return false;
+						return null;
                     }
-                    return true;
+					return server;
                 }
             }
-            return false;
+			return null;
         }
     }
 }

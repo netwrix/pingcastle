@@ -15,6 +15,7 @@ namespace PingCastle.Graph.Rules
 	[RuleObjectiveAttribute("P-OperatorsEmpty", RiskRuleCategory.PrivilegedAccounts, RiskModelObjective.PrivilegedBestPractices)]
 	[RuleComputation(RuleComputationType.Objective, 25)]
 	[RuleANSSI("R27", "subsection.3.5")]
+	[RuleIntroducedIn(2, 6)]
 	public class CompromiseGraphPrivilegedOperatorsEmpty : CompromiseGraphRule
 	{
 		protected override int? AnalyzeDataNew(CompromiseGraphData compromiseGraphData)

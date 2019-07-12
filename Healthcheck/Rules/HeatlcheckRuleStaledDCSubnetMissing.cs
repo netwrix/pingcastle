@@ -9,59 +9,15 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using PingCastle.Rules;
+using PingCastle.misc;
 
 namespace PingCastle.Healthcheck.Rules
 {
 	[RuleModel("S-DC-SubnetMissing", RiskRuleCategory.StaleObjects, RiskModelCategory.NetworkTopography)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-    public class HeatlcheckRuleStaledDCSubnetMissing : RuleBase<HealthcheckData>
+	[RuleIntroducedIn(2, 5)]
+	public class HeatlcheckRuleStaledDCSubnetMissing : RuleBase<HealthcheckData>
     {
-		private class Subnet
-		{
-			private int _mask;
-			private byte[] _startAddress;
-
-			public Subnet(IPAddress startAddress, int mask)
-			{
-				_mask = mask;
-				_startAddress = startAddress.GetAddressBytes();
-				ApplyBitMask(_startAddress);
-			}
-
-			private void ApplyBitMask(byte[] address)
-			{
-				int remainingMask = _mask;
-				for (int i = 0; i < address.Length; i++)
-				{
-					if (remainingMask >= 8)
-					{
-						remainingMask -= 8;
-						continue;
-					}
-					if (remainingMask == 0)
-					{
-						address[i] = 0;
-						continue;
-					}
-					address[i] = (byte) (address[i] & (0xFF00 >> remainingMask));
-					remainingMask = 0;
-				}
-			}
-
-			public bool MatchIp(IPAddress ipaddress)
-			{
-				byte[] ipAddressBytes = ipaddress.GetAddressBytes();
-				if (ipAddressBytes.Length != _startAddress.Length)
-					return false;
-				ApplyBitMask(ipAddressBytes);
-				for (int i = 0; i < _startAddress.Length; i++)
-				{
-					if (ipAddressBytes[i] != _startAddress[i]) return false;
-				}
-				return true;
-			}
-		}
-
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
 			var subnets = new List<Subnet>();

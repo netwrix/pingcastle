@@ -25,14 +25,12 @@ namespace PingCastle.Rules
 		Provisioning = 1003,
 		[Description("Old authentication protocols")]
 		OldAuthenticationProtocols = 1004,
-		[Description("Unfinished migration")]
-		UnfinishedMigration = 1005,
 		[Description("Obsolete OS")]
-		ObsoleteOS = 1006,
+		ObsoleteOS = 1005,
 		[Description("Object configuration")]
-		ObjectConfig = 1007,
+		ObjectConfig = 1006,
 		[Description("Network topography")]
-		NetworkTopography = 1008,
+		NetworkTopography = 1007,
 		[Description("Admin control")]
 		AdminControl = 2000,
 		[Description("Privilege control")]
@@ -41,6 +39,8 @@ namespace PingCastle.Rules
 		ACLCheck = 2002,
 		[Description("Irreversible change")]
 		IrreversibleChange = 2003,
+		[Description("Account take over")]
+		AccountTakeOver = 2004,
 		[Description("SID Filtering")]
 		SIDFiltering = 3000,
 		[Description("Trust inactive")]

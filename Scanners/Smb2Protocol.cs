@@ -328,7 +328,7 @@ namespace PingCastle.Scanners
 					return false;
 				}
 
-				var negotiateresponse = ReadNegotiateResponse(packet);
+				var negotiateresponse = ReadNegotiateResponse(answer);
 				if ((negotiateresponse.SecurityMode & 1) != 0)
 				{
 					securityMode = SMBSecurityModeEnum.SmbSigningEnabled;
@@ -342,13 +342,8 @@ namespace PingCastle.Scanners
 				{
 					securityMode = SMBSecurityModeEnum.None;
 				}
-				if (negotiateresponse.Dialect == dialect)
-				{
-					Trace.WriteLine("Checking " + server + " for SMBV2 dialect 0x" + dialect.ToString("X2") + " = Supported");
-					return true;
-				}
-				Trace.WriteLine("Checking " + server + " for SMBV2 dialect 0x" + dialect.ToString("X2") + " = Not supported via not returned dialect");
-				return false;
+				Trace.WriteLine("Checking " + server + " for SMBV2 dialect 0x" + dialect.ToString("X2") + " = Supported");
+				return true;
 			}
 			catch (Exception)
 			{

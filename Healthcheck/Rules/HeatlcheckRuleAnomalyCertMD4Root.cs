@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 {
 	[RuleModel("A-MD4RootCert", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
+	[RuleSTIG("V-14820", "PKI certificates (server and clients) must be issued by the DoD PKI or an approved External Certificate Authority (ECA).", STIGFramework.ActiveDirectoryService2003)]
     public class HeatlcheckRuleAnomalyCertMD4Root : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

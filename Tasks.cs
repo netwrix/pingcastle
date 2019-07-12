@@ -422,6 +422,8 @@ namespace PingCastle
 							nodeAnalyzer.FullNodeMap = false;
 							nodeAnalyzer.CenterDomainForSimpliedGraph = CenterDomainForSimpliedGraph;
 							nodeAnalyzer.GenerateReportFile("ad_hc_summary_simple_node_map.html");
+							var mapReport = new ReportNetworkMap();
+							mapReport.GenerateReportFile(hcconso, License, "ad_hc_hilbert_map.html");
 						}
 						else if (typeof(T) == typeof(CompromiseGraphData))
 						{
@@ -433,6 +435,25 @@ namespace PingCastle
 				);
 		}
 
+		public bool HealthCheckRulesTask()
+		{
+			return StartTask("PingCastle Health Check rules",
+					() =>
+					{
+						if (String.IsNullOrEmpty(FileOrDirectory))
+						{
+							FileOrDirectory = Directory.GetCurrentDirectory();
+						}
+						if (!Directory.Exists(FileOrDirectory))
+						{
+							WriteInRed("The directory " + FileOrDirectory + " doesn't exist");
+							return;
+						}
+						var rulesBuilder = new ReportHealthCheckRules();
+						rulesBuilder.GenerateReportFile("ad_hc_rules_list.html");
+					}
+				);
+		}
 
 
 		public bool RegenerateHtmlTask()
@@ -688,11 +709,16 @@ namespace PingCastle
 
 		void SendEmail(string email, List<string> domains, List<Attachment> Files)
 		{
+			Version version = Assembly.GetExecutingAssembly().GetName().Version;
+			var versionString = version.ToString(4);
+#if DEBUG
+			versionString += " Beta";
+#endif
 			string body = @"Hello,
 
 This is the PingCastle program sending reports for:
 - " + String.Join("\r\n- ", domains.ToArray());
-			SendEmail(email, "[PingCastle] Reports for " + String.Join(",", domains.ToArray()), body, Files);
+			SendEmail(email, "[PingCastle]["+ versionString + "] Reports for " + String.Join(",", domains.ToArray()), body, Files);
 		}
 
 		void SendEmail(string email, bool xml, bool html)

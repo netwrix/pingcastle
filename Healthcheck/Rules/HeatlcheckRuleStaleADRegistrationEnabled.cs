@@ -25,7 +25,10 @@ namespace PingCastle.Healthcheck.Rules
                     if (right.Privilege == "SeMachineAccountPrivilege")
                     {
                         if (right.User == "Everyone"
-                            || right.User == "Authenticated Users")
+                            || right.User == "Authenticated Users"
+							|| right.User == "Users"
+							|| right.User == "Anonymous"
+							)
                         {
                             Trace.WriteLine("SeMachineAccountPrivilege found in GPO " + right.GPOName);
 							return healthcheckData.MachineAccountQuota;

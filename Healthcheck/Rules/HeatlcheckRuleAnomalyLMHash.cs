@@ -15,11 +15,12 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
 	[RuleANSSI("R37", "paragraph.3.6.2.1")]
 	[RuleBSI("M 2.412")]
+	[RuleSTIG("V-3379", "The system is configured to store the LAN Manager hash of the password in the SAM.", STIGFramework.Windows2008)]
     public class HeatlcheckRuleAnomalyLMHash : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            foreach (GPPSecurityPolicy policy in healthcheckData.GPPPasswordPolicy)
+			foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
             {
                 foreach (GPPSecurityPolicyProperty property in policy.Properties)
                 {
@@ -27,7 +28,7 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         if (property.Value == 0)
                         {
-							AddRawDetail(policy.GPOName);
+							AddRawDetail(policy.GPOName, property.Property);
 							break;
                         }
                     }

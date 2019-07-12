@@ -62,8 +62,19 @@ namespace PingCastle
             ref uint cchReferencedDomainName,
             out SID_NAME_USE peUse);
 
+		[DllImport("advapi32.dll", SetLastError = true)]
+		static extern bool LookupAccountName(
+			string lpSystemName,
+			string lpAccountName,
+			[MarshalAs(UnmanagedType.LPArray)] byte[] Sid,
+			ref uint cbSid,
+			StringBuilder ReferencedDomainName,
+			ref uint cchReferencedDomainName,
+			out SID_NAME_USE peUse);
+
         const int NO_ERROR = 0;
         const int ERROR_INSUFFICIENT_BUFFER = 122;
+		const int ERROR_INVALID_FLAGS = 1004;
 
         public enum SID_NAME_USE
         {
@@ -82,6 +93,36 @@ namespace PingCastle
 		{
 			string referencedDomain = null;
 			return ConvertSIDToName(sidstring, server, out referencedDomain);
+		}
+
+		public static SecurityIdentifier ConvertNameToSID(string accountName, string server)
+		{
+			byte [] Sid = null;
+			uint cbSid = 0;
+			StringBuilder referencedDomainName = new StringBuilder();
+			uint cchReferencedDomainName = (uint)referencedDomainName.Capacity;
+			SID_NAME_USE sidUse;
+
+			int err = NO_ERROR;
+			if (LookupAccountName(server, accountName, Sid, ref cbSid, referencedDomainName, ref cchReferencedDomainName, out sidUse))
+			{
+				return new SecurityIdentifier(Sid, 0);
+			}
+			else
+			{
+				err = Marshal.GetLastWin32Error();
+				if (err == ERROR_INSUFFICIENT_BUFFER || err == ERROR_INVALID_FLAGS)
+				{
+					Sid = new byte[cbSid];
+					referencedDomainName.EnsureCapacity((int)cchReferencedDomainName);
+					err = NO_ERROR;
+					if (LookupAccountName(null, accountName, Sid, ref cbSid, referencedDomainName, ref cchReferencedDomainName, out sidUse))
+					{
+						return new SecurityIdentifier(Sid, 0);
+					}
+				}
+			}
+			return null;
 		}
 
         [EnvironmentPermissionAttribute(SecurityAction.Demand, Unrestricted = true)]
@@ -260,7 +301,7 @@ namespace PingCastle
         }
 
         [DllImport("advapi32.dll")]
-        internal static extern int LsaOpenPolicy(
+        internal static extern uint LsaOpenPolicy(
            ref UNICODE_STRING SystemName,
            ref LSA_OBJECT_ATTRIBUTES ObjectAttributes,
            uint DesiredAccess,
@@ -268,7 +309,7 @@ namespace PingCastle
         );
 
         [DllImport("advapi32.dll")]
-        internal static extern int LsaClose(IntPtr ObjectHandle);
+        internal static extern uint LsaClose(IntPtr ObjectHandle);
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct LSA_TRUST_INFORMATION
@@ -278,7 +319,7 @@ namespace PingCastle
         }
 
         [DllImport("advapi32.dll")]
-        internal static extern int LsaEnumerateTrustedDomains(
+        internal static extern uint LsaEnumerateTrustedDomains(
             IntPtr PolicyHandle,
             ref IntPtr EnumerationContext,
             out IntPtr Buffer,
@@ -335,7 +376,7 @@ namespace PingCastle
         }
 
         [DllImport("advapi32.dll", SetLastError = true)]
-        internal static extern int LsaLookupSids(
+        internal static extern uint LsaLookupSids(
             IntPtr PolicyHandle,
             int Count,
             IntPtr ptrEnumBuf,
@@ -344,9 +385,9 @@ namespace PingCastle
          );
 
         [DllImport("advapi32")]
-        internal static extern int LsaLookupNames(
+        internal static extern uint LsaLookupNames(
             IntPtr PolicyHandle,
-            uint Count,
+            int Count,
             UNICODE_STRING[] Names,
             out IntPtr ReferencedDomains,
             out IntPtr Sids
@@ -367,6 +408,14 @@ namespace PingCastle
             public int DomainIndex;
         }
 
+		[StructLayout(LayoutKind.Sequential)]
+		public struct LSA_TRANSLATED_SID
+		{
+			public SID_NAME_USE Use;
+			public uint RelativeId;
+			public int DomainIndex;
+		}
+
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         public static SecurityIdentifier GetSidFromDomainName(string server, string domainToResolve)
         {
@@ -374,7 +423,7 @@ namespace PingCastle
             NativeMethods.LSA_OBJECT_ATTRIBUTES loa = new NativeMethods.LSA_OBJECT_ATTRIBUTES();
             us.Initialize(server);
             IntPtr PolicyHandle = IntPtr.Zero;
-            int ret = NativeMethods.LsaOpenPolicy(ref us, ref loa, 0x00000800, out PolicyHandle);
+            uint ret = NativeMethods.LsaOpenPolicy(ref us, ref loa, 0x00000800, out PolicyHandle);
             if (ret != 0)
             {
                 Trace.WriteLine("LsaOpenPolicy 0x" + ret.ToString("x"));

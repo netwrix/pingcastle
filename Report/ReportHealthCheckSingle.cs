@@ -22,10 +22,10 @@ namespace PingCastle.Report
 	public class ReportHealthCheckSingle : ReportRiskControls<HealthcheckData>, IPingCastleReportUser<HealthcheckData>
     {
 
-        private HealthcheckData Report;
+        protected HealthcheckData Report;
         public static int MaxNumberUsersInHtmlReport = 100;
 		private ADHealthCheckingLicense _license;
-		private Version version;
+		protected Version version;
 
 		public string GenerateReportFile(HealthcheckData report, ADHealthCheckingLicense license, string filename)
 		{
@@ -55,11 +55,11 @@ namespace PingCastle.Report
 
 		protected override void GenerateHeaderInformation()
 		{
-			Add(@"<style>");
-			Add(TemplateManager.LoadDatatableCss());
-			Add(@"</style>");
-			Add(GetStyleSheetTheme());
-			Add(GetRiskControlStyleSheet());
+			AddBeginStyle();
+			AddLine(TemplateManager.LoadDatatableCss());
+			AddLine(GetStyleSheetTheme());
+			AddLine(GetRiskControlStyleSheet());
+			AddLine(@"</style>");
 		}
 
 		protected override void GenerateBodyInformation()
@@ -114,29 +114,32 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 		void GenerateContent()
 		{
 			GenerateSection("Active Directory Indicators", () =>
-				{
-					GenerateIndicators(Report, Report.AllRiskRules);
-					GenerateRiskModelPanel(Report.RiskRules);
-				});
+			{
+				GenerateIndicators(Report, Report.AllRiskRules);
+				GenerateRiskModelPanel(Report.RiskRules);
+			});
+
+			List<RuleBase<HealthcheckData>> applicableRules = GenerateListOfApplicableRules();
+
 			GenerateSection("Stale Objects", () =>
 			{
 				GenerateSubIndicator("Stale Objects", Report.GlobalScore, Report.StaleObjectsScore, "It is about operations related to user or computer objects");
-				GenerateIndicatorPanel("DetailStale", "Stale Objects rule details", RiskRuleCategory.StaleObjects, Report.RiskRules);
+				GenerateIndicatorPanel("DetailStale", "Stale Objects rule details", RiskRuleCategory.StaleObjects, Report.RiskRules, applicableRules);
 			});
 			GenerateSection("Privileged Accounts", () =>
 			{
 				GenerateSubIndicator("Privileged Accounts", Report.GlobalScore, Report.PrivilegiedGroupScore, "It is about administrators of the Active Directory");
-				GenerateIndicatorPanel("DetailPrivileged", "Privileged Accounts rule details", RiskRuleCategory.PrivilegedAccounts, Report.RiskRules);
+				GenerateIndicatorPanel("DetailPrivileged", "Privileged Accounts rule details", RiskRuleCategory.PrivilegedAccounts, Report.RiskRules, applicableRules);
 			});
 			GenerateSection("Trusts", () =>
 			{
 				GenerateSubIndicator("Trusts", Report.GlobalScore, Report.TrustScore, "It is about operations related to user or computer objects");
-				GenerateIndicatorPanel("DetailTrusts", "Trusts rule details", RiskRuleCategory.Trusts, Report.RiskRules);
+				GenerateIndicatorPanel("DetailTrusts", "Trusts rule details", RiskRuleCategory.Trusts, Report.RiskRules, applicableRules);
 			});
 			GenerateSection("Anomalies analysis", () =>
 			{
 				GenerateSubIndicator("Anomalies", Report.GlobalScore, Report.AnomalyScore, "It is about specific security control points");
-				GenerateIndicatorPanel("DetailAnomalies", "Anomalies rule details", RiskRuleCategory.Anomalies, Report.RiskRules);
+				GenerateIndicatorPanel("DetailAnomalies", "Anomalies rule details", RiskRuleCategory.Anomalies, Report.RiskRules, applicableRules);
 			});
 			GenerateSection("Domain Information", GenerateDomainInformation);
 			GenerateSection("User Information", GenerateUserInformation);
@@ -148,11 +151,34 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			GenerateSection("GPO", GenerateGPODetail);
 		}
 
+		protected List<RuleBase<HealthcheckData>> GenerateListOfApplicableRules()
+		{
+			var applicableRules = new List<RuleBase<HealthcheckData>>();
+			foreach (var rule in RuleSet<HealthcheckData>.Rules)
+			{
+				object[] models = rule.GetType().GetCustomAttributes(typeof(RuleIntroducedInAttribute), true);
+				if (models != null && models.Length != 0)
+				{
+					RuleIntroducedInAttribute model = (RuleIntroducedInAttribute)models[0];
+					if (model.Version <= version)
+					{
+						applicableRules.Add(rule);
+					}
+				}
+				else
+				{
+					applicableRules.Add(rule);
+				}
+			}
+
+			return applicableRules;
+		}
+
 		protected override void GenerateFooterInformation()
 		{
-			Add("<script>\r\n");
-			Add(TemplateManager.LoadJqueryDatatableJs());
-			Add(TemplateManager.LoadDatatableJs());
+			AddBeginScript();
+			AddLine(TemplateManager.LoadJqueryDatatableJs());
+			AddLine(TemplateManager.LoadDatatableJs());
 			Add(@"
 
 $(function() {
@@ -192,8 +218,10 @@ $(document).ready(function(){
         
 
         #region domain info
-        private void GenerateDomainInformation()
+        protected void GenerateDomainInformation()
         {
+			bool checkRecycleBin = version >= new Version(2, 7, 0, 0);
+			
             Add(@"
 		<a name=""domaininformation""></a>
 		<div class=""row"">
@@ -208,7 +236,13 @@ $(document).ready(function(){
 						<th>Creation date</th>
 						<th>DC count</th>
 						<th>Schema version</th>
-					</tr>
+");
+			if (checkRecycleBin)
+			{
+				Add(@"<th>Recycle Bin enabled</th>
+");
+			}
+			Add(@"</tr>
 					</thead>
 					<tbody>
 					<tr>
@@ -229,10 +263,23 @@ $(document).ready(function(){
             Add(@"</td>
 						<td class='num'>");
             Add(Report.NumberOfDC);
-            Add(@"</td>
+			Add(@"</td>
 						<td class='text'>");
 			Add(ReportHelper.GetSchemaVersion(Report.SchemaVersion));
-            Add(@"</td>
+            if (checkRecycleBin)
+			{
+				Add(@"</td>
+						<td class='text'>");
+				if (Report.IsRecycleBinEnabled)
+				{
+					Add("TRUE");
+				}
+				else
+				{
+					Add("<span class=\"unticked\">FALSE</span>");
+				}
+			}
+			Add(@"</td>
 					</tr>
 					</tbody>
 					<tfoot></tfoot>
@@ -248,27 +295,27 @@ $(document).ready(function(){
 		
 		void AddAccountCheckHeader(bool computerView)
 		{
-			Add(@"<th>Nb Enabled&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of accounts not set as disabled."">?</i></th>");
-			Add(@"<th>Nb Disabled&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of accounts set as disabled."">?</i></th>");
-			Add(@"<th>Nb Active&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts where at least one logon occured in the last 6 months."">?</i></th>");
-			Add(@"<th>Nb Inactive&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts without any logon during the last 6 months."">?</i></th>");
+			Add(@"<th>Nb Enabled&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of accounts not set as disabled."">?</i></th>");
+			Add(@"<th>Nb Disabled&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of accounts set as disabled."">?</i></th>");
+			Add(@"<th>Nb Active&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts where at least one logon occured in the last 6 months."">?</i></th>");
+			Add(@"<th>Nb Inactive&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts without any logon during the last 6 months."">?</i></th>");
 			if (!computerView)
 			{
-				Add(@"<th>Nb Locked&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts set as locked."">?</i></th>");
-				Add(@"<th>Nb pwd never Expire&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts which have a password which never expires."">?</i></th>");
+				Add(@"<th>Nb Locked&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts set as locked."">?</i></th>");
+				Add(@"<th>Nb pwd never Expire&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts which have a password which never expires."">?</i></th>");
 			}
-			Add(@"<th>Nb SidHistory&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts having the attribute SIDHistory set. This attributes indicates a foreign origin."">?</i></th>");
-			Add(@"<th>Nb Bad PrimaryGroup&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled account whose the group set as primary is not the default one."">?</i></th>");
+			Add(@"<th>Nb SidHistory&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts having the attribute SIDHistory set. This attributes indicates a foreign origin."">?</i></th>");
+			Add(@"<th>Nb Bad PrimaryGroup&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled account whose the group set as primary is not the default one."">?</i></th>");
 			if (!computerView)
 			{
-				Add(@"<th>Nb Password not Req.&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts which have a flag set in useraccountcontrol allowing empty passwords."">?</i></th>");
-				Add(@"<th>Nb Des enabled.&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts allowing the unsafe DES algorithm for authentication."">?</i></th>");
+				Add(@"<th>Nb Password not Req.&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts which have a flag set in useraccountcontrol allowing empty passwords."">?</i></th>");
+				Add(@"<th>Nb Des enabled.&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts allowing the unsafe DES algorithm for authentication."">?</i></th>");
 			}
-			Add(@"<th>Nb unconstrained delegations&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts having been granted the right to impersonate any users without any restrictions."">?</i></th>");
-			Add(@"<th>Nb Reversible password&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts whose password can be retrieved in clear text using hacking tools."">?</i></th>");
+			Add(@"<th>Nb unconstrained delegations&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts having been granted the right to impersonate any users without any restrictions."">?</i></th>");
+			Add(@"<th>Nb Reversible password&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the number of enabled accounts whose password can be retrieved in clear text using hacking tools."">?</i></th>");
 		}
 
-        private void GenerateUserInformation()
+		protected void GenerateUserInformation()
         {
 			GenerateSubSection("Account analysis", "useraccountanalysis");
             Add(@"
@@ -401,7 +448,7 @@ $(document).ready(function(){
 				{
 					Add(@"
 								<div class=""col-md-12 table-responsive"">
-									<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+									<table class=""table table-striped table-bordered"">
 									<thead>
 									<tr> 
 										<th>Name</th>
@@ -446,7 +493,7 @@ $(document).ready(function(){
 					{
 						Add("<tfoot><tr><td colspan='4' class='text'>Output limited to ");
 						Add(MaxNumberUsersInHtmlReport);
-						Add(" items - add \"--no-enum-limit\" to remove that limit</td></tr></tfoot>");
+						Add(" items - go to the advanced menu before running the report or add \"--no-enum-limit\" to remove that limit</td></tr></tfoot>");
 					}				
 					Add(@"
 									</table>
@@ -464,11 +511,11 @@ $(document).ready(function(){
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 				<thead><tr> 
 					<th>SID History from domain</th>
-					<th>First date seen&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the youngest creation date of an object having SIDHistory related to this domain"">?</i></th>
-					<th>Last date seen&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the oldest creation date of an object having SIDHistory related to this domain"">?</i></th>
+					<th>First date seen&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the youngest creation date of an object having SIDHistory related to this domain"">?</i></th>
+					<th>Last date seen&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the oldest creation date of an object having SIDHistory related to this domain"">?</i></th>
 					<th>Count</th>
 				</tr></thead>
 				<tbody>");
@@ -496,9 +543,9 @@ $(document).ready(function(){
 		</div>");
 		}
 
-        #endregion user info
+		#endregion user info
 		#region computer info
-		private void GenerateComputerInformation()
+		protected void GenerateComputerInformation()
 		{
 			GenerateSubSection("Account analysis", "computeraccountanalysis");
 			Add(@"
@@ -557,7 +604,7 @@ $(document).ready(function(){
 				Add(@"
 			<div class=""row"">
 				<div class=""col-md-12 table-responsive"">
-					<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+					<table class=""table table-striped table-bordered"">
 					<thead><tr> 
 						<th>Operating System</th>
 						<th>Count</th>
@@ -589,7 +636,7 @@ $(document).ready(function(){
 				Add(@"
 			<div class=""row"">
 				<div class=""col-md-12 table-responsive"">
-					<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+					<table class=""table table-striped table-bordered"">
 					<thead><tr> 
 						<th>Operating System</th>
 						<th>Nb OS</th>
@@ -649,6 +696,11 @@ $(document).ready(function(){
 				return;
 
             GenerateSubSection("Domain controllers", "domaincontrollersection");
+			Add(@"
+		<div class=""row col-lg-12"">
+			<p>Here is a specific zoom related to the Active Directory servers: the domain controllers.</p>
+		</div>
+");
 			GenerateAccordion("domaincontrollers", ()
 				=>
 				{
@@ -657,21 +709,25 @@ $(document).ready(function(){
 						{
 							Add(@"
 				<div class=""col-md-12 table-responsive"">
-					<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+					<table class=""table table-striped table-bordered"">
 					<thead>
 					<tr> 
 						<th>Domain controller</th>
 						<th>Operating System</th>
-						<th>Creation Date&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the creation date of the underlying computer object."">?</i></th>
+						<th>Creation Date&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the creation date of the underlying computer object."">?</i></th>
 						<th>Startup Time</th>
 						<th>Uptime</th>
-						<th>Owner&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the owner of the underlying domain controller object stored in the active directory partition. The nTSecurityDescriptor attribute stores its value."">?</i></th>
-						<th>Null sessions&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates if an anonymous user can extract information from the domain controller"">?</i></th>
-						<th>SMB v1&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates if the domain controller supports this unsafe SMB v1 network protocol."">?</i></th>
+						<th>Owner&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the owner of the underlying domain controller object stored in the active directory partition. The nTSecurityDescriptor attribute stores its value."">?</i></th>
+						<th>Null sessions&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates if an anonymous user can extract information from the domain controller"">?</i></th>
+						<th>SMB v1&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates if the domain controller supports this unsafe SMB v1 network protocol."">?</i></th>
 ");
 							if (version >= new Version(2, 5, 3))
 							{
-								Add(@"<th>Remote spooler&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates if the spooler service is remotely accessible."">?</i></th>");
+								Add(@"<th>Remote spooler&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates if the spooler service is remotely accessible."">?</i></th>");
+							}
+							if (version >= new Version(2, 7))
+							{
+								Add(@"<th>FSMO role&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Flexible Single Master Operation. Indicates the server responsible for each role."">?</i></th>");
 							}
 							Add(@"
 									</tr>
@@ -714,6 +770,15 @@ $(document).ready(function(){
 									Add((dc.RemoteSpoolerDetected ? "<span class='unticked'>YES</span>" : "<span class='ticked'>NO</span>"));
 									Add("</Td>");
 								}
+								if (version >= new Version(2, 7))
+								{
+									Add(@"<Td>");
+									if (dc.FSMO != null)
+									{
+										Add(string.Join(",<br>", dc.FSMO.ConvertAll(x => ReportHelper.Encode(x)).ToArray()));
+									}
+									Add("</Td>");
+								}
 								Add(@"</tr>
 ");
 							}
@@ -729,38 +794,43 @@ $(document).ready(function(){
 
 		}
 
-		
+
 		#endregion computer info
 
 		#region admin groups
-		private void GenerateAdminGroupsInformation()
+		protected void GenerateAdminGroupsInformation()
 		{
 			if (Report.PrivilegedGroups != null)
 			{
 				GenerateSubSection("Groups", "admingroups");
 				Add(@"
+		<div class=""row col-lg-12"">
+			<p>This section is focused on the groups which are critical for admin activities. If the report has been saved which the full details, each group can be zoomed with its members. If it is not the case, for privacy reasons, only general statictics are available.</p>
+		</div>
+");
+				Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive mb-2"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 				<thead><tr> 
 					<th>Group Name</th>
-					<th>Nb Admins&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of user accounts member of this group"">?</i></th>
-					<th>Nb Enabled&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of user accounts not marked as disabled"">?</i></th>
-					<th>Nb Disabled&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of user accounts marked as disabled"">?</i></th>
-					<th>Nb Inactive&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of enabled user accounts without login activities far at least 6 months"">?</i></th>
-					<th>Nb PWd never expire&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of enabled user accounts having a password marked as never expire"">?</i></th>
+					<th>Nb Admins&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of user accounts member of this group"">?</i></th>
+					<th>Nb Enabled&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of user accounts not marked as disabled"">?</i></th>
+					<th>Nb Disabled&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of user accounts marked as disabled"">?</i></th>
+					<th>Nb Inactive&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of enabled user accounts without login activities far at least 6 months"">?</i></th>
+					<th>Nb PWd never expire&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of enabled user accounts having a password marked as never expire"">?</i></th>
 ");
 				if (version >= new Version(2, 5, 2))
 				{
-					Add(@"<th>Nb Smart Card required&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of enabled user accounts required to have a smart card"">?</i></th>");
+					Add(@"<th>Nb Smart Card required&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of enabled user accounts required to have a smart card"">?</i></th>");
 				}
 				if (version >= new Version(2, 5, 3))
 				{
-					Add(@"<th>Nb Service accounts&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of enabled user accounts authorized to be a service. This is defined by setting the attribute servicePrincipalName."">?</i></th>");
+					Add(@"<th>Nb Service accounts&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of enabled user accounts authorized to be a service. This is defined by setting the attribute servicePrincipalName."">?</i></th>");
 				}
 				Add(@"
-					<th>Nb can be delegated&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of enabled user accounts which doesn't have the flag 'this account is sensitive and cannot be delegated'. This is an effective mitigation against unconstrained delegation attacks."">?</i></th>
-					<th>Nb external users&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of item identified as coming from a foreign domain"">?</i></th>
+					<th>Nb can be delegated&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of enabled user accounts which doesn't have the flag 'this account is sensitive and cannot be delegated'. This is an effective mitigation against unconstrained delegation attacks."">?</i></th>
+					<th>Nb external users&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""This is the number of item identified as coming from a foreign domain"">?</i></th>
 				</tr>
 				</thead>
 				<tbody>
@@ -861,6 +931,11 @@ $(document).ready(function(){
 			<div class=""col-md-12"">
 ");
 				GenerateSubSection("Delegations", "admindelegation");
+				Add(@"
+		<div class=""row col-lg-12"">
+			<p>Each specific rights defined for Organizational Unit (OU) are listed below.</p>
+		</div>
+");
 				GenerateAccordion("delegationaccordeon",
 					() =>
 					{
@@ -911,7 +986,7 @@ $(document).ready(function(){
 			Add(@"
 <div class=""row"">
 <div class=""col-lg-12 table-responsive"">
-<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+<table class=""table table-striped table-bordered"">
 <thead><tr> 
 <th>DistinguishedName</th>
 <th>Account</th>
@@ -955,24 +1030,24 @@ $(document).ready(function(){
 				Add(@"
 <div class=""row"">
 <div class=""col-lg-12"">
-<table class=""table table-responsive table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+<table class=""table table-responsive table-striped table-bordered"">
 <thead><tr> 
-	<th>SamAccountName&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates login name of the user account."">?</i></th>
-	<th>Enabled&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates if the account is not marked as disabled."">?</i></th>
-	<th>Active&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates if the user is not set as disabled and at least one login occured during the last 6 months."">?</i></th>
-	<th>Pwd never Expired&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates for enabled accounts if the password is set to never expires."">?</i></th>
-	<th>Locked&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates for enabled accounts if the account is locked"">?</i></th>
+	<th>SamAccountName&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates login name of the user account."">?</i></th>
+	<th>Enabled&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates if the account is not marked as disabled."">?</i></th>
+	<th>Active&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates if the user is not set as disabled and at least one login occured during the last 6 months."">?</i></th>
+	<th>Pwd never Expired&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates for enabled accounts if the password is set to never expires."">?</i></th>
+	<th>Locked&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates for enabled accounts if the account is locked"">?</i></th>
 ");
 				if (version >= new Version(2, 5, 2))
 				{
-					Add(@"<th>Smart Card required&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates for enabled accounts if a smart card is required to login"">?</i></th>");
+					Add(@"<th>Smart Card required&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates for enabled accounts if a smart card is required to login"">?</i></th>");
 				}
 				if (version >= new Version(2, 5, 3))
 				{
-					Add(@"<th>Service account&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates for enabled accounts it has been marked as service. This is done by setting the servicePrincipalName attribute."">?</i></th>");
+					Add(@"<th>Service account&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates for enabled accounts it has been marked as service. This is done by setting the servicePrincipalName attribute."">?</i></th>");
 				}
-				Add(@"<th>Flag Cannot be delegated present&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates for enabled accounts if the protection 'this is account is sensitive and cannot be delegated' is in place."">?</i></th>
-	<th>Distinguished name&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the location of the object in the AD tree."">?</i></th>
+				Add(@"<th>Flag Cannot be delegated present&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates for enabled accounts if the protection 'this is account is sensitive and cannot be delegated' is in place."">?</i></th>
+	<th>Distinguished name&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates the location of the object in the AD tree."">?</i></th>
 </tr>
 </thead>
 <tbody>
@@ -1079,25 +1154,26 @@ $(document).ready(function(){
 			return String.Compare(GetDelegationSortKey(a), GetDelegationSortKey(b));
 		}
 
-        #endregion admin groups
+		#endregion admin groups
 
-        #region trust
-        void GenerateTrustInformation()
+		#region trust
+		protected void GenerateTrustInformation()
 		{
 			List<string> knowndomains = new List<string>();
             GenerateSubSection("Discovered Domains", "discovereddomains");
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr>
 					<th>Trust Partner</th>
 					<th>Type</th>
 					<th>Attribut</th>
-					<th>Direction&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""<b>Bidirectional:</b> Each domain or forest has access to the resources of the other domain or forest. <br><b>Inbound:</b> The other domain or forest has access to the resources of this domain or forest. This domain or forest does not have access to resources that belong to the other domain or forest. <br><b>Outbound:</b> This domain or forest has access to resources of the other domain or forest. The other domain or forest does not have access to the resources of this domain or forest."">?</i></th>
-					<th>SID Filtering active&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates if the protection for the trust has been enabled or disabled."">?</i></th>
-					<th>Creation&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates creation date of the underlying AD object"">?</i></th>
-					<th>Is Active ?&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""The account used to store the secret should be modified every 30 days if it is active. It indicates if a change occured during the last 40 days"">?</i></th>
+					<th>Direction&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""<b>Bidirectional:</b> Each domain or forest has access to the resources of the other domain or forest. <br><b>Inbound:</b> The other domain or forest has access to the resources of this domain or forest. This domain or forest does not have access to resources that belong to the other domain or forest. <br><b>Outbound:</b> This domain or forest has access to resources of the other domain or forest. The other domain or forest does not have access to the resources of this domain or forest."">?</i></th>
+					<th>SID Filtering active&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates if the protection for the trust has been enabled or disabled."">?</i></th>
+					<th>TGT Delegation&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates if the kerberos delegation works accross forest trusts"">?</i></th>
+					<th>Creation&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""Indicates creation date of the underlying AD object"">?</i></th>
+					<th>Is Active ?&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title=""""  data-original-title=""The account used to store the secret should be modified every 30 days if it is active. It indicates if a change occured during the last 40 days"">?</i></th>
 					</tr>
 					</thead>
 					<tbody>
@@ -1115,17 +1191,26 @@ $(document).ready(function(){
 				{
 					sidfiltering = "<span class=\"unticked\">"+ sidfiltering + "</span>";
 				}
+				string tgtDelegation = TrustAnalyzer.GetTGTDelegation(trust);
+				if (tgtDelegation == "Yes")
+				{
+					tgtDelegation = "<span class=\"unticked\">" + tgtDelegation + "</span>";
+				}
+				else if (tgtDelegation == "No")
+				{
+					tgtDelegation = "<span class=\"ticked\">" + tgtDelegation + "</span>";
+				}
                 Add(@"<tr>
 <td class='text'>");
                 if (GetUrlCallback == null)
                 {
-                    Add(@"<a href=""#"" data-toggle=""tooltip"" data-placement=""auto right"" title=""SID:");
+					AddEncoded(trust.TrustPartner);
+                    Add(@" <i class=""info-mark d-print-none"" data-toggle=""tooltip"" data-placement=""right"" data-html=""true"" title=""SID:");
                     Add(sid);
                     Add(@"<br>Netbios: ");
                     Add(netbios);
                     Add(@""">");
-                    AddEncoded(trust.TrustPartner);
-                    Add(@"</a>");
+                    Add(@"?</i>");
                 }
                 else
                 {
@@ -1145,6 +1230,9 @@ $(document).ready(function(){
                 Add(sidfiltering);
                 Add(@"</td>
 <td class='text'>");
+				Add(tgtDelegation);
+				Add(@"</td>
+<td class='text'>");
                 Add(trust.CreationDate);
                 Add(@"</td>
 <td class='text'>");
@@ -1161,11 +1249,15 @@ $(document).ready(function(){
 ");
 
             GenerateSubSection("Reachable Domains");
-
+			Add(@"
+		<div class=""row col-lg-12"">
+			<p>These are the domains that PingCastle was able to detect but which is not releated to direct trusts. It may be children of a forest or bastions.</p>
+		</div>
+");
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr> 
 						<th>Reachable domain</th>
 						<th>Via</th>
@@ -1212,7 +1304,14 @@ $(document).ready(function(){
                     AddEncoded(di.NetbiosName);
                     Add(@"</td>
 <td class='text'>");
-                    Add(di.CreationDate);
+					if (di.CreationDate == DateTime.MinValue)
+					{
+						Add("Unknown");
+					}
+					else
+					{
+						Add(di.CreationDate);
+					}
                     Add(@"</td>
 </tr>
 ");
@@ -1253,7 +1352,7 @@ $(document).ready(function(){
 		#endregion trust
 
 		#region anomaly
-		private void GenerateAnomalyDetail()
+		protected void GenerateAnomalyDetail()
 		{
             GenerateSubSection("Backup", "backup");
             Add(@"
@@ -1293,7 +1392,7 @@ Here is the list of servers configured for WEF found in GPO</p>
 							{
 								Add(@"
 									<div class=""col-md-12 table-responsive"">
-										<TABLE class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+										<TABLE class=""table table-striped table-bordered"">
 											<thead><tr> 
 												<th>GPO Name</th>
 												<th>Order</th>
@@ -1400,7 +1499,7 @@ Hackers can then perform a reconnaissance of the environement with only a networ
 								{
 									Add(@"
 								<div class=""col-md-12 table-responsive"">
-									<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+									<table class=""table table-striped table-bordered"">
 									<thead><tr> 
 										<th>Domain Controller</th>
 									</tr>
@@ -1445,7 +1544,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 			<p>You can check here backdoors or typo error in the scriptPath attribute</p>
 		</div></div>
 		<div class=""row col-lg-12 table-responsive"">
-			<TABLE class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+			<TABLE class=""table table-striped table-bordered"">
 				<thead><tr> 
 					<th>Script Name</th>
 					<th>Count</th>
@@ -1487,7 +1586,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 				{
 					Add("<tfoot><tr><td colspan='2' class='text'>Output limited to ");
 					Add(MaxNumberUsersInHtmlReport);
-					Add(" items - add \"--no-enum-limit\" to remove that limit</td></tr></tfoot>");
+					Add(" items - go to the advanced menu before running the report or add \"--no-enum-limit\" to remove that limit</td></tr></tfoot>");
 				}
 				Add(@"
 			</table>
@@ -1511,7 +1610,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 							{
 								Add(@"
 								<div class=""col-md-12 table-responsive"">
-									<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+									<table class=""table table-striped table-bordered"">
 									<thead><tr> 
 										<th>Source</th>
 										<th>Store</th>
@@ -1555,7 +1654,14 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 									Add(@"
 				<tr>
 				<td class='text'>");
-									AddEncoded(data.Source);
+									if (data.Source == "NTLMStore")
+									{
+										Add(@"Enterprise NTAuth&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" title="""" data-original-title=""This store is used by the Windows PKI. You can view it with the command 'certutil -viewstore -enterprise NTAuth' or edit it with the command 'Manage AD Container' of the 'Enterprise PKI' snapin of mmc."">?</i>");
+									}
+									else
+									{
+										AddEncoded(data.Source);
+									}
 									Add(@"</td>
 				<td class='text'>");
 									AddEncoded(data.Store);
@@ -1602,13 +1708,13 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 
 		#region password policies
 
-		private void GeneratePasswordPoliciesDetail()
+		protected void GeneratePasswordPoliciesDetail()
 		{
             GenerateSubSection("Password policies", "passwordpolicies");
             Add(@"
 		<p>Note: PSO (Password Settings Objects) will be visible only if the user which collected the information has the permission to view it.<br>PSO shown in the report will be prefixed by &quot;PSO:&quot;</p>
 		<div class=""row col-lg-12 table-responsive"">
-			<TABLE class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+			<TABLE class=""table table-striped table-bordered"">
 				<thead><tr> 
 					<th>Policy Name</th>
 					<th>Complexity</th>
@@ -1670,9 +1776,14 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 		</div>
 ");
             GenerateSubSection("Screensaver policies");
+			Add(@"
+		<div class=""row col-lg-12"">
+			<p>This is the settings related to screensavers stored in Group Policies. Each non compliant setting is written in red.</p>
+		</div>
+");
             Add(@"
 		<div class=""row col-lg-12 table-responsive"">
-			<TABLE class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+			<TABLE class=""table table-striped table-bordered"">
 				<thead><tr> 
 					<th>Policy Name</th>
 					<th>Screensaver enforced</th>
@@ -1713,49 +1824,12 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 			</table>
 		</div>
 ");
-            GenerateSubSection("LSA settings", "lsasettings");
-            Add(@"
-		<div class=""row col-lg-12 table-responsive"">
-			<TABLE class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
-				<thead><tr> 
-					<th>Policy Name</th>
-					<th>Setting</th>
-					<th>Value</th></tr>
-				</thead>
-				<tbody>");
-			if (Report.GPPPasswordPolicy != null)
-			{
-				foreach (GPPSecurityPolicy policy in Report.GPOLsaPolicy)
-				{
-					foreach (GPPSecurityPolicyProperty property in policy.Properties)
-					{
-                        Add(@"
-					<tr>
-						<td class='text'>");
-                        AddEncoded(policy.GPOName);
-                        Add(@"</td>
-						<td class='text'>");
-                        Add(GetLinkForLsaSetting(property.Property));
-                        Add(@"</td>
-						<td class='num'>");
-                        Add(property.Value);
-                        Add(@"</td>
-					</tr>
-");
-					}
-				}
-			}
-			Add(@"
-				</tbody>
-			</table>
-		</div>
-");
 		}
 
 		#endregion password policies
 
 		#region GPO
-		private void GenerateGPODetail()
+		protected void GenerateGPODetail()
 		{
 			GenerateSubSection("Obfuscated Passwords", "gpoobfuscatedpassword");
             Add(@"
@@ -1767,7 +1841,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 			{
 				Add(@"
 		<div class=""row col-lg-12 table-responsive"">
-			<TABLE class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+			<TABLE class=""table table-striped table-bordered"">
 				<thead><tr> 
 					<th>GPO Name</th>
 					<th>Password origin</th>
@@ -1832,7 +1906,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 				);
 				Add(@"
 		<div class=""row col-lg-12 table-responsive"">
-			<TABLE class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+			<TABLE class=""table table-striped table-bordered"">
 				<thead><tr> 
 					<th>GPO Name</th>
 					<th>User or group</th>
@@ -1864,10 +1938,53 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 ");
 			}
 
+			GenerateSubSection("Security settings", "lsasettings");
+			Add(@"
+		<div class=""row col-lg-12"">
+			<p>A GPO can be used to deploy security settings to workstations.<br>The best practice out of the default security baseline in reported in <span class=""ticked"">green</span>.<br>The following settings in <span class=""unticked"">red</span> are unsual and may need to be reviewed.<br>Each setting is accompagnied which its value and a link to the GPO explanation.</p>
+		</div>
+");
+			Add(@"
+		<div class=""row col-lg-12 table-responsive"">
+			<TABLE class=""table table-striped table-bordered"">
+				<thead><tr> 
+					<th>Policy Name</th>
+					<th>Setting</th>
+					<th>Value</th></tr>
+				</thead>
+				<tbody>");
+			if (Report.GPPPasswordPolicy != null)
+			{
+				foreach (GPPSecurityPolicy policy in Report.GPOLsaPolicy)
+				{
+					foreach (GPPSecurityPolicyProperty property in policy.Properties)
+					{
+						Add(@"
+					<tr>
+						<td class='text'>");
+						AddEncoded(policy.GPOName);
+						Add(@"</td>
+						<td class='text'>");
+						Add(GetLinkForLsaSetting(property.Property));
+						Add(@"</td>
+						<td class='num'>");
+						Add(GetLsaSettingsValue(property.Property, property.Value));
+						Add(@"</td>
+					</tr>
+");
+					}
+				}
+			}
+			Add(@"
+				</tbody>
+			</table>
+		</div>
+");
+
 			GenerateSubSection("Privileges", "gpoprivileges");
             Add(@"
 		<div class=""row col-lg-12"">
-			<p>Giving privilegdes in a GPO is a way to become administrator without being part of a group.<br>
+			<p>Giving privileges in a GPO is a way to become administrator without being part of a group.<br>
 			For example, SeTcbPriviledge give the right to act as SYSTEM, which has more privileges than the administrator account.</p>
 		</div>
 ");
@@ -1875,7 +1992,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 			{
 				Add(@"
 		<div class=""row col-lg-12 table-responsive"">
-			<TABLE class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+			<TABLE class=""table table-striped table-bordered"">
 				<thead><tr> 
 					<th>GPO Name</th>
 					<th>Privilege</th>
@@ -1916,7 +2033,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 			{
 				Add(@"
 		<div class=""row col-lg-12 table-responsive"">
-			<TABLE class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+			<TABLE class=""table table-striped table-bordered"">
 				<thead><tr> 
 					<th>GPO Name</th>
 					<th>Action</th>
@@ -1954,6 +2071,50 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 			</table>
 		</div>
 ");
+			}
+			if (version >= new Version(2, 7, 0, 0))
+			{
+				GenerateSubSection("GPO Deployed Files", "gpodeployedfiles");
+				Add(@"
+		<div class=""row col-lg-12"">
+			<p>A GPO can be used to deploy applications or copy files. These files may be controlled by a third party to control the execution of local programs.</p>
+		</div>
+");
+				if (Report.GPPFileDeployed != null && Report.GPPFileDeployed.Count > 0)
+				{
+					Add(@"
+		<div class=""row col-lg-12 table-responsive"">
+			<TABLE class=""table table-striped table-bordered"">
+				<thead><tr> 
+					<th>GPO Name</th>
+					<th>Type</th>
+					<th>File</th>
+					</tr>
+				</thead>
+				<tbody>");
+
+					foreach (var file in Report.GPPFileDeployed)
+					{
+						Add(@"
+					<tr>
+						<td class='text'>");
+						AddEncoded(file.GPOName);
+						Add(@"</td>
+						<td class='text'>");
+						AddEncoded(file.Type);
+						Add(@"</td>
+						<td class='text'>");
+						AddEncoded(file.FileName);
+						Add(@"</td>
+					</tr>
+");
+					}
+					Add(@"
+				</tbody>
+			</table>
+		</div>
+");
+				}
 			}
 		}
 		#endregion GPO

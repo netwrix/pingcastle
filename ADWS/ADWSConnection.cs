@@ -363,7 +363,7 @@ namespace PingCastle.ADWS
 		private void EnumerateInternalWithADWS(string distinguishedName, string filter, string[] properties, string scope, ReceiveItems callback)
 		{
 			bool nTSecurityDescriptor = false;
-			List<string> listproperties = new List<string>(properties);
+			List<string> listproperties = new List<string>();
 
 			Enumerate enumerate = new Enumerate();
 			enumerate.Filter = new FilterType();
@@ -374,10 +374,14 @@ namespace PingCastle.ADWS
 			enumerate.Filter.LdapQuery.Scope = scope;
 			enumerate.Filter.LdapQuery.Filter = filter;
 			Trace.WriteLine("LdapQuery.Filter=" + enumerate.Filter.LdapQuery.Filter);
-			enumerate.Selection = new Selection();
 
-			enumerate.Selection.SelectionProperty = BuildProperties(listproperties);
+			if (properties != null)
+			{
+				listproperties.AddRange(properties);
+				enumerate.Selection = new Selection();
 
+				enumerate.Selection.SelectionProperty = BuildProperties(listproperties);
+			}
 			EnumerateResponse enumerateResponse = null;
 
 			Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] Running enumeration");

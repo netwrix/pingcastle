@@ -126,7 +126,7 @@ Example of FQDN: bastion.local";
 			NativeMethods.LSA_OBJECT_ATTRIBUTES loa = new NativeMethods.LSA_OBJECT_ATTRIBUTES();
 			us.Initialize(Server);
 			IntPtr PolicyHandle = IntPtr.Zero;
-			int ret = NativeMethods.LsaOpenPolicy(ref us, ref loa, 0x00000800, out PolicyHandle);
+			uint ret = NativeMethods.LsaOpenPolicy(ref us, ref loa, 0x00000800, out PolicyHandle);
 			if (ret != 0)
 			{
 				DisplayError("Error when connecting to the remote domain LsaOpenPolicy 0x" + ret.ToString("x"));
@@ -136,11 +136,11 @@ Example of FQDN: bastion.local";
 				DisplayAdvancement("Connection established");
 				uint currentRid = 500;
 				int iteration = 0;
-				int returnCode = 0;
+				uint returnCode = 0;
 				int UserEnumerated = 0;
 				// allows 10*1000 sid non resolved
 				int retrycount = 0;
-				while ((returnCode == 0 || returnCode == 0x00000107 || (retrycount < 10 && returnCode == -1073741709)) && UserEnumerated < MaximumNumber)
+				while ((returnCode == 0 || returnCode == 0x00000107 || (retrycount < 10 && returnCode == 0xC0000073)) && UserEnumerated < MaximumNumber)
 				{
 					Trace.WriteLine("LsaLookupSids iteration " + iteration++);
 					List<GCHandle> HandleToFree = new List<GCHandle>();

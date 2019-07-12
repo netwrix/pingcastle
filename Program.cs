@@ -39,6 +39,7 @@ namespace PingCastle
 		bool PerformCarto = false;
 		bool PerformAdvancedLive;
 		bool PerformUploadAllReport;
+		bool PerformHCRules = false;
 		private bool PerformRegenerateReport;
 		private bool PerformHealthCheckReloadReport;
 		bool PerformHealthCheckGenerateDemoReports;
@@ -139,7 +140,7 @@ namespace PingCastle
 # @@  >  " + (license.EndTime < DateTime.MaxValue ? "End of support: " + license.EndTime.ToShortDateString() : "") + @"
 | @@@:   
 : .#                                 Vincent LE TOUX (contact@pingcastle.com)
-.:                                                 https://www.pingcastle.com";
+  .:       twitter: @mysmartlogon                    https://www.pingcastle.com"; 
 			if (!ParseCommandLine(args))
 				return;
 			// Trace to file or console may be enabled here
@@ -183,6 +184,10 @@ namespace PingCastle
 			{
 				if (!tasks.ConsolidationTask<CompromiseGraphData>()) return;
 			}
+			if (PerformHCRules)
+			{
+				if (!tasks.HealthCheckRulesTask()) return;
+			}
 			if (PerformRegenerateReport)
 			{
 				if (!tasks.RegenerateHtmlTask()) return;
@@ -202,11 +207,13 @@ namespace PingCastle
 			tasks.CompleteTasks();
 		}
 
+		const string basicEditionLicense = "PC2H4sIAAAAAAAEAO29B2AcSZYlJi9tynt/SvVK1+B0oQiAYBMk2JBAEOzBiM3mkuwdaUcjKasqgcplVmVdZhZAzO2dvPfee++999577733ujudTif33/8/XGZkAWz2zkrayZ4hgKrIHz9+fB8/In7NX+PX+DV+A/r/r/EH/Un/wZPFv/lr/tr060v6//Nfo/g1pr9G/mssf42G/k1/jfNfo/o1avr5kj5f/hoXv8bJr5HRN+2vUfK3e7/G+Nd4QD+f8Kd4M/01Tn+NGf3W0v+rX2P5a6CLP+jX+DV+jd//J/+4//TP+Ymf+Qv+hH/+X9j69L/81/6F//L3+5d3zl79T/P/6z/4s/+v/+nX/L9/5rfb/Wv/4d9n8k++/qW/9D/49p/2b/zPP/kXfPUHz+/+Z3/tPzj+K/78F7/5H/pn/R//+7/13/zdO//R//yLv731+/3Uv/9X/rO/3V/V/pd/1Ce/+W91cf9X/rEPf6vzf3j5T3+x9zf9KQ8X//x/9Tpf/QX/6/2/+0/55dv/0PFP/XZ//eFf+ev+on/6Z/6W/+P/AY4sXy/wAAAA";
 		string _serialNumber;
 		public string GetSerialNumber()
 		{
 			if (String.IsNullOrEmpty(_serialNumber))
 			{
+				// try to load it from the configuration file
 				try
 				{
 					_serialNumber = ADHealthCheckingLicenseSettings.Settings.License;
@@ -221,8 +228,39 @@ namespace PingCastle
 						Trace.WriteLine(ex.InnerException.Message);
 						Trace.WriteLine(ex.InnerException.StackTrace);
 					}
-					throw new PingCastleException("Unable to load the license from the .config file. Check that all files have been copied in the same directory");
+					
 				}
+				if (!String.IsNullOrEmpty(_serialNumber))
+				{
+					try
+					{
+						var license = new ADHealthCheckingLicense(_serialNumber);
+						return _serialNumber;
+					}
+					catch (Exception ex)
+					{
+						_serialNumber = null;
+						Trace.WriteLine("Exception when verifying the external license");
+						Trace.WriteLine(ex.Message);
+						Trace.WriteLine(ex.StackTrace);
+						if (ex.InnerException != null)
+						{
+							Trace.WriteLine(ex.InnerException.Message);
+							Trace.WriteLine(ex.InnerException.StackTrace);
+						}
+					}
+
+				}
+			}
+			// fault back to the default license:
+			_serialNumber = basicEditionLicense;
+			try
+			{
+				var license = new ADHealthCheckingLicense(_serialNumber);
+			}
+			catch (Exception)
+			{
+				throw new PingCastleException("Unable to load the license from the .config file and the license embedded in PingCastle is not valid. Check that all files have been copied in the same directory and that you have a valid license");
 			}
 			return _serialNumber;
 		}
@@ -502,6 +540,9 @@ namespace PingCastle
 						case "--reachable":
 							tasks.AnalyzeReachableDomains = true;
 							break;
+						case "--rules":
+							PerformHCRules = true;
+							break;
 						case "--scanner":
 							if (i + 1 >= args.Length)
 							{
@@ -529,7 +570,7 @@ namespace PingCastle
 							}
 							break;
 						case "--scmode-single":
-							ScannerBase.ScanningMode = 1;
+							ScannerBase.ScanningMode = 2;
 							break;
 						case "--sendxmlTo":
 						case "--sendXmlTo":
@@ -663,7 +704,8 @@ namespace PingCastle
 				&& !PerformRegenerateReport && !PerformHealthCheckReloadReport && !delayedInteractiveMode
 				&& !PerformScanner
 				&& !PerformGenerateKey && !PerformHealthCheckGenerateDemoReports && !PerformCarto && !PerformAdvancedLive
-				&& !PerformUploadAllReport)
+				&& !PerformUploadAllReport
+				&& !PerformHCRules)
 			{
 				WriteInRed("You must choose at least one value among --healthcheck --hc-conso --advanced-export --advanced-report --nullsession --carto");
 				DisplayHelp();
@@ -787,13 +829,13 @@ namespace PingCastle
 			PerformHealthCheckConsolidation = false;
 			PerformScanner = false;
 
-			List<KeyValuePair<string, string>> choices = new List<KeyValuePair<string, string>>() {
-				new KeyValuePair<string, string>("healthcheck","Score the risk of a domain"),
-				new KeyValuePair<string, string>("graph","Analyze admin groups and delegations with diagrams"),
-				new KeyValuePair<string, string>("conso","Aggregate multiple reports into a single one"),
-				new KeyValuePair<string, string>("carto","Build a map of all interconnected domains"),
-				new KeyValuePair<string, string>("scanner","Perform specific security checks on workstations"),
-				new KeyValuePair<string, string>("advanced","Open the advanced menu"),
+			List<ConsoleMenuItem> choices = new List<ConsoleMenuItem>() {
+				new ConsoleMenuItem("healthcheck","Score the risk of a domain", "This is the main functionnality of PingCastle. In a matter of minutes, it produces a report which will give you an overview of your Active Directory security. This report can be generated on other domains by using the existing trust links."),
+				new ConsoleMenuItem("permissions","Analyze admin groups and delegations with diagrams", "Once you have run the healthcheck report and apply all the recommandations, you can run this report to get deeper into the permission model."),
+				new ConsoleMenuItem("conso","Aggregate multiple reports into a single one", "With many healthcheck reports, you can get a single report for a whole scope. Maps will be generated."),
+				new ConsoleMenuItem("carto","Build a map of all interconnected domains", "It combines the healthcheck reports that would be run on all trusted domains and then the conso option. But lighter and then faster."),
+				new ConsoleMenuItem("scanner","Perform specific security checks on workstations", "You can know your local admins, if Bitlocker is properly configured, discover unprotect shares, ... A menu will be shown to select the right scanner."),
+				new ConsoleMenuItem("advanced","Open the advanced menu", "This is the place you want to configure PingCastle without playing with command line switches."),
 			};
 
 			ConsoleMenu.Title = "What do you want to do?";
@@ -802,14 +844,14 @@ namespace PingCastle
 			if (choice == 0)
 				return DisplayState.Exit;
 
-			string whattodo = choices[choice - 1].Key;
+			string whattodo = choices[choice - 1].Choice;
 			switch (whattodo)
 			{
 				default:
 				case "healthcheck":
 					PerformHealthCheckReport = true;
 					return DisplayState.AskForServer;
-				case "graph":
+				case "permissions":
 					PerformAdvancedLive = true;
 					return DisplayState.AskForServer;
 				case "carto":
@@ -831,18 +873,18 @@ namespace PingCastle
 		{
 			var scanners = PingCastleFactory.GetAllScanners();
 
-			var choices = new List<KeyValuePair<string, string>>();
+			var choices = new List<ConsoleMenuItem>();
 			foreach (var scanner in scanners)
 			{
 				Type scannerType = scanner.Value;
 				IScanner iscanner = PingCastleFactory.LoadScanner(scannerType);
 				string description = iscanner.Description;
-				choices.Add(new KeyValuePair<string, string>(scanner.Key, description));
+				choices.Add(new ConsoleMenuItem(scanner.Key, description));
 			}
-			choices.Sort((KeyValuePair<string, string> a, KeyValuePair<string, string> b)
+			choices.Sort((ConsoleMenuItem a, ConsoleMenuItem b)
 				=>
 				{
-					return String.Compare(a.Key, b.Key);
+					return String.Compare(a.Choice, b.Choice);
 				}
 			);
 			ConsoleMenu.Notice = "WARNING: Checking a lot of workstations may raise security alerts.";
@@ -851,7 +893,7 @@ namespace PingCastle
 			int choice = ConsoleMenu.SelectMenuCompact(choices, 1);
 			if (choice == 0)
 				return DisplayState.Exit;
-			tasks.Scanner = scanners[choices[choice - 1].Key];
+			tasks.Scanner = scanners[choices[choice - 1].Choice];
 			return DisplayState.AskForScannerParameter;
 		}
 
@@ -909,13 +951,16 @@ namespace PingCastle
 			PerformGenerateKey = false;
 			PerformHealthCheckReloadReport = false;
 			PerformRegenerateReport = false;
+			PerformHCRules = false;
 
-			List<KeyValuePair<string, string>> choices = new List<KeyValuePair<string, string>>() {
-				new KeyValuePair<string, string>("protocol","Change the protocol used to query the AD (LDAP, ADWS, ...)"),
-				new KeyValuePair<string, string>("generatekey","Generate RSA keys used to encrypt and decrypt reports"),
-				new KeyValuePair<string, string>("decrypt","Decrypt a xml report"),
-				new KeyValuePair<string, string>("regenerate","Regenerate the html report based on the xml report"),
-				new KeyValuePair<string, string>("log","Enable logging (log is " + (Trace.Listeners.Count > 1 ? "enabled":"disabled") + ")"),
+			List<ConsoleMenuItem> choices = new List<ConsoleMenuItem>() {
+				new ConsoleMenuItem("protocol","Change the protocol used to query the AD (LDAP, ADWS, ...)"),
+				new ConsoleMenuItem("hcrules","Generate a report containing all rules applied by PingCastle"),
+				new ConsoleMenuItem("generatekey","Generate RSA keys used to encrypt and decrypt reports"),
+				new ConsoleMenuItem("noenumlimit","Remove the 100 items limitation in healthcheck reports"),
+				new ConsoleMenuItem("decrypt","Decrypt a xml report"),
+				new ConsoleMenuItem("regenerate","Regenerate the html report based on the xml report"),
+				new ConsoleMenuItem("log","Enable logging (log is " + (Trace.Listeners.Count > 1 ? "enabled":"disabled") + ")"),
 			};
 
 			ConsoleMenu.Title = "What do you want to do?";
@@ -923,12 +968,15 @@ namespace PingCastle
 			if (choice == 0)
 				return DisplayState.Exit;
 
-			string whattodo = choices[choice - 1].Key;
+			string whattodo = choices[choice - 1].Choice;
 			switch (whattodo)
 			{
 				default:
 				case "protocol":
 					return DisplayState.ProtocolMenu;
+				case "hcrules":
+					PerformHCRules = true;
+					return DisplayState.Run;
 				case "generatekey":
 					PerformGenerateKey = true;
 					return DisplayState.Run;
@@ -942,16 +990,20 @@ namespace PingCastle
 					if (Trace.Listeners.Count <= 1)
 						EnableLogFile();
 					return DisplayState.Exit;
+				case "noenumlimit":
+					ReportHealthCheckSingle.MaxNumberUsersInHtmlReport = int.MaxValue;
+					ConsoleMenu.Notice = "Limitation removed";
+					return DisplayState.Exit;
 			}
 		}
 
 		DisplayState DisplayProtocolMenu()
 		{
-			List<KeyValuePair<string, string>> choices = new List<KeyValuePair<string, string>>() {
-				new KeyValuePair<string, string>("ADWSThenLDAP","default: ADWS then if failed, LDAP"),
-				new KeyValuePair<string, string>("ADWSOnly","use only ADWS"),
-				new KeyValuePair<string, string>("LDAPOnly","use only LDAP"),
-				new KeyValuePair<string, string>("LDAPThenADWS","LDAP then if failed, ADWS"),
+			List<ConsoleMenuItem> choices = new List<ConsoleMenuItem>() {
+				new ConsoleMenuItem("ADWSThenLDAP","default: ADWS then if failed, LDAP"),
+				new ConsoleMenuItem("ADWSOnly","use only ADWS"),
+				new ConsoleMenuItem("LDAPOnly","use only LDAP"),
+				new ConsoleMenuItem("LDAPThenADWS","LDAP then if failed, ADWS"),
 			};
 
 			ConsoleMenu.Title = "What protocol do you want to use?";
@@ -959,14 +1011,14 @@ namespace PingCastle
 			int defaultChoice = 1;
 			for (int i = 0; i < choices.Count; i++)
 			{
-				if (choices[i].Key == ADWebService.ConnectionType.ToString())
+				if (choices[i].Choice == ADWebService.ConnectionType.ToString())
 					defaultChoice = 1 + i;
 			}
 			int choice = ConsoleMenu.SelectMenu(choices, defaultChoice);
 			if (choice == 0)
 				return DisplayState.Exit;
 
-			string whattodo = choices[choice - 1].Key;
+			string whattodo = choices[choice - 1].Choice;
 			ADWebService.ConnectionType = (ADConnectionType)Enum.Parse(typeof(ADConnectionType), whattodo);
 			return DisplayState.Exit;
 		}
@@ -1088,6 +1140,8 @@ namespace PingCastle
 			Console.WriteLine("    --webdirectory <dir>: upload the xml report to a webdav server");
 			Console.WriteLine("    --webuser <user>  : optional user and password");
 			Console.WriteLine("    --webpassword <password>");
+			Console.WriteLine("");
+			Console.WriteLine("--rules               : Generate an html containing all the rules used by PingCastle. Do not forget PingCastleReporting includes a similar option but for .xslx");
 			Console.WriteLine("");
 			Console.WriteLine("  --generate-key      : generate and display a new RSA key for encryption");
 			Console.WriteLine("");

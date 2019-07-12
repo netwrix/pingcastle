@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 {
 	[RuleModel("A-SHA1IntermediateCert", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 1)]
+	[RuleSTIG("V-14820", "PKI certificates (server and clients) must be issued by the DoD PKI or an approved External Certificate Authority (ECA).", STIGFramework.ActiveDirectoryService2003)]
     public class HeatlcheckRuleAnomalyCertSHA1Intermediate : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

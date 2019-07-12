@@ -19,7 +19,7 @@ namespace PingCastle.Healthcheck.Rules
         {
             foreach (GPOMembership membership in healthcheckData.GPOLocalMembership)
             {
-                if (membership.User == "Authenticated Users" || membership.User == "Everyone")
+				if (membership.User == "Authenticated Users" || membership.User == "Everyone" || membership.User == "Users" || membership.User == "Anonymous")
                 {
                     AddRawDetail(membership.GPOName, membership.MemberOf, membership.User);
                 }

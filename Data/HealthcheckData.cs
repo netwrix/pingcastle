@@ -89,6 +89,7 @@ namespace PingCastle.Healthcheck
 
     }
 
+	[DebuggerDisplay("FQDN: {DnsName} SiD: {Sid} NetBIOS: {NetbiosName} Forest: FQDN: {ForestName} SID: {ForestSid} NetBIOS {ForestNetbios}")]
     public class HealthCheckTrustDomainInfoData
     {
         public string DnsName { get; set; }
@@ -108,12 +109,17 @@ namespace PingCastle.Healthcheck
             {
                 if (_domain == null)
                 {
-                    _domain = new DomainKey(DnsName, Sid, NetbiosName);
+                    _domain = DomainKey.Create(DnsName, Sid, NetbiosName);
                 }
                 return _domain;
             }
+			set
+			{
+				_domain = value;
+			}
         }
 
+		private bool _forestSet = false;
         private DomainKey _forest;
 		[IgnoreDataMember]
 		[XmlIgnore]
@@ -121,15 +127,22 @@ namespace PingCastle.Healthcheck
         {
             get
             {
-                if (_forest == null)
+				if (!_forestSet)
                 {
-                    if (String.Equals(DnsName, ForestName, StringComparison.InvariantCultureIgnoreCase))
-                        _forest = Domain;
-                    else
-                        _forest = new DomainKey(ForestName, ForestSid, ForestNetbios);
+					_forestSet = true;
+					if (String.Equals(DnsName, ForestName, StringComparison.InvariantCultureIgnoreCase))
+						_forest = Domain;
+					else
+					{
+						_forest = DomainKey.Create(ForestName, ForestSid, ForestNetbios);
+					}
                 }
                 return _forest;
             }
+			set
+			{
+				_forest = value;
+			}
         }
 
     }
@@ -167,7 +180,7 @@ namespace PingCastle.Healthcheck
             {
                 if (_domain == null)
                 {
-                    _domain = new DomainKey(TrustPartner, SID, NetBiosName);
+                    _domain = DomainKey.Create(TrustPartner, SID, NetBiosName);
                 }
                 return _domain;
             }
@@ -188,6 +201,15 @@ namespace PingCastle.Healthcheck
 
         public string GPOName { get; set; }
     }
+
+	[DebuggerDisplay("{GPOName} {FileName}")]
+	public class GPPFileDeployed
+	{
+		public string FileName { get; set; }
+		public string Type { get; set; }
+		public string GPOName { get; set; }
+		public List<HealthcheckScriptDelegationData> Delegation { get; set; }
+	}
 
 	[DebuggerDisplay("{Property} {Value}")]
     public class GPPSecurityPolicyProperty
@@ -541,7 +563,7 @@ namespace PingCastle.Healthcheck
             {
                 if (_domain == null)
                 {
-					_domain = new DomainKey(FriendlyName, DomainSid, NetBIOSName);
+					_domain = DomainKey.Create(FriendlyName, DomainSid, NetBIOSName);
                 }
                 return _domain;
             }
@@ -589,6 +611,8 @@ namespace PingCastle.Healthcheck
 		public bool RemoteSpoolerDetected { get; set; }
 
         public List<string> IP { get; set; }
+
+		public List<string> FSMO { get; set; }
 	}
 
 	[DebuggerDisplay("{SiteName}")]
@@ -669,6 +693,8 @@ namespace PingCastle.Healthcheck
         public int ForestFunctionalLevel { get; set; }
 		public int SchemaVersion { get; set; }
 		public int SchemaInternalVersion { get; set; }
+		public bool IsRecycleBinEnabled { get; set; }
+
 		public DateTime SchemaLastChanged { get; set; }
         public int NumberOfDC { get; set; }
         public int GlobalScore { get; set; }
@@ -693,6 +719,12 @@ namespace PingCastle.Healthcheck
         public bool PreWindows2000AnonymousAccess { get; set; }
         public bool ShouldSerializeDsHeuristicsAnonymousAccess() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public bool DsHeuristicsAnonymousAccess { get; set; }
+
+		public bool ShouldSerializeDsHeuristicsAdminSDExMaskModified() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+		public bool DsHeuristicsAdminSDExMaskModified { get; set; }
+
+		public bool ShouldSerializeDsHeuristicsDoListObject() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+		public bool DsHeuristicsDoListObject { get; set; }
 
         public bool ShouldSerializeRiskRules() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
         public List<HealthcheckRiskRule> RiskRules { get; set; }
@@ -728,6 +760,9 @@ namespace PingCastle.Healthcheck
 		public bool ShouldSerializeKrbtgtLastVersion() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
 		public int KrbtgtLastVersion { get; set; }
 
+		public bool ShouldSerializeExchangePrivEscVulnerable() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+		public bool ExchangePrivEscVulnerable { get; set; }
+
         public bool ShouldSerializeAdminLastLoginDate() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public DateTime AdminLastLoginDate { get; set; }
 
@@ -736,6 +771,9 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeGPPPassword() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<GPPPassword> GPPPassword { get; set; }
+
+		public bool ShouldSerializeGPPFileDeployed() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+		public List<GPPFileDeployed> GPPFileDeployed { get; set; }
 
         public bool ShouldSerializeGPPRightAssignment() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<GPPRightAssignment> GPPRightAssignment { get; set; }
@@ -806,7 +844,7 @@ namespace PingCastle.Healthcheck
             {
                 if (_domain == null)
                 {
-                    _domain = new DomainKey(DomainFQDN, DomainSid, NetBIOSName);
+                    _domain = DomainKey.Create(DomainFQDN, DomainSid, NetBIOSName);
                 }
                 return _domain;
             }
@@ -844,7 +882,7 @@ namespace PingCastle.Healthcheck
                                 }
                             }
                         }
-						_forest = new DomainKey(ForestFQDN, sid, netbiosname);
+						_forest = DomainKey.Create(ForestFQDN, sid, netbiosname);
                     }
                 }
                 return _forest;
@@ -871,7 +909,8 @@ namespace PingCastle.Healthcheck
 							foreach (var d in t.KnownDomains)
 							{
 								output.Add(d.Domain);
-								output.Add(d.Forest);
+								if (d.Forest != null)
+									output.Add(d.Forest);
 							}
 						}
 					}
@@ -881,7 +920,8 @@ namespace PingCastle.Healthcheck
 					foreach (var d in ReachableDomains)
 					{
 						output.Add(d.Domain);
-						output.Add(d.Forest);
+						if (d.Forest != null)
+							output.Add(d.Forest);
 					}
 				}
 				return output;

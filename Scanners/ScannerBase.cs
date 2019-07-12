@@ -42,11 +42,13 @@ namespace PingCastle.Scanners
 		abstract protected string GetCsvHeader();
 		abstract protected string GetCsvData(string computer);
 
-		public bool QueryForAdditionalParameterInInteractiveMode()
+		public virtual bool QueryForAdditionalParameterInInteractiveMode()
 		{
-			var choices = new List<KeyValuePair<string, string>>(){ 
-				new KeyValuePair<string, string>("all","This is a domain. Scan all computers."), 
-				new KeyValuePair<string, string>("one","This is a computer. Scan only this computer."),
+			var choices = new List<ConsoleMenuItem>(){ 
+				new ConsoleMenuItem("all","This is a domain. Scan all computers."), 
+				new ConsoleMenuItem("one","This is a computer. Scan only this computer."),
+				new ConsoleMenuItem("workstation","Scan all computers except servers."),
+				new ConsoleMenuItem("server","Scan all servers."),
 			};
 			ConsoleMenu.Title = "Select the scanning mode";
 			ConsoleMenu.Information = "This scanner can collect all the active computers from a domain and scan them one by one automatically. Or scan only one computer";
@@ -59,7 +61,7 @@ namespace PingCastle.Scanners
 
 		public void Export(string filename)
 		{
-			if (ScanningMode == 1)
+			if (ScanningMode != 2)
 			{
 				ExportAllComputers(filename);
 				return;
@@ -197,7 +199,17 @@ namespace PingCastle.Scanners
 						computers.Add(x.DNSHostName);
 					};
 
-				adws.Enumerate(domainInfo.DefaultNamingContext, "(&(ObjectCategory=computer)(!userAccountControl:1.2.840.113556.1.4.803:=2)(lastLogonTimeStamp>=" + DateTime.Now.AddDays(-40).ToFileTimeUtc() + "))", properties, callback);
+				string filterClause = null;
+				switch (ScanningMode)
+				{
+					case 3:
+						filterClause = "(!(operatingSystem=*server*))";
+						break;
+					case 4:
+						filterClause = "(operatingSystem=*server*)";
+						break;
+				}
+				adws.Enumerate(domainInfo.DefaultNamingContext, "(&(ObjectCategory=computer)" + filterClause + "(!userAccountControl:1.2.840.113556.1.4.803:=2)(lastLogonTimeStamp>=" + DateTime.Now.AddDays(-60).ToFileTimeUtc() + "))", properties, callback);
 			}
 			return computers;
 		}

@@ -13,6 +13,7 @@ using System.DirectoryServices;
 using System.DirectoryServices.ActiveDirectory;
 using System.IO;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
@@ -35,7 +36,7 @@ namespace PingCastle.ADWS
         LDAPThenADWS = 3,
     }
 
-    internal class ADWebService : IDisposable
+	internal class ADWebService : IDisposable, IADConnection
     {
 
         public ADWebService(string server, int port, NetworkCredential credential)
@@ -105,7 +106,12 @@ namespace PingCastle.ADWS
                         }
                         catch(Exception ex2)
                         {
-                            Trace.WriteLine("LDAP exception: " + ex2.Message);
+                            Trace.WriteLine("LDAP exception: " + ex2.Message + "(" + ex2.GetType() + ")");
+							if (ex2 as COMException != null)
+							{
+								COMException ex3 = (COMException)ex2;
+								Trace.WriteLine("COMException: " + ex3.ErrorCode);
+							}
                             Trace.WriteLine(ex2.StackTrace);
                             Trace.WriteLine("Throwing ADWS Exception again");
 							throw new ActiveDirectoryServerDownException(ex.Message);
@@ -132,7 +138,7 @@ namespace PingCastle.ADWS
                         }
                         catch (Exception ex2)
                         {
-                            Trace.WriteLine("ADWS exception: " + ex2.Message);
+							Trace.WriteLine("ADWS exception: " + ex2.Message + "(" + ex2.GetType() + ")");
                             Trace.WriteLine(ex2.StackTrace);
                             Trace.WriteLine("Throwing LDAP Exception again");
 							throw new ActiveDirectoryServerDownException(ex.Message);
@@ -162,6 +168,11 @@ namespace PingCastle.ADWS
 					return connection.GetDomainInfo();
 				return null;
 			}
+		}
+
+		public ADDomainInfo GetDomainInfo()
+		{
+			return DomainInfo;
 		}
 
         public class OUExploration: IComparable<OUExploration>

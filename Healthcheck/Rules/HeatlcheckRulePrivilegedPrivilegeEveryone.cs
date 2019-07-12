@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("P-PrivilegeEveryone", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
 	[RuleComputation(RuleComputationType.PerDiscover, 15)]
 	[RuleANSSI("R18", "subsubsection.3.3.2")]
+	[RuleIntroducedIn(2, 6)]
 	public class HeatlcheckRulePrivilegedPrivilegeEveryone : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
@@ -34,7 +35,9 @@ namespace PingCastle.Healthcheck.Rules
             {
 				if (!dangerousPrivileges.Contains(privilege.Privilege))
 					continue;
-				if (privilege.User == "Authenticated Users" || privilege.User == "Everyone" || privilege.User == "Domain Users" || privilege.User == "Domain Computers")
+				if (privilege.User == "Authenticated Users" || privilege.User == "Everyone" || privilege.User == "Domain Users"
+					|| privilege.User == "Domain Computers" || privilege.User == "Users"
+					|| privilege.User == "Anonymous")
                 {
 					AddRawDetail(privilege.GPOName, privilege.User, privilege.Privilege);
                 }

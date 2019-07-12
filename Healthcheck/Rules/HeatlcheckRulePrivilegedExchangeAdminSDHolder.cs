@@ -14,7 +14,8 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("P-ExchangeAdminSDHolder", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
 	[RuleANSSI("R18", "subsubsection.3.3.2")]
-    public class HeatlcheckRulePrivilegedExchangeAdminSDHolder : RuleBase<HealthcheckData>
+	[RuleIntroducedIn(2, 6)]
+	public class HeatlcheckRulePrivilegedExchangeAdminSDHolder : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

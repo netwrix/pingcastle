@@ -35,17 +35,17 @@ namespace PingCastle.Report
 
         protected override void GenerateFooterInformation()
         {
-			Add("<script>\r\n");
-			Add(TemplateManager.LoadJqueryDatatableJs());
-			Add(TemplateManager.LoadDatatableJs());
-			Add(@"
+			AddBeginScript();
+			AddLine(TemplateManager.LoadJqueryDatatableJs());
+			AddLine(TemplateManager.LoadDatatableJs());
+			AddLine(@"
 $('table').not('.model_table').DataTable(
     {
         'paging': false,
         'searching': false
     }
 );
-			</script>\r\n");
+			</script>");
         }
 
         protected override void GenerateTitleInformation()
@@ -56,18 +56,16 @@ $('table').not('.model_table').DataTable(
 
         protected override void GenerateHeaderInformation()
         {
-			Add(@"<style>");
-			Add(TemplateManager.LoadDatatableCss());
-			Add(@"</style>"); 
-			Add(GetStyleSheetTheme());
-			Add(GetStyleSheet());
+			AddBeginStyle();
+			AddLine(TemplateManager.LoadDatatableCss());
+			AddLine(GetStyleSheetTheme());
+			AddLine(GetStyleSheet());
+			AddLine(@"</style>"); 
         }
 
         public static string GetStyleSheet()
         {
             return @"
-<!-- Custom styles for this template -->
-    <style>
 .panel.with-nav-tabs .panel-heading{
     padding: 5px 5px 0 5px;
 }
@@ -196,8 +194,6 @@ color: #FFFFFF;
 svg {
 	font: 10px sans-serif;
 }
-</style>
-<link href=""data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAE10lEQVRYw71XfWwTdRhet4xBssFigMja61rafbK5bGFuiqh1ISaMP2QI++jaXtvUZGKIigUkUTTzmwUxIQtRYBZHr3e9rjYOY4zLlprMEDROJagZAzEgMYiTZJvr7zrmc0cHXekXxfWSJ9f2rvc8977P+76/X0YGDsKubiSuwh2ELy8SfPVZGek+QG4hTjkhDPUrPh8grOYJwhXlCV9tSZMAdnUDBEwRZ8HsTcivE0bxJQR1QEyJ0L8+e2EFcEWlhJFfuS3gFoIQcpG4VMcRmUbcd58wqJeJ/2FYfhGwDegG9gKrUhfAly4H0UgUAWGQTyAiw8Sl3kv6qpaDcDMwDswCQaCH5fqWpCRA8D2YQ1zK/vgCQnCprgv9j9aD8FCIfA4XAGVqAj7fIBrxg6QEMIop4i7ZADI7IIQJ8AP5qaeBobYnJ0D5O6LwsIvzrADhQWAUGHJxfEOA1TwE09LEU6EUPnsk8y4rQfO0VIqxyW+IHgh4KnVWs6HaaDI/85J9t+Z4r1Pl599ZSbjiRlz/Ec8QcD4rRdRdrCOcNlcYaE6mErS1qITxGAYkeKDzam9VsdlibWptaz8DCPp2488Wq20H8daUg/TCndGS/wN8IUWXK9YSvix2k4NaCvkdi0I+DvJ9gwcbKIOR3gXiqy2t+tk5QITvoqNODZLRONELSs9mqI/wohshJl8YbJPNF+BZk4sb/BGGOw/y1lefb1WD6DDIp8LJQwK+P9bZrIQ3hpLykFTOiq/x3F1o/QW3K+GkLhPqGgir3omS9OOmoQCrXW+hjTVtesMAyIKR5CJw7fL2DlsZxDuSEyAhAAE9SIk8I9TVZHC1Fmc9zrpL7k3yPx1rCvTthkYx39GI54Drk7TZCrNp3k2uiqSUvoJSXnbr7UG6FuQjoY4mdrcXOp59biXe7nQ88hBm4A0TBJgR3pkE5KOYO83EW50zL/8gfDuiq/105NjHFPL7aRICZlGSL2NOPCblNzr5jJhSvHmtwFfI7qgAEL4ZIWDkaI8DKTAyILiRSEC7weSYYCtLQHI5Cvk0DNoDbxXic/QSBGEF8A0wDVwBbKc+sS2maVpsOJ1IxQiIpmMJgFC//9CTqATFdxGO/xu/7YG5l8VtQvCAKKKAdfdtQkutHufqNchVN1S/9i+jrurc2aI0muitIDoBwkuRUYHAM512Won7D4DwN8kLDDWGkG8F+aK7XB2pWvCAb6W8ie3XiXUCo2Dxu/7c0ZpCq9n0AEJuB+mwWAHAWXx/an/X+3l+91v3T/Loii7Vi3B5vdD/eGYKqyP1nhhGQi4VPyAyXeLQ+XBfE2WizRtNtEWsoHWAFzgNvM5xHDqdPuXl2ZbEQ0l+DSE+Cedv7uOZfJAOhBk4AFjuZX24VjJPUouTQqfXfUIFwvMRVdR1L+tDcSidS66rUcNjfNsqELrDyCdg6m2pC3CX5krDIvFQgSeobuKpXIq1YBmI3wN6ARoClqQsQPDVZUFAbwLyvzCwdmOEL537H0pYxvHeLAj4XzYq++P0c2xeVE2o7+wF3KiobaE+ENHPqUFcq8Ucly3wVk2lQ5gn5/UAp/ywaNDgKXsatmpckThY/gitiq5J+Xap8tK3WeXLb+6UGMUvWC03EV9ddkY6D2y9cpDrN9CU1kHAgub7P7CsZhuj7eUMAAAAAElFTkSuQmCC"" rel=""icon"" type=""image/x-icon"" />
 ";
         }
 
@@ -285,7 +281,7 @@ svg {
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr> 
 						<th>Domain</th>
 						<th>Category</th>
@@ -389,7 +385,7 @@ svg {
 		</div></div>
         <div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 				<thead><tr> 
 					<th>Domain</th>
 					<th>Domain Risk Level</th>
@@ -430,7 +426,7 @@ svg {
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr> 
 						<th>Domain</th>
 						<th>Netbios Name</th>
@@ -499,7 +495,7 @@ svg {
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 				<thead><tr>
 					<th>Domain</th>
 					<th>Nb User Accounts</th>
@@ -574,7 +570,7 @@ svg {
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 				<thead><tr> 
 					<th>Domain</th>
 					<th>Nb Computer Accounts</th>
@@ -663,7 +659,7 @@ svg {
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr> 
 						<th>Domain</th>
 ");
@@ -738,7 +734,7 @@ svg {
                 Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr> 
 						<th>Operating System</th>
 						<th>Nb</th>
@@ -769,7 +765,7 @@ svg {
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr> 
 						<th>Domain</th>
 						<th>Group Name</th>
@@ -840,7 +836,7 @@ svg {
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr>
 						<th>Domain</th>
 						<th>Trust Partner</th>
@@ -848,6 +844,7 @@ svg {
 						<th>Attribut</th>
 						<th>Direction</th>
 						<th>SID Filtering active</th>
+						<th>TGT Delegation</th>
 						<th>Creation</th>
 						<th>Is Active ?</th>
 						</tr>
@@ -879,6 +876,7 @@ svg {
 							<td class='text'>" + TrustAnalyzer.GetTrustAttribute(trust.TrustAttributes) + @"</td>
 							<td class='text'>" + TrustAnalyzer.GetTrustDirection(trust.TrustDirection) + @"</td>
 							<td class='text'>" + TrustAnalyzer.GetSIDFiltering(trust) + @"</td>
+							<td class='text'>" + TrustAnalyzer.GetTGTDelegation(trust) + @"</td>
 							<td class='text'>" + trust.CreationDate.ToString("u") + @"</td>
 							<td class='text'>" + trust.IsActive + @"</td>
 						</tr>
@@ -895,7 +893,7 @@ svg {
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr> 
 						<th>From</th>
 						<th>Reachable domain</th>
@@ -986,7 +984,7 @@ svg {
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr>
 						<th>Domain</th>
 						<th>Domain SID</th>
@@ -1057,7 +1055,7 @@ svg {
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr> 
 						<th>Domain</th>
 						<th>Krbtgt</th>
@@ -1098,7 +1096,7 @@ svg {
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr> 
 						<th>Domain</th>
 						<th>Policy Name</th>
@@ -1171,7 +1169,7 @@ svg {
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr> 
 						<th>Domain</th>
 						<th>Policy Name</th>
@@ -1225,11 +1223,11 @@ svg {
 			</div>
 		</div>
 ");
-            GenerateSubSection("LSA settings");
+            GenerateSubSection("Security settings");
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr> 
 						<th>Domain</th>
 						<th>Policy Name</th>
@@ -1256,8 +1254,8 @@ svg {
 							<td class='text'>");
 							Add(GetLinkForLsaSetting(property.Property));
 							Add(@"</td>
-							<td class='num'>");
-							Add(property.Value);
+							<td class='text'>");
+							Add(GetLsaSettingsValue(property.Property, property.Value));
 							Add(@"</td>
 						</tr>
 ");
@@ -1281,7 +1279,7 @@ svg {
             Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr> 
 						<th>Domain</th>
 						<th>GPO Name</th>

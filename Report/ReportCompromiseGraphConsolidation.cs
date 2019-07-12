@@ -34,12 +34,10 @@ namespace PingCastle.Report
 
 		protected override void GenerateFooterInformation()
 		{
-			Add(@"<script>");
-			Add(TemplateManager.LoadJqueryDatatableJs());
-			Add(TemplateManager.LoadDatatableJs());
-			Add(@"</script>");
+			AddBeginScript();
+			AddLine(TemplateManager.LoadJqueryDatatableJs());
+			AddLine(TemplateManager.LoadDatatableJs());
 			Add(@"
-<script>
 $('table').DataTable(
     {
         'paging': false,
@@ -61,11 +59,10 @@ $(function () {
 
 		protected override void GenerateHeaderInformation()
 		{
-			Add(@"<style>");
-			Add(TemplateManager.LoadDatatableCss());
-			Add(@"</style>");
-			Add(GetStyleSheetTheme());
-			//Add(GetStyleSheet());
+			AddBeginStyle();
+			AddLine(TemplateManager.LoadDatatableCss());
+			AddLine(GetStyleSheetTheme());
+			AddLine(@"</style>");
 		}
 
 		protected override void Hook(StringBuilder sbHtml)
@@ -136,7 +133,7 @@ $(function () {
 			Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr>
 						<th  rowspan=""2"">Domain</th>
 ");
@@ -211,7 +208,7 @@ $(function () {
 			Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr>
 						<th  rowspan=""2"">Domain</th>
 						<th rowspan=""2"">Remote Domain</th>

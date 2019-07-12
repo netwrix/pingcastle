@@ -24,10 +24,12 @@ namespace PingCastle.Graph.Database
 
         public List<string> KnownCN = new List<string>();
         public List<string> KnownSID = new List<string>();
+        public List<string> KnownFiles = new List<string>();
 		public List<int> KnownPGId = new List<int>() { 513, 515 };
         public List<string> CNToInvestigate { get; private set; }
         public List<string> SIDToInvestigate { get; private set; }
 		public List<int> PGIdToInvestigate { get; private set; }
+        public List<string> FilesToInvestigate { get; private set; }
 		public List<DataStorageDomainTrusts> KnownDomains { get; private set; }
 		private string serverForSIDResolution;
 
@@ -51,6 +53,7 @@ namespace PingCastle.Graph.Database
             SIDToInvestigate = new List<string>();
             CNToInvestigate = new List<string>();
 			PGIdToInvestigate = new List<int>();
+            FilesToInvestigate = new List<string>();
 			KnownDomains = new List<DataStorageDomainTrusts>();
         }
 
@@ -90,6 +93,14 @@ namespace PingCastle.Graph.Database
 			return output;
 		}
 
+        public List<string> GetFilesToInvestigate()
+        {
+            List<string> output = new List<string>();
+            output.AddRange(FilesToInvestigate);
+            FilesToInvestigate.Clear();
+            return output;
+        }
+
         public int InsertNode(string shortname, string objectclass, string name, string sid, ADItem adItem)
         {
 			if (String.Equals(objectclass, "unknown", StringComparison.OrdinalIgnoreCase))
@@ -122,53 +133,60 @@ namespace PingCastle.Graph.Database
 				adItem = null;
 			}
 			Node node = new Node();
-            node.Id = index;
             node.Shortname = shortname;
             node.Type = objectclass;
             node.Dn = name;
+			node.Sid = sid;
 			node.ADItem = adItem;
-            if (!String.IsNullOrEmpty(name))
-            {
-                KnownCN.Add(name);
-                if (CNToInvestigate.Contains(name))
-                    CNToInvestigate.Remove(name);
-            }
-            node.Sid = sid;
-            nodes.Add(index, node);
-            if (!String.IsNullOrEmpty(sid))
-            {
-                KnownSID.Add(sid);
-                if (SIDToInvestigate.Contains(sid))
-                    SIDToInvestigate.Remove(sid);
-				// handle primary group id
-				if (objectclass == "group")
+            
+			//12345
+			lock (nodes)
+			{
+                Trace.WriteLine("Inserting node " + index + " name=" + node.Name + " sid=" + node.Sid + " shortname=" + node.Shortname);
+                node.Id = index;
+				nodes.Add(index, node);
+                if (!string.IsNullOrEmpty(name))
+                {
+                    if (name.StartsWith("\\\\"))
+                    {
+                        KnownFiles.Add(name);
+                        if (FilesToInvestigate.Contains(name))
+                            FilesToInvestigate.Remove(name);
+                    }
+                    else
+                    {
+                        KnownCN.Add(name);
+                        if (CNToInvestigate.Contains(name))
+                            CNToInvestigate.Remove(name);
+                    }
+                } 
+                if (!String.IsNullOrEmpty(sid))
 				{
-					if (sid.StartsWith("S-1-5-21-"))
+					KnownSID.Add(sid);
+					if (SIDToInvestigate.Contains(sid))
+						SIDToInvestigate.Remove(sid);
+					// handle primary group id
+					if (objectclass == "group")
 					{
-						var part = sid.Split('-');
-						int PGId = int.Parse(part[part.Length - 1]);
-						if (!KnownPGId.Contains(PGId) && !PGIdToInvestigate.Contains(PGId))
+						if (sid.StartsWith("S-1-5-21-"))
 						{
-							PGIdToInvestigate.Add(PGId);
+							var part = sid.Split('-');
+							int PGId = int.Parse(part[part.Length - 1]);
+							if (!KnownPGId.Contains(PGId) && !PGIdToInvestigate.Contains(PGId))
+							{
+								PGIdToInvestigate.Add(PGId);
+							}
 						}
 					}
 				}
-            }
-            return index++;
-        }
-
-		public bool IsSIDAlreadyInserted(string sid)
-		{
-			if (KnownSID.Contains(sid))
-			{
-				return true;
+                return index++;
 			}
-			return false;
-		}
+        }
 
         public void InsertRelation(string mappingMaster, MappingType typeMaster, string mappingSlave, MappingType typeSlave, RelationType relationType)
         {
-            RelationOnHold relation = new RelationOnHold();
+			Trace.WriteLine("Stack:" + mappingMaster + "," + typeMaster.ToString() + "," + mappingSlave + "," + typeSlave + "," + relationType.ToString());
+			RelationOnHold relation = new RelationOnHold();
             relation.mappingMaster = mappingMaster;
             relation.typeMaster = typeMaster;
             relation.mappingSlave = mappingSlave;
@@ -182,24 +200,33 @@ namespace PingCastle.Graph.Database
         void AddDataToInvestigate(string mapping, MappingType type)
         {
 			// avoid dealing with files
-			if (String.IsNullOrEmpty(mapping) || mapping.StartsWith("\\\\"))
+			if (String.IsNullOrEmpty(mapping))
 			{
 				Trace.WriteLine("Ignoring addition of mapping " + mapping + "type = " + type);
 				return;
 			}
-            switch (type)
+            else if (mapping.StartsWith("\\\\"))
             {
-                case MappingType.Name:
-                    if (!KnownCN.Contains(mapping))
-                        if (!CNToInvestigate.Contains(mapping))
-                            CNToInvestigate.Add(mapping);
-                    break;
-                case MappingType.Sid:
-                    if (mapping.StartsWith("S-1-5-32-") || mapping.StartsWith(databaseInformation["DomainSid"]))
-                        if (!KnownSID.Contains(mapping))
-                            if (!SIDToInvestigate.Contains(mapping))
-                                SIDToInvestigate.Add(mapping);
-                    break;
+                if (!KnownFiles.Contains(mapping))
+                    if (!FilesToInvestigate.Contains(mapping))
+                        FilesToInvestigate.Add(mapping);
+            }
+            else
+            {
+                switch (type)
+                {
+                    case MappingType.Name:
+                        if (!KnownCN.Contains(mapping))
+                            if (!CNToInvestigate.Contains(mapping))
+                                CNToInvestigate.Add(mapping);
+                        break;
+                    case MappingType.Sid:
+                        if (mapping.StartsWith("S-1-5-32-") || mapping.StartsWith(databaseInformation["DomainSid"]))
+                            if (!KnownSID.Contains(mapping))
+                                if (!SIDToInvestigate.Contains(mapping))
+                                    SIDToInvestigate.Add(mapping);
+                        break;
+                }
             }
         }
 
@@ -320,7 +347,15 @@ namespace PingCastle.Graph.Database
 
 		public Node RetrieveNode(int id)
 		{
-			return nodes[id];
+            try
+            {
+                return nodes[id];
+            }
+            catch (KeyNotFoundException)
+            {
+                Trace.WriteLine("Unable to get node #" + id);
+                throw;
+            }
 		}
 
         public Dictionary<int, Node> RetrieveNodes(List<int> nodesQueried)

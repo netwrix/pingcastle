@@ -59,7 +59,7 @@ namespace PingCastle.Data
 			{
 				if (_domain == null)
 				{
-					_domain = new DomainKey(DomainFQDN, DomainSid, DomainNetBIOS);
+					_domain = DomainKey.Create(DomainFQDN, DomainSid, DomainNetBIOS);
 				}
 				return _domain;
 			}
@@ -241,7 +241,7 @@ namespace PingCastle.Data
 			{
 				if (_domain == null)
 				{
-					_domain = new DomainKey(FQDN, Sid, Netbios);
+					_domain = DomainKey.Create(FQDN, Sid, Netbios);
 				}
 				return _domain;
 			}

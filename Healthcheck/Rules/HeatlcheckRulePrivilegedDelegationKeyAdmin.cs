@@ -14,7 +14,8 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("P-DelegationKeyAdmin", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
 	[RuleANSSI("R18", "subsubsection.3.3.2")]
-    public class HeatlcheckRulePrivilegedDelegationKeyAdmin : RuleBase<HealthcheckData>
+	[RuleIntroducedIn(2, 6)]
+	public class HeatlcheckRulePrivilegedDelegationKeyAdmin : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {

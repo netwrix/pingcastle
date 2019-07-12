@@ -47,6 +47,9 @@ If you need changes, please contact contact@pingcastle.com for support packages.
 PingCastle source code is licensed under a proprietary license and the Non-Profit Open Software License ("Non-Profit OSL") 3.0.
 
 Except if a license is purchased, you are not allowed to make any profit from this source code.
+To be more specific:
+* It is allowed to run PingCastle without purchasing any license on for profit companies if the company itself (or its ITSM provider) run it.
+* To build services based on PingCastle AND earning money from that, you MUST purchase a license.
 
 Ping Castle uses the following Open source components:
 

@@ -37,6 +37,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <NoWarn>0436</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -80,6 +81,7 @@
     <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.ServiceModel" />
@@ -101,6 +103,7 @@
     <Compile Include="ADWS\ADConnection.cs" />
     <Compile Include="ADWS\LDAPConnection.cs" />
     <Compile Include="Compatibility.cs" />
+    <Compile Include="Graph\Export\IRelationFactory.cs" />
     <Compile Include="Graph\Reporting\GraphObjectReference.cs" />
     <Compile Include="Graph\Rules\CompromiseGraphRule.cs" />
     <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectUser.cs" />
@@ -131,6 +134,19 @@
     <Compile Include="Healthcheck\HealthCheckEncryption.cs" />
     <Compile Include="Data\HealthCheckBUEntityData.cs" />
     <Compile Include="Data\CompromiseGraphData.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedKerberoasting.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleTrustTGTDelegation.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyNoGPOLLMNR.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleTrustFileDeployedOutOfDomain.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDelegationFileDeployed.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyDCRefuseComputerPwdChange.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyLDAPSigningDisabled.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedRecoveryModeUnprotected.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDsHeuristicsDoListObject.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDsHeuristicsAdminSDExMaskModified.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedRecycleBin.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedLoginDCEveryone.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedExchangePrivEsc.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedPrivilegeEveryone.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDelegationGPOData.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedOperatorsEmpty.cs" />
@@ -139,6 +155,7 @@
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDelegationKeyAdmin.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedExchangeAdminSDHolder.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedUnconstrainedDelegation.cs" />
+    <Compile Include="misc\Subnet.cs" />
     <Compile Include="PingCastleException.cs" />
     <Compile Include="PingCastleFactory.cs" />
     <Compile Include="Report\IPingCastleReportUser.cs" />
@@ -146,11 +163,14 @@
     <Compile Include="Report\ReportCompromiseGraph.cs" />
     <Compile Include="Report\ReportCompromiseGraphConsolidation.cs" />
     <Compile Include="Report\ReportHealthCheckConsolidation.cs" />
+    <Compile Include="Report\ReportHealthCheckRules.cs" />
     <Compile Include="Report\ReportHealthCheckSingle.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDelegationLoginScript.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalySMB2SignatureNotEnabled.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalySMB2SignatureNotRequired.cs" />
+    <Compile Include="Report\ReportHealthCheckSingleCompared.cs" />
     <Compile Include="Report\ReportHelper.cs" />
+    <Compile Include="Report\ReportNetworkMap.cs" />
     <Compile Include="Report\ReportRiskControls.cs" />
     <Compile Include="Rules\IRiskEvaluation.cs" />
     <Compile Include="Rules\IRuleScore.cs" />
@@ -231,6 +251,8 @@
     <Compile Include="License.cs" />
     <Compile Include="RPC\spool.cs" />
     <Compile Include="Rules\RuleSet.cs" />
+    <Compile Include="Scanners\AntivirusScanner.cs" />
+    <Compile Include="Scanners\LAPSBitLocker.cs" />
     <Compile Include="Scanners\ConsistencyScanner.cs" />
     <Compile Include="Scanners\ACLScanner.cs" />
     <Compile Include="Scanners\Smb1Protocol.cs" />
@@ -352,8 +374,18 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>if not exist $(SolutionDir)\CodeSigning\certificate.pfx goto :exit
+
+@echo ================
+@echo sign binaries
+@echo ================
+
+IF "$(ConfigurationName)" == "Release" "C:\Program Files (x86)\Windows Kits\8.0\bin\x86\signtool.exe" sign  /d PingCastle /ac $(SolutionDir)\CodeSigning\addtrustexternalcaroot_kmod.crt /f $(SolutionDir)\CodeSigning\certificate.pfx /p vletoux /t http://timestamp.comodoca.com "$(TargetPath)"
+IF "$(ConfigurationName)" == "Release" "C:\Program Files (x86)\Windows Kits\8.0\bin\x86\signtool.exe" sign  /d PingCastle /ac $(SolutionDir)\CodeSigning\addtrustexternalcaroot_kmod.crt /f $(SolutionDir)\CodeSigning\certificate.pfx /p vletoux /fd sha256 /tr http://timestamp.comodoca.com/?td=sha256 /td sha256 /as "$(TargetPath)"
+
+@echo Done signing
+:exit
+</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -52,13 +52,6 @@ namespace PingCastle.Report
             }
         }
 
-		protected override void Hook(StringBuilder sbHtml)
-		{
-			// full screen graphs
-			sbHtml.Replace("<html lang=\"en\">", "<html style=\"height:100%; min-height: 100%;\">");
-			sbHtml.Replace("<body>", "<body style=\"height: 100%; min-height: 100%;\">");
-		}
-
 		protected override void GenerateTitleInformation()
 		{
 			Add("PingCastle AD Map ");
@@ -70,22 +63,15 @@ namespace PingCastle.Report
 
 		protected override void GenerateHeaderInformation()
 		{
-			Add(@"<script>");
-			Add(TemplateManager.LoadVisJs());
-			Add(@"</script>");
-			Add(ReportBase.GetStyleSheetTheme());
-			Add(@"<style type=""text/css"">
-
-.modal
+			AddBeginStyle();
+			AddLine(ReportBase.GetStyleSheetTheme());
+			Add(@"
+.legend_carto 
 {
-top: 50px;
+	position: absolute;
+	top: 65px;
+	left: 0px;
 }
-
-.modal-header
-{
-background-color: #FA9C1A;
-}
-.modal-header h4 {color: #fff;}
 .legend_criticalscore {
     background: #A856AA;
     border: #19231a;
@@ -129,9 +115,15 @@ background-color: #FA9C1A;
     border-width: 1px;
     padding: 5px;
 }
+.network-area
+{
+height: 100%;
+min-height: 100%;
+border-width:1px;
+}
 ");
-			Add(TemplateManager.LoadVisCss());
-			Add(@"</style>");
+			AddLine(TemplateManager.LoadVisCss());
+			AddLine(@"</style>");
 		}
 
 		protected override void GenerateBodyInformation()
@@ -164,7 +156,7 @@ background-color: #FA9C1A;
             </div>
             <div class=""modal-body"">
                 <div class=""progress"">
-                    <div class=""progress-bar"" role=""progressbar"" aria-valuenow=""0"" aria-valuemin=""0"" aria-valuemax=""100"" style=""width: 0%"">
+                    <div class=""progress-bar"" role=""progressbar"" aria-valuenow=""0"" aria-valuemin=""0"" aria-valuemax=""100"">
                         0%
                     </div>
                 </div>
@@ -173,15 +165,15 @@ background-color: #FA9C1A;
 
     </div>
 </div>
-<div id=""mynetwork"" class=""fill"" style=""height: 100%; min-height: 100%; border-width:1px;""></div>
+<div id=""mynetwork"" class=""network-area""></div>
 
-<div id=""legend_carto"" style=""position: absolute;top: 65px;left: 0px;"">
+<div class=""legend_carto"">
     Legend: <br>
     <i class=""legend_criticalscore"">&nbsp;</i> score=100<br>
-    <i class=""legend_superhighscore"">&nbsp;</i> score < 100<br>
-    <i class=""legend_highscore"">&nbsp;</i> score < 70<br>
-    <i class=""legend_mediumscore"">&nbsp;</i> score < 50<br>
-    <i class=""legend_lowscore"">&nbsp;</i> score < 30<br>
+    <i class=""legend_superhighscore"">&nbsp;</i> score &lt; 100<br>
+    <i class=""legend_highscore"">&nbsp;</i> score &lt; 70<br>
+    <i class=""legend_mediumscore"">&nbsp;</i> score &lt; 50<br>
+    <i class=""legend_lowscore"">&nbsp;</i> score &lt; 30<br>
     <i class=""legend_unknown"">&nbsp;</i> score unknown
 </div>
 ");
@@ -189,8 +181,9 @@ background-color: #FA9C1A;
 
 		protected override void GenerateFooterInformation()
 		{
+			AddBeginScript();
+			AddLine(TemplateManager.LoadVisJs());
 			Add(@"
-<script>
     function getTooltipHtml(d) {
         var output = '<b>' + d.name + '</b>';
         if (d.FullEntityName != null) {
@@ -239,7 +232,7 @@ function reshape(tree) {
     function toNode(id, n, parentId, parentName, level, direction, nodes, edges) {
         id[0]++;
         var myId = id[0];
-        node = {
+        var node = {
             id: myId,
             name: n[""name""],
             shortname: n[""shortname""],
@@ -256,7 +249,7 @@ function reshape(tree) {
         };
         nodes.push(node);
         if (parentId != 0) {
-            edge = {
+            var edge = {
                 source: parentId,
                 target: myId,
                 rels: [parentName + ""->"" + n[""name""]]
@@ -805,6 +798,75 @@ var progressBar = $('#loadingModal .progress-bar');
             sb.Append("}");
         }
 
-        #endregion json file
+
+		public string GenerateJsonFileChordDiagram(MigrationChecker migrationChecker)
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.Append("[");
+			bool firstnode = true;
+			foreach (GraphNode node in Nodes)
+			{
+				if (!firstnode)
+				{
+					sb.AppendLine(",");
+				}
+				else
+				{
+					firstnode = false;
+				}
+				sb.Append("    {");
+				sb.Append("      \"name\": \"" + ReportHelper.EscapeJsonString(node.Domain.DomainName) + "\"");
+				var entity = node.Entity;
+				if (entity != null)
+				{
+					sb.Append(entity.GetJasonOutput());
+				}
+				HealthcheckData data = node.HealthCheckData;
+				if (data != null)
+				{
+					sb.Append("      ,\"score\": " + data.GlobalScore);
+					sb.Append("      ,\"staleObjectsScore\": " + data.StaleObjectsScore);
+					sb.Append("      ,\"privilegiedGroupScore\": " + data.PrivilegiedGroupScore);
+					sb.Append("      ,\"trustScore\": " + data.TrustScore);
+					sb.Append("      ,\"anomalyScore\": " + data.AnomalyScore);
+					if (data.UserAccountData != null)
+						sb.Append("      ,\"activeusers\": " + data.UserAccountData.NumberActive);
+					if (data.ComputerAccountData != null)
+						sb.Append("      ,\"activecomputers\": " + data.ComputerAccountData.NumberActive);
+				}
+				sb.Append("      ,\"trusts\": [");
+				bool firstTrust = true;
+				foreach (var edge in node.Trusts.Values)
+				{
+					var destination = edge.Destination;
+					if (!firstTrust)
+					{
+						sb.Append(",");
+					}
+					else
+					{
+						firstTrust = false;
+					}
+					sb.Append("    {");
+					sb.Append("\"name\": \"");
+					sb.Append(ReportHelper.EscapeJsonString(destination.Domain.DomainName));
+					sb.Append("\"");
+					var entity2 = destination.Entity;
+					if (entity2 != null)
+					{
+						sb.Append(entity2.GetJasonOutput());
+					}
+					sb.Append("}");
+				}
+				sb.Append("]");
+				sb.Append("}");
+
+			}
+			
+			sb.AppendLine("]");
+			return sb.ToString();
+		}
+
+		#endregion json file
 	}
 }

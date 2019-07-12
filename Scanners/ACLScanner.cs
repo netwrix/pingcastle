@@ -1,6 +1,7 @@
 ﻿using PingCastle.ADWS;
 using PingCastle.Export;
 using PingCastle.Graph.Database;
+using PingCastle.Graph.Export;
 using PingCastle.misc;
 using System;
 using System.Collections.Generic;
@@ -34,6 +35,7 @@ namespace PingCastle.Scanners
 			Credential = credential;
 		}
 
+		Guid LAPSSchemaId = Guid.Empty;
 
 		public void Export(string filename)
 		{
@@ -41,6 +43,14 @@ namespace PingCastle.Scanners
 
 			using (ADWebService adws = new ADWebService(Server, Port, Credential))
 			{
+				string[] propertiesLaps = new string[] { "schemaIDGUID" };
+				// note: the LDAP request does not contain ms-MCS-AdmPwd because in the old time, MS consultant was installing customized version of the attriute, * being replaced by the company name
+				// check the oid instead ? (which was the same even if the attribute name was not)
+				adws.Enumerate(adws.DomainInfo.SchemaNamingContext, "(name=ms-*-AdmPwd)", propertiesLaps, (ADItem aditem) =>
+				{
+					LAPSSchemaId = aditem.SchemaIDGUID;
+				}, "OneLevel");
+
 				using (StreamWriter sw = File.CreateText(filename))
 				{
 					sw.WriteLine("DistinguishedName\tIdentity\tAccessRule");
@@ -108,7 +118,9 @@ namespace PingCastle.Scanners
 			if (UserList.Count == 0)
 			{
 				UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier("S-1-1-0"), "Everyone"));
+				UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier("S-1-5-7"), "Anonymous"));
 				UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier("S-1-5-11"), "Authenticated Users"));
+				UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier("S-1-5-32-545"), "Users"));
 				UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier(domainInfo.DomainSid.Value + "-513"), "Domain Users"));
 				UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier(domainInfo.DomainSid.Value + "-515"), "Domain Computers"));
 				return;
@@ -143,7 +155,7 @@ namespace PingCastle.Scanners
 				ConsoleMenu.Title = "Enter users or groups to check";
 				ConsoleMenu.Information = @"This scanner enumerate all objects' where a user or a group have write access.
 You can enter many users or groups. Enter them one by one and complete with an empty line. SAMAccountName or SID are accepted.
-Or just press enter to use the default (Everyone, Authenticated Users and Domain Users groups).";
+Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Authenticated Users and Domain Users groups).";
 				input = ConsoleMenu.AskForString();
 				if (!String.IsNullOrEmpty(input))
 				{
@@ -250,9 +262,6 @@ Or just press enter to use the default (Everyone, Authenticated Users and Domain
 			}
 			else if ((accessrule.ObjectFlags & ObjectAceFlags.ObjectAceTypePresent) == ObjectAceFlags.ObjectAceTypePresent)
 			{
-				if (new Guid("00299570-246d-11d0-a768-00aa006e0529") == accessrule.ObjectType)
-				{
-				}
 				// ADS_RIGHT_DS_CONTROL_ACCESS
 				if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.ExtendedRight) == ActiveDirectoryRights.ExtendedRight)
 				{
@@ -291,6 +300,14 @@ Or just press enter to use the default (Everyone, Authenticated Users and Domain
 						{
 							return true;
 						}
+					}
+				}
+				// ADS_RIGHT_DS_READ_PROP
+				if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.ReadProperty) == ActiveDirectoryRights.ReadProperty)
+				{
+					if (LAPSSchemaId == accessrule.ObjectType)
+					{
+						return true;
 					}
 				}
 			}

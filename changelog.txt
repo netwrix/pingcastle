@@ -1,3 +1,36 @@
+2.7.0.0
+* added a network map inspired from hilbert curves
+* fix a bug when doing a map with very complicated data
+* adjust the krbtgt last password change when a replication set it to "not set"
+* added the rule P-ExchangePrivEsc to check for Exchange misconfiguration at install
+* added the rule P-LoginDCEveryone to check if everybody can logon to a DC
+* added the rule P-RecycleBin to check for the Recycle Bin feature (at forest level)
+* added the rule P-DsHeuristicsAdminSDExMask to check if AdminSDHolder has been disabled for some critical groups
+* added the rule P-DsHeuristicsDoListObject to check if the feature DoListObject has been enabled (informative only)
+* added the rule P-RecoveryModeUnprotected to check if any user can go into recovery mode without being admin
+* added the rule A-LDAPSigningDisabled to check if the LDAP signing mode has been set to None
+* added the rule A-DCRefuseComputerPwdChange to check that Domain Controllers don't deny the change of computers account password
+* added the rule P-DelegationFileDeployed to check for deployed file via GPO (msi, file copied, ...)
+* added the rule T-FileDeployedOutOfDomain to check for deployed file via GPO (msi, file copied, ...) from outside this domain
+* added the rule A-NoGPOLLMNR which checks if LLMNR can be used to steal credentials
+* added the rule T-TGTDelegation to check for TGT delegation on forest trusts
+* added the rule P-Kerberoasting to check for keberoasting (SPN for admin account). A mitigation via a regular password change is allowed.
+* update the score produced by the rule S-SMB-v1 from 1 to 10
+* fix the scanner command line when targeting multiple computer (single and multiple were inverted)
+* added the scanner antivirus
+* added the scanner laps_bitlocker
+* fix a bug in the graph report when multiple files were examinated in parallele
+* add a transition msDS-AllowedToActOnBehalfOfOtherIdentity to the graph report
+* fix a bug when computing msDS-Lockout* in PSO (time were divided by 5)
+* fix rule A-LMHashAuthorized which were not triggering due to a bug and improved its documentation
+* improve the healtcheck report and added a comment to locate the NTLMstore (certificate section)
+* fix GPP Password for scheduled task - only 1 out of 4 kind of scheduled tasks were checked
+* fix support for missing well known sid S-1-5-32-545 for rules
+* fix a tedious bug when using LDAP and when requesting the property Objectclass - it is not available in the result using the native API
+* fix a tedious bug when reading SMB2 data (input was inverted with output) which gave inaccurate results regarding signature
+* PingCastle does now have a default license and can be run without the .config file
+  In this case, the compatibility shims are removed and forced under .Net 2 engine. To run under .Net 4, a recompile is needed.
+
 2.6.0.0
 * fix a problem for early version of LDAP undetected : in ms-*-AdmPwd, MCS was replaced by company name
 * integrate many hidden functions into the "scanner mode" to be more easy to use

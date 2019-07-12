@@ -40,13 +40,6 @@ namespace PingCastle.Report
 			return sb.ToString();
 		}
 
-		protected override void Hook(StringBuilder sbHtml)
-		{
-			// full screen graphs
-			sbHtml.Replace("<html lang=\"en\">", "<html style=\"height:100%; min-height: 100%;\">");
-			sbHtml.Replace("<body>", "<body style=\"height: 100%; min-height: 100%;\">");
-		}
-
 		protected override void GenerateTitleInformation()
 		{
 			sb.Append("PingCastle Compromission Graphs - ");
@@ -55,22 +48,18 @@ namespace PingCastle.Report
 
 		protected override void GenerateHeaderInformation()
 		{
-			Add(@"<style>");
-			Add(TemplateManager.LoadDatatableCss());
-			Add(@"</style>");
-			Add(ReportBase.GetStyleSheetTheme());
-			
-			Add(GetRiskControlStyleSheet());
-			Add(GetStyleSheet());
-			Add(@"<style type=""text/css"">");
-			Add(TemplateManager.LoadVisCss());
-			Add(@"</style>");
+			AddBeginStyle();
+			AddLine(TemplateManager.LoadDatatableCss());
+			AddLine(TemplateManager.LoadVisCss());
+			AddLine(ReportBase.GetStyleSheetTheme());
+			AddLine(GetRiskControlStyleSheet());
+			AddLine(GetStyleSheet());
+			AddLine(@"</style>");
 		}
 
 		private string GetStyleSheet()
 		{
-			return @"<style type=""text/css"">
-
+			return @"
 .modal{top: 50px;}
 .legend_user {background: #80b2ff; border: #0047b2;border-width: 1px;border-style: solid;font-family: monospace;padding:2px;}
 .legend_fsp {background: #ffa366; border: #8f3900;border-width: 1px;border-style: solid;font-family: monospace;padding:2px;}
@@ -141,7 +130,20 @@ background-color: #ffd800; !important;
 color: #fff !important;
 background-color: #83e043; !important;
 }
-</style>";
+
+.legend
+{
+position: absolute;
+top: 55px;
+left: 0px;
+}
+.network-area
+{
+height: 100%;
+min-height: 100%;
+border-width:1px;
+}
+";
 		}
 
 		protected override void GenerateBodyInformation()
@@ -315,7 +317,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 				Add(@"<div class=""row""><div class=""col-lg-12""><p>The following table lists all the foreign domains whose compromission can impact this domain. The impact is listed by typology of objects.</p></div></div>");
 				Add(@"<div class=""row"">
 <div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 	<thead>
 	<tr>
 		<th rowspan=""2"">FQDN</th>
@@ -394,7 +396,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 				Add(@"
 		<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 					<thead><tr>
 ");
 					Add(@"
@@ -622,7 +624,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			<div class=""modal-body"">
 <div class=""row""><div class=""col-lg-12""><h4>Indirect Members</h4></div></div>
 				<div class=""row table-responsive"">
-<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+<table class=""table table-striped table-bordered"">
 <thead><tr> 
 	<th>Name</th>
 	<th>Security Identifier</th>
@@ -668,7 +670,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			<div class=""modal-body"">
 <div class=""row""><div class=""col-lg-12""><h4>Deleted objects</h4></div></div>
 				<div class=""row table-responsive"">
-<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+<table class=""table table-striped table-bordered"">
 <thead><tr> 
 	<th>Security Identifier</th>
 </tr>
@@ -736,7 +738,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			<div class=""modal-body"">
 <div class=""row""><div class=""col-lg-12""><h4>Direct User Members</h4></div></div>
 				<div class=""row table-responsive"">
-<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+<table class=""table table-striped table-bordered"">
 <thead><tr> 
 	<th>SamAccountName</th>
 	<th>Enabled</th>
@@ -786,7 +788,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			<div class=""modal-body"">
 <div class=""row""><div class=""col-lg-12""><h4>Direct Computer Members</h4></div></div>
 				<div class=""row table-responsive"">
-<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+<table class=""table table-striped table-bordered"">
 <thead><tr> 
 	<th>SamAccountName</th>
 	<th>Enabled</th>
@@ -834,15 +836,15 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 				<div class=""progress mt-2 d-none"" id=""progress");
 			Add(i);
 			Add(@""">
-					<div class=""progress-bar"" role=""progressbar"" aria-valuenow=""0"" aria-valuemin=""0"" aria-valuemax=""100"" style=""width: 0%"">
+					<div class=""progress-bar"" role=""progressbar"" aria-valuenow=""0"" aria-valuemin=""0"" aria-valuemax=""100"">
 						0%
 					</div>
 				</div>
 				<div id=""mynetwork");
 			Add(i);
-			Add(@""" class=""fill"" style=""height: 100%; min-height: 100%; border-width:1px;""></div>
+			Add(@""" class=""network-area""></div>
 
-				<div style=""position: absolute;top: 55px;left: 0px;"">
+				<div class=""legend"">
 					Legend: <br>
 					<i class=""legend_user"">u</i> user<br>
 					<i class=""legend_fsp"">w</i> external user or group<br>
@@ -964,7 +966,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         {
             Add(@"
 <div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered sortable-theme-bootstrap"" data-sortable="""">
+				<table class=""table table-striped table-bordered"">
 	<thead>
 	<tr>
 		<th>Group or user account&nbsp;<i class=""info-mark"" data-placement=""bottom"" data-toggle=""tooltip"" title="""" data-original-title=""The graph represents the objects which can take control of this group or user account."">?</i></th>
@@ -1107,12 +1109,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
         protected override void GenerateFooterInformation()
 		{
-			Add(@"
-<script>
-");
-			Add(TemplateManager.LoadJqueryDatatableJs());
-			Add(TemplateManager.LoadDatatableJs());
-			Add(TemplateManager.LoadVisJs());
+			AddBeginScript();
+			AddLine(TemplateManager.LoadJqueryDatatableJs());
+			AddLine(TemplateManager.LoadDatatableJs());
+			AddLine(TemplateManager.LoadVisJs());
 			Add(@"
 $('table').not('.model_table').DataTable(
     {

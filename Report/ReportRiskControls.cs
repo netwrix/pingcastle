@@ -23,19 +23,6 @@ namespace PingCastle.Report
 		public static string GetRiskControlStyleSheet()
 		{
 			return @"
-<style type=""text/css"">
-
-.modal
-{
-top: 50px;
-}
-
-.modal-header
-{
-background-color: #FA9C1A;
-color: #fff;
-}
-
 .model_table {
 
 }
@@ -113,7 +100,12 @@ color: #FFFFFF;
 svg {
 	font: 10px sans-serif;
 }
-</style>
+.indicators-border
+{
+border: 2px solid #Fa9C1A;
+margin:2px;
+padding: 2px;
+}
 ";
 		}
 
@@ -136,7 +128,7 @@ svg {
 					<p>It is the maximum score of the 4 indicators and one score cannot be higher than 100. The lower the better</p>
 			</div>
 		</div>
-		<div class=""row"" style=""border: 2px solid #Fa9C1A; margin:2px; padding: 2px;"">
+		<div class=""row"" class=""indicators-border"">
 ");
 			GenerateSubIndicator("Stale Object", data.GlobalScore, data.StaleObjectsScore, rules, RiskRuleCategory.StaleObjects, "It is about operations related to user or computer objects");
 			GenerateSubIndicator("Trusts", data.GlobalScore, data.TrustScore, rules, RiskRuleCategory.Trusts, "It is about links between two Active Directories");
@@ -199,12 +191,12 @@ svg {
 		protected void GenerateRiskModelPanel(List<HealthcheckRiskRule> rules, int numberOfDomain = 1)
 		{
 			Add(@"
-		<div class=""row""><div class=""col-lg-12"">
+		<div class=""row d-print-none""><div class=""col-lg-12"">
 			<a data-toggle=""collapse"" data-target=""#riskModel"">
 				<h2>Risk model</h2>
 			</a>
 		</div></div>
-		<div class=""row collapse show"" id=""riskModel"">
+		<div class=""row collapse show d-print-none"" id=""riskModel"">
 			<div class=""col-md-12 table-responsive"">
 				<table class=""model_table"">
 					<thead><tr><th>Stale Objects</th><th>Privileged accounts</th><th>Trusts</th><th>Anomalies</th></tr></thead>
@@ -279,7 +271,7 @@ svg {
 						{
 							tdclass = "model_danger";
 						}
-						string tooltip = "Rules: " + numrules + " Score: " + score / numberOfDomain;
+						string tooltip = "Rules: " + numrules + " Score: " + (numberOfDomain == 0? 100 : score / numberOfDomain);
 						string tooltipdetail = null;
 						string modelstring = ReportHelper.GetEnumDescription(model);
 						rulematched.Sort((HealthcheckRiskRule a, HealthcheckRiskRule b)
@@ -290,6 +282,11 @@ svg {
 						foreach (var rule in rulematched)
 						{
 							tooltipdetail += ReportHelper.Encode(rule.Rationale) + "<br>";
+							var hcrule = RuleSet<T>.GetRuleFromID(rule.RiskId);
+							if (hcrule != null && !string.IsNullOrEmpty(hcrule.ReportLocation))
+							{
+								tooltipdetail += "<small  class='text-muted'>" + ReportHelper.Encode(hcrule.ReportLocation) + "</small><br>";
+							}
 						}
 						line += "<td class=\"model_cell " + tdclass + "\"><div class=\"div_model\" placement=\"auto right\" data-toggle=\"popover\" title=\"" +
 							tooltip + "\" data-html=\"true\" data-content=\"" +
@@ -318,7 +315,7 @@ svg {
 		</div>");
 		}
 
-		protected void GenerateIndicatorPanel(string id, string title, RiskRuleCategory category, List<HealthcheckRiskRule> rules)
+		protected void GenerateIndicatorPanel(string id, string title, RiskRuleCategory category, List<HealthcheckRiskRule> rules, List<RuleBase<HealthcheckData>> applicableRules)
 		{
 			Add(@"
 		<div class=""row""><div class=""col-lg-12 mt-2"">
@@ -327,7 +324,9 @@ svg {
 			Add(title);
 			Add(@" [");
 			Add(GetRulesNumberForCategory(rules, category).ToString());
-			Add(@" rules matched]</h2>
+			Add(@" rules matched on a total of ");
+			Add(GetApplicableRulesNumberForCategory(applicableRules, category).ToString());
+			Add(@"]</h2>
 			</a>
 		</div></div>
 		<div class=""row collapse show"" id=""");
@@ -367,6 +366,17 @@ svg {
 			Add(@"
 			</div>
 		</div>");
+		}
+
+		private int GetApplicableRulesNumberForCategory(List<RuleBase<HealthcheckData>> applicableRules, RiskRuleCategory category)
+		{
+			int count = 0;
+			foreach (var rule in applicableRules)
+			{
+				if (rule.Category == category)
+					count++;
+			}
+			return count;
 		}
 
 		protected void GenerateSubIndicator(string category, int globalScore, int score, string explanation)

@@ -1,3 +1,6 @@
+2.7.1.0
+* update the TGT delegation algorithm after the July update (new flag CROSS_ORGANIZATION_ENABLE_TGT_DELEGATION)
+
 2.7.0.0
 * added a network map inspired from hilbert curves
 * fix a bug when doing a map with very complicated data

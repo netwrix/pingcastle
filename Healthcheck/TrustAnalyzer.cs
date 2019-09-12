@@ -70,7 +70,10 @@ namespace PingCastle.Healthcheck
 			{
 				// quarantined ?
 				if (!IsFlagSet(TrustAttributes, 0x200))
-					return "Yes";
+				{
+					if (IsFlagSet(TrustAttributes, 0x800))
+						return "Yes";
+				}
 				return "No";
 			}
 			return "Not applicable";

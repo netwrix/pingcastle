@@ -1826,7 +1826,7 @@ SeImpersonatePrivilege and SeAssignPrimaryTokenPrivilege can be abused to impers
     <value>The detail can be found in &lt;a href=&quot;#domaincontrollersection&quot;&gt;Domain controllers&lt;/a&gt; and  &lt;a href=&quot;#nullsession&quot;&gt;Null Session&lt;/a&gt;</value>
   </data>
   <data name="A_PwdGPO_ReportLocation" xml:space="preserve">
-    <value>The detail can be found in the &lt;a href=&quot;#GPOobfuscatedpassword&quot;&gt;Obfuscated Passwords&lt;/a&gt;</value>
+    <value>The detail can be found in the &lt;a href=&quot;#gpoobfuscatedpassword&quot;&gt;Obfuscated Passwords&lt;/a&gt;</value>
   </data>
   <data name="A_LimitBlankPasswordUse_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href=&quot;#lsasettings&quot;&gt;Security settings&lt;/a&gt;</value>

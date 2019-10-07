@@ -1834,7 +1834,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 			GenerateSubSection("Obfuscated Passwords", "gpoobfuscatedpassword");
             Add(@"
 		<div class=""row col-lg-12"">
-			<p>The password in GPO are obfuscated, not encrypted. Consider any passwords listed here as compromissed and change it immediatly.</p>
+			<p>The password in GPO are obfuscated, not encrypted. Consider any passwords listed here as compromised and change it immediatly.</p>
 		</div>
 ");
 			if (Report.GPPPassword != null && Report.GPPPassword.Count > 0)

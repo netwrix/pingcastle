@@ -1159,7 +1159,7 @@ namespace PingCastle.Healthcheck
 					dnsAdminFound = true;
 				};
 			// we do a one level search just case the group is in the default position
-			adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=group)(description=DNS Administrators Group))", properties, callback, "OneLevel");
+			adws.Enumerate("CN=Users," + domainInfo.DefaultNamingContext, "(&(objectClass=group)(description=DNS Administrators Group))", properties, callback, "OneLevel");
 			if (!dnsAdminFound)
 			{
 				// then full tree. This is an optimization for LDAP request

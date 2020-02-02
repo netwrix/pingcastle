@@ -1,0 +1,62 @@
+.modal{top: 50px;}
+.legend_user {background: #80b2ff; border: #0047b2;border-width: 1px;border-style: solid;font-family: monospace;padding:2px;}
+.legend_fsp {background: #ffa366; border: #8f3900;border-width: 1px;border-style: solid;font-family: monospace;padding:2px;}
+.legend_computer {background: #d65c33; border: #661a00;border-width: 1px;border-style: solid;font-family: monospace;padding:2px;}
+.legend_group {background: #70db70; border: #196419;border-width: 1px;border-style: solid;font-family: monospace;padding:2px;}
+.legend_ou {background: #cccccc; border: #333333;border-width: 1px;border-style: solid;font-family: monospace;padding:2px;}
+.legend_gpo {background: #ad8533; border: #403100;border-width: 1px;border-style: solid;font-family: monospace;padding:2px;}
+.legend_unknown {background: #ffffff; border: #a352cc;border-width: 1px;border-style: solid;font-family: monospace;padding:2px;}
+
+.modal-full-screen {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+}
+.modal-full-screen-dialog {
+  position: fixed;
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  padding: 0;
+}
+.modal-full-screen-content {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.modal-full-screen-body {
+  position: absolute;
+  top: 50px;
+  bottom: 60px;
+  width: 100%;
+  font-weight: 300;
+  overflow: auto;
+}
+
+.modal-full-screen-footer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 60px;
+  padding: 10px;
+}
+
+.legend
+{
+position: absolute;
+top: 55px;
+left: 0px;
+}
+.network-area
+{
+height: 100%;
+min-height: 100%;
+border-width:1px;
+}

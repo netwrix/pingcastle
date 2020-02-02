@@ -5,7 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.ADWS;
-using PingCastle.Export;
+using PingCastle.Graph.Export;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -33,6 +33,10 @@ using System.DirectoryServices.ActiveDirectory;
 using System.Security.Permissions;
 using PingCastle.Rules;
 using PingCastle.Data;
+using PingCastle.Graph.Reporting;
+using System.Net.Sockets;
+using System.Net.Security;
+using System.Security.Authentication;
 
 namespace PingCastle.Healthcheck
 {
@@ -80,6 +84,7 @@ namespace PingCastle.Healthcheck
 		public HealthcheckData PerformAnalyze(PingCastleAnalyzerParameters parameters)
         {
 			healthcheckData = new HealthcheckData();
+			LoadHoneyPotData();
             ADDomainInfo domainInfo = null;
             DisplayAdvancement("Getting domain information (" + parameters.Server + ")");
 			using (ADWebService adws = new ADWebService(parameters.Server, parameters.Port, parameters.Credential))
@@ -105,12 +110,10 @@ namespace PingCastle.Healthcheck
                     DisplayAdvancement("Gathering reachable domains data");
                     GenerateReachableTrustData(domainInfo, adws);
                 }
-                DisplayAdvancement("Gathering privileged group data");
-                GeneratePrivilegedGroupData(domainInfo, adws);
+                DisplayAdvancement("Gathering privileged group and permissions data");
+                GeneratePrivilegedGroupAndPermissionsData(domainInfo, adws, parameters);
                 DisplayAdvancement("Gathering delegation data");
                 GenerateDelegationData(domainInfo, adws);
-                //DisplayAdvancement("Gathering topology data");
-                //GenerateTopologyData(domainInfo, adws);
                 DisplayAdvancement("Gathering gpo data");
 				GenerateGPOData(domainInfo, adws, parameters.Credential);
 				GeneratePSOData(domainInfo, adws, parameters.Credential);
@@ -139,6 +142,22 @@ namespace PingCastle.Healthcheck
             DisplayAdvancement("Export completed");
 			return healthcheckData;
         }
+
+		private void LoadHoneyPotData()
+		{
+			var s = HoneyPotSettings.GetEncryptionSettings();
+			if (s == null)
+				return;
+			if (s.HoneyPots.Count > 10)
+			{
+				throw new PingCastleException("You entered more than 10 HoneyPots in the configuration. Honey Pots should not be used as a way to setup exceptions to rules");
+			}
+			healthcheckData.ListHoneyPot = new List<HealthcheckAccountDetailData>();
+			foreach (SingleHoneyPotSettings h in s.HoneyPots)
+			{
+				healthcheckData.ListHoneyPot.Add(new HealthcheckAccountDetailData() { Name = h.samAccountName });
+			}
+		}
 
         public class ReachableDomainInfo : IComparable<ReachableDomainInfo>
         {
@@ -438,8 +457,23 @@ namespace PingCastle.Healthcheck
         void ProcessAccountData(HealthcheckAccountData data, ADItem x, bool computerCheck)
         {
             // see https://msdn.microsoft.com/fr-fr/library/windows/desktop/ms680832%28v=vs.85%29.aspx for the flag
-            data.Number++;
-            if (x.DistinguishedName.Contains("cnf:"))
+            if (!string.IsNullOrEmpty(x.SAMAccountName) && healthcheckData.ListHoneyPot != null && healthcheckData.ListHoneyPot.Count > 0)
+			{
+				foreach (var h in healthcheckData.ListHoneyPot)
+				{
+					if (string.Equals(h.Name, x.SAMAccountName, StringComparison.InvariantCultureIgnoreCase))
+					{
+						// ignore the account
+						h.Name = x.SAMAccountName;
+						h.CreationDate = x.WhenCreated;
+						h.DistinguishedName = x.DistinguishedName;
+						h.LastLogonDate = x.LastLogonTimestamp;
+						return;
+					}
+				}
+			}
+			data.Number++;
+			if (x.DistinguishedName.Contains("cnf:"))
             {
                 data.NumberDuplicate++;
                 if (data.ListDuplicate == null)
@@ -1120,6 +1154,13 @@ namespace PingCastle.Healthcheck
             return output;
         }
 
+		private void GeneratePrivilegedGroupAndPermissionsData(ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
+		{
+			var generator = new ReportGenerator();
+			generator.PerformAnalyze(healthcheckData, domainInfo, adws, parameters);
+		}
+
+		// not used anymore
         private void GeneratePrivilegedGroupData(ADDomainInfo domainInfo, ADWebService adws)
         {
             healthcheckData.PrivilegedGroups = new List<HealthCheckGroupData>();
@@ -1133,7 +1174,6 @@ namespace PingCastle.Healthcheck
                 new KeyValuePair<string, string>("S-1-5-32-550","Print Operators"),
                 new KeyValuePair<string, string>("S-1-5-32-551","Backup Operators"),
                 new KeyValuePair<string, string>("S-1-5-32-569","Crypto Operators"),
-                new KeyValuePair<string, string>("S-1-5-32-556","Network Operators"),
                 new KeyValuePair<string, string>(domainInfo.DomainSid + "-512","Domain Admins"),
                 new KeyValuePair<string, string>(domainInfo.DomainSid + "-519","Enterprise Admins"),
                 new KeyValuePair<string, string>(domainInfo.DomainSid + "-518","Schema Admins"),
@@ -1735,33 +1775,21 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        //private void GenerateTopologyData(ADDomainInfo domainInfo, ADWebService adws)
-        //{
-        //    healthcheckData.SiteTopology = new List<HealthcheckSiteTopologyData>();
-        //    string[] properties = new string[] {
-        //                "name",
-        //                "siteObjectBL",
-        //    };
-        //    WorkOnReturnedObjectByADWS callback =
-        //        (ADItem x) =>
-        //        {
-        //            HealthcheckSiteTopologyData data = new HealthcheckSiteTopologyData();
-        //            healthcheckData.SiteTopology.Add(data);
-        //            data.SiteName = x.Name;
-        //            data.Subnets = new List<string> ();
-        //            foreach(string subnet in x.SiteObjectBL)
-        //            {
-        //                data.Subnets.Add(GetDisplayName(subnet));
-        //            }
-        //        };
+		private class GPO
+		{
+			public string InternalName { get; set; }
+			public string DisplayName { get; set; }
+			public bool IsDisabled { get; set; }
+			public string DN { get; set; }
 
-        //    adws.Enumerate(domainInfo.ConfigurationNamingContext, "(&(ObjectClass=site)(siteObjectBL=*))", properties, callback);
-        //}
+			public List<string> AppliedTo { get; set; }
+		}
 
         private void GenerateGPOData(ADDomainInfo domainInfo, ADWebService adws, NetworkCredential credential)
         {
             healthcheckData.GPPPassword = new List<GPPPassword>();
             healthcheckData.GPPRightAssignment = new List<GPPRightAssignment>();
+			healthcheckData.GPPLoginAllowedOrDeny = new List<GPPRightAssignment>();
             healthcheckData.GPPPasswordPolicy = new List<GPPSecurityPolicy>();
             healthcheckData.GPOLsaPolicy = new List<GPPSecurityPolicy>();
             healthcheckData.GPOScreenSaverPolicy = new List<GPPSecurityPolicy>();
@@ -1771,20 +1799,35 @@ namespace PingCastle.Healthcheck
 			healthcheckData.GPOEventForwarding = new List<GPOEventForwardingInfo>();
 			healthcheckData.GPODelegation = new List<GPODelegationData>();
 			healthcheckData.GPPFileDeployed = new List<GPPFileDeployed>();
+            healthcheckData.GPOAuditSimple = new List<GPOAuditSimpleData>();
+            healthcheckData.GPOAuditAdvanced = new List<GPOAuditAdvancedData>();
 
             // subitility: GPOList = all active and not active GPO (but not the deleted ones)
-            Dictionary<string, string> GPOList = new Dictionary<string, string>();
-            // GPOListDisabled only the existing & disabled
-            // GPOList contains GPOListDisabled
-            List<string> GPOListDisabled = new List<string>();
-            GetGPOList(domainInfo, adws, GPOList, GPOListDisabled);
+			Dictionary<string, GPO> GPOList = new Dictionary<string, GPO>(StringComparer.OrdinalIgnoreCase);
+            GetGPOList(domainInfo, adws, GPOList);
+			SaveGPOListToHCData(GPOList);
 
-			ParseGPOFiles(domainInfo, credential, GPOList, GPOListDisabled);
+			ParseGPOFiles(domainInfo, credential, GPOList);
 			GenerateNTLMStoreData(domainInfo, adws);
-			GenerateMsiData(domainInfo, adws, GPOList, GPOListDisabled);
+			GenerateMsiData(domainInfo, adws, GPOList);
 		}
 
-		private void ParseGPOFiles(ADDomainInfo domainInfo, NetworkCredential credential, Dictionary<string, string> GPOList, List<string> GPOListDisabled)
+		private void SaveGPOListToHCData(Dictionary<string, GPO> GPOList)
+		{
+			healthcheckData.GPOInfo = new List<GPOInfo>();
+			foreach (var GPO in GPOList.Values)
+			{
+				healthcheckData.GPOInfo.Add(new GPOInfo() 
+				{
+ 					GPOId = GPO.InternalName,
+					GPOName = GPO.DisplayName,
+					IsDisabled = GPO.IsDisabled,
+					AppliedTo = GPO.AppliedTo,
+				});
+			}
+		}
+
+		private void ParseGPOFiles(ADDomainInfo domainInfo, NetworkCredential credential, Dictionary<string, GPO> GPOList)
 		{
             WindowsIdentity identity = null;
             WindowsImpersonationContext context = null;
@@ -1807,13 +1850,13 @@ namespace PingCastle.Healthcheck
                     {
                         DirectoryInfo directoryInfo = null;
                         if (!queue.Dequeue(out directoryInfo)) break;
-                        string GPOName = "Unknown [" + directoryInfo.Name + "]";
                         string ADGPOName = directoryInfo.Name.ToLowerInvariant();
+						GPO gpo = null;
                         if (GPOList.ContainsKey(ADGPOName))
                         {
-                            GPOName = GPOList[ADGPOName];
+							gpo = GPOList[ADGPOName];
                         }
-						ThreadGPOAnalysis(directoryInfo, GPOName, domainInfo, GPOList.ContainsKey(ADGPOName) && !GPOListDisabled.Contains(ADGPOName));
+						ThreadGPOAnalysis(directoryInfo, gpo, domainInfo);
                     }
                 };
 
@@ -1921,7 +1964,7 @@ namespace PingCastle.Healthcheck
         }
 
 
-		private void GenerateMsiData(ADDomainInfo domainInfo, ADWebService adws, Dictionary<string, string> GPOList, List<string> GPOListDisabled)
+		private void GenerateMsiData(ADDomainInfo domainInfo, ADWebService adws, Dictionary<string, GPO> GPOList)
 		{
 			string[] properties = new string[] {
                         "distinguishedName",
@@ -1939,8 +1982,8 @@ namespace PingCastle.Healthcheck
 					string GPOGuid = x.DistinguishedName.Substring(pos1, pos2 - pos1 + 1).ToLowerInvariant();
 					if (!GPOList.ContainsKey(GPOGuid))
 						return;
-					string GPOName = GPOList[GPOGuid];
-					if (GPOListDisabled.Contains(GPOName))
+					var GPO = GPOList[GPOGuid];
+					if (GPO.IsDisabled)
 						return;
 					string section = (x.DistinguishedName.Contains("Machine") ? "Computer" : "User");
 					foreach (var msiFileItem in x.msiFileList)
@@ -1949,7 +1992,8 @@ namespace PingCastle.Healthcheck
 						if (msiFile.Length < 2)
 							continue;
 						var file = new GPPFileDeployed();
-						file.GPOName = GPOName;
+						file.GPOName = GPO.DisplayName;
+						file.GPOId = GPO.InternalName;
 						file.Type = "Application (" + section + " section)";
 						file.FileName = msiFile[1];
 						file.Delegation = new List<HealthcheckScriptDelegationData>();
@@ -1973,7 +2017,7 @@ namespace PingCastle.Healthcheck
 			adws.Enumerate(domainInfo.DefaultNamingContext, "(objectClass=packageRegistration)", properties, callback);
 		}
 
-		void ThreadGPOAnalysis(DirectoryInfo directoryInfo, string GPOName, ADDomainInfo domainInfo, bool IsGPOActive)
+		void ThreadGPOAnalysis(DirectoryInfo directoryInfo, GPO GPO, ADDomainInfo domainInfo)
         {
 			string step = "initial";
             try
@@ -1991,46 +2035,57 @@ namespace PingCastle.Healthcheck
                         path = directoryInfo.FullName + @"\" + target + @"\Preferences\" + shortname.Replace(".xml","") + "\\" + shortname;
                         if (File.Exists(path))
                         {
-                            ExtractGPPPassword(shortname, path, GPOName);
+							ExtractGPPPassword(shortname, path, GPO, "Unknown [" + directoryInfo.Name + "]");
                         }
                     }
                 }
+				path = directoryInfo.FullName + @"\Machine\Preferences\Registry\Registry.xml";
+				if (File.Exists(path))
+				{
+					ExtractLoginPassword(path, GPO, "Unknown [" + directoryInfo.Name + "]");
+				}
                 // work only on active GPO
-                if (!IsGPOActive)
+                if (GPO == null || GPO.IsDisabled)
                     return;
                 path = directoryInfo.FullName + @"\Machine\Microsoft\Windows nt\SecEdit\GptTmpl.inf";
                 if (File.Exists(path))
                 {
 					step = "extract GPP privileges";
-                    ExtractGPPPrivilegePasswordLsaSettingEtc(path, GPOName, domainInfo);
+                    ExtractGPPPrivilegePasswordLsaSettingEtc(path, GPO, domainInfo);
+                }
+                path = directoryInfo.FullName + @"\MACHINE\Microsoft\Windows NT\Audit\audit.csv";
+                if (File.Exists(path))
+                {
+                    step = "extract audit";
+                    ExtractGPOAudit(path, GPO, domainInfo);
                 }
 				step = "extract GPO login script";
-                ExtractGPOLoginScript(domainInfo, directoryInfo, GPOName);
+				ExtractGPOLoginScript(domainInfo, directoryInfo, GPO);
 				path = directoryInfo.FullName + @"\User\Preferences\Files\Files.xml";
 				if (File.Exists(path))
 				{
 					step = "extract Files info";
-					ExtractGPPFile(path, GPOName, domainInfo, "User");
+					ExtractGPPFile(path, GPO, domainInfo, "User");
 				}
 				path = directoryInfo.FullName + @"\Machine\Preferences\Files\Files.xml";
 				if (File.Exists(path))
 				{
 					step = "extract Files info";
-					ExtractGPPFile(path, GPOName, domainInfo, "Computer");
+					ExtractGPPFile(path, GPO, domainInfo, "Computer");
 				}
                 try
                 {
 					step = "extract Registry Pol info";
-					ExtractRegistryPolInfo(domainInfo, directoryInfo, GPOName);
+					ExtractRegistryPolInfo(domainInfo, directoryInfo, GPO);
                 }
                 catch (Exception ex)
                 {
-                    Trace.WriteLine("GPO Pol info failed " + directoryInfo.Name + " " + GPOName);
+					Trace.WriteLine("GPO Pol info failed " + directoryInfo.Name + " " + GPO.DisplayName);
                     Trace.WriteLine("Exception " + ex.Message);
                     Trace.WriteLine(ex.StackTrace);
                 }
 				step = "check GPO permissions";
-				ExtractGPODelegation(directoryInfo.FullName, GPOName);
+				ExtractGPODelegation(directoryInfo.FullName, GPO);
 
             }
             catch (UnauthorizedAccessException ex)
@@ -2057,7 +2112,48 @@ namespace PingCastle.Healthcheck
             }
         }
 
-		private void ExtractRegistryPolInfo(ADDomainInfo domainInfo, DirectoryInfo directoryInfo, string GPOName)
+		private void ExtractLoginPassword(string path, GPO GPO, string alternateNameIfGPODoesNotExists)
+		{
+			XmlDocument doc = new XmlDocument();
+			doc.Load(path);
+			XmlNodeList nodeList = doc.SelectNodes(@"/RegistrySettings/Registry[@name=""DefaultPassword""]");
+			foreach (XmlNode node in nodeList)
+			{
+				XmlNode password = node.SelectSingleNode("Properties/@value");
+				// no password
+				if (password == null)
+					continue;
+				// password has been manually changed
+				if (String.IsNullOrEmpty(password.Value))
+					continue;
+				GPPPassword PasswordData = new GPPPassword();
+				PasswordData.GPOName = (GPO == null ? alternateNameIfGPODoesNotExists : GPO.DisplayName);
+				PasswordData.GPOId = (GPO == null ? null : GPO.InternalName);
+				PasswordData.Password = password.Value;
+
+				XmlNode userNameNode = node.SelectSingleNode(@"/RegistrySettings/Registry[@name=""DefaultUserName""]/Properties/@value");
+				PasswordData.UserName = (userNameNode != null ? userNameNode.Value : string.Empty);
+
+				XmlNode changed = node.SelectSingleNode("@changed");
+				if (changed != null)
+				{
+					PasswordData.Changed = DateTime.Parse(changed.Value);
+				}
+				else
+				{
+					FileInfo fi = new FileInfo(path);
+					PasswordData.Changed = fi.LastWriteTime;
+				}
+				PasswordData.Type = "registry.xml";
+				PasswordData.Other = "Autologon info";
+				lock (healthcheckData.GPPPassword)
+				{
+					healthcheckData.GPPPassword.Add(PasswordData);
+				}
+			}
+		}
+
+		private void ExtractRegistryPolInfo(ADDomainInfo domainInfo, DirectoryInfo directoryInfo, GPO GPO)
         {
             GPPSecurityPolicy PSO = null;
             foreach (string gpotarget in new string[] { "Machine", "User" })
@@ -2076,7 +2172,8 @@ namespace PingCastle.Healthcheck
                             if (PSO == null)
                             {
                                 PSO = new GPPSecurityPolicy();
-                                PSO.GPOName = GPOName;
+                                PSO.GPOName = GPO.DisplayName;
+								PSO.GPOId = GPO.InternalName;
                                 lock (healthcheckData.GPOScreenSaverPolicy)
                                 {
                                     healthcheckData.GPOScreenSaverPolicy.Add(PSO);
@@ -2090,7 +2187,7 @@ namespace PingCastle.Healthcheck
 							GPPSecurityPolicy SecurityPolicy = null;
 							foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
 							{
-								if (policy.GPOName == GPOName)
+								if (policy.GPOId == GPO.InternalName)
 								{
 									SecurityPolicy = policy;
 									break;
@@ -2099,7 +2196,9 @@ namespace PingCastle.Healthcheck
 							if (SecurityPolicy == null)
 							{
 								SecurityPolicy = new GPPSecurityPolicy();
-								SecurityPolicy.GPOName = GPOName;
+								SecurityPolicy.GPOName = GPO.DisplayName;
+								SecurityPolicy.GPOId = GPO.InternalName;
+
 								lock (healthcheckData.GPOLsaPolicy)
 								{
 									healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
@@ -2108,6 +2207,57 @@ namespace PingCastle.Healthcheck
 							}
 							SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("EnableMulticast", intvalue));
 						}
+						if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows\PowerShell\ModuleLogging", "EnableModuleLogging", out intvalue))
+						{
+							GPPSecurityPolicy SecurityPolicy = null;
+							foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
+							{
+								if (policy.GPOId == GPO.InternalName)
+								{
+									SecurityPolicy = policy;
+									break;
+								}
+							}
+							if (SecurityPolicy == null)
+							{
+								SecurityPolicy = new GPPSecurityPolicy();
+								SecurityPolicy.GPOName = GPO.DisplayName;
+								SecurityPolicy.GPOId = GPO.InternalName;
+
+								lock (healthcheckData.GPOLsaPolicy)
+								{
+									healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
+								}
+								SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
+							}
+							SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("EnableModuleLogging", intvalue));
+						}
+						if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging", "EnableScriptBlockLogging", out intvalue))
+						{
+							GPPSecurityPolicy SecurityPolicy = null;
+							foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
+							{
+								if (policy.GPOId == GPO.InternalName)
+								{
+									SecurityPolicy = policy;
+									break;
+								}
+							}
+							if (SecurityPolicy == null)
+							{
+								SecurityPolicy = new GPPSecurityPolicy();
+								SecurityPolicy.GPOName = GPO.DisplayName;
+								SecurityPolicy.GPOId = GPO.InternalName;
+
+								lock (healthcheckData.GPOLsaPolicy)
+								{
+									healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
+								}
+								SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
+							}
+							SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("EnableScriptBlockLogging", intvalue));
+						}
+						
 						for (int i = 1; ; i++)
 						{
 							string server = null;
@@ -2116,7 +2266,8 @@ namespace PingCastle.Healthcheck
 								lock (healthcheckData.GPOEventForwarding)
 								{
 									GPOEventForwardingInfo info = new GPOEventForwardingInfo();
-									info.GPOName = GPOName;
+									info.GPOName = GPO.DisplayName;
+									info.GPOId = GPO.InternalName;
 									info.Order = i;
 									info.Server = server;
 									healthcheckData.GPOEventForwarding.Add(info);
@@ -2136,7 +2287,8 @@ namespace PingCastle.Healthcheck
                             if (PSO == null)
                             {
                                 PSO = new GPPSecurityPolicy();
-                                PSO.GPOName = GPOName;
+								PSO.GPOName = GPO.DisplayName;
+								PSO.GPOId = GPO.InternalName;
                                 lock (healthcheckData.GPOScreenSaverPolicy)
                                 {
                                     healthcheckData.GPOScreenSaverPolicy.Add(PSO);
@@ -2151,7 +2303,8 @@ namespace PingCastle.Healthcheck
                             if (PSO == null)
                             {
                                 PSO = new GPPSecurityPolicy();
-                                PSO.GPOName = GPOName;
+								PSO.GPOName = GPO.DisplayName;
+								PSO.GPOId = GPO.InternalName;
                                 lock (healthcheckData.GPOScreenSaverPolicy)
                                 {
                                     healthcheckData.GPOScreenSaverPolicy.Add(PSO);
@@ -2166,7 +2319,8 @@ namespace PingCastle.Healthcheck
                             if (PSO == null)
                             {
                                 PSO = new GPPSecurityPolicy();
-                                PSO.GPOName = GPOName;
+								PSO.GPOName = GPO.DisplayName;
+								PSO.GPOId = GPO.InternalName;
                                 lock (healthcheckData.GPOScreenSaverPolicy)
                                 {
                                     healthcheckData.GPOScreenSaverPolicy.Add(PSO);
@@ -2185,7 +2339,7 @@ namespace PingCastle.Healthcheck
                             foreach (X509Certificate2 certificate in store)
                             {
                                 HealthcheckCertificateData data = new HealthcheckCertificateData();
-                                data.Source = "GPO:" + GPOName + ";" + gpotarget;
+								data.Source = "GPO:" + GPO.DisplayName + ";" + gpotarget;
                                 data.Store = storename;
                                 data.Certificate = certificate.GetRawCertData();
                                 lock (healthcheckData.TrustedCertificates)
@@ -2204,7 +2358,8 @@ namespace PingCastle.Healthcheck
 							continue;
 						filename = filename.Replace("\0", string.Empty);
 						HealthcheckGPOLoginScriptData loginscript = new HealthcheckGPOLoginScriptData();
-						loginscript.GPOName = GPOName;
+						loginscript.GPOName = GPO.DisplayName;
+						loginscript.GPOId = GPO.InternalName;
 						loginscript.Action = "Logon";
 						// this is bad, I'm assuming that the file name doesn't contain any space which is wrong.
 						// but a real command line parsing will bring more anomalies.
@@ -2260,7 +2415,7 @@ namespace PingCastle.Healthcheck
 			return null;
 		}
 
-		private void ExtractGPODelegation(string path, string GPOName)
+		private void ExtractGPODelegation(string path, GPO GPO)
 		{
 			if (!Directory.Exists(path))
 				return;
@@ -2273,7 +2428,7 @@ namespace PingCastle.Healthcheck
 			{
 				try
 				{
-					ExtractGPODelegationAnalyzeAccessControl(GPOName, Directory.GetAccessControl(dirname), dirname, (path == dirname));
+					ExtractGPODelegationAnalyzeAccessControl(GPO, Directory.GetAccessControl(dirname), dirname, (path == dirname));
 				}
 				catch (Exception)
 				{
@@ -2283,7 +2438,7 @@ namespace PingCastle.Healthcheck
 			{
 				try
 				{
-					ExtractGPODelegationAnalyzeAccessControl(GPOName, File.GetAccessControl(filename), filename, false);
+					ExtractGPODelegationAnalyzeAccessControl(GPO, File.GetAccessControl(filename), filename, false);
 				}
 				catch (Exception)
 				{
@@ -2291,13 +2446,14 @@ namespace PingCastle.Healthcheck
 			}
 		}
 
-		void ExtractGPODelegationAnalyzeAccessControl(string GPOName, FileSystemSecurity security, string name, bool includeInherited)
+		void ExtractGPODelegationAnalyzeAccessControl(GPO GPO, FileSystemSecurity security, string name, bool includeInherited)
 		{
 			foreach (var value in AnalyzeFileSystemSecurity(security, includeInherited))
 			{
 				healthcheckData.GPODelegation.Add(new GPODelegationData()
 				{
-					GPOName = GPOName,
+					GPOName = GPO.DisplayName,
+					GPOId = GPO.InternalName,
 					Item = name,
 					Right = value.Key,
 					Account = value.Value,
@@ -2335,32 +2491,56 @@ namespace PingCastle.Healthcheck
 		}
 
 
-        private void GetGPOList(ADDomainInfo domainInfo, ADWebService adws, Dictionary<string, string> GPOList, List<string> GPOListDisabled)
-        {
-            string[] properties = new string[] {
-                        "distinguishedName",
-                        "name",
-                        "displayName",
-                        "flags",
-            };
+		private void GetGPOList(ADDomainInfo domainInfo, ADWebService adws, Dictionary<string, GPO> GPOList)
+		{
+			string[] properties = new string[] {
+						"distinguishedName",
+						"name",
+						"displayName",
+						"flags",
+			};
 
-            WorkOnReturnedObjectByADWS callback =
-                (ADItem x) =>
-                {
-                    string GPOName = x.Name.ToLowerInvariant();
-                    if (!GPOList.ContainsKey(GPOName))
-                        GPOList.Add(GPOName, x.DisplayName);
-                    if (x.Flags == 3)
-                    {
-                        GPOListDisabled.Add(x.Name.ToLowerInvariant());
-                    }
-                };
+			WorkOnReturnedObjectByADWS callback =
+				(ADItem x) =>
+				{
+					string GPOName = x.Name.ToLowerInvariant();
+					if (!GPOList.ContainsKey(x.Name))
+						GPOList.Add(x.Name, new GPO() { 
+							InternalName = x.Name,
+							DisplayName = x.DisplayName,
+							IsDisabled = (x.Flags == 3),
+							DN = x.DistinguishedName,
+							AppliedTo = new List<string>(),
+						});
+				};
 
+			adws.Enumerate(domainInfo.DefaultNamingContext, "(objectClass=groupPolicyContainer)", properties, callback);
 
-            adws.Enumerate(domainInfo.DefaultNamingContext, "(objectClass=groupPolicyContainer)", properties, callback);
-        }
+			string[] GPproperties = new string[] {
+						"distinguishedName",
+						"gPLink",
+			};
 
-        private void ExtractGPOLoginScript(ADDomainInfo domainInfo, DirectoryInfo directoryInfo, string GPOName)
+			WorkOnReturnedObjectByADWS callback2 =
+				(ADItem x) =>
+				{
+					foreach (var dn in x.GetApplicableGPO())
+					{
+						foreach (var gpo in GPOList.Keys)
+						{
+							if (string.Equals(GPOList[gpo].DN, dn, StringComparison.OrdinalIgnoreCase))
+							{
+								GPOList[gpo].AppliedTo.Add(x.DistinguishedName);
+								break;
+							}
+						}
+					}
+				};
+
+			adws.Enumerate(domainInfo.DefaultNamingContext, "(gPLink=*)", GPproperties, callback2);
+		}
+
+		private void ExtractGPOLoginScript(ADDomainInfo domainInfo, DirectoryInfo directoryInfo, GPO GPO)
         {
             foreach (string gpoType in new[] { "User", "Machine" })
             {
@@ -2371,11 +2551,11 @@ namespace PingCastle.Healthcheck
                     {
                         try
                         {
-							ParseGPOLoginScript(domainInfo, path, GPOName, gpoType, filename);
+							ParseGPOLoginScript(domainInfo, path, GPO, gpoType, filename);
                         }
                         catch (Exception ex)
                         {
-                            Trace.WriteLine("Unable to parse " + GPOName + " " + filename);
+                            Trace.WriteLine("Unable to parse " + GPO.DisplayName + " " + filename);
                             Trace.WriteLine("Exception " + ex.Message);
                             Trace.WriteLine(ex.StackTrace);
                         }
@@ -2384,7 +2564,7 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private void ParseGPOLoginScript(ADDomainInfo domainInfo, string path, string GPOName, string gpoType, string filename)
+		private void ParseGPOLoginScript(ADDomainInfo domainInfo, string path, GPO GPO, string gpoType, string filename)
         {
             StreamReader file = new System.IO.StreamReader(path);
             string line = null;
@@ -2430,7 +2610,8 @@ namespace PingCastle.Healthcheck
                     break;
                 }
                 HealthcheckGPOLoginScriptData loginscript = new HealthcheckGPOLoginScriptData();
-                loginscript.GPOName = GPOName;
+                loginscript.GPOName = GPO.DisplayName;
+				loginscript.GPOId = GPO.InternalName;
                 loginscript.Action = "Logon";
 				loginscript.Source = filename + " (" + (gpoType == "Machine" ? "Computer" : "User") + " section)";
                 loginscript.CommandLine = logonscript[i + "cmdline"];
@@ -2451,7 +2632,8 @@ namespace PingCastle.Healthcheck
                     break;
                 }
                 HealthcheckGPOLoginScriptData loginscript = new HealthcheckGPOLoginScriptData();
-                loginscript.GPOName = GPOName;
+				loginscript.GPOName = GPO.DisplayName ;
+				loginscript.GPOId = GPO.InternalName;
 				loginscript.Action = "Logoff";
 				loginscript.Source = filename + " (" + (gpoType == "Machine" ? "Computer" : "User") + " section)";
                 loginscript.CommandLine = logoffscript[i + "cmdline"];
@@ -2467,7 +2649,7 @@ namespace PingCastle.Healthcheck
             }
         }
 
-		private void ExtractGPPFile(string path, string GPOName, ADDomainInfo domainInfo, string UserOrComputer)
+		private void ExtractGPPFile(string path, GPO GPO, ADDomainInfo domainInfo, string UserOrComputer)
 		{
 			XmlDocument doc = new XmlDocument();
 			doc.Load(path);
@@ -2485,7 +2667,8 @@ namespace PingCastle.Healthcheck
 				if (!fromPath.Value.StartsWith("\\\\"))
 					continue;
 				var file = new GPPFileDeployed();
-				file.GPOName = GPOName;
+				file.GPOName = GPO.DisplayName;
+				file.GPOId = GPO.InternalName;
 				file.Type = "Files (" + UserOrComputer + " section)";
 				file.FileName = fromPath.Value;
 				file.Delegation = new List<HealthcheckScriptDelegationData>();
@@ -2506,7 +2689,7 @@ namespace PingCastle.Healthcheck
 			}
 		}
 
-		private void ExtractGPPPassword(string shortname, string fullname, string GPOName)
+		private void ExtractGPPPassword(string shortname, string fullname, GPO GPO, string alternateNameIfGPODoesNotExists)
 		{
 			string[] xpaths = null;
 			string xpathUser = "Properties/@userName";
@@ -2553,7 +2736,8 @@ namespace PingCastle.Healthcheck
 					if (String.IsNullOrEmpty(password.Value))
 						continue;
 					GPPPassword PasswordData = new GPPPassword();
-					PasswordData.GPOName = GPOName;
+					PasswordData.GPOName = (GPO == null ? alternateNameIfGPODoesNotExists : GPO.DisplayName);
+					PasswordData.GPOId = (GPO == null ? null : GPO.InternalName);
 					PasswordData.Password = DecodeGPPPassword(password.Value);
 
 					XmlNode userNameNode = node.SelectSingleNode(xpathUser);
@@ -2637,27 +2821,25 @@ namespace PingCastle.Healthcheck
             return decrypted;
         }
 
-        private void ExtractGPPPrivilegePasswordLsaSettingEtc(string filename, string GPOName, ADDomainInfo domainInfo)
+        private void ExtractGPPPrivilegePasswordLsaSettingEtc(string filename, GPO GPO, ADDomainInfo domainInfo)
         {
-			bool isDCGPO = filename.Contains("\\{6AC1786C-016F-11D2-945F-00C04fB984F9}\\");
 			using (StreamReader file = new System.IO.StreamReader(filename))
             {
                 string line;
                 while ((line = file.ReadLine()) != null)
                 {
-                    SubExtractPrivilege(line, GPOName, domainInfo);
-					if (isDCGPO)
-						SubExtractDCGPOPrivilege(line, GPOName, domainInfo);
-                    SubExtractLsaSettings(line, GPOName);
-                    SubExtractLsaSettingsBis(line, GPOName);
-                    SubExtractPasswordSettings(line, GPOName);
-                    SubExtractGroupMembership(line, GPOName, domainInfo);
+					SubExtractPrivilege(line, GPO, domainInfo);
+					SubExtractDCGPOPrivilege(line, GPO, domainInfo);
+					SubExtractLsaSettings(line, GPO);
+					SubExtractLsaSettingsBis(line, GPO);
+					SubExtractPasswordSettings(line, GPO);
+					SubExtractGroupMembership(line, GPO, domainInfo);
+                    SubExtractSimpleAuditData(line, GPO);
                 }
             }
         }
 
-
-        private void SubExtractGroupMembership(string line, string GPOName, ADDomainInfo domainInfo)
+		private void SubExtractGroupMembership(string line, GPO GPO, ADDomainInfo domainInfo)
         {
             try
             {
@@ -2734,7 +2916,8 @@ namespace PingCastle.Healthcheck
                     }
                     GPOMembership membership = new GPOMembership();
                     healthcheckData.GPOLocalMembership.Add(membership);
-                    membership.GPOName = GPOName;
+					membership.GPOName = GPO.DisplayName;
+					membership.GPOId = GPO.InternalName;
                     if (MemberOf)
                     {
                         membership.User = user2;
@@ -2749,11 +2932,48 @@ namespace PingCastle.Healthcheck
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("Exception " + ex.Message +" while analysing membership of " + GPOName);
+				Trace.WriteLine("Exception " + ex.Message + " while analysing membership of " + GPO.DisplayName);
             }
         }
 
-        private void SubExtractPasswordSettings(string line, string GPOName)
+        // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/01f8e057-f6a8-4d6e-8a00-99bcd241b403
+        private void SubExtractSimpleAuditData(string line, GPO GPO)
+        {
+            string[] AuditSettings = new string[] {
+                "AuditSystemEvents",
+                "AuditLogonEvents",
+                "AuditPrivilegeUse",
+                "AuditPolicyChange",
+                "AuditAccountManage",
+                "AuditProcessTracking",
+                "AuditDSAccess",
+                "AuditObjectAccess",
+                "AuditAccountLogon",
+            };
+            foreach (string auditSetting in AuditSettings)
+            {
+                if (line.StartsWith(auditSetting, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    int pos = line.IndexOf('=') + 1;
+                    if (pos > 1)
+                    {
+                        var a = new GPOAuditSimpleData()
+                        {
+                            GPOId = GPO.InternalName,
+                            GPOName = GPO.DisplayName,
+                            Category = auditSetting,
+                            Value = int.Parse(line.Substring(pos)),
+                        };
+                        lock (healthcheckData.GPOAuditSimple)
+                        {
+                            healthcheckData.GPOAuditSimple.Add(a);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void SubExtractPasswordSettings(string line, GPO GPO)
         {
             string[] PasswordSettings = new string[] {
                 "MinimumPasswordAge",
@@ -2781,7 +3001,7 @@ namespace PingCastle.Healthcheck
                             GPPSecurityPolicy PSO = null;
                             foreach (GPPSecurityPolicy policy in healthcheckData.GPPPasswordPolicy)
                             {
-                                if (policy.GPOName == GPOName)
+								if (policy.GPOId == GPO.InternalName)
                                 {
                                     PSO = policy;
                                     break;
@@ -2790,7 +3010,8 @@ namespace PingCastle.Healthcheck
                             if (PSO == null)
                             {
                                 PSO = new GPPSecurityPolicy();
-                                PSO.GPOName = GPOName;
+								PSO.GPOName = GPO.DisplayName;
+								PSO.GPOId = GPO.InternalName;
                                 healthcheckData.GPPPasswordPolicy.Add(PSO);
                                 PSO.Properties = new List<GPPSecurityPolicyProperty>();
                             }
@@ -2802,7 +3023,7 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private void SubExtractLsaSettings(string line, string GPOName)
+        private void SubExtractLsaSettings(string line, GPO GPO)
         {
             string[] LsaSettings = new string[] {
                 @"EveryoneIncludesAnonymous",
@@ -2843,7 +3064,7 @@ namespace PingCastle.Healthcheck
                                     continue;
                                 if (lsasetting == "RestrictAnonymousSAM" && value == 1)
                                     continue;
-								AddGPOLsaPolicy(GPOName, lsasetting, value);
+								AddGPOLsaPolicy(GPO, lsasetting, value);
                             }
                         }
                     }
@@ -2851,30 +3072,30 @@ namespace PingCastle.Healthcheck
             }
 			else if (line.StartsWith(@"MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Setup\RecoveryConsole\SecurityLevel=4,1", StringComparison.InvariantCultureIgnoreCase))
 			{
-				AddGPOLsaPolicy(GPOName, "recoveryconsole_securitylevel", 1);
+				AddGPOLsaPolicy(GPO, "recoveryconsole_securitylevel", 1);
 			}
 			else if (line.StartsWith(@"MACHINE\System\CurrentControlSet\Services\LDAP\LDAPClientIntegrity=4,0", StringComparison.InvariantCultureIgnoreCase))
 			{
-				AddGPOLsaPolicy(GPOName, "LDAPClientIntegrity", 0);
+				AddGPOLsaPolicy(GPO, "LDAPClientIntegrity", 0);
 			}
 			else if (line.StartsWith(@"MACHINE\System\CurrentControlSet\Services\Netlogon\Parameters\RefusePasswordChange=4,1", StringComparison.InvariantCultureIgnoreCase))
 			{
-				AddGPOLsaPolicy(GPOName, "RefusePasswordChange", 1);
+				AddGPOLsaPolicy(GPO, "RefusePasswordChange", 1);
 			}
 			else if (line.StartsWith(@"MACHINE\System\CurrentControlSet\Services\LanManServer\Parameters\EnableSecuritySignature=4,0", StringComparison.InvariantCultureIgnoreCase))
 			{
-				AddGPOLsaPolicy(GPOName, "EnableSecuritySignature", 0);
+				AddGPOLsaPolicy(GPO, "EnableSecuritySignature", 0);
 			}
         }
 
-		private void AddGPOLsaPolicy(string GPOName, string setting, int value)
+		private void AddGPOLsaPolicy(GPO GPO, string setting, int value)
 		{
 			lock (healthcheckData.GPOLsaPolicy)
 			{
 				GPPSecurityPolicy PSO = null;
 				foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
 				{
-					if (policy.GPOName == GPOName)
+					if (policy.GPOId == GPO.InternalName)
 					{
 						PSO = policy;
 						break;
@@ -2883,7 +3104,8 @@ namespace PingCastle.Healthcheck
 				if (PSO == null)
 				{
 					PSO = new GPPSecurityPolicy();
-					PSO.GPOName = GPOName;
+					PSO.GPOName = GPO.DisplayName;
+					PSO.GPOId = GPO.InternalName;
 					healthcheckData.GPOLsaPolicy.Add(PSO);
 					PSO.Properties = new List<GPPSecurityPolicyProperty>();
 				}
@@ -2892,7 +3114,7 @@ namespace PingCastle.Healthcheck
 		}
 
 
-        private void SubExtractLsaSettingsBis(string line, string GPOName)
+        private void SubExtractLsaSettingsBis(string line, GPO GPO)
         {
             string[] LsaSettings = new string[] {
                 @"LSAAnonymousNameLookup",
@@ -2915,7 +3137,7 @@ namespace PingCastle.Healthcheck
                             GPPSecurityPolicy PSO = null;
                             foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
                             {
-                                if (policy.GPOName == GPOName)
+								if (policy.GPOId == GPO.InternalName)
                                 {
                                     PSO = policy;
                                     break;
@@ -2924,7 +3146,8 @@ namespace PingCastle.Healthcheck
                             if (PSO == null)
                             {
                                 PSO = new GPPSecurityPolicy();
-                                PSO.GPOName = GPOName;
+								PSO.GPOName = GPO.DisplayName;
+								PSO.GPOId = GPO.InternalName;
                                 healthcheckData.GPOLsaPolicy.Add(PSO);
                                 PSO.Properties = new List<GPPSecurityPolicyProperty>();
                             }
@@ -2935,7 +3158,7 @@ namespace PingCastle.Healthcheck
             }
         }
 
-		private void SubExtractPrivilege(string line, string GPOName, ADDomainInfo domainInfo)
+		private void SubExtractPrivilege(string line, GPO GPO, ADDomainInfo domainInfo)
 		{
 			string[] privileges = new string[] {
 				"SeBackupPrivilege",
@@ -2951,6 +3174,7 @@ namespace PingCastle.Healthcheck
 				"SeRestorePrivilege",
 				"SeImpersonatePrivilege",
 				"SeAssignPrimaryTokenPrivilege",
+				"SeSecurityPrivilege",
 			};
 			foreach (string privilege in privileges)
 			{
@@ -2973,7 +3197,8 @@ namespace PingCastle.Healthcheck
 							{
 								healthcheckData.GPPRightAssignment.Add(right);
 							}
-							right.GPOName = GPOName;
+							right.GPOName = GPO.DisplayName;
+							right.GPOId = GPO.InternalName;
 							right.Privilege = privilege;
 							right.User = user2;
 						}
@@ -2983,11 +3208,19 @@ namespace PingCastle.Healthcheck
 			}
 		}
 
-		private void SubExtractDCGPOPrivilege(string line, string GPOName, ADDomainInfo domainInfo)
+		private void SubExtractDCGPOPrivilege(string line, GPO GPO, ADDomainInfo domainInfo)
 		{
 			string[] privileges = new string[] {
 				"SeInteractiveLogonRight",
 				"SeRemoteInteractiveLogonRight",
+				"SeNetworkLogonRight",
+				"SeServiceLogonRight",
+				"SeBatchLogonRight",
+				"SeDenyServiceLogonRight",
+				"SeDenyRemoteInteractiveLogonRight",
+				"SeDenyNetworkLogonRight",
+				"SeDenyInteractiveLogonRight",
+				"SeDenyBatchLogonRight",
 			};
 			foreach (string privilege in privileges)
 			{
@@ -3006,12 +3239,13 @@ namespace PingCastle.Healthcheck
 								continue;
 
 							GPPRightAssignment right = new GPPRightAssignment();
-							lock (healthcheckData.GPPRightAssignment)
+							lock (healthcheckData.GPPLoginAllowedOrDeny)
 							{
-								healthcheckData.GPPRightAssignment.Add(right);
+								healthcheckData.GPPLoginAllowedOrDeny.Add(right);
 							}
-							right.GPOName = GPOName;
-							right.Privilege = privilege + " on DC";
+							right.GPOName = GPO.DisplayName;
+							right.GPOId = GPO.InternalName;
+							right.Privilege = privilege;
 							right.User = user2;
 						}
 
@@ -3022,7 +3256,7 @@ namespace PingCastle.Healthcheck
 
 		private string ConvertGPOUserToUserFriendlyUser(string user, ADDomainInfo domainInfo)
 		{
-			// ignore well known sid
+			/*// ignore well known sid
 			// 
 			if (user.StartsWith("*S-1-5-32-", StringComparison.InvariantCultureIgnoreCase))
 			{
@@ -3048,7 +3282,7 @@ namespace PingCastle.Healthcheck
 			{
 				return null;
 			}
-
+			*/
 			if (user == "*S-1-1-0")
 			{
 				return "Everyone";
@@ -3065,6 +3299,10 @@ namespace PingCastle.Healthcheck
 			{
 				return "Users";
 			}
+			else if (user == "*S-1-5-32-544")
+			{
+				return "Administrators";
+			}
 			else if (user.StartsWith("*S-1", StringComparison.InvariantCultureIgnoreCase))
 			{
 				if (user.EndsWith("-513"))
@@ -3074,6 +3312,10 @@ namespace PingCastle.Healthcheck
 				else if (user.EndsWith("-515"))
 				{
 					return "Domain Computers";
+				}
+				else if (user.EndsWith("-512"))
+				{
+					return "Domain Admins";
 				}
 				else
 				{
@@ -3085,6 +3327,44 @@ namespace PingCastle.Healthcheck
 				return user;
 			}
 		}
+
+        private void ExtractGPOAudit(string path, GPO GPO, ADDomainInfo domainInfo)
+        {
+            try
+            {
+                using (TextReader tr = new StreamReader(path))
+                {
+                    string line = tr.ReadLine();
+                    // skip first line
+                    if (line != null)
+                        line = tr.ReadLine();
+                    while ((line = tr.ReadLine()) != null)
+                    {
+                        var b = line.Split(',');
+                        if (b.Length < 7)
+                            continue;
+                        var sub = b[3];
+                        if (string.IsNullOrEmpty(sub))
+                            continue;
+                        var a = new GPOAuditAdvancedData()
+                        {
+                            GPOId = GPO.InternalName,
+                            GPOName = GPO.DisplayName,
+                            SubCategory = new Guid(sub),
+                            Value = int.Parse(b[6]),
+                        };
+                        lock (healthcheckData.GPOAuditAdvanced)
+                        {
+                            healthcheckData.GPOAuditAdvanced.Add(a);
+                        }                        
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("Exception when analyzing GPO " + ex.Message);
+            }
+        }
 
 		private void GeneratePSOData(ADDomainInfo domainInfo, ADWebService adws, NetworkCredential credential)
 		{
@@ -3193,6 +3473,15 @@ namespace PingCastle.Healthcheck
                 {
                     if (!privilegedUser.Contains(x.DistinguishedName))
                     {
+						// ignore honey pot accounts
+						if (healthcheckData.ListHoneyPot != null)
+						{
+							foreach (var u in healthcheckData.ListHoneyPot)
+							{
+								if (u.DistinguishedName == x.DistinguishedName)
+									return;
+							}
+						}
                         healthcheckData.AdminSDHolderNotOK.Add(GetAccountDetail(x));
                     }
                 };
@@ -3409,6 +3698,7 @@ namespace PingCastle.Healthcheck
 						{
 							DC.RemoteSpoolerDetected = SpoolerScanner.CheckIfTheSpoolerIsActive(dns);
 						}
+						DC.LDAPSProtocols = GenerateTLSConnectionInfo(dns);
                     }
                 };
 
@@ -3459,6 +3749,46 @@ namespace PingCastle.Healthcheck
                     healthcheckData.DomainControllerWithNullSessionCount++;
             }
         }
+
+		private List<string> GenerateTLSConnectionInfo(string dns)
+		{
+			var protocols = new List<string>();
+			foreach (SslProtocols protocol in Enum.GetValues(typeof(SslProtocols)))
+			{
+				if (protocol == SslProtocols.None)
+					continue;
+				if (protocol == SslProtocols.Default)
+					continue;
+				try
+				{
+					using (TcpClient client = new TcpClient(dns, 636))
+					{
+						using (SslStream sslstream = new SslStream(client.GetStream(), false, TlsValidationCallback, null))
+						{
+							Trace.WriteLine(protocol + " before auth for " + dns);
+							sslstream.AuthenticateAsClient(dns, null, protocol, false);
+							Trace.WriteLine(protocol + " supported for " + dns);
+							protocols.Add(protocol.ToString());
+						}
+					}
+				}
+				catch (SocketException)
+				{
+					Trace.WriteLine("LDAPS not supported for " + dns);
+					return null;
+				}
+				catch (Exception ex)
+				{
+					Trace.WriteLine(protocol + " not supported for " + dns + " (" + ex.Message + (ex.InnerException == null ? null : " - " + ex.InnerException.Message) + ")");
+				}
+			}
+			return protocols;
+		}
+
+		private bool TlsValidationCallback(object sender, X509Certificate CACert, X509Chain CAChain, SslPolicyErrors sslPolicyErrors)
+		{
+			return true;
+		}
 
         private void GenerateNetworkData(ADDomainInfo domainInfo, ADWebService adws)
         {

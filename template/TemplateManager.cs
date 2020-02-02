@@ -87,5 +87,55 @@ namespace PingCastle.template
 		{
 			return LoadTemplate(typeof(TemplateManager).Namespace + ".jquery.dataTables.min.js.gz");
 		}
+
+		public static string LoadReportBaseCss()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportBase.css.gz");
+		}
+
+		public static string LoadReportRiskControlsCss()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportRiskControls.css.gz");
+		}
+
+		public static string LoadReportHealthCheckConsolidationCss()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportHealthCheckConsolidation.css.gz");
+		}
+
+		public static string LoadReportHealthCheckRulesCss()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportHealthCheckRules.css.gz");
+		}
+
+		public static string LoadReportCompromiseGraphCss()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportCompromiseGraph.css.gz");
+		}
+
+		public static string LoadReportCompromiseGraphJs()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportCompromiseGraph.js.gz");
+		}
+
+		public static string LoadReportMapBuilderCss()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportMapBuilder.css.gz");
+		}
+
+		public static string LoadReportMapBuilderJs()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportMapBuilder.js.gz");
+		}
+
+		public static string LoadReportNetworkMapCss()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportNetworkMap.css.gz");
+		}
+
+		public static string LoadReportNetworkMapJs()
+		{
+			return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportNetworkMap.js.gz");
+		}
 	}
 }

@@ -5,12 +5,12 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.Graph.Database;
-using PingCastle.Export;
+using PingCastle.Graph.Export;
 using PingCastle.Healthcheck;
 using PingCastle.Scanners;
 using PingCastle.misc;
 using PingCastle.RPC;
-using PingCastle.Reporting;
+using PingCastle.Graph.Reporting;
 using PingCastle.shares;
 using System;
 using System.Collections.Generic;
@@ -425,12 +425,6 @@ namespace PingCastle
 							var mapReport = new ReportNetworkMap();
 							mapReport.GenerateReportFile(hcconso, License, "ad_hc_hilbert_map.html");
 						}
-						else if (typeof(T) == typeof(CompromiseGraphData))
-						{
-							var gcconso = consolidation as PingCastleReportCollection<CompromiseGraphData>;
-							var report = new ReportCompromiseGraphConsolidation();
-							report.GenerateReportFile(gcconso, License, "ad_cg_summary.html");
-						}
 					}
 				);
 		}
@@ -467,18 +461,9 @@ namespace PingCastle
 							return;
 						}
 						var fi = new FileInfo(FileOrDirectory);
-						if (fi.Name.StartsWith("ad_cg_"))
-						{
-							CompromiseGraphData data = DataHelper<CompromiseGraphData>.LoadXml(FileOrDirectory);
-							var report = new ReportCompromiseGraph();
-							report.GenerateReportFile(data, License, data.GetHumanReadableFileName());
-						}
-						else
-						{
-							var healthcheckData = DataHelper<HealthcheckData>.LoadXml(FileOrDirectory);
-							var endUserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<HealthcheckData>();
-							endUserReportGenerator.GenerateReportFile(healthcheckData, License, healthcheckData.GetHumanReadableFileName());
-						}
+						var healthcheckData = DataHelper<HealthcheckData>.LoadXml(FileOrDirectory);
+						var endUserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<HealthcheckData>();
+						endUserReportGenerator.GenerateReportFile(healthcheckData, License, healthcheckData.GetHumanReadableFileName());
 					}
 				);
 		}
@@ -505,16 +490,9 @@ namespace PingCastle
 							healthcheckData.Level = ExportLevel;
 							xml = DataHelper<HealthcheckData>.SaveAsXml(healthcheckData, newfile, EncryptReport);
 						}
-						else if (fi.Name.StartsWith("ad_cg_"))
-						{
-							CompromiseGraphData data = DataHelper<CompromiseGraphData>.LoadXml(FileOrDirectory);
-							domainFQDN = data.DomainFQDN;
-							DisplayAdvancement("Regenerating xml " + (EncryptReport ? " (encrypted)" : ""));
-							xml = DataHelper<CompromiseGraphData>.SaveAsXml(data, newfile, EncryptReport);
-						}
 						else
 						{
-							DisplayAdvancement("file ignored because it does not start with ad_hc_ nor ad_cg_");
+							DisplayAdvancement("file ignored because it does not start with ad_hc_");
 						}
 						if (!String.IsNullOrEmpty(apiKey) && !String.IsNullOrEmpty(apiEndpoint))
 							SendViaAPI(new Dictionary<string, string>() { { fi.Name, xml } });

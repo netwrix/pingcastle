@@ -1,8 +1,10 @@
 ﻿using PingCastle.Healthcheck;
 using PingCastle.Rules;
+using PingCastle.template;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace PingCastle.Report
 {
@@ -18,95 +20,6 @@ namespace PingCastle.Report
 					count++;
 			}
 			return count;
-		}
-
-		public static string GetRiskControlStyleSheet()
-		{
-			return @"
-.model_table {
-
-}
-.model_table th {
-	padding: 5px;
-}
-.model_cell {
-	border: 2px solid black;
-	padding: 5px;
-}
-.model_empty_cell {
-}
-div_model {
-	
-}
-.model_cell.model_good {
-	//background-color: #83e043;
-	//color: #FFFFFF;
-}
-.model_cell.model_toimprove
-{
-	background-color: #ffd800;
-	//color: #FFFFFF;
-}
-.model_cell.model_info {
-	background-color: #00AAFF;
-color: #FFFFFF;
-}
-.model_cell.model_warning {
-	background-color: #ff6a00;
-color: #FFFFFF;
-}
-.model_cell.model_danger {
-	background-color: #f12828;
-color: #FFFFFF;
-}
-.model_cell  .popover{
-    max-width: 100%;
-}
-.model_cell .popover-content {
-	color: #000000;
-}
-.model_cell .popover-title {
-	color: #000000;
-}
-
-/* gauge */
-.arc
-{
-}
-.chart-first
-{
-	fill: #83e043;
-}
-.chart-second
-{
-	fill: #ffd800;
-}
-.chart-third
-{
-	fill: #ff6a00;
-}
-.chart-quart
-{
-	fill: #f12828;
-}
-
-.needle, .needle-center
-{
-	fill: #000000;
-}
-.text {
-	color: ""#112864"";
-}
-svg {
-	font: 10px sans-serif;
-}
-.indicators-border
-{
-border: 2px solid #Fa9C1A;
-margin:2px;
-padding: 2px;
-}
-";
 		}
 
 		#region indicators
@@ -448,16 +361,67 @@ padding: 2px;
 							Add(hcrule.ReportLocation);
 							Add("</p>");
 						}
-						if (rule.Details != null && rule.Details.Count > 0)
+						if (rule.Details != null && rule.Details.Count > 0 && !string.IsNullOrEmpty(rule.Details[0]))
 						{
-							Add("<p>");
-							Add(String.Join("<br>\r\n", rule.Details.ToArray()));
-							Add("</p>");
+							var test = rule.Details[0].Replace("Domain controller:","Domain_controller:").Split(' ');
+							if (test.Length > 1 && test[0].EndsWith(":"))
+							{
+								var tokens = new List<string>();
+								for (int i = 0; i < test.Length; i++)
+								{
+									if (!string.IsNullOrEmpty(test[i]) && test[i].EndsWith(":"))
+									{
+										tokens.Add(test[i]);
+									}
+								}
+								Add(@"<div class=""row"">
+			<div class=""col-md-12 table-responsive"">
+				<table class=""table table-striped table-bordered"">
+					<thead><tr>");
+								foreach(var token in tokens)
+								{
+									Add("<th>");
+									AddEncoded(token.Replace("Domain_controller:", "Domain controller:").Substring(0, token.Length - 1));
+									Add("</th>");
+								}
+								Add("</tr></thead><tbody>");
+								foreach (var d in rule.Details)
+								{
+									if (string.IsNullOrEmpty(d))
+										continue;
+									Add("<tr>");
+									var t = d.Replace("Domain controller:", "Domain_controller:").Split(' ');
+									for (int i = 0, j = 0; i < t.Length && j <= tokens.Count; i++)
+									{
+										if (j < tokens.Count && t[i] == tokens[j])
+										{
+											j++;
+											if (j != 0)
+												Add("</td>");
+											Add("<td>");
+										}
+										else
+										{
+											Add(t[i]);
+											Add(" ");
+										}
+									}
+									Add("</td>");
+									Add("</tr>");
+								}
+								Add("</tbody></table></div></div>");
+
+							}
+							else
+							{
+								Add("<p>");
+								Add(String.Join("<br>\r\n", rule.Details.ToArray()));
+								Add("</p>");
+							}
 						}
 					}
 				});
 		}
-
 		#endregion indicators
 	}
 }

@@ -24,22 +24,20 @@ namespace PingCastle.ADWS
 
         public bool LocateDomainFromNetbios(string netbios, out string domain, out string forest)
         {
-            // DS_IS_FLAT_NAME = 0x00010000,
-            // DS_RETURN_DNS_NAME = 0x40000000,
-            // DS_ONLY_LDAP_NEEDED = 0x00008000,
-            return LocateSomething(netbios, out domain, out forest, 0x40018000);
+			return LocateSomething(netbios, out domain, out forest, NativeMethods.DSGETDCNAME_FLAGS.DS_IS_FLAT_NAME |
+																	NativeMethods.DSGETDCNAME_FLAGS.DS_RETURN_DNS_NAME |
+																	NativeMethods.DSGETDCNAME_FLAGS.DS_ONLY_LDAP_NEEDED);
         }
 
         public bool LocateNetbiosFromFQDN(string fqdn, out string netbios, out string forest)
         {
-            // DS_IS_DNS_NAME = 0x00020000,
-            // DS_RETURN_FLAT_NAME = 0x80000000
-            // DS_ONLY_LDAP_NEEDED = 0x00008000,
-            return LocateSomething(fqdn, out netbios, out forest, 0x80028000);
+			return LocateSomething(fqdn, out netbios, out forest, NativeMethods.DSGETDCNAME_FLAGS.DS_IS_DNS_NAME |
+																	NativeMethods.DSGETDCNAME_FLAGS.DS_RETURN_FLAT_NAME | 
+																	NativeMethods.DSGETDCNAME_FLAGS.DS_ONLY_LDAP_NEEDED);
         }
 
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        bool LocateSomething(string intput, out string domain, out string forest, uint flag)
+		bool LocateSomething(string intput, out string domain, out string forest, NativeMethods.DSGETDCNAME_FLAGS flag)
         {
             IntPtr DomainInfoResolution;
             domain = null;

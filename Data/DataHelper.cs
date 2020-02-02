@@ -87,8 +87,9 @@ namespace PingCastle.Data
             xmlDoc.PreserveWhitespace = true;
             var nav = xmlDoc.CreateNavigator();
             using (XmlWriter wr = nav.AppendChild())
+			using( var wr2 = new SafeXmlWriter(wr))
             {
-                xs.Serialize(wr, data);
+				xs.Serialize(wr2, data);
             }
             return xmlDoc;
         }

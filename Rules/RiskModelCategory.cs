@@ -71,5 +71,7 @@ namespace PingCastle.Rules
 		GoldenTicket = 4008,
 		[Description("Backup")]
 		Backup = 4009,
+        [Description("Audit")]
+        Audit = 4010,
 	}
 }

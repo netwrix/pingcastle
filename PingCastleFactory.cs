@@ -1,7 +1,7 @@
 ﻿using PingCastle.Data;
 using PingCastle.Healthcheck;
 using PingCastle.Report;
-using PingCastle.Reporting;
+using PingCastle.Graph.Reporting;
 using PingCastle.Scanners;
 using System;
 using System.Collections.Generic;
@@ -39,10 +39,6 @@ namespace PingCastle
 			{
 				return "*ad_hc_*.xml";
 			}
-			if (typeof(T) == typeof(CompromiseGraphData))
-			{
-				return "*ad_cg_*.xml";
-			}
 			throw new NotImplementedException("No file pattern known for type " + typeof(T));
 		}
 
@@ -52,10 +48,6 @@ namespace PingCastle
 			{
 				return (IPingCastleReportUser<T>) new ReportHealthCheckSingle();
 			}
-			if (typeof(T) == typeof(CompromiseGraphData))
-			{
-				return (IPingCastleReportUser<T>)new ReportCompromiseGraph();
-			}
 			return GetImplementation<IPingCastleReportUser<T>>();
 		}
 
@@ -64,10 +56,6 @@ namespace PingCastle
 			if (typeof(T) == typeof(HealthcheckData))
 			{
 				return (IPingCastleAnalyzer<T>)new HealthcheckAnalyzer();
-			}
-			if (typeof(T) == typeof(CompromiseGraphData))
-			{
-				return (IPingCastleAnalyzer<T>)new ReportGenerator();
 			}
 			return GetImplementation<IPingCastleAnalyzer<T>>();
 		}

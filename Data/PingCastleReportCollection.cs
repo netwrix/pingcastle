@@ -190,6 +190,8 @@ namespace PingCastle.Data
 
         public bool HasDomainAmbigiousName(DomainKey domainKey)
         {
+			if (domainKey == null || string.IsNullOrEmpty(domainKey.DomainName))
+				return false;
             if (AmbigiousNameReference.ContainsKey(domainKey.DomainName))
                 return AmbigiousNameReference[domainKey.DomainName].Count > 1;
             return true;

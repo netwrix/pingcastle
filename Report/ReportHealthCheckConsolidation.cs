@@ -35,17 +35,6 @@ namespace PingCastle.Report
 
         protected override void GenerateFooterInformation()
         {
-			AddBeginScript();
-			AddLine(TemplateManager.LoadJqueryDatatableJs());
-			AddLine(TemplateManager.LoadDatatableJs());
-			AddLine(@"
-$('table').not('.model_table').DataTable(
-    {
-        'paging': false,
-        'searching': false
-    }
-);
-			</script>");
         }
 
         protected override void GenerateTitleInformation()
@@ -54,147 +43,20 @@ $('table').not('.model_table').DataTable(
 			Add(DateTime.Now.ToString("yyyy-MM-dd"));
         }
 
-        protected override void GenerateHeaderInformation()
+        protected override void ReferenceJSAndCSS()
         {
-			AddBeginStyle();
-			AddLine(TemplateManager.LoadDatatableCss());
-			AddLine(GetStyleSheetTheme());
-			AddLine(GetStyleSheet());
-			AddLine(@"</style>"); 
-        }
-
-        public static string GetStyleSheet()
-        {
-            return @"
-.panel.with-nav-tabs .panel-heading{
-    padding: 5px 5px 0 5px;
-}
-.panel.with-nav-tabs .nav-tabs{
-	border-bottom: none;
-}
-.panel.with-nav-tabs .nav-justified{
-	margin-bottom: -1px;
-}
-/********************************************************************/
-/*** PANEL DEFAULT ***/
-.with-nav-tabs.panel-default .nav-tabs > li > a,
-.with-nav-tabs.panel-default .nav-tabs > li > a:hover,
-.with-nav-tabs.panel-default .nav-tabs > li > a:focus {
-    color: #777;
-}
-.with-nav-tabs.panel-default .nav-tabs > .open > a,
-.with-nav-tabs.panel-default .nav-tabs > .open > a:hover,
-.with-nav-tabs.panel-default .nav-tabs > .open > a:focus,
-.with-nav-tabs.panel-default .nav-tabs > li > a:hover,
-.with-nav-tabs.panel-default .nav-tabs > li > a:focus {
-    color: #777;
-	background-color: #ddd;
-	border-color: transparent;
-}
-.with-nav-tabs.panel-default .nav-tabs > li.active > a,
-.with-nav-tabs.panel-default .nav-tabs > li.active > a:hover,
-.with-nav-tabs.panel-default .nav-tabs > li.active > a:focus {
-	color: #555;
-	background-color: #fff;
-	border-color: #ddd;
-	border-bottom-color: transparent;
-}
-.with-nav-tabs.panel-default .nav-tabs > li.dropdown .dropdown-menu {
-    background-color: #f5f5f5;
-    border-color: #ddd;
-}
-.with-nav-tabs.panel-default .nav-tabs > li.dropdown .dropdown-menu > li > a {
-    color: #777;   
-}
-.with-nav-tabs.panel-default .nav-tabs > li.dropdown .dropdown-menu > li > a:hover,
-.with-nav-tabs.panel-default .nav-tabs > li.dropdown .dropdown-menu > li > a:focus {
-    background-color: #ddd;
-}
-.with-nav-tabs.panel-default .nav-tabs > li.dropdown .dropdown-menu > .active > a,
-.with-nav-tabs.panel-default .nav-tabs > li.dropdown .dropdown-menu > .active > a:hover,
-.with-nav-tabs.panel-default .nav-tabs > li.dropdown .dropdown-menu > .active > a:focus {
-    color: #fff;
-    background-color: #555;
-}
-
-.model_table {
-
-}
-.model_table th {
-	padding: 5px;
-}
-.model_cell {
-	border: 2px solid black;
-	padding: 5px;
-}
-.model_empty_cell {
-}
-div_model {
-	
-}
-.model_cell.model_good {
-	//background-color: #83e043;
-	//color: #FFFFFF;
-}
-.model_cell.model_toimprove
-{
-	background-color: #ffd800;
-	//color: #FFFFFF;
-}
-.model_cell.model_info {
-	background-color: #00AAFF;
-color: #FFFFFF;
-}
-.model_cell.model_warning {
-	background-color: #ff6a00;
-color: #FFFFFF;
-}
-.model_cell.model_danger {
-	background-color: #f12828;
-color: #FFFFFF;
-}
-.model_cell  .popover{
-    max-width: 100%;
-}
-.model_cell .popover-content {
-	color: #000000;
-}
-.model_cell .popover-title {
-	color: #000000;
-}
-
-/* gauge */
-.arc
-{
-}
-.chart-first
-{
-	fill: #83e043;
-}
-.chart-second
-{
-	fill: #ffd800;
-}
-.chart-third
-{
-	fill: #ff6a00;
-}
-.chart-quart
-{
-	fill: #f12828;
-}
-
-.needle, .needle-center
-{
-	fill: #000000;
-}
-.text {
-	color: ""#112864"";
-}
-svg {
-	font: 10px sans-serif;
-}
-";
+			AddStyle(TemplateManager.LoadDatatableCss());
+			AddStyle(TemplateManager.LoadReportBaseCss());
+			AddStyle(TemplateManager.LoadReportHealthCheckConsolidationCss());
+			AddScript(TemplateManager.LoadJqueryDatatableJs());
+			AddScript(TemplateManager.LoadDatatableJs());
+			AddScript(@"
+$('table').not('.model_table').DataTable(
+    {
+        'paging': false,
+        'searching': false
+    }
+);");
         }
 
 		protected override void Hook(StringBuilder sbHtml)
@@ -247,6 +109,7 @@ svg {
             GenerateTabHeader("User Information", selectedTab);
             GenerateTabHeader("Computer Information", selectedTab);
             GenerateTabHeader("Admin Groups", selectedTab);
+			GenerateTabHeader("Control Paths", selectedTab);
             GenerateTabHeader("Trusts", selectedTab);
             GenerateTabHeader("Anomalies", selectedTab);
             GenerateTabHeader("Password Policies", selectedTab);
@@ -265,6 +128,7 @@ svg {
             GenerateSectionFluid("User Information", GenerateUserInformation, selectedTab);
             GenerateSectionFluid("Computer Information", GenerateComputerInformation, selectedTab);
             GenerateSectionFluid("Admin Groups", GenerateAdminGroupsInformation, selectedTab);
+			GenerateSectionFluid("Control Paths", GenerateControlPathsInformation, selectedTab);
             GenerateSectionFluid("Trusts", GenerateTrustInformation, selectedTab);
             GenerateSectionFluid("Anomalies", GenerateAnomalyDetail, selectedTab);
             GenerateSectionFluid("Password Policies", GeneratePasswordPoliciesDetail, selectedTab);
@@ -278,41 +142,29 @@ svg {
 
         private void GenerateRulesMatched()
         {
-            Add(@"
-		<div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-					<thead><tr> 
-						<th>Domain</th>
-						<th>Category</th>
-						<th>Rule</th>
-						<th>Score</th>
-						<th>Description</th>
-						<th>Rationale</th>
-						</tr>
-					</thead>
-					<tbody>
-");
+			AddBeginTable();
+			AddHeaderText("Domain");
+			AddHeaderText("Category");
+			AddHeaderText("Rule");
+			AddHeaderText("Score");
+			AddHeaderText("Description");
+			AddHeaderText("Rationale");
+			AddBeginTableData();
             foreach (HealthcheckData data in Report)
             {
                 foreach (HealthcheckRiskRule rule in data.RiskRules)
                 {
-                    Add(@"
-						<tr>
-							<td class='text'>" + PrintDomain(data.Domain) + @"</td>
-							<td class='text'>" + rule.Category + @"</td>
-							<td class='text'>" + rule.RiskId + @"</td>
-							<td class='num'>" + rule.Points + @"</td>
-							<td class='text'>" + RuleSet<HealthcheckData>.GetRuleDescription(rule.RiskId) + @"</td>
-							<td class='text'>" + rule.Rationale + @"</td>
-						</tr>");
+					AddBeginRow();
+                    AddPrintDomain(data.Domain);
+					AddCellText(ReportHelper.GetEnumDescription(rule.Category));
+					AddCellText(rule.RiskId);
+					AddCellNum(rule.Points);
+					AddCellText(RuleSet<HealthcheckData>.GetRuleDescription(rule.RiskId));
+					AddCellText(rule.Rationale);
+					AddEndRow();
                 }
             }
-            Add(@"
-					</tbody>
-				</table>
-			</div>
-		</div>");
+            AddEndTable();
         }
 
         #region indicators
@@ -382,248 +234,200 @@ svg {
 			<a data-toggle=""collapse"" data-target=""#scoreDetail"">
 				<h2>Score detail</h2>
 			</a>
-		</div></div>
-        <div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-				<thead><tr> 
-					<th>Domain</th>
-					<th>Domain Risk Level</th>
-					<th>Stale objects</th>
-					<th>Privileged accounts</th>
-					<th>Trusts</th>
-					<th>Anomalies</th>
-					<th>Generated</th>
-					</tr>
-				</thead>
-				<tbody>
-");
-            foreach (HealthcheckData data in Report)
+		</div></div>");
+			AddBeginTable();
+			AddHeaderText("Domain");
+			AddHeaderText("Domain Risk Level");
+			AddHeaderText("Stale objects");
+			AddHeaderText("Privileged accounts");
+			AddHeaderText("Trusts");
+			AddHeaderText("Anomalies");
+			AddHeaderText("Generated");
+			AddBeginTableData();
+			foreach (HealthcheckData data in Report)
             {
-                Add(@"
-					<tr>
-						<td class='text'>" + PrintDomain(data.Domain) + @"</td>
-						<td class='num'>" + data.GlobalScore + @"</td>
-						<td class='num'>" + data.StaleObjectsScore + @"</td>
-						<td class='num'>" + data.PrivilegiedGroupScore + @"</td>
-						<td class='num'>" + data.TrustScore + @"</td>
-						<td class='num'>" + data.AnomalyScore + @"</td>
-						<td class='text'>" + data.GenerationDate.ToString("u") + @"</td>
-					</tr>");
+				AddBeginRow();
+                AddPrintDomain(data.Domain);
+				AddCellNumScore(data.GlobalScore);
+				AddCellNumScore(data.StaleObjectsScore);
+				AddCellNumScore(data.PrivilegiedGroupScore);
+				AddCellNumScore(data.TrustScore);
+				AddCellNumScore(data.AnomalyScore);
+				AddCellDate(data.GenerationDate);
+				AddEndRow();
             }
-            Add(@"
-				</tbody>
-				</table>
-			</div>
-		</div>
-");
+            AddEndTable();
         }
         #endregion indicators
 
         #region domain information
         private void GenerateDomainInformation()
         {
-            Add(@"
-		<div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-					<thead><tr> 
-						<th>Domain</th>
-						<th>Netbios Name</th>
-						<th>Domain Functional Level</th>
-						<th>Forest Functional Level</th>
-						<th>Creation date</th>
-						<th>Nb DC</th>
-						<th>Engine</th>
-						<th>Level</th>
-						<th>Schema version</th>
-						</tr>
-					</thead>
-					<tbody>
-");
+            AddBeginTable();
+			AddHeaderText("Domain");
+			AddHeaderText("Netbios Name");
+			AddHeaderText("Domain Functional Level");
+			AddHeaderText("Forest Functional Level");
+			AddHeaderText("Creation date");
+			AddHeaderText("Nb DC");
+			AddHeaderText("Engine");
+			AddHeaderText("Level");
+			AddHeaderText("Schema version");
+			AddBeginTableData();
+
             foreach (HealthcheckData data in Report)
             {
-                Add(@"
-						<tr>
-							<td class='text'>");
-				Add(PrintDomain(data.Domain));
-				Add(@"</td>
-							<td class='text'>");
-				AddEncoded(data.NetBIOSName);
-				Add(@"</td>
-							<td class='text'>");
-				Add(ReportHelper.DecodeDomainFunctionalLevel(data.DomainFunctionalLevel));
-				Add(@"</td>
-							<td class='text'>");
-				Add(ReportHelper.DecodeForestFunctionalLevel(data.ForestFunctionalLevel));
-				Add(@"</td>
-							<td class='text'>");
-				Add(data.DomainCreation.ToString("u"));
-				Add(@"</td>
-							<td class='num'>");
-				Add(data.NumberOfDC);
-				Add(@"</td>
-							<td class='text'>");
-				Add(data.EngineVersion);
-				Add(@"</td>
-							<td class='text'>");
-				Add(data.Level.ToString());
-				Add(@"</td>
-							<td class='text'>");
-				Add(ReportHelper.GetSchemaVersion(data.SchemaVersion));
-				Add(@"</td>
-						</tr>");
+				AddBeginRow();
+				AddPrintDomain(data.Domain);
+				AddCellText(data.NetBIOSName);
+				AddCellText(ReportHelper.DecodeDomainFunctionalLevel(data.DomainFunctionalLevel));
+				AddCellText(ReportHelper.DecodeForestFunctionalLevel(data.ForestFunctionalLevel));
+				AddCellDate(data.DomainCreation);
+				AddCellNum(data.NumberOfDC);
+				AddCellText(data.EngineVersion);
+				AddCellText(data.Level.ToString());
+				AddCellText(ReportHelper.GetSchemaVersion(data.SchemaVersion));
+				AddEndRow();
             }
-            Add(@"
-					</tbody>
-					<tfoot>
-						<tr>
-							<td class='text'><b>Total</b></td>
-							<td class='num'>" + Report.Count + @"</td>
-						</tr>
-					</tfoot>
-				</table>
-			</div>
-		</div>
-");
+			AddEndTable(() =>
+			{
+				AddCellText("Total");
+				AddCellNum(Report.Count);
+			});
+
+            AddBeginTable();
+			AddHeaderText("Source");
+            AddHeaderText("Name");
+            AddHeaderText("OS");
+            AddHeaderText("Creation");
+            AddHeaderText("Startup time");
+            AddHeaderText("IP");
+            AddHeaderText("FSMO");
+            AddBeginTableData();
+            foreach (HealthcheckData data in Report)
+            {
+                foreach(var dc in data.DomainControllers)
+                {
+                    AddBeginRow();
+                    AddPrintDomain(data.Domain);
+                    AddCellText(dc.DCName);
+                    AddCellText(dc.OperatingSystem);
+                    AddCellDate(dc.CreationDate);
+                    AddCellDate(dc.StartupTime);
+                    AddCellText(dc.IP == null ? string.Empty : string.Join(",", dc.IP.ToArray()));
+                    AddCellText(dc.FSMO == null ? string.Empty : string.Join(",", dc.FSMO.ToArray()));
+                    AddEndRow();
+                }
+            }
+            AddEndTable();
+
         }
         #endregion domain information
 
         #region user
         private void GenerateUserInformation()
         {
-            Add(@"
-		<div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-				<thead><tr>
-					<th>Domain</th>
-					<th>Nb User Accounts</th>
-					<th>Nb Enabled</th>
-					<th>Nb Disabled</th>
-					<th>Nb Active</th>
-					<th>Nb Inactive</th>
-					<th>Nb Locked</th>
-					<th>Nb pwd never Expire</th>
-					<th>Nb SidHistory</th>
-					<th>Nb Bad PrimaryGroup</th>
-					<th>Nb Password not Req.</th>
-					<th>Nb Des enabled.</th>
-					<th>Nb Trusted delegation</th>
-					<th>Nb Reversible password</th>
-					</tr>
-				</thead>
-				<tbody>
-");
+            AddBeginTable();
+			AddHeaderText("Domain");
+			AddHeaderText("Nb User Accounts");
+			AddHeaderText("Nb Enabled");
+			AddHeaderText("Nb Disabled");
+			AddHeaderText("Nb Active");
+			AddHeaderText("Nb Inactive");
+			AddHeaderText("Nb Locked");
+			AddHeaderText("Nb pwd never Expire");
+			AddHeaderText("Nb SidHistory");
+			AddHeaderText("Nb Bad PrimaryGroup");
+			AddHeaderText("Nb Password not Req.");
+			AddHeaderText("Nb Des enabled.");
+			AddHeaderText("Nb Trusted delegation");
+			AddHeaderText("Nb Reversible password");
+			AddBeginTableData();
             HealthcheckAccountData total = new HealthcheckAccountData();
             foreach (HealthcheckData data in Report)
             {
                 total.Add(data.UserAccountData);
-                Add(@"
-					<tr>
-						<td class='text'>" + PrintDomain(data.Domain) + @"</td>
-						<td class='num'>" + data.UserAccountData.Number + @"</td>
-						<td class='num'>" + data.UserAccountData.NumberEnabled + @"</td>
-						<td class='num'>" + data.UserAccountData.NumberDisabled + @"</td>
-						<td class='num'>" + data.UserAccountData.NumberActive + @"</td>
-						<td class='num'>" + data.UserAccountData.NumberInactive + @"</td>
-						<td class='num'>" + data.UserAccountData.NumberLocked + @"</td>
-						<td class='num'>" + data.UserAccountData.NumberPwdNeverExpires + @"</td>
-						<td class='num'>" + data.UserAccountData.NumberSidHistory + @"</td>
-						<td class='num'>" + data.UserAccountData.NumberBadPrimaryGroup + @"</td>
-						<td class='num'>" + data.UserAccountData.NumberPwdNotRequired + @"</td>
-						<td class='num'>" + data.UserAccountData.NumberDesEnabled + @"</td>
-						<td class='num'>" + data.UserAccountData.NumberTrustedToAuthenticateForDelegation + @"</td>
-						<td class='num'>" + data.UserAccountData.NumberReversibleEncryption + @"</td>
-					</tr>");
+				AddEndRow();
+                AddPrintDomain(data.Domain);
+				AddCellNum(data.UserAccountData.Number);
+				AddCellNum(data.UserAccountData.NumberEnabled);
+				AddCellNum(data.UserAccountData.NumberDisabled);
+				AddCellNum(data.UserAccountData.NumberActive);
+				AddCellNum(data.UserAccountData.NumberInactive);
+				AddCellNum(data.UserAccountData.NumberLocked);
+				AddCellNum(data.UserAccountData.NumberPwdNeverExpires);
+				AddCellNum(data.UserAccountData.NumberSidHistory);
+				AddCellNum(data.UserAccountData.NumberBadPrimaryGroup);
+				AddCellNum(data.UserAccountData.NumberPwdNotRequired);
+				AddCellNum(data.UserAccountData.NumberDesEnabled);
+				AddCellNum(data.UserAccountData.NumberTrustedToAuthenticateForDelegation);
+				AddCellNum(data.UserAccountData.NumberReversibleEncryption);
+				AddEndRow();
             }
-            Add(@"
-				</tbody>
-				<tfoot>
-					<tr>
-						<td class='text'><b>Total</b></td>
-						<td class='num'><b>" + total.Number + @"</b></td>
-						<td class='num'><b>" + total.NumberEnabled + @"</b></td>
-						<td class='num'><b>" + total.NumberDisabled + @"</b></td>
-						<td class='num'><b>" + total.NumberActive + @"</b></td>
-						<td class='num'><b>" + total.NumberInactive + @"</b></td>
-						<td class='num'><b>" + total.NumberLocked + @"</b></td>
-						<td class='num'><b>" + total.NumberPwdNeverExpires + @"</b></td>
-						<td class='num'><b>" + total.NumberSidHistory + @"</b></td>
-						<td class='num'><b>" + total.NumberBadPrimaryGroup + @"</b></td>
-						<td class='num'><b>" + total.NumberPwdNotRequired + @"</b></td>
-						<td class='num'><b>" + total.NumberDesEnabled + @"</b></td>
-						<td class='num'><b>" + total.NumberTrustedToAuthenticateForDelegation + @"</b></td>
-						<td class='num'><b>" + total.NumberReversibleEncryption + @"</b></td>
-					</tr>
-				</tfoot>
-				</table>
-			</div>
-		</div>
-");
-        }
-        #endregion user
+			AddEndTable(() => {
+				AddCellText("Total");
+				AddCellNum(total.Number);
+				AddCellNum(total.NumberEnabled);
+				AddCellNum(total.NumberDisabled);
+				AddCellNum(total.NumberActive);
+				AddCellNum(total.NumberInactive);
+				AddCellNum(total.NumberLocked);
+				AddCellNum(total.NumberPwdNeverExpires);
+				AddCellNum(total.NumberSidHistory);
+				AddCellNum(total.NumberBadPrimaryGroup);
+				AddCellNum(total.NumberPwdNotRequired);
+				AddCellNum(total.NumberDesEnabled);
+				AddCellNum(total.NumberTrustedToAuthenticateForDelegation);
+				AddCellNum(total.NumberReversibleEncryption);
+			});
+		}
+		#endregion user
 
-        #region computer
-        private void GenerateComputerInformation()
-        {
-            Add(@"
-		<div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-				<thead><tr> 
-					<th>Domain</th>
-					<th>Nb Computer Accounts</th>
-					<th>Nb Enabled</th>
-					<th>Nb Disabled</th>
-					<th>Nb Active</th>
-					<th>Nb Inactive</th>
-					<th>Nb SidHistory</th>
-					<th>Nb Bad PrimaryGroup</th>
-					<th>Nb Trusted delegation</th>
-					<th>Nb Reversible password</th>
-					</tr>
-				</thead>
-				<tbody>
-");
+		#region computer
+		private void GenerateComputerInformation()
+		{
+			AddBeginTable();
+			AddHeaderText("Domain");
+			AddHeaderText("Nb Computer Accounts");
+			AddHeaderText("Nb Enabled");
+			AddHeaderText("Nb Disabled");
+			AddHeaderText("Nb Active");
+			AddHeaderText("Nb Inactive");
+			AddHeaderText("Nb SidHistory");
+			AddHeaderText("Nb Bad PrimaryGroup");
+			AddHeaderText("Nb Trusted delegation");
+			AddHeaderText("Nb Reversible password");
+			AddBeginTableData();
             HealthcheckAccountData total = new HealthcheckAccountData();
             foreach (HealthcheckData data in Report)
             {
                 total.Add(data.ComputerAccountData);
-                Add(@"
-					<tr>
-						<td class='text'>" + PrintDomain(data.Domain) + @"</td>
-						<td class='num'>" + data.ComputerAccountData.Number + @"</td>
-						<td class='num'>" + data.ComputerAccountData.NumberEnabled + @"</td>
-						<td class='num'>" + data.ComputerAccountData.NumberDisabled + @"</td>
-						<td class='num'>" + data.ComputerAccountData.NumberActive + @"</td>
-						<td class='num'>" + data.ComputerAccountData.NumberInactive + @"</td>
-						<td class='num'>" + data.ComputerAccountData.NumberSidHistory + @"</td>
-						<td class='num'>" + data.ComputerAccountData.NumberBadPrimaryGroup + @"</td>
-						<td class='num'>" + data.ComputerAccountData.NumberTrustedToAuthenticateForDelegation + @"</td>
-						<td class='num'>" + data.ComputerAccountData.NumberReversibleEncryption + @"</td>
-					</tr>");
+				AddBeginRow();
+				AddPrintDomain(data.Domain);
+				AddCellNum(data.ComputerAccountData.Number);
+				AddCellNum(data.ComputerAccountData.NumberEnabled);
+				AddCellNum(data.ComputerAccountData.NumberDisabled);
+				AddCellNum(data.ComputerAccountData.NumberActive);
+				AddCellNum(data.ComputerAccountData.NumberInactive);
+				AddCellNum(data.ComputerAccountData.NumberSidHistory);
+				AddCellNum(data.ComputerAccountData.NumberBadPrimaryGroup);
+				AddCellNum(data.ComputerAccountData.NumberTrustedToAuthenticateForDelegation);
+				AddCellNum(data.ComputerAccountData.NumberReversibleEncryption);
+				AddEndRow();
             }
-            Add(@"
-				</tbody>
-				<tfoot>
-				<tr>
-				<td class='text'><b>Total</b></td>
-				<td class='num'><b>" + total.Number + @"</b></td>
-				<td class='num'><b>" + total.NumberEnabled + @"</b></td>
-				<td class='num'><b>" + total.NumberDisabled + @"</b></td>
-				<td class='num'><b>" + total.NumberActive + @"</b></td>
-				<td class='num'><b>" + total.NumberInactive + @"</b></td>
-				<td class='num'><b>" + total.NumberSidHistory + @"</b></td>
-				<td class='num'><b>" + total.NumberBadPrimaryGroup + @"</b></td>
-				<td class='num'><b>" + total.NumberTrustedToAuthenticateForDelegation + @"</b></td>
-				<td class='num'><b>" + total.NumberReversibleEncryption + @"</b></td>
-				</tr>
-				</tfoot>
-				</table>
-			</div>
-		</div>
-");
+			AddEndTable(() =>
+			{
+				AddCellText("Total");
+				AddCellNum(total.Number);
+				AddCellNum(total.NumberEnabled);
+				AddCellNum(total.NumberDisabled);
+				AddCellNum(total.NumberActive);
+				AddCellNum(total.NumberInactive);
+				AddCellNum(total.NumberSidHistory);
+				AddCellNum(total.NumberBadPrimaryGroup);
+				AddCellNum(total.NumberTrustedToAuthenticateForDelegation);
+				AddCellNum(total.NumberReversibleEncryption);
+			});
             GenerateConsolidatedOperatingSystemList();
         }
 
@@ -656,30 +460,18 @@ svg {
                 }
             }
             AllOS.Sort(OrderOS);
-            Add(@"
-		<div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-					<thead><tr> 
-						<th>Domain</th>
-");
+            AddBeginTable();
+			AddHeaderText("Domain");
             foreach (string os in AllOS)
             {
-                Add("<th>");
-				AddEncoded(os);
-				Add("</th>\r\n");
+                AddHeaderText(os);
             }
-            Add(@"
-						</tr>
-					</thead>
-					<tbody>
-");
+            AddBeginTableData();
             // maybe not the most perfomant algorithm (n^4) but there is only a few domains to consolidate
             foreach (HealthcheckData data in Report)
             {
-                Add(@"<tr>
-<td class='text'>" + PrintDomain(data.Domain) + @"</td>
-");
+				AddBeginRow();
+                AddPrintDomain(data.Domain);
                 foreach (string os in AllOS)
                 {
                     int numberOfOccurence = -1;
@@ -694,66 +486,47 @@ svg {
                             }
                         }
                     }
-                    Add("<td class='num'>" + (numberOfOccurence >= 0 ? numberOfOccurence.ToString() : null) + "</td>\r\n");
+                    AddCellNum(numberOfOccurence, true);
                 }
-                Add("</tr>\r\n");
+                AddEndRow();
             }
-            Add(@"
-					</tbody>
-					<tfoot>
-					</tfoot>
-						<tr>
-							<td class='text'><b>Total</b></td>
-");
-            foreach (string os in AllOS)
-            {
-                int total = 0;
-                foreach (HealthcheckData data in Report)
-                {
-                    if (data.OperatingSystem != null)
-                    {
-                        foreach (var OS in data.OperatingSystem)
-                        {
-                            if (OS.OperatingSystem == os)
-                            {
-                                total += OS.NumberOfOccurence;
-                                break;
-                            }
-                        }
-                    }
-                }
-                Add(@"<td class='num'><b>" + total + "</b></td>");
-            }
-            Add(@"
-				</tr>
-				</table>
-			</div>
-		</div>");
+			AddEndTable(() =>
+			{
+				AddCellText("Total");
+				foreach (string os in AllOS)
+				{
+					int total = 0;
+					foreach (HealthcheckData data in Report)
+					{
+						if (data.OperatingSystem != null)
+						{
+							foreach (var OS in data.OperatingSystem)
+							{
+								if (OS.OperatingSystem == os)
+								{
+									total += OS.NumberOfOccurence;
+									break;
+								}
+							}
+						}
+					}
+					AddCellNum(total);
+				}
+			});
             if (SpecificOK.Count > 0)
             {
-                Add(@"
-		<div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-					<thead><tr> 
-						<th>Operating System</th>
-						<th>Nb</th>
-						</tr>
-					</thead>
-					<tbody>");
+                AddBeginTable();
+				AddHeaderText("Operating System");
+				AddHeaderText("Nb");
+				AddBeginTableData();
                 foreach (string os in SpecificOK.Keys)
                 {
-                    Add("<tr><td class='text'>Nb ");
-					AddEncoded(os);
-					Add(" : </td><td class='num'>");
-					Add(SpecificOK[os]);
-					Add("</td></tr>");
+					AddBeginRow();
+                    AddCellText(os);
+					AddCellNum(SpecificOK[os]);
+					AddEndRow();
                 }
-                Add(@"
-					</tbody>
-				</table>
-			</div>
-		</div>");
+				AddEndTable();
             }
             return output;
         }
@@ -762,95 +535,174 @@ svg {
         #region admin
         private void GenerateAdminGroupsInformation()
         {
-            Add(@"
-		<div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-					<thead><tr> 
-						<th>Domain</th>
-						<th>Group Name</th>
-						<th>Nb Admins</th>
-						<th>Nb Enabled</th>
-						<th>Nb Disabled</th>
-						<th>Nb Inactive</th>
-						<th>Nb PWd never expire</th>
-						<th>Nb can be delegated</th>
-						<th>Nb external users</th>");
-
-			Add(@"
-						</tr>
-					</thead>
-					<tbody>
-");
+            AddBeginTable();
+			AddHeaderText("Domain");
+			AddHeaderText("Group Name");
+			AddHeaderText("Nb Admins");
+			AddHeaderText("Nb Enabled");
+			AddHeaderText("Nb Disabled");
+			AddHeaderText("Nb Inactive");
+			AddHeaderText("Nb PWd never expire");
+			AddHeaderText("Nb can be delegated");
+			AddHeaderText("Nb external users");
+			AddBeginTableData();
             foreach (HealthcheckData data in Report)
             {
                 foreach (HealthCheckGroupData group in data.PrivilegedGroups)
                 {
-                    Add(@"
-						<tr>
-							<td class='text'>");
-					Add(PrintDomain(data.Domain));
-					Add(@"</td>
-							<td class='text'>");
-					AddEncoded(group.GroupName);
-					Add(@"</td>
-							<td class='num'>");
-					Add(group.NumberOfMember);
-					Add(@"</td>
-							<td class='num'>");
-					Add(group.NumberOfMemberEnabled);
-					Add(@"</td>
-							<td class='num'>");
-					Add(group.NumberOfMemberDisabled);
-					Add(@"</td>
-							<td class='num'>");
-					Add(group.NumberOfMemberInactive);
-					Add(@"</td>
-							<td class='num'>");
-					Add(group.NumberOfMemberPwdNeverExpires);
-					Add(@"</td>
-							<td class='num'>");
-					Add(group.NumberOfMemberCanBeDelegated);
-					Add(@"</td>
-							<td class='num'>");
-					Add(group.NumberOfExternalMember);
-					Add(@"</td>
-						</tr>
-");
+					AddBeginRow();
+                    AddPrintDomain(data.Domain);
+					AddCellText(group.GroupName);
+					AddCellNum(group.NumberOfMember);
+					AddCellNum(group.NumberOfMemberEnabled);
+					AddCellNum(group.NumberOfMemberDisabled);
+					AddCellNum(group.NumberOfMemberInactive);
+					AddCellNum(group.NumberOfMemberPwdNeverExpires);
+					AddCellNum(group.NumberOfMemberCanBeDelegated);
+					AddCellNum(group.NumberOfExternalMember);
+					AddEndRow();
                 }
             }
-            Add(@"
-					</tbody>
-				</table>
-			</div>
-		</div>
-");
+            AddEndTable();
         }
         #endregion admin
 
-        #region trust
-        private void GenerateTrustInformation()
+		#region control path
+		private void GenerateControlPathsInformation()
+		{
+			GenerateControlPathsInformationAnomalies();
+			GenerateControlPathsInformationTrusts();
+		}
+
+		private void GenerateControlPathsInformationAnomalies()
+		{
+			GenerateSubSection("Indirect links");
+			AddBeginTable();
+			AddHeaderText("Domain", null, 2);
+			int numRisk = 0;
+			foreach (var objectRisk in (CompromiseGraphDataObjectRisk[])Enum.GetValues(typeof(CompromiseGraphDataObjectRisk)))
+			{
+				AddHeaderText(ReportHelper.GetEnumDescription(objectRisk), colspan: 4);
+				numRisk++;
+			}
+			AddEndRow();
+			AddBeginRow();
+			for (int i = 0; i < numRisk; i++)
+			{
+				AddHeaderText(@"Critical Object Found", "Indicates if critical objects such as everyone, authenticated users or domain users can take control, directly or not, of one of the objects.");
+				AddHeaderText(@"Number of objects with Indirect", "Indicates the count of objects per category having at least one indirect user detected.");
+				AddHeaderText(@"Max number of indirect numbers", "Indicates the maximum on all objects of the number of users having indirect access to the object.");
+				AddHeaderText(@"Max ratio", "Indicates in percentage the value of (number of indirect users / number of direct users) if at least one direct users exists. Else the value is zero.");
+			}
+			AddBeginTableData();
+			foreach (var data in Report)
+			{
+				if (data.ControlPaths == null)
+					continue;
+				AddBeginRow();
+				AddPrintDomain(data.Domain);
+				foreach (var objectRisk in (CompromiseGraphDataObjectRisk[])Enum.GetValues(typeof(CompromiseGraphDataObjectRisk)))
+				{
+					bool found = false;
+					foreach (var analysis in data.ControlPaths.AnomalyAnalysis)
+					{
+						if (analysis.ObjectRisk != objectRisk)
+							continue;
+						found = true;
+						AddCellText(analysis.CriticalObjectFound ? "YES" : "NO", true, !analysis.CriticalObjectFound);
+						AddCellNum(analysis.NumberOfObjectsWithIndirect);
+						AddCellNum(analysis.MaximumIndirectNumber);
+						AddCellNum(analysis.MaximumDirectIndirectRatio);
+						break;
+					}
+					if (!found)
+					{
+						AddCellText("");
+						AddCellNum(0, true);
+						AddCellNum(0, true);
+						AddCellNum(0, true);
+					}
+				}
+				AddEndRow();
+			}
+			AddEndTable();
+		}
+
+		private void GenerateControlPathsInformationTrusts()
+		{
+			GenerateSubSection("Link with other domains");
+			AddBeginTable();
+			AddHeaderText("Domain", null, 2);
+			AddHeaderText("Remote Domain", null, 2);
+			
+			int numTypology = 0;
+			foreach (var typology in (CompromiseGraphDataTypology[])Enum.GetValues(typeof(CompromiseGraphDataTypology)))
+			{
+				AddHeaderText(ReportHelper.GetEnumDescription(typology), colspan: 3);
+				numTypology++;
+			}
+			AddEndRow();
+			AddBeginRow();
+			for (int i = 0; i < numTypology; i++)
+			{
+				AddHeaderText(@"Group", "Number of group impacted by this domain");
+				AddHeaderText("Resolved", "Number of unique SID (account, group, computer, ...) resolved");
+				AddHeaderText("Unresolved", "Number of unique SID (account, group, computer, ...) NOT resolved meaning that the underlying object may have been removed");
+			}
+			AddBeginTableData();
+			foreach (var data in Report)
+			{
+				if (data.ControlPaths == null)
+					continue;
+
+				foreach (var dependancy in data.ControlPaths.Dependancies)
+				{
+					AddBeginRow();
+					AddPrintDomain(data.Domain);
+					AddPrintDomain(dependancy.Domain);
+					foreach (var typology in (CompromiseGraphDataTypology[])Enum.GetValues(typeof(CompromiseGraphDataTypology)))
+					{
+						bool found = false;
+						foreach (var item in dependancy.Details)
+						{
+							if (item.Typology != typology)
+								continue;
+							found = true;
+							AddCellNum(item.NumberOfGroupImpacted);
+							AddCellNum(item.NumberOfResolvedItems);
+							AddCellNum(item.NumberOfUnresolvedItems);
+							break;
+						}
+						if (!found)
+						{
+							AddCellNum(0, true);
+							AddCellNum(0, true);
+							AddCellNum(0, true);
+						}
+					}
+					AddEndRow();
+				}
+			}
+			AddEndTable();
+		}
+		#endregion control path
+
+		#region trust
+		private void GenerateTrustInformation()
         {
             List<string> knowndomains = new List<string>();
             GenerateSubSection("Discovered domains");
-            Add(@"
-		<div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-					<thead><tr>
-						<th>Domain</th>
-						<th>Trust Partner</th>
-						<th>Type</th>
-						<th>Attribut</th>
-						<th>Direction</th>
-						<th>SID Filtering active</th>
-						<th>TGT Delegation</th>
-						<th>Creation</th>
-						<th>Is Active ?</th>
-						</tr>
-					</thead>
-					<tbody>
-");
+            AddBeginTable();
+			AddHeaderText("Domain");
+			AddHeaderText("Trust Partner");
+			AddHeaderText("Type");
+			AddHeaderText("Attribut");
+			AddHeaderText("Direction");
+			AddHeaderText("SID Filtering active");
+			AddHeaderText("TGT Delegation");
+			AddHeaderText("Creation");
+			AddHeaderText("Is Active ?");
+			AddBeginTableData();
             foreach (HealthcheckData data in Report)
             {
 
@@ -868,42 +720,28 @@ svg {
                 {
                     if (!knowndomains.Contains(trust.TrustPartner))
                         knowndomains.Add(trust.TrustPartner);
-                    Add(@"
-						<tr>
-							<td class='text'>" + PrintDomain(data.Domain) + @"</td>
-							<td class='text'>" + PrintDomain(trust.Domain) + @"</td>
-							<td class='text'>" + TrustAnalyzer.GetTrustType(trust.TrustType) + @"</td>
-							<td class='text'>" + TrustAnalyzer.GetTrustAttribute(trust.TrustAttributes) + @"</td>
-							<td class='text'>" + TrustAnalyzer.GetTrustDirection(trust.TrustDirection) + @"</td>
-							<td class='text'>" + TrustAnalyzer.GetSIDFiltering(trust) + @"</td>
-							<td class='text'>" + TrustAnalyzer.GetTGTDelegation(trust) + @"</td>
-							<td class='text'>" + trust.CreationDate.ToString("u") + @"</td>
-							<td class='text'>" + trust.IsActive + @"</td>
-						</tr>
-");
+					AddBeginRow();
+                    AddPrintDomain(data.Domain);
+					AddPrintDomain(trust.Domain);
+					AddCellText(TrustAnalyzer.GetTrustType(trust.TrustType));
+					AddCellText(TrustAnalyzer.GetTrustAttribute(trust.TrustAttributes));
+					AddCellText(TrustAnalyzer.GetTrustDirection(trust.TrustDirection));
+					AddCellText(TrustAnalyzer.GetSIDFiltering(trust));
+					AddCellText(TrustAnalyzer.GetTGTDelegation(trust));
+					AddCellDate(trust.CreationDate);
+					AddCellText(trust.IsActive.ToString());
+					AddEndRow();
                 }
             }
-            Add(@"
-					</tbody>
-				</table>
-			</div>
-		</div>
-");
+            AddEndTable();
             GenerateSubSection("Other discovered domains");
-            Add(@"
-		<div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-					<thead><tr> 
-						<th>From</th>
-						<th>Reachable domain</th>
-						<th>Via</th>
-						<th>Netbios</th>
-						<th>Creation date</th>
-						</tr>
-					</thead>
-					<tbody>
-");
+            AddBeginTable();
+			AddHeaderText("From");
+			AddHeaderText("Reachable domain");
+			AddHeaderText("Via");
+			AddHeaderText("Netbios");
+			AddHeaderText("Creation date");
+			AddBeginTableData();
             foreach (HealthcheckData data in Report)
             {
                 foreach (HealthCheckTrustData trust in data.Trusts)
@@ -921,25 +759,13 @@ svg {
                         if (knowndomains.Contains(di.DnsName))
                             continue;
                         knowndomains.Add(di.DnsName);
-                        Add(@"
-						<tr>
-							<td class='text'>");
-						Add(PrintDomain(data.Domain));
-						Add(@"</td>
-							<td class='text'>");
-						AddEncoded(di.DnsName);
-						Add(@"</td>
-							<td class='text'>");
-						AddEncoded(trust.TrustPartner);
-						Add(@"</td>
-							<td class='text'>");
-						AddEncoded(di.NetbiosName);
-						Add(@"</td>
-							<td class='text'>");
-						Add(di.CreationDate);
-						Add(@"</td>
-						</tr>
-");
+						AddBeginRow();
+                        AddPrintDomain(data.Domain);
+						AddCellText(di.DnsName);
+						AddCellText(trust.TrustPartner);
+						AddCellText(di.NetbiosName);
+						AddCellDate(di.CreationDate);
+						AddEndRow();
                     }
                 }
             }
@@ -952,46 +778,26 @@ svg {
                         if (knowndomains.Contains(di.DnsName))
                             continue;
                         knowndomains.Add(di.DnsName);
-                        Add(@"
-						<tr>
-							<td class='text'>");
-						Add(PrintDomain(data.Domain));
-						Add(@"</td>
-							<td class='text'>");
-						AddEncoded(di.DnsName);
-						Add(@"</td>
-							<td class='text'>Unknown</td>
-							<td class='text'>");
-						AddEncoded(di.NetbiosName);
-						Add(@"</td>
-							<td class='text'>Unknown</td>
-						</tr>
-");
+						AddBeginRow();
+						AddPrintDomain(data.Domain);
+						AddCellText(di.DnsName);
+						AddCellText("Unknown");
+						AddCellText(di.NetbiosName);
+						AddCellText("Unknown");
+						AddEndRow();
                     }
                 }
             }
 
-            Add(@"
-					</tbody>
-				</table>
-			</div>
-		</div>
-");
+            AddEndTable();
 
             // prepare a SID map to locate unknown account
             SortedDictionary<string, string> sidmap = new SortedDictionary<string, string>();
             GenerateSubSection("SID Map");
-            Add(@"
-		<div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-					<thead><tr>
-						<th>Domain</th>
-						<th>Domain SID</th>
-						</tr>
-					</thead>
-					<tbody>
-");
+            AddBeginTable();
+			AddHeaderText("Domain");
+			AddHeaderText("Domain SID");
+			AddBeginTableData();
             foreach (HealthcheckData data in Report)
             {
                 if (!sidmap.ContainsKey(data.DomainFQDN) && !String.IsNullOrEmpty(data.DomainSid))
@@ -1029,63 +835,38 @@ svg {
             }
             foreach (string domain in sidmap.Keys)
             {
-                Add(@"
-						<tr>
-							<td class='text'>");
-				AddEncoded(domain);
-				Add(@"</td>
-							<td class='text'>");
-				Add(sidmap[domain]);
-				Add(@"</td>
-						</tr>
-");
+				AddBeginRow();
+				AddCellText(domain);
+				AddCellText(sidmap[domain]);
+				AddEndRow();
             }
-            Add(@"
-					</tbody>
-				</table>
-			</div>
-		</div>
-");
+            AddEndTable();
         }
         #endregion trust
 
         #region anomaly
         private void GenerateAnomalyDetail()
         {
-            Add(@"
-		<div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-					<thead><tr> 
-						<th>Domain</th>
-						<th>Krbtgt</th>
-						<th>AdminSDHolder</th>
-						<th>DC with null session</th>
-						<th>Smart card account not update</th>
-						<th>Date LAPS Installed</th>
-						</tr>
-					</thead>
-					<tbody>
-");
+            AddBeginTable();
+			AddHeaderText("Domain");
+			AddHeaderText("Krbtgt");
+			AddHeaderText("AdminSDHolder");
+			AddHeaderText("DC with null session");
+			AddHeaderText("Smart card account not update");
+			AddHeaderText("Date LAPS Installed");
+			AddBeginTableData();
             foreach (HealthcheckData data in Report)
             {
-                Add(@"
-						<tr>
-							<td class='text'>" + PrintDomain(data.Domain) + @"</td>
-							<td class='text'>" + data.KrbtgtLastChangeDate.ToString("u") + @"</td>
-							<td class='num'>" + data.AdminSDHolderNotOKCount + @"</td>
-							<td class='num'>" + data.DomainControllerWithNullSessionCount + @"</td>
-							<td class='num'>" + data.SmartCardNotOKCount + @"</td>
-							<td class='text'>" + (data.LAPSInstalled == DateTime.MaxValue ? "Never" : (data.LAPSInstalled == DateTime.MinValue ? "Not checked" : data.LAPSInstalled.ToString("u"))) + @"</td>
-						</tr>
-");
+				AddBeginRow();
+				AddPrintDomain(data.Domain);
+				AddCellDate(data.KrbtgtLastChangeDate);
+				AddCellNum(data.AdminSDHolderNotOKCount);
+				AddCellNum(data.DomainControllerWithNullSessionCount);
+				AddCellNum(data.SmartCardNotOKCount);
+				AddCellText((data.LAPSInstalled == DateTime.MaxValue ? "Never" : (data.LAPSInstalled == DateTime.MinValue ? "Not checked" : data.LAPSInstalled.ToString("u"))));
+				AddEndRow();
             }
-            Add(@"
-					</tbody>
-				</table>
-			</div>
-		</div>
-");
+            AddEndTable();
         }
         #endregion anomaly
 
@@ -1093,148 +874,76 @@ svg {
         private void GeneratePasswordPoliciesDetail()
         {
             GenerateSubSection("Password policies");
-            Add(@"
-		<div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-					<thead><tr> 
-						<th>Domain</th>
-						<th>Policy Name</th>
-						<th>Complexity</th>
-						<th>Max Password Age</th>
-						<th>Min Password Age</th>
-						<th>Min Password Length</th>
-						<th>Password History</th>
-						<th>Reversible Encryption</th>
-						<th>Lockout Threshold</th>
-						<th>Lockout Duration</th>
-						<th>Reset account counter locker after</th>
-						</tr>
-					</thead>
-					<tbody>
-");
+            AddBeginTable();
+			AddHeaderText("Domain");
+			AddHeaderText("Policy Name");
+			AddHeaderText("Complexity");
+			AddHeaderText("Max Password Age");
+			AddHeaderText("Min Password Age");
+			AddHeaderText("Min Password Length");
+			AddHeaderText("Password History");
+			AddHeaderText("Reversible Encryption");
+			AddHeaderText("Lockout Threshold");
+			AddHeaderText("Lockout Duration");
+			AddHeaderText("Reset account counter locker after");
+			AddBeginTableData();
             foreach (HealthcheckData data in Report)
             {
                 if (data.GPPPasswordPolicy != null)
                 {
                     foreach (GPPSecurityPolicy policy in data.GPPPasswordPolicy)
                     {
-                        Add(@"
-						<tr>
-							<td class='text'>");
-						Add(PrintDomain(data.Domain));
-						Add(@"</td>
-							<td class='text'>");
-						AddEncoded(policy.GPOName);
-						Add(@"</td>
-							<td class='text'>");
-						Add(GetPSOStringValue(policy, "PasswordComplexity"));
-						Add(@"</td>
-							<td class='num'>");
-						Add(GetPSOStringValue(policy, "MaximumPasswordAge"));
-						Add(@"</td>
-							<td class='num'>");
-						Add(GetPSOStringValue(policy, "MinimumPasswordAge"));
-						Add(@"</td>
-							<td class='num'>");
-						Add(GetPSOStringValue(policy, "MinimumPasswordLength"));
-						Add(@"</td>
-							<td class='num'>");
-						Add(GetPSOStringValue(policy, "PasswordHistorySize"));
-						Add(@"</td>
-							<td class='text'>");
-						Add(GetPSOStringValue(policy, "ClearTextPassword"));
-						Add(@"</td>
-							<td class='num'>");
-						Add(GetPSOStringValue(policy, "LockoutBadCount"));
-						Add(@"</td>
-							<td class='num'>");
-						Add(GetPSOStringValue(policy, "LockoutDuration"));
-						Add(@"</td>
-							<td class='num'>");
-						Add(GetPSOStringValue(policy, "ResetLockoutCount"));
-						Add(@"</td>
-						</tr>
-");
+						AddBeginRow();
+						AddPrintDomain(data.Domain);
+						AddCellText(policy.GPOName);
+						AddPSOStringValue(policy, "PasswordComplexity");
+						AddPSOStringValue(policy, "MaximumPasswordAge");
+						AddPSOStringValue(policy, "MinimumPasswordAge");
+						AddPSOStringValue(policy, "MinimumPasswordLength");
+						AddPSOStringValue(policy, "PasswordHistorySize");
+						AddPSOStringValue(policy, "ClearTextPassword");
+						AddPSOStringValue(policy, "LockoutBadCount");
+						AddPSOStringValue(policy, "LockoutDuration");
+						AddPSOStringValue(policy, "ResetLockoutCount");
+						AddEndRow();
                     }
                 }
             }
-            Add(@"
-					</tbody>
-				</table>
-			</div>
-		</div>
-");
+            AddEndTable();
             GenerateSubSection("Screensaver policies");
-            Add(@"
-		<div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-					<thead><tr> 
-						<th>Domain</th>
-						<th>Policy Name</th>
-						<th>Screensaver enforced</th>
-						<th>Password request</th>
-						<th>Start after (seconds)</th>
-						<th>Grace Period (seconds)</th>
-						</tr>
-					</thead>
-					<tbody>
-");
+            AddBeginTable();
+			AddHeaderText("Domain");
+			AddHeaderText("Policy Name");
+			AddHeaderText("Screensaver enforced");
+			AddHeaderText("Password request");
+			AddHeaderText("Start after (seconds)");
+			AddHeaderText("Grace Period (seconds)");
+			AddBeginTableData();
             foreach (HealthcheckData data in Report)
             {
                 if (data.GPPPasswordPolicy != null)
                 {
                     foreach (GPPSecurityPolicy policy in data.GPOScreenSaverPolicy)
                     {
-                        string scrActive = GetPSOStringValue(policy, "ScreenSaveActive");
-                        string scrSecure = GetPSOStringValue(policy, "ScreenSaverIsSecure");
-                        string scrTimeOut = GetPSOStringValue(policy, "ScreenSaveTimeOut");
-                        string scrGrace = GetPSOStringValue(policy, "ScreenSaverGracePeriod");
-
-                        Add(@"
-						<tr>
-							<td class='text'>");
-						Add(PrintDomain(data.Domain));
-						Add(@"</td>
-							<td class='text'>");
-						AddEncoded(policy.GPOName);
-						Add(@"</td>
-							<td class='num'>");
-						Add(scrActive);
-						Add(@"</td>
-							<td class='num'>");
-						Add(scrSecure);
-						Add(@"</td>
-							<td class='num'>");
-						Add(scrTimeOut);
-						Add(@"</td>
-							<td class='text'>");
-						Add(scrGrace);
-						Add(@"</td>
-						</tr>
-");
+						AddBeginRow();
+						AddPrintDomain(data.Domain);
+						AddCellText(policy.GPOName);
+						AddPSOStringValue(policy, "ScreenSaveActive");
+						AddPSOStringValue(policy, "ScreenSaverIsSecure");
+						AddPSOStringValue(policy, "ScreenSaveTimeOut");
+						AddPSOStringValue(policy, "ScreenSaverGracePeriod");
+						AddEndRow();
                     }
                 }
             }
-            Add(@"
-					</tbody>
-				</table>
-			</div>
-		</div>
-");
+            AddEndTable();
             GenerateSubSection("Security settings");
-            Add(@"
-		<div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-					<thead><tr> 
-						<th>Domain</th>
-						<th>Policy Name</th>
-						<th>Setting</th>
-						<th>Value</th>
-					</thead>
-					<tbody>");
+            AddBeginTable();
+			AddHeaderText("Domain");
+			AddHeaderText("Policy Name");
+			AddHeaderText("Setting");
+			AddHeaderText("Value");
+			AddBeginTableData();
             foreach (HealthcheckData data in Report)
             {
                 if (data.GPOLsaPolicy != null)
@@ -1243,32 +952,19 @@ svg {
                     {
                         foreach (GPPSecurityPolicyProperty property in policy.Properties)
                         {
-                            Add(@"
-						<tr>
-							<td class='text'>");
-							Add(PrintDomain(data.Domain));
-							Add(@"</td>
-							<td class='text'>");
-							AddEncoded(policy.GPOName);
-							Add(@"</td>
-							<td class='text'>");
+							AddBeginRow();
+							AddPrintDomain(data.Domain);
+							AddCellText(policy.GPOName);
+							Add(@"<td class='text'>");
 							Add(GetLinkForLsaSetting(property.Property));
-							Add(@"</td>
-							<td class='text'>");
-							Add(GetLsaSettingsValue(property.Property, property.Value));
-							Add(@"</td>
-						</tr>
-");
+							Add(@"</td>");
+							AddLsaSettingsValue(property.Property, property.Value);
+							AddEndRow();
                         }
                     }
                 }
             }
-            Add(@"
-					</tbody>
-				</table>
-			</div>
-		</div>
-");
+            AddEndTable();
         }
         #endregion passwordpolicy
 
@@ -1276,61 +972,40 @@ svg {
         private void GenerateGPODetail()
         {
             GenerateSubSection("Obfuscated Password");
-            Add(@"
-		<div class=""row"">
-			<div class=""col-md-12 table-responsive"">
-				<table class=""table table-striped table-bordered"">
-					<thead><tr> 
-						<th>Domain</th>
-						<th>GPO Name</th>
-						<th>Password origin</th>
-						<th>UserName</th>
-						<th>Password</th>
-						<th>Changed</th>
-						<th>Other</th>
-						</tr>
-					</thead>
-					<tbody>
-");
+            AddBeginTable();
+			AddHeaderText("Domain");
+			AddHeaderText("GPO Name");
+			AddHeaderText("Password origin");
+			AddHeaderText("UserName");
+			AddHeaderText("Password");
+			AddHeaderText("Changed");
+			AddHeaderText("Other");
+			AddBeginTableData();
             foreach (HealthcheckData data in Report)
             {
                 foreach (GPPPassword password in data.GPPPassword)
                 {
-                    Add(@"
-						<tr>
-							<td class='text'>");
-					Add(PrintDomain(data.Domain));
-					Add(@"</td>
-							<td class='text'>");
-					AddEncoded(password.GPOName);
-					Add(@"</td>
-							<td class='text'>");
-					AddEncoded(password.Type);
-					Add(@"</td>
-							<td class='text'>");
-					AddEncoded(password.UserName);
-					Add(@"</td>
-							<td class='text'>");
-					AddEncoded(password.Password);
-					Add(@"</td>
-							<td class='text'>");
-					Add(password.Changed);
-					Add(@"</td>
-							<td class='text'>");
-					AddEncoded(password.Other);
-					Add(@"</td>
-						</tr>
-");
+					AddBeginRow();
+					AddPrintDomain(data.Domain);
+					AddCellText(password.GPOName);
+					AddCellText(password.Type);
+					AddCellText(password.UserName);
+					AddCellText(password.Password);
+					AddCellDate(password.Changed);
+					AddCellText(password.Other);
+					AddEndRow();
                 }
             }
-            Add(@"
-					</tbody>
-				</table>
-			</div>
-		</div>
-");
+            AddEndTable();
         }
         #endregion gpo detail
+
+		void AddPrintDomain(DomainKey key)
+		{
+			Add(@"<td class='text'>");
+			Add(PrintDomain(key));
+			Add(@"</td>");
+		}
 
         new string PrintDomain(DomainKey key)
         {
@@ -1352,7 +1027,13 @@ svg {
             }
             else if (Report.HasDomainAmbigiousName(key))
                 return key.ToString();
-            return key.DomainName;
+			if (!string.IsNullOrEmpty(key.DomainName))
+				return key.DomainName;
+			if (!string.IsNullOrEmpty(key.DomainNetBIOS))
+				return "NetBIOS: " + key.DomainNetBIOS;
+			if (!string.IsNullOrEmpty(key.DomainSID))
+				return "SID: " + key.DomainSID;
+			return "Error please contact the support";
         }
     }
 }

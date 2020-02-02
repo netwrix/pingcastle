@@ -13,15 +13,15 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Security.Principal;
 using PingCastle.ADWS;
-using PingCastle.Graph.Rules;
 using PingCastle.Rules;
 using System.Net;
-using PingCastle.Export;
+using PingCastle.Graph.Export;
 using PingCastle.Graph.Reporting;
+using PingCastle.Healthcheck;
 
-namespace PingCastle.Reporting
+namespace PingCastle.Graph.Reporting
 {
-	public class ReportGenerator : IPingCastleAnalyzer<CompromiseGraphData>
+	public class ReportGenerator
 	{
 		public static int MaxDepth { get; set; }
 		public static int MaxNodes { get; set; }
@@ -35,46 +35,56 @@ namespace PingCastle.Reporting
 		private IDataStorage storage;
 		private List<string> stopNodes = new List<string>();
 
-		public CompromiseGraphData PerformAnalyze(PingCastleAnalyzerParameters parameters)
+		public void PerformAnalyze(HealthcheckData data, ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
 		{
-			ExportDataFromActiveDirectoryLive export = new ExportDataFromActiveDirectoryLive(parameters.Server, parameters.Port, parameters.Credential);
+			ExportDataFromActiveDirectoryLive export = new ExportDataFromActiveDirectoryLive(domainInfo, adws, parameters.Credential);
 			var ObjectReference = export.ExportData(parameters.AdditionalNamesForDelegationAnalysis);
 			storage = export.Storage;
-			CompromiseGraphData data = new CompromiseGraphData();
-			data.GenerationDate = DateTime.Now;
-			Version version = Assembly.GetExecutingAssembly().GetName().Version;
-			data.EngineVersion = version.ToString(4);
-#if DEBUG
-			data.EngineVersion += " Beta";
-#endif
+			
+			data.ControlPaths = new CompromiseGraphData();
+			data.ControlPaths.Data = new List<SingleCompromiseGraphData>();
+			data.PrivilegedGroups = new List<HealthCheckGroupData>();
+			data.AllPrivilegedMembers = new List<HealthCheckGroupMemberData>();
 
-			Dictionary<string, string> databaseProperties = storage.GetDatabaseInformation();
-			data.DomainSid = databaseProperties["DomainSid"];
-			data.DomainFQDN = databaseProperties["DomainName"];
-			data.DomainNetBIOS = databaseProperties["DomainNetBIOS"];
-			data.Data = new List<SingleCompromiseGraphData>();
-			string domainContext = "DC=" + string.Join(",DC=", data.DomainFQDN.Split('.'));
+			PrepareStopNodes(ObjectReference, domainInfo.DomainSid.Value);
 
-			PrepareStopNodes(ObjectReference);
+			PrepareDetailledData(domainInfo, data, ObjectReference);
+			PrepareDependancyGlobalData(data.ControlPaths);
+			PrepareAnomalyAnalysisData(data.ControlPaths);
 
-			PrepareDetailledData(data, ObjectReference);
-			PrepareDependancyGlobalData(data);
-			PrepareAnomalyAnalysisData(data);
-			PrepareRiskData(data);
-			//PrepareObjectiveData(data);
-			return data;
+			PrepareAllPrivilegedMembers(data);
 		}
 
-		void PrepareDetailledData(CompromiseGraphData data, GraphObjectReference ObjectReference)
+		private void PrepareAllPrivilegedMembers(HealthcheckData healthcheckData)
+		{
+			Dictionary<string, HealthCheckGroupMemberData> allMembers = new Dictionary<string, HealthCheckGroupMemberData>();
+			foreach (var group in healthcheckData.PrivilegedGroups)
+			{
+				foreach (HealthCheckGroupMemberData member in group.Members)
+				{
+					if (!allMembers.ContainsKey(member.DistinguishedName))
+					{
+						allMembers.Add(member.DistinguishedName, member);
+					}
+				}
+			}
+			foreach (HealthCheckGroupMemberData member in allMembers.Values)
+			{
+				healthcheckData.AllPrivilegedMembers.Add(member);
+			}
+		}
+
+		void PrepareDetailledData(ADDomainInfo domainInfo, HealthcheckData data, GraphObjectReference ObjectReference)
 		{
 			foreach (var typology in ObjectReference.Objects.Keys)
 			{
 				foreach (var obj in ObjectReference.Objects[typology])
 				{
-					ProduceReportFile(data, typology, obj.Risk, obj.Description, obj.Name);
+					Trace.WriteLine("Analyzing " + obj.Description);
+					ProduceReportFile(domainInfo, data, typology, obj.Risk, obj.Description, obj.Name);
 				}
 			}
-			data.Data.Sort(
+			data.ControlPaths.Data.Sort(
 				(SingleCompromiseGraphData a, SingleCompromiseGraphData b)
 				=>
 				{
@@ -160,12 +170,12 @@ namespace PingCastle.Reporting
 				{
 					analysis.CriticalObjectFound = true;
 				}
-				if (sg.IndirectMembers.Count > 0)
+				if (sg.IndirectMembers != null && sg.IndirectMembers.Count > 0)
 				{
 					if (analysis.MaximumIndirectNumber < sg.IndirectMembers.Count)
 						analysis.MaximumIndirectNumber = sg.IndirectMembers.Count;
 					analysis.NumberOfObjectsWithIndirect++;
-					if (sg.DirectUserMembers.Count > 0)
+					if (sg.DirectUserMembers != null && sg.DirectUserMembers.Count > 0)
 					{
 						int ratio = 100 * sg.IndirectMembers.Count / sg.DirectUserMembers.Count;
 						if (ratio > analysis.MaximumDirectIndirectRatio)
@@ -185,155 +195,18 @@ namespace PingCastle.Reporting
 				});
 		}
 
-		private void PrepareRiskData(CompromiseGraphData data)
-		{
-			data.RiskRules = new List<CompromiseGraphRiskRule>();
-			var rules = new RuleSet<CompromiseGraphData>();
-			foreach (var rule in rules.ComputeRiskRules(data))
-			{
-				var risk = new CompromiseGraphRiskRule();
-				if (rule.Points == 0)
-					risk.Achieved = true;
-				risk.Points = rule.RuleComputation[0].Score;
-				risk.Category = rule.Category;
-				risk.Objective = rule.Objective;
-				risk.RiskId = rule.RiskId;
-				risk.Rationale = rule.Rationale + String.Empty;
-				risk.Details = rule.Details;
-				risk.ImpactedAssets = new List<CompromiseGraphRiskRuleDetail>();
-				var graphRule = rule as CompromiseGraphRule;
-				if (graphRule != null)
-				{
-					foreach (var assetName in graphRule.ImpactedGraph.Keys)
-					{
-						var asset = graphRule.ImpactedGraph[assetName];
-						var impactedAsset = new CompromiseGraphRiskRuleDetail();
-						impactedAsset.AssetName = assetName;
-						impactedAsset.Details = asset.Details;
-						impactedAsset.Rationale = asset.Rationale;
-						risk.ImpactedAssets.Add(impactedAsset);
-					}
-				}
-				data.RiskRules.Add(risk);
-			}
-			data.RiskRules.Sort((CompromiseGraphRiskRule a, CompromiseGraphRiskRule b)
-				=>
-				{
-					int compare = ((int)a.Objective).CompareTo((int)b.Objective);
-					if (compare == 0)
-					{
-						compare = -a.Points.CompareTo(b.Points);
-					}
-					if (compare == 0)
-					{
-						compare = a.Rationale.CompareTo(b.Rationale);
-					}
-					return compare;
-				}
-			);
-		}
-		/*
-		private void PrepareObjectiveData(CompromiseGraphData data)
-		{
-			data.Objectives = new List<CompromiseGraphObjective>();
-			data.Objectives.Add(new CompromiseGraphObjective()
-			{
-				Category = RiskRuleCategory.Trusts,
-				Objective = "No more than 1 domain can take control of an admin or critical object",
-				Score = 100,
-				RulesMatched = new List<string>() { "A-TEST" },
-			});
-			data.Objectives.Add(new CompromiseGraphObjective()
-			{
-				Category = RiskRuleCategory.Trusts,
-				Objective = "No domain can take control of an admin or critical object",
-				Score = 100,
-			});
-			data.Objectives.Add(new CompromiseGraphObjective()
-			{
-				Category = RiskRuleCategory.Trusts,
-				Objective = "No domain can take control of a user defined object",
-				Score = 25,
-			});
-			data.Objectives.Add(new CompromiseGraphObjective()
-			{
-				Category = RiskRuleCategory.Trusts,
-				Objective = "At the exception of a domain declared as an admin domain, no child domain of a forest should have permission on other domains",
-				Score = 25,
-			});
-			bool criticalfound = false;
-			foreach (var anomaly in data.AnomalyAnalysis)
-			{
-				string risk = null;
-				int basescore;
-				if (anomaly.CriticalObjectFound)
-					criticalfound = true;
-				switch (anomaly.ObjectRisk)
-				{
-					case CompromiseGraphDataObjectRisk.Critical:
-						risk = "critical";
-						basescore = 100;
-						break;
-					case CompromiseGraphDataObjectRisk.High:
-						risk = "high";
-						basescore = 80;
-						break;
-					case CompromiseGraphDataObjectRisk.Medium:
-						risk = "medium";
-						basescore = 60;
-						break;
-					default:
-						continue;
-
-				}
-				data.Objectives.Add(new CompromiseGraphObjective()
-				{
-					Category = RiskRuleCategory.Anomalies,
-					Objective = "No " + risk + " priority object should be available to more than 100 indirect number",
-					Score = basescore,
-					IsAchieved = anomaly.MaximumIndirectNumber < 100,
-				});
-				data.Objectives.Add(new CompromiseGraphObjective()
-				{
-					Category = RiskRuleCategory.Anomalies,
-					Objective = "No " + risk + " object should be available to more than 50 indirect number",
-					Score = basescore - 10,
-					IsAchieved = anomaly.MaximumIndirectNumber < 50,
-				});
-				data.Objectives.Add(new CompromiseGraphObjective()
-				{
-					Category = RiskRuleCategory.Anomalies,
-					Objective = "No " + risk + " object should be available to more than 10 indirect number",
-					Score = basescore - 20,
-					IsAchieved = anomaly.MaximumIndirectNumber < 10,
-				});
-				data.Objectives.Add(new CompromiseGraphObjective()
-				{
-					Category = RiskRuleCategory.Anomalies,
-					Objective = "No " + risk + " object should be available to indirect users at all",
-					Score = basescore - 30,
-					IsAchieved = anomaly.MaximumIndirectNumber == 0,
-				});
-			}
-			data.Objectives.Add(new CompromiseGraphObjective()
-			{
-				Category = RiskRuleCategory.Anomalies,
-				Objective = "No object should allow Everyone, Authenticated Users, Domain Users or Domain Computers to take control of itself",
-				Score = 100,
-				IsAchieved = criticalfound,
-			});
-		}*/
-
-		private void ProduceReportFile(CompromiseGraphData data, CompromiseGraphDataTypology typology, CompromiseGraphDataObjectRisk risk, string description, string name)
+		private void ProduceReportFile(ADDomainInfo domainInfo, HealthcheckData hcdata, CompromiseGraphDataTypology typology, CompromiseGraphDataObjectRisk risk, string description, string name)
 		{
 			try
 			{
+				var data = hcdata.ControlPaths;
 				Dictionary<string, string> databaseProperties = storage.GetDatabaseInformation();
 				DateTime exportDate = DateTime.Parse(databaseProperties["Date"]);
 				Trace.WriteLine("Generating Description:" + description + " Name=" + name);
 				int rootNodeId = storage.SearchItem(name);
 				if (rootNodeId < 0)
 				{
+					Trace.WriteLine("root node not found");
 					// do not display error message for schema admin and enterprise admins which are missing on child domains
 					if (typology == CompromiseGraphDataTypology.PrivilegedAccount && (name.EndsWith("-519") || name.EndsWith("-518") || name.EndsWith("-498") || name.Equals("S-1-5-32-557")))
 						return;
@@ -341,24 +214,38 @@ namespace PingCastle.Reporting
 					Console.WriteLine("The report " + description + " starting from " + name + " couldn't be built because the object wasn't found");
 					return;
 				}
-				List<int> nodesid = new List<int>();
-				Dictionary<int, List<Relation>> links = RetrieveLinks(rootNodeId, nodesid);
-				Dictionary<int, Node> chartNodes = storage.RetrieveNodes(nodesid);
-				List<int> directUsers = RetrieveDirectUserNodes(rootNodeId, new string[] { "user", "msDS-GroupManagedServiceAccount", "msDS-ManagedServiceAccount" });
-				List<int> directComputers = RetrieveDirectUserNodes(rootNodeId, new string[] { "computer" });
-				SimplifyGraph(chartNodes, links);
-				ComputeDistance(rootNodeId, links, chartNodes);
+				Dictionary<int, Node> chartNodes = new Dictionary<int, Node>();
+				List<int> directUsers = new List<int>();
+				List<int> directComputers = new List<int>();
+				Dictionary<int, List<Relation>> links = new Dictionary<int,List<Relation>>();
+				Trace.WriteLine("BuildTree");
+				BuildTree(rootNodeId, chartNodes, directUsers, directComputers, links);
+				Trace.WriteLine("BuildCompromissionData");
 				var singleCompromiseData = BuildSingleCompromiseGraphData(rootNodeId, chartNodes, links, directUsers);
 				singleCompromiseData.Name = name;
 				singleCompromiseData.Description = description;
 				singleCompromiseData.Typology = typology;
 				singleCompromiseData.ObjectRisk = risk;
 
-				BuildUserMembers(singleCompromiseData, directUsers);
-				BuildComputerMembers(singleCompromiseData, directComputers);
+				if (chartNodes[rootNodeId].Type == "group")
+				{
+					Trace.WriteLine("Build users members");
+					BuildUserMembers(singleCompromiseData, directUsers);
+					Trace.WriteLine("Build computer members");
+					BuildComputerMembers(singleCompromiseData, directComputers);
+					if (typology == CompromiseGraphDataTypology.PrivilegedAccount)
+					{
+						Trace.WriteLine("Build privilege data");
+						BuildPrivilegeData(domainInfo, hcdata, singleCompromiseData, directUsers, directComputers);
+					}
+				}
+				Trace.WriteLine("Build indirect members");
 				BuildIndirectMembers(singleCompromiseData);
-				BuildDependancies(data, singleCompromiseData, chartNodes);
-				BuildDeletedObjects(data, singleCompromiseData, chartNodes);
+				Trace.WriteLine("Build dependancies");
+				BuildDependancies(domainInfo, data, singleCompromiseData, chartNodes);
+				Trace.WriteLine("build deleted objects");
+				BuildDeletedObjects(domainInfo, data, singleCompromiseData, chartNodes);
+				Trace.WriteLine("done");
 				data.Data.Add(singleCompromiseData);
 			}
 			catch (Exception ex)
@@ -375,7 +262,7 @@ namespace PingCastle.Reporting
 			}
 		}
 
-		private void BuildDependancies(CompromiseGraphData refData, SingleCompromiseGraphData singleCompromiseData, Dictionary<int, Node> chartNodes)
+		private void BuildDependancies(ADDomainInfo domainInfo, CompromiseGraphData refData, SingleCompromiseGraphData singleCompromiseData, Dictionary<int, Node> chartNodes)
 		{
 			var reference = new Dictionary<SecurityIdentifier, SingleCompromiseGraphDependancyData>();
 			var domains = storage.GetKnownDomains();
@@ -384,7 +271,7 @@ namespace PingCastle.Reporting
 				if (String.Equals(node.Type, "foreignsecurityprincipal", StringComparison.InvariantCultureIgnoreCase))
 				{
 					// ignore deleted accounts
-					if (node.Sid.StartsWith(refData.DomainSid + "-"))
+					if (node.Sid.StartsWith(domainInfo.DomainSid.Value + "-"))
 						continue;
 					SingleCompromiseGraphDependancyData data;
 					var sid = new SecurityIdentifier(node.Sid);
@@ -442,7 +329,7 @@ namespace PingCastle.Reporting
 		}
 
 
-		private void BuildDeletedObjects(CompromiseGraphData data, SingleCompromiseGraphData singleCompromiseData, Dictionary<int, Node> chartNodes)
+		private void BuildDeletedObjects(ADDomainInfo domainInfo, CompromiseGraphData data, SingleCompromiseGraphData singleCompromiseData, Dictionary<int, Node> chartNodes)
 		{
 			singleCompromiseData.DeletedObjects = new List<SingleCompromiseGraphDeletedData>();
 			foreach (var node in chartNodes.Values)
@@ -450,7 +337,7 @@ namespace PingCastle.Reporting
 				if (String.Equals(node.Type, "foreignsecurityprincipal", StringComparison.InvariantCultureIgnoreCase))
 				{
 					// ignore everything but deleted accounts
-					if (node.Sid.StartsWith(data.DomainSid + "-"))
+					if (node.Sid.StartsWith(domainInfo.DomainSid.Value + "-"))
 					{
 						singleCompromiseData.DeletedObjects.Add(new SingleCompromiseGraphDeletedData()
 						{
@@ -460,6 +347,7 @@ namespace PingCastle.Reporting
 					}
 				}
 			}
+			singleCompromiseData.NumberOfDeletedObjects = singleCompromiseData.DeletedObjects.Count;
 		}
 
 		private void BuildUserMembers(SingleCompromiseGraphData singleCompromiseData, List<int> directNodes)
@@ -471,6 +359,7 @@ namespace PingCastle.Reporting
 				var user = BuildMembersUser(node.ADItem);
 				singleCompromiseData.DirectUserMembers.Add(user);
 			}
+			singleCompromiseData.NumberOfDirectUserMembers = singleCompromiseData.DirectUserMembers.Count;
 		}
 
 		private void BuildComputerMembers(SingleCompromiseGraphData singleCompromiseData, List<int> directNodes)
@@ -482,7 +371,109 @@ namespace PingCastle.Reporting
 				var user = BuildMembersComputer(node.ADItem);
 				singleCompromiseData.DirectComputerMembers.Add(user);
 			}
+			singleCompromiseData.NumberOfDirectComputerMembers = singleCompromiseData.DirectComputerMembers.Count;
 		}
+
+		private void BuildPrivilegeData(ADDomainInfo domainInfo, HealthcheckData hcdata, SingleCompromiseGraphData singleCompromiseData, List<int> directNodes1, List<int> directNodes2)
+		{
+			var items = new List<ADItem>();
+			foreach (var id in directNodes1)
+			{
+				var node = storage.RetrieveNode(id);
+				var item = node.ADItem;
+				items.Add(item);
+			}
+			foreach (var id in directNodes2)
+			{
+				var node = storage.RetrieveNode(id);
+				var item = node.ADItem;
+				items.Add(item);
+			}
+			var groupData = AnalyzeGroupData(domainInfo.DnsHostName, singleCompromiseData.Description, items);
+			hcdata.PrivilegedGroups.Add(groupData);
+		}
+
+
+		private HealthCheckGroupData AnalyzeGroupData(string resolveSidServer, string groupName, IEnumerable<ADItem> members)
+		{
+			HealthCheckGroupData data = new HealthCheckGroupData();
+			data.GroupName = groupName;
+			data.Members = new List<HealthCheckGroupMemberData>();
+			foreach (ADItem x in members)
+			{
+				// avoid computer included in the "cert publisher" group
+				if (x.Class == "computer")
+					continue;
+				data.NumberOfMember++;
+				HealthCheckGroupMemberData member = new HealthCheckGroupMemberData();
+				data.Members.Add(member);
+				member.DistinguishedName = x.DistinguishedName;
+				// special case for foreignsecurityprincipals
+				if (x.Class != "user")
+				{
+					data.NumberOfExternalMember++;
+					member.IsExternal = true;
+					member.Name = x.Name;
+					if (x.Name.StartsWith("S-1-", StringComparison.InvariantCultureIgnoreCase))
+					{
+						// try to solve the SID
+						member.Name = NativeMethods.ConvertSIDToName(x.Name, resolveSidServer);
+					}
+				}
+				else
+				{
+					// analyse useraccountcontrol
+					member.Name = x.SAMAccountName;
+					member.PwdLastSet = x.PwdLastSet;
+					member.LastLogonTimestamp = x.LastLogonTimestamp;
+					if ((x.UserAccountControl & 0x00000002) != 0)
+						data.NumberOfMemberDisabled++;
+					else
+					{
+						data.NumberOfMemberEnabled++;
+						member.IsEnabled = true;
+						// last login since 6 months
+						if (x.LastLogonTimestamp.AddDays(6 * 31) > DateTime.Now)
+						{
+							data.NumberOfMemberActive++;
+							member.IsActive = true;
+						}
+						else
+							data.NumberOfMemberInactive++;
+						if (x.ServicePrincipalName != null && x.ServicePrincipalName.Length > 0)
+						{
+							member.IsService = true;
+							data.NumberOfServiceAccount++;
+						}
+						if ((x.UserAccountControl & 0x00000010) != 0)
+						{
+							member.IsLocked = true;
+							data.NumberOfMemberLocked++;
+						}
+						if ((x.UserAccountControl & 0x00010000) != 0)
+						{
+							data.NumberOfMemberPwdNeverExpires++;
+							member.DoesPwdNeverExpires = true;
+						}
+						if ((x.UserAccountControl & 0x00000020) != 0)
+							data.NumberOfMemberPwdNotRequired++;
+						// this account is sensitive and cannot be delegated
+						if ((x.UserAccountControl & 0x100000) == 0)
+						{
+							data.NumberOfMemberCanBeDelegated++;
+							member.CanBeDelegated = true;
+						}
+						if ((x.UserAccountControl & 0x40000) != 0)
+						{
+							data.NumberOfSmartCardRequired++;
+							member.SmartCardRequired = true;
+						}
+					}
+				}
+			}
+			return data;
+		}
+
 
 		private void BuildIndirectMembers(SingleCompromiseGraphData singleCompromiseData)
 		{
@@ -499,12 +490,13 @@ namespace PingCastle.Reporting
 			}
 			foreach (var node in singleCompromiseData.Nodes)
 			{
-				if (node.Type == "user" && node.Suspicious)
+				if ((node.IsTypeAUser && node.Suspicious) || node.Critical)
 				{
 					var user = BuildIndirectMemberUser(singleCompromiseData, node, reference, map);
 					singleCompromiseData.IndirectMembers.Add(user);
 				}
 			}
+			singleCompromiseData.NumberOfIndirectMembers = singleCompromiseData.IndirectMembers.Count;
 		}
 
 		private SingleCompromiseGraphIndirectMemberData BuildIndirectMemberUser(SingleCompromiseGraphData singleCompromiseData, SingleCompromiseGraphNodeData node, Dictionary<int, SingleCompromiseGraphNodeData> reference, Dictionary<int, int> map)
@@ -512,12 +504,12 @@ namespace PingCastle.Reporting
 			var member = new SingleCompromiseGraphIndirectMemberData();
 			member.Name = node.ShortName;
 			member.Distance = node.Distance;
-			if (node.ADItem.ObjectSid != null)
+			if (node.ADItem != null && node.ADItem.ObjectSid != null)
 				member.Sid = node.ADItem.ObjectSid.Value;
 			int id = node.Id;
 			var currentNode = node;
 			var path = new List<string>();
-			while (id >= 0 && !(currentNode.Type == "user" && !currentNode.Suspicious))
+			while (id >= 0 && !(currentNode.IsTypeAUser && !currentNode.Suspicious))
 			{
 				path.Add(currentNode.ShortName);
 				if (map.ContainsKey(id))
@@ -671,95 +663,183 @@ namespace PingCastle.Reporting
 			}
 		}
 
-		private List<int> RetrieveDirectUserNodes(int id, IEnumerable<string> linkTypes)
+		private bool IsNodeTypeAUserNode(string type)
 		{
-			List<int> directUserNodes = new List<int>();
-			List<int> input = new List<int>() { id };
-			List<int> output = new List<int>();
-			var rootNode = storage.RetrieveNode(id);
-			foreach (string linkType in linkTypes)
+			switch (type)
 			{
-				if (rootNode.Type == linkType)
-				{
-					directUserNodes.Add(id);
-					break;
-				}
+				case "user":
+				case "msDS-GroupManagedServiceAccount":
+				case "msDS-ManagedServiceAccount":
+				case "inetorgperson":
+					return true;
+				default:
+					return false;
 			}
-			while (input.Count > 0)
+		}
+
+		private bool IsNodeTypeAComputerNode(string type)
+		{
+			switch (type)
 			{
-				List<Relation> data = storage.SearchRelations(input, input);
+				case "computer":
+					return true;
+				default:
+					return false;
+			}
+		}
+
+		// this function build a group member -> user tree
+		// stop nodes (other key objects listed in the report) are explored
+		// this tree is built first to be sure the end user will be able to see it
+		private void RetrieveDirectNodesAndLinks(int rootNodeId, Dictionary<int, Node> knownNodeAfterThis, Dictionary<int, List<int>> tree,
+																List<int> directUserNodes, List<int> directComputersNodes,
+																Dictionary<int, List<Relation>> links)
+		{
+			List<int> input = new List<int>() { rootNodeId };
+			List<int> output = new List<int>();
+			int distance = 1;
+			var rootNode = storage.RetrieveNode(rootNodeId);
+			if (IsNodeTypeAUserNode(rootNode.Type))
+			{
+				directUserNodes.Add(rootNodeId);
+			}
+			else if (IsNodeTypeAComputerNode(rootNode.Type))
+			{
+				directComputersNodes.Add(rootNodeId);
+			}
+			else if (rootNode.Type != "group")
+			{
+				return;
+			}
+			knownNodeAfterThis.Add(rootNodeId, rootNode);
+			tree[distance++] = new List<int>() { rootNodeId };
+			// add a defensive programming check to avoid infinite distance
+			while (input.Count > 0 && distance < 1000)
+			{
+				tree[distance] = new List<int>();
+				var data = storage.SearchRelations(input, input);
 				foreach (Relation link in data)
 				{
 					if (link.Hint.Contains(RelationType.group_member.ToString()) ||
 						link.Hint.Contains(RelationType.primary_group_member.ToString()))
 					{
-						output.Add(link.ToId);
-						if (!directUserNodes.Contains(link.ToId))
+						if (!links.ContainsKey(link.FromId))
 						{
-							var node = storage.RetrieveNode(link.ToId);
-							foreach (string linkType in linkTypes)
-							{
-								if (node.Type == linkType)
-								{
-									directUserNodes.Add(link.ToId);
-									break;
-								}
-							}
+							links[link.FromId] = new List<Relation>();
+						}
+						links[link.FromId].Add(link);
+
+						var node = storage.RetrieveNode(link.ToId);
+						if (!IsStopNode(node) && tree[distance - 1].Contains(link.FromId) && !tree[distance].Contains(link.ToId))
+						{
+							tree[distance].Add(link.ToId);
+						}
+						node.Distance = distance;
+						if (!knownNodeAfterThis.ContainsKey(link.ToId))
+						{
+							knownNodeAfterThis.Add(link.ToId, node);
+							output.Add(link.ToId);
+						}
+						if (IsNodeTypeAUserNode(node.Type))
+						{
+							if (!directUserNodes.Contains(link.ToId))
+								directUserNodes.Add(link.ToId);
+						}
+						else if (IsNodeTypeAComputerNode(node.Type))
+						{
+							if (!directComputersNodes.Contains(link.ToId))
+								directComputersNodes.Add(link.ToId);
 						}
 					}
 				}
+				distance++;
 				input.Clear();
 				input.AddRange(output);
 				output.Clear();
 			}
-			return directUserNodes;
 		}
 
-		private Dictionary<int, List<Relation>> RetrieveLinks(int id, List<int> nodesid)
+		private int RetrieveLinksForOneLayer(List<int> input, Dictionary<int, Node> knownNodeAfterThis, Dictionary<int, List<Relation>> output, ref int depth)
 		{
-			Dictionary<int, List<Relation>> output = new Dictionary<int, List<Relation>>();
-			List<int> input = new List<int>() { id };
-			nodesid.Add(id);
-			int depth = 1;
-			while (true)
+			var data = storage.SearchRelations(input, knownNodeAfterThis.Keys);
+			if (data.Count > 0)
 			{
-				List<Relation> data = storage.SearchRelations(input, nodesid);
-				if (data.Count > 0)
+				input.Clear();
+				foreach (Relation link in data)
 				{
-					input.Clear();
-					foreach (Relation link in data)
+					if (!output.ContainsKey(link.FromId))
 					{
-						if (!output.ContainsKey(link.FromId))
-						{
-							output[link.FromId] = new List<Relation>();
-						}
+						output[link.FromId] = new List<Relation>();
+					}
+					if (!knownNodeAfterThis.ContainsKey(link.ToId))
+					{
 						output[link.FromId].Add(link);
-						if (!nodesid.Contains(link.ToId))
-						{
-							nodesid.Add(link.ToId);
-							var node = storage.RetrieveNode(link.ToId);
-							if (!IsStopNode(node))
-								input.Add(link.ToId);
-						}
-					}
-					if (nodesid.Count > MaxNodes)
-					{
-						Trace.WriteLine("The report reached the maximum of nodes allowed (" + nodesid.Count + " versus MaxNodes=" + MaxNodes + ")");
-						break;
-					}
-					if (depth > MaxDepth)
-					{
-						Trace.WriteLine("The report reached the maximum of depth allowed (" + depth + " versus MaxDepth=" + MaxDepth + ")");
-						break;
+					
+						var node = storage.RetrieveNode(link.ToId);
+						knownNodeAfterThis.Add(link.ToId, node);
+						if (!IsStopNode(node))
+							input.Add(link.ToId);
 					}
 				}
-				else
+				if (knownNodeAfterThis.Count > MaxNodes)
+				{
+					Trace.WriteLine("The report reached the maximum of nodes allowed (" + knownNodeAfterThis.Count + " versus MaxNodes=" + MaxNodes + ")");
+					return 0;
+				}
+				if (depth > MaxDepth)
+				{
+					Trace.WriteLine("The report reached the maximum of depth allowed (" + depth + " versus MaxDepth=" + MaxDepth + ")");
+					return 0;
+				}
+			}
+			return data.Count;
+		}
+
+		private void BuildTree(int rootNodeId, Dictionary<int, Node> knownNodeAfterThis, 
+																			List<int> directUserNodes, List<int> directComputersNodes,
+																			Dictionary<int, List<Relation>> links)
+		{
+			// key is distance, value is list of nodes at the distance
+			var tree = new Dictionary<int, List<int>>();
+			List<int> input = new List<int>();
+			
+			Trace.WriteLine("RetrieveDirectNodesAndLinks");
+			// start by building a tree with group membership
+			RetrieveDirectNodesAndLinks(rootNodeId, knownNodeAfterThis, tree, directUserNodes, directComputersNodes, links);
+
+			Trace.WriteLine("Build direct groups");
+			int depth = 1;
+			if (knownNodeAfterThis.Count == 0)
+			{
+				// there is no group starting here.
+				// Initialize the tree with the root object
+				input.Add(rootNodeId);
+				knownNodeAfterThis.Add(rootNodeId, storage.RetrieveNode(rootNodeId));
+			}
+			else
+			{
+				for (depth = 1; depth <= tree.Count; depth++)
+				{
+					input.AddRange(tree[depth]);
+					RetrieveLinksForOneLayer(input, knownNodeAfterThis, links, ref depth);
+				}
+			}
+
+			Trace.WriteLine("Process each layer");
+			// then process layer by layer
+			// note: we limit a depth up to 1000 for defensive programming
+			while (depth < 1000)
+			{
+				if (RetrieveLinksForOneLayer(input, knownNodeAfterThis, links, ref depth) == 0)
 				{
 					break;
 				}
 				depth++;
 			}
-			return output;
+
+			Trace.WriteLine("Compute distance");
+			//SimplifyGraph(knownNodeAfterThis, links);
+			ComputeDistance(rootNodeId, links, knownNodeAfterThis);
 		}
 
 		private bool IsStopNode(Node node)
@@ -772,7 +852,7 @@ namespace PingCastle.Reporting
 			return false;
 		}
 
-		private void PrepareStopNodes(GraphObjectReference ObjectReference)
+		private void PrepareStopNodes(GraphObjectReference ObjectReference, string domainSid)
 		{
 			stopNodes.Clear();
 			foreach (var typology in ObjectReference.Objects.Keys)
@@ -782,6 +862,10 @@ namespace PingCastle.Reporting
 					stopNodes.Add(obj.Name);
 				}
 			}
+			// avoid additional explore of domain users & domain computers
+			// (if there are members defined explicitely instead of using the primarygroup as usual)
+			stopNodes.Add(domainSid + "-513");
+			stopNodes.Add(domainSid + "-515");
 		}
 
 		void SimplifyGraph(Dictionary<int, Node> nodes, Dictionary<int, List<Relation>> links)
@@ -887,6 +971,7 @@ namespace PingCastle.Reporting
 
 			data.Nodes = new List<SingleCompromiseGraphNodeData>();
 
+			Trace.WriteLine("Building root node");
 			// it is important to put the root node as the first node for correct display
 			int nodenumber = 0;
 			Node rootNode = nodes[rootNodeId];
@@ -900,50 +985,17 @@ namespace PingCastle.Reporting
 			});
 			idconversiontable[rootNode.Id] = nodenumber++;
 
+			Trace.WriteLine("Building nodes");
 			foreach (Node node in nodes.Values)
 			{
 				if (node.Id == rootNodeId)
 					continue;
-				if (String.Equals(node.Type, "foreignsecurityprincipal", StringComparison.OrdinalIgnoreCase))
+				bool exception = false;
+				// authenticated users is allowed for PreWin2000 group
+				if (string.Equals(rootNode.Sid, "S-1-5-32-554", StringComparison.OrdinalIgnoreCase) && string.Equals(node.Sid, "S-1-5-11", StringComparison.OrdinalIgnoreCase))
 				{
-					if (String.Equals(node.Sid, "S-1-5-11", StringComparison.OrdinalIgnoreCase))
-					{
-						data.Nodes.Add(new SingleCompromiseGraphNodeData()
-						{
-							Id = nodenumber,
-							Name = node.Name,
-							Type = node.Type,
-							ShortName = "Authenticated Users",
-							Distance = node.Distance,
-							Critical = true,
-							ADItem = node.ADItem,
-						});
-						// unusual except when found on pre win2k group
-						if (!String.Equals(rootNode.Sid, "S-1-5-32-554", StringComparison.OrdinalIgnoreCase))
-							data.CriticalObjectFound = true;
-						idconversiontable[node.Id] = nodenumber++;
-						continue;
-					}
-					if (String.Equals(node.Sid, "S-1-1-0", StringComparison.OrdinalIgnoreCase))
-					{
-						data.Nodes.Add(new SingleCompromiseGraphNodeData()
-						{
-							Id = nodenumber,
-							Name = node.Name,
-							Type = node.Type,
-							ShortName = "Everyone",
-							Distance = node.Distance,
-							Critical = true,
-							ADItem = node.ADItem,
-						});
-						data.CriticalObjectFound = true;
-						idconversiontable[node.Id] = nodenumber++;
-						continue;
-					}
+					exception = true;
 				}
-				bool domainUsersFound = (node.Type == "foreignsecurityprincipal" && node.Name.EndsWith("-513"));
-				if (domainUsersFound)
-					data.CriticalObjectFound = true;
 				data.Nodes.Add(new SingleCompromiseGraphNodeData()
 				{
 					Id = nodenumber,
@@ -951,14 +1003,17 @@ namespace PingCastle.Reporting
 					Type = node.Type,
 					ShortName = node.Shortname,
 					Distance = node.Distance,
-					Suspicious = (node.Type == "user" && !directNodes.Contains(node.Id)),
-					Critical = domainUsersFound,
+					Suspicious = node.IsTypeAUser && !directNodes.Contains(node.Id),
+					Critical = !exception && node.EveryoneLikeGroup,
 					ADItem = node.ADItem,
 				});
+				if (!exception && node.EveryoneLikeGroup)
+					data.CriticalObjectFound = true;
 				idconversiontable[node.Id] = nodenumber++;
 			}
 			// END OF NODES
 
+			Trace.WriteLine("check links");
 			// defensive programming: check for data consistency
 			foreach (int key in links.Keys)
 			{
@@ -976,6 +1031,7 @@ namespace PingCastle.Reporting
 				}
 			}
 
+			Trace.WriteLine("Building links");
 			// START LINKS
 			data.Links = new List<SingleCompromiseGraphLinkData>();
 
@@ -988,7 +1044,7 @@ namespace PingCastle.Reporting
 					{
 						Source = idconversiontable[detail.ToId],
 						Target = idconversiontable[detail.FromId],
-						Hints = detail.Hint,
+						Hints = string.Join(" ", detail.Hint.ToArray()),
 					});
 				}
 			}

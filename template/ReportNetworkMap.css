@@ -1,0 +1,6 @@
+.map_view_tooltip {
+  position: absolute !important;
+}
+.map_view_tooltip {
+  pointer-events: none;
+}

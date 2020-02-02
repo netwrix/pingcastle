@@ -1,0 +1,55 @@
+.legend_carto 
+{
+	position: absolute;
+	top: 65px;
+	left: 0px;
+}
+.legend_criticalscore {
+    background: #A856AA;
+    border: #19231a;
+    border-style: solid;
+    border-width: 1px;
+    padding: 5px;
+}
+.legend_superhighscore {
+    background: #E75351;
+    border: #19231a;
+    border-style: solid;
+    border-width: 1px;
+    padding: 5px;
+}
+.legend_highscore {
+    background: #FA9426;
+    border: #19231a;
+    border-style: solid;
+    border-width: 1px;
+    padding: 5px;
+}
+.legend_mediumscore {
+    background: #FDC334;
+    border: #19231a;
+    border-style: solid;
+    border-width: 1px;
+    padding: 5px;
+}
+
+.legend_lowscore {
+    background: #74C25C;
+    border: #19231a;
+    border-style: solid;
+    border-width: 1px;
+    padding: 5px;
+}
+.legend_unknown {
+    background: #ffffff;
+    border: #a352cc;
+    border-style: solid;
+    border-width: 1px;
+    padding: 5px;
+}
+.network-area
+{
+height: 100%;
+min-height: 100%;
+border-width:1px;
+}

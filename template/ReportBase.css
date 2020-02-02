@@ -1,0 +1,195 @@
+body { 
+	background:#e1e1e1;
+	height: 100%;
+	min-height: 100%;
+}
+html
+{
+	height:100%;
+	min-height: 100%;
+}
+@media screen {
+	body {
+		padding-top: 50px;
+		margin-top: 10px;
+	}
+
+	h1, h2, h3, h4 {
+		color: #Fa9C1A;
+	}
+	a {
+		color: #fa9c1a;
+	}
+
+	a:hover {
+		color: #58595b;
+	}
+}
+#wrapper {
+	box-shadow:0 0 8px rgba(0,0,0,0.25);
+}
+#wrapper.well {
+	background:#fff;
+	border-radius:0;
+}
+
+.ticked { color: #4CAF50;}
+
+.unticked { color: #FF1744;}
+
+
+.navbar-custom {
+	background-color: #ffffff;
+}
+
+.navbar-custom .navbar-toggler-icon {
+	background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(0, 0, 0, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+.navbar-custom .navbar-toggler {
+	color: rgba(0, 0, 0, 0.5);
+	border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* change the brand and text color */
+.navbar-custom .navbar-brand, .navbar-custom .navbar-text {
+	color: #fa9c1a;
+}
+/* change the link color */
+.navbar-custom .navbar-nav .nav-link {
+	color: #58595b;
+}
+
+.navbar-custom .navbar-nav > .active > a,
+.navbar-custom .navbar-nav > .active > a:hover,
+.navbar-custom .navbar-nav > .active > a:focus {
+	color: #fff;
+	background-color: #fa9c1a;
+}
+
+.nav-tabs .nav-link {
+	border-color: #e9ecef #e9ecef #dee2e6;
+	color: #58595b;
+}
+
+.nav-tabs .nav-link.disabled {
+	color: #6c757d;
+	background-color: transparent;
+	border-color: transparent;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+	color: #fff;
+	background-color: #fa9c1a;
+	border-color: #dee2e6 #dee2e6 #fff;
+}
+
+/* navbar */
+.navbar-brand {
+	margin: 0;
+	padding: 0;
+}
+
+.navbar-brand img {
+	max-height: 100%;
+}
+	
+.dropdown-item.active, .dropdown-item:active {
+	background-color: #fa9c1a;
+}
+
+.border-bottom {
+	border-bottom-color: #fa9c1a !important;
+}
+
+.risk_model_none
+{background-color: #00AAFF; padding:5px;}
+.risk_model_low
+{background-color: #ffd800; padding:5px;}
+.risk_model_medium
+{background-color: #ff6a00; padding:5px;}
+.risk_model_high
+{background-color: #f12828; padding:5px;}
+.modal-header{background-color: #FA9C1A;}
+.modal-header h4 {color: #fff;}
+
+/* no transition to be used in the carto mode */
+.progress .progress-bar{
+	-webkit-transition: none;
+	-o-transition: none;
+	transition: none;
+}
+.info-mark {
+	display: inline-block;
+	font-family: sans-serif;
+	font-weight: bold;
+	text-align: center;
+	width: 20px;
+	height: 20px;
+	font-size: 16px;
+	line-height: 20px;
+	border-radius: 14px;
+	margin-right: 4px;
+	padding: 1px;
+	color: #fa9c1a;
+	background: white;
+	border: 1px solid #fa9c1a;
+	text-decoration: none;
+}
+
+.info-mark:hover {
+	color: white;
+	background: #fa9c1a;
+	border-color: white;
+	text-decoration: none;
+}
+.num
+{
+	text-align: right !important;
+}
+@media screen
+{
+	a[name] {
+		padding-top: 60px;
+		margin-top: -60px;
+		display: inline-block; /* required for webkit browsers */
+	}
+}
+.pagebreak { page-break-before: always; } /* page-break-after works, as well */
+
+
+.btn-default {
+	color: #58595B;
+	background-color: transparent;
+	background-image: none;
+	border-color: #58595B;
+}
+
+.btn-default:hover {
+	color: #fff;
+	background-color: #58595B;
+	border-color: #58595B;
+}
+
+.btn-default:focus, .btn-outline-primary.focus {
+	box-shadow: 0 0 0 0.2rem rgba(88, 89, 91, 0.5);
+}
+
+.btn-default.disabled, .btn-outline-primary:disabled {
+	color: #58595B;
+	background-color: transparent;
+}
+
+.btn-default:not(:disabled):not(.disabled):active, .btn-outline-primary:not(:disabled):not(.disabled).active,
+.show > .btn-default.dropdown-toggle {
+	color: #fff;
+	background-color: #58595B;
+	border-color: #58595B;
+}
+
+.btn-default:not(:disabled):not(.disabled):active:focus, .btn-default:not(:disabled):not(.disabled).active:focus,
+.show > .btn-default.dropdown-toggle:focus {
+	box-shadow: 0 0 0 0.2rem rgba(88, 89, 91, 0.5);
+}
+
+.tooltip-wide { max-width: 100%; min-width: 80%; }

@@ -47,6 +47,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <NoWarn>0436</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
@@ -94,7 +95,7 @@
     <Compile Include="Data\IPingCastleReportGenerator.cs" />
     <Compile Include="Data\PingCastleReportHelper.cs" />
     <Compile Include="Data\PingCastleReportDataExportLevel.cs" />
-    <Compile Include="Graph\Database\IDataStorage.cs" />
+    <Compile Include="Data\SafeXmlWriter.cs" />
     <Compile Include="Graph\Database\LiveDataStorage.cs" />
     <Compile Include="Graph\Database\MappingType.cs" />
     <Compile Include="Graph\Database\RelationType.cs" />
@@ -103,28 +104,7 @@
     <Compile Include="ADWS\ADConnection.cs" />
     <Compile Include="ADWS\LDAPConnection.cs" />
     <Compile Include="Compatibility.cs" />
-    <Compile Include="Graph\Export\IRelationFactory.cs" />
     <Compile Include="Graph\Reporting\GraphObjectReference.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphRule.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectUser.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphPrivilegedOperatorsEmpty.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphTrustMoreThanOneDomainControlCritical.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphTrustOneDomainControlCritical.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphTrustOneDomainControlUserDefined.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphTrustChildDomainHasPermission.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectCriticalAny.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectCritical100.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectCritical50.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectCritical10.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectHigh10.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectHigh100.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectHigh50.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectHighAny.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectMedium10.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectMedium100.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectMedium50.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphAnomalyIndirectMediumAny.cs" />
-    <Compile Include="Graph\Rules\CompromiseGraphStalePermissionsCleanup.cs" />
     <Compile Include="Healthcheck\ADModel.cs" />
     <Compile Include="Data\DomainKey.cs" />
     <Compile Include="ADWS\DomainLocator.cs" />
@@ -134,6 +114,16 @@
     <Compile Include="Healthcheck\HealthCheckEncryption.cs" />
     <Compile Include="Data\HealthCheckBUEntityData.cs" />
     <Compile Include="Data\CompromiseGraphData.cs" />
+    <Compile Include="Healthcheck\HoneyPotSettings.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteVista.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyAuditPowershell.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyDCLdapsSSL.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyAuditDC.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedControlPathIndirectMany.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedControlPathIndirectEveryone.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedLogonDenied.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedTrustedCredManAccessPrivilege.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDNSDelegation.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedKerberoasting.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleTrustTGTDelegation.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyNoGPOLLMNR.cs" />
@@ -160,8 +150,6 @@
     <Compile Include="PingCastleFactory.cs" />
     <Compile Include="Report\IPingCastleReportUser.cs" />
     <Compile Include="Report\ReportBase.cs" />
-    <Compile Include="Report\ReportCompromiseGraph.cs" />
-    <Compile Include="Report\ReportCompromiseGraphConsolidation.cs" />
     <Compile Include="Report\ReportHealthCheckConsolidation.cs" />
     <Compile Include="Report\ReportHealthCheckRules.cs" />
     <Compile Include="Report\ReportHealthCheckSingle.cs" />
@@ -252,6 +240,7 @@
     <Compile Include="RPC\spool.cs" />
     <Compile Include="Rules\RuleSet.cs" />
     <Compile Include="Scanners\AntivirusScanner.cs" />
+    <Compile Include="Scanners\bluekeepscanner.cs" />
     <Compile Include="Scanners\LAPSBitLocker.cs" />
     <Compile Include="Scanners\ConsistencyScanner.cs" />
     <Compile Include="Scanners\ACLScanner.cs" />
@@ -338,9 +327,6 @@
     <None Include="ADWS\wsdl\wsman.xsd">
       <SubType>Designer</SubType>
     </None>
-    <EmbeddedResource Include="Graph\Rules\RuleDescription.resx">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="Healthcheck\Rules\RuleDescription.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -354,10 +340,32 @@
     <EmbeddedResource Include="template\bootstrap.min.js.gz" />
     <EmbeddedResource Include="template\jquery.min.js.gz" />
     <EmbeddedResource Include="template\popper.min.js.gz" />
+    <Content Include="template\ProcessTemplate.ps1" />
+    <EmbeddedResource Include="template\ReportBase.css.gz" />
+    <EmbeddedResource Include="template\ReportCompromiseGraph.css.gz" />
+    <EmbeddedResource Include="template\ReportHealthCheckConsolidation.css.gz" />
+    <EmbeddedResource Include="template\ReportHealthCheckRules.css.gz" />
+    <EmbeddedResource Include="template\ReportMapBuilder.css.gz" />
+    <EmbeddedResource Include="template\ReportNetworkMap.css.gz" />
+    <EmbeddedResource Include="template\ReportRiskControls.css.gz" />
+    <EmbeddedResource Include="template\ReportCompromiseGraph.js.gz" />
+    <EmbeddedResource Include="template\ReportMapBuilder.js.gz" />
+    <EmbeddedResource Include="template\ReportNetworkMap.js.gz" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="changelog.txt" />
     <Content Include="pingcastle.ico" />
+    <Content Include="template\ReportBase.css" />
+    <Content Include="template\ReportCompromiseGraph.css" />
+    <Content Include="template\ReportCompromiseGraph.js" />
+    <Content Include="template\ReportHealthCheckConsolidation.css" />
+    <Content Include="template\ReportHealthCheckRules.css" />
+    <Content Include="template\ReportMapBuilder.css" />
+    <Content Include="template\ReportMapBuilder.js" />
+    <Content Include="template\ReportNetworkMap.css" />
+    <Content Include="template\ReportNetworkMap.js" />
+    <Content Include="template\ReportRiskControls.css" />
+    <Content Include="template\responsivetemplate.html" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -374,18 +382,12 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if not exist $(SolutionDir)\CodeSigning\certificate.pfx goto :exit
-
-@echo ================
-@echo sign binaries
-@echo ================
-
-IF "$(ConfigurationName)" == "Release" "C:\Program Files (x86)\Windows Kits\8.0\bin\x86\signtool.exe" sign  /d PingCastle /ac $(SolutionDir)\CodeSigning\addtrustexternalcaroot_kmod.crt /f $(SolutionDir)\CodeSigning\certificate.pfx /p vletoux /t http://timestamp.comodoca.com "$(TargetPath)"
-IF "$(ConfigurationName)" == "Release" "C:\Program Files (x86)\Windows Kits\8.0\bin\x86\signtool.exe" sign  /d PingCastle /ac $(SolutionDir)\CodeSigning\addtrustexternalcaroot_kmod.crt /f $(SolutionDir)\CodeSigning\certificate.pfx /p vletoux /fd sha256 /tr http://timestamp.comodoca.com/?td=sha256 /td sha256 /as "$(TargetPath)"
-
-@echo Done signing
-:exit
-</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>cd $(ProjectDir)\template
+powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File "ProcessTemplate.ps1"</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -47,6 +47,12 @@ namespace PingCastle.Healthcheck.Rules
                     Trace.WriteLine("Unable to parse the url: " + uristring);
                     return null;
                 }
+                // important, to avoid an exception in uri.IsUnc
+                if (!uri.IsAbsoluteUri)
+                {
+                    Trace.WriteLine("The url is not absolute: " + uristring);
+                    return null;
+                }
                 if (uri.IsUnc && uri.Host.Contains("."))
                 {
                     string server = uri.Host;

@@ -18,6 +18,12 @@ using PingCastle.Rules;
 namespace PingCastle.Healthcheck
 {
 
+	public interface IGPOReference
+	{
+		string GPOName { get; set; }
+		string GPOId { get; set; }
+	}
+
     [DebuggerDisplay("{Name}")]
     public class HealthCheckGroupMemberData
     {
@@ -188,8 +194,17 @@ namespace PingCastle.Healthcheck
 
     }
 
+	[DebuggerDisplay("{GPOName} {UserName}")]
+	public class GPOInfo : IGPOReference
+	{
+		public string GPOName { get; set; }
+		public string GPOId { get; set; }
+		public bool IsDisabled { get; set; }
+		public List<string> AppliedTo { get; set; }
+	}
+
     [DebuggerDisplay("{GPOName} {UserName}")]
-    public class GPPPassword
+	public class GPPPassword : IGPOReference
     {
         public string UserName { get; set; }
         public string Other { get; set; }
@@ -200,14 +215,16 @@ namespace PingCastle.Healthcheck
         public string Type { get; set; }
 
         public string GPOName { get; set; }
+		public string GPOId { get; set; }
     }
 
 	[DebuggerDisplay("{GPOName} {FileName}")]
-	public class GPPFileDeployed
+	public class GPPFileDeployed : IGPOReference
 	{
 		public string FileName { get; set; }
 		public string Type { get; set; }
 		public string GPOName { get; set; }
+		public string GPOId { get; set; }
 		public List<HealthcheckScriptDelegationData> Delegation { get; set; }
 	}
 
@@ -227,35 +244,39 @@ namespace PingCastle.Healthcheck
     }
 
     [DebuggerDisplay("{GPOName}")]
-    public class GPPSecurityPolicy
+	public class GPPSecurityPolicy : IGPOReference
     {
         public List<GPPSecurityPolicyProperty> Properties { get; set; }
 
         public string GPOName { get; set; }
+		public string GPOId { get; set; }
     }
 
     [DebuggerDisplay("{GPOName} {User} {Privilege}")]
-    public class GPPRightAssignment
+	public class GPPRightAssignment : IGPOReference
     {
         public string User { get; set; }
 
         public string Privilege { get; set; }
 
         public string GPOName { get; set; }
+		public string GPOId { get; set; }
     }
 
     [DebuggerDisplay("{GPOName} {User} {Privilege}")]
-    public class GPOMembership
+	public class GPOMembership : IGPOReference
     {
         public string GPOName { get; set; }
+		public string GPOId { get; set; }
         public string User { get; set; }
         public string MemberOf { get; set; }
     }
 
 	[DebuggerDisplay("{GPOName} {Order} {Server}")]
-	public class GPOEventForwardingInfo
+	public class GPOEventForwardingInfo : IGPOReference
 	{
 		public string GPOName { get; set; }
+		public string GPOId { get; set; }
 		public int Order { get; set; }
 		public string Server { get; set; }
 	}
@@ -438,11 +459,55 @@ namespace PingCastle.Healthcheck
 
         public int Points { get; set; }
 
-        public RiskRuleCategory Category { get; set; }
+		// we are using a xml serialization trick to be resilient if a new RiskRuleCategory is added in the future
+		[XmlIgnore]
+		public RiskRuleCategory Category { get; set; }
 
+		[XmlElement("Category")]
+		public string CategoryAsString
+		{
+			get
+			{
+				return Category.ToString();
+			}
+			set
+			{
+				try
+				{
+					Category = (RiskRuleCategory)Enum.Parse(typeof(RiskRuleCategory), value);
+				}
+				catch
+				{
+					Category = RiskRuleCategory.Unknown;
+				}
+			}
+		}
+
+		// we are using a xml serialization trick to be resilient if a new RiskModelCategory is added in the future
+		[XmlIgnore]
 		public RiskModelCategory Model { get; set; }
 
-        public string RiskId { get; set; }
+		[XmlElement("Model")]
+		public string ModelAsString
+		{
+			get
+			{
+				return Model.ToString();
+			}
+			set
+			{
+				try
+				{
+					Model = (RiskModelCategory)Enum.Parse(typeof(RiskModelCategory), value);
+				}
+				catch
+				{
+					Model = RiskModelCategory.Unknown;
+				}
+			}
+		}
+
+		public string RiskId { get; set; }
 
         public string Rationale { get; set; }
 
@@ -483,10 +548,12 @@ namespace PingCastle.Healthcheck
     }
 
     [DebuggerDisplay("{GPOName} {Action} {CommandLine}")]
-    public class HealthcheckGPOLoginScriptData
+	public class HealthcheckGPOLoginScriptData : IGPOReference
     {
 
         public string GPOName { get; set; }
+
+		public string GPOId { get; set; }
 
         public string Action { get; set; }
 
@@ -520,9 +587,11 @@ namespace PingCastle.Healthcheck
 	}
 
 	[DebuggerDisplay("{GPOName} {Account} {Right}")]
-	public class GPODelegationData
+	public class GPODelegationData : IGPOReference
 	{
 		public string GPOName { get; set; }
+
+		public string GPOId { get; set; }
 
 		public string Item { get; set; }
 
@@ -530,6 +599,30 @@ namespace PingCastle.Healthcheck
 
 		public string Right { get; set; }
 	}
+
+    [DebuggerDisplay("{GPOName} {Category} {Value}")]
+    public class GPOAuditSimpleData : IGPOReference
+    {
+        public string GPOName { get; set; }
+
+        public string GPOId { get; set; }
+
+        public string Category { get; set; }
+
+        public int Value { get; set; }
+    }
+
+    [DebuggerDisplay("{GPOName} {SubCategory} {Value}")]
+    public class GPOAuditAdvancedData : IGPOReference
+    {
+        public string GPOName { get; set; }
+
+        public string GPOId { get; set; }
+
+        public Guid SubCategory { get; set; }
+
+        public int Value { get; set; }
+    }
     //public class HealthcheckSiteTopologyData
     //{
 
@@ -613,6 +706,8 @@ namespace PingCastle.Healthcheck
         public List<string> IP { get; set; }
 
 		public List<string> FSMO { get; set; }
+
+		public List<string> LDAPSProtocols { get; set; }
 	}
 
 	[DebuggerDisplay("{SiteName}")]
@@ -679,8 +774,66 @@ namespace PingCastle.Healthcheck
                         rule.Level = value;
                     }
                 }
+				if (ControlPaths != null && ControlPaths.Data != null)
+				{
+					foreach (var d in ControlPaths.Data)
+					{
+						d.Level = value;
+					}
+				}
             }
         }
+
+		public void InitializeReportingData()
+		{
+			version = new Version(EngineVersion.Split(' ')[0]);
+
+			applicableRules = new List<RuleBase<HealthcheckData>>();
+			foreach (var rule in RuleSet<HealthcheckData>.Rules)
+			{
+				object[] models = rule.GetType().GetCustomAttributes(typeof(RuleIntroducedInAttribute), true);
+				if (models != null && models.Length != 0)
+				{
+					RuleIntroducedInAttribute model = (RuleIntroducedInAttribute)models[0];
+					if (model.Version <= version)
+					{
+						applicableRules.Add(rule);
+					}
+				}
+				else
+				{
+					applicableRules.Add(rule);
+				}
+			}
+		}
+		[IgnoreDataMember]
+		[XmlIgnore]
+		public Version version { get; set; }
+
+		[IgnoreDataMember]
+		[XmlIgnore]
+		public List<RuleBase<HealthcheckData>> applicableRules {get;set;}
+
+		private Dictionary<string, GPOInfo> _GPOInfoDic;
+		[IgnoreDataMember]
+		[XmlIgnore]
+		public Dictionary<string, GPOInfo> GPOInfoDic
+		{
+			get
+			{
+				if (_GPOInfoDic != null) 
+					return _GPOInfoDic;
+				_GPOInfoDic = new Dictionary<string, GPOInfo>(StringComparer.OrdinalIgnoreCase);
+				foreach (var gpo in GPOInfo)
+				{
+					if (!_GPOInfoDic.ContainsKey(gpo.GPOId))
+					{
+						_GPOInfoDic.Add(gpo.GPOId, gpo);
+					}
+				}
+				return _GPOInfoDic;
+			}
+		}
 
         public string DomainFQDN { get; set; }
         public string NetBIOSName { get; set; }
@@ -745,6 +898,9 @@ namespace PingCastle.Healthcheck
         public bool ShouldSerializeOperatingSystemDC() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
         public List<HealthcheckOSData> OperatingSystemDC { get; set; }
 
+		public bool ShouldSerializeGPOInfo() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+		public List<GPOInfo> GPOInfo { get; set; }
+
         public bool ShouldSerializeLoginScript() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthcheckLoginScriptData> LoginScript { get; set; }
 
@@ -777,6 +933,15 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeGPPRightAssignment() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<GPPRightAssignment> GPPRightAssignment { get; set; }
+
+		public bool ShouldSerializeGPPLoginAllowedOrDeny() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
+		public List<GPPRightAssignment> GPPLoginAllowedOrDeny { get; set; }
+
+        public bool ShouldSerializeGPOAuditSimple() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
+        public List<GPOAuditSimpleData> GPOAuditSimple { get; set; }
+
+        public bool ShouldSerializeGPOAuditAdvanced() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
+        public List<GPOAuditAdvancedData> GPOAuditAdvanced { get; set; }
 
         public bool ShouldSerializeGPPPasswordPolicy() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<GPPSecurityPolicy> GPPPasswordPolicy { get; set; }
@@ -834,6 +999,9 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeMachineAccountQuota() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public int MachineAccountQuota { get; set; }
+
+		public bool ShouldSerializeListHoneyPot() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+		public List<HealthcheckAccountDetailData> ListHoneyPot { get; set; }
 
         private DomainKey _domain;
 		[IgnoreDataMember]
@@ -927,5 +1095,7 @@ namespace PingCastle.Healthcheck
 				return output;
 			}
 		}
-	}
+
+		public CompromiseGraphData ControlPaths { get; set; }
+    }
 }

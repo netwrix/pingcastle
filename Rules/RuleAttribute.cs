@@ -178,6 +178,7 @@ namespace PingCastle.Rules
 		Domain,
 		Forest,
 		Windows7,
+		Windows10,
 		Windows2008,
 		ActiveDirectoryService2003,
 		ActiveDirectoryService2008
@@ -205,6 +206,8 @@ namespace PingCastle.Rules
 						return "https://www.stigviewer.com/stig/active_directory_forest/2016-12-19/finding/" + ID;
 					case STIGFramework.Windows7:
 						return "https://www.stigviewer.com/stig/windows_7/2012-08-22/finding/" + ID;
+					case STIGFramework.Windows10:
+						return "https://www.stigviewer.com/stig/windows_10/2018-04-06/finding/" + ID;
 					case STIGFramework.Windows2008:
 						return "https://www.stigviewer.com/stig/windows_2008_member_server/2018-03-07/finding/" + ID;
 					case STIGFramework.ActiveDirectoryService2003:

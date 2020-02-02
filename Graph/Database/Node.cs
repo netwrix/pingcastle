@@ -16,9 +16,20 @@ namespace PingCastle.Graph.Database
         public int Id { get; set; }
         
         public string Type { get; set; }
+
+		public bool IsTypeAUser
+		{
+			get
+			{
+				return (string.Equals(Type, "user", StringComparison.OrdinalIgnoreCase) || string.Equals(Type, "inetOrgPerson", StringComparison.OrdinalIgnoreCase));
+			}
+		}
+
         public string Sid { get; set; }
         public string Dn { get; set; }
         public string Shortname { get; set; }
+		public string FileName { get; set; }
+		public bool EveryoneLikeGroup { get; set; }
 
         public int Distance { get; set; }
 
@@ -27,7 +38,9 @@ namespace PingCastle.Graph.Database
         public string Name { 
             get
             {
-                if (String.IsNullOrEmpty(Dn))
+				if (!string.IsNullOrEmpty(FileName))
+					return FileName;
+                if (string.IsNullOrEmpty(Dn))
                     return Sid;
                 return Dn;
             }

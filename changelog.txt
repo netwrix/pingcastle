@@ -1,3 +1,26 @@
+2.8.0.0
+* reworked the way third party components are included in reports for better html auditing (aka Content Security Policy)
+* added the rule P-DNSDelegation to check delegation on the MS DNS server which can be used to take control of the domain
+* show healthcheck rule detail in a table if possible
+* remove the "network configuration operators" group from privileged groups as it has no impact on the domain by itself
+* split the allow login / deny login settings from privileges and from DC to another dedicated section
+* added the rule P-TrustedCredManAccessPrivilege to match STIG rule V-63843
+* added Auto logon info if found in the GPO passwords section
+* added the rule P-LogonDenied to check for tiers isolation. Only in application if more than 200 users & 200 computers
+* be resilient if a new rule category is added in the future so future reports can be read by this PingCastle version
+* fix a problem when control character is found in data (loginscript for example) and cannot be serialized in xml
+* added an experimental bluekeep scanner. To avoid AV detection, the code is commented. Decomment and recompile to use it.
+* added SeSecurityPrivilege (access to the security event log) in the list of privileges to monitor.
+* merged the permission report and the healthcheck report
+* added the rule P-ControlPathIndirectEveryone and P-ControlPathIndirectMany for control path analysis
+* added the rule A-AuditDC for audit policy
+* update to bootstrap 4.4.1
+* change the algorithm to locate the server. Faster and compatible with kerberos only domains.
+* added the rule A-DCLdapsProtocol looking for SSLv2 and SSLv3 active on DC
+* added the rule A-AuditPowershell to check for powershell auditing (informative)
+* added the rule S-OS-Vista to check for Vista presence (which is not supported anymore). Windows 7 & 2008 added after extended support stops.
+* added honey pot setting to avoid honey pot accounts to be in error
+
 2.7.1.0
 * update the TGT delegation algorithm after the July update (new flag CROSS_ORGANIZATION_ENABLE_TGT_DELEGATION)
 
@@ -43,7 +66,7 @@
 * tuned S-DC-SubnetMissing to avoid dealing with local ipv6 loopback address (::1)
 * added the rule A-DC-Spooler and the spooler scanner to check for print spooler accessible remotely (used to collect computer credentials via unconstrained delegation)
 * added the rule A-NotEnoughDC to check domains have at least 2 DC
-* added the rule P-UnconstrainedDelegation to check for uncontrained delegation in kerberos (the data was already reported)
+* added the rule P-UnconstrainedDelegation to check for unconstrained delegation in kerberos (the data was already reported)
 * in relation with P-UnconstrainedDelegation, change the way accounts "trusted for delegation" are selected. Change useraccountcontrol flag from 0x01000000 to 0x80000
 * fix in healthcheck report: the reversible password detail section was only displayed if there was unconstrained delegation in the domain
 * added the rule P-ExchangeAdminSDHolder to check for the Exchange modification of the AdminSDHolder object

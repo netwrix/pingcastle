@@ -22,6 +22,8 @@ namespace PingCastle.Healthcheck.Rules
             {
                 foreach (var DC in healthcheckData.DomainControllers)
                 {
+					if (string.IsNullOrEmpty(DC.OwnerSID))
+						continue;
                     SecurityIdentifier sid = new SecurityIdentifier(DC.OwnerSID);
                     if (!sid.IsWellKnown(WellKnownSidType.AccountDomainAdminsSid) && !sid.IsWellKnown(WellKnownSidType.AccountEnterpriseAdminsSid))
                     {

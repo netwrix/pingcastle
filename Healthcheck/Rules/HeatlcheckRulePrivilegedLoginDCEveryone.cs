@@ -21,18 +21,42 @@ namespace PingCastle.Healthcheck.Rules
         {
 			var dangerousPrivileges = new List<string>()
 			{
-				"SeInteractiveLogonRight on DC",
-				"SeRemoteInteractiveLogonRight on DC",
+				"SeInteractiveLogonRight",
+				"SeRemoteInteractiveLogonRight",
 			};
-			foreach (var privilege in healthcheckData.GPPRightAssignment)
+			foreach (var privilege in healthcheckData.GPPLoginAllowedOrDeny)
             {
-				if (!dangerousPrivileges.Contains(privilege.Privilege))
-					continue;
 				if (privilege.User == "Authenticated Users" || privilege.User == "Everyone" || privilege.User == "Domain Users"
 					|| privilege.User == "Domain Computers" || privilege.User == "Users"
 					|| privilege.User == "Anonymous")
                 {
-					AddRawDetail(privilege.GPOName, privilege.User, privilege.Privilege);
+					foreach (var gpo in healthcheckData.GPOInfo)
+					{
+						if (string.Equals(gpo.GPOId, privilege.GPOId, StringComparison.OrdinalIgnoreCase))
+						{
+							bool appliedToDC = false;
+							foreach (var ou in gpo.AppliedTo)
+							{
+								if (ou.Contains("OU=Domain Controllers,"))
+								{
+									appliedToDC = true;
+									break;
+								}
+							}
+							if (appliedToDC)
+							{
+								// check if privilege is part of dangerous privilege
+								foreach(var p in dangerousPrivileges)
+								{
+									if (string.Equals(privilege.Privilege, p, StringComparison.OrdinalIgnoreCase))
+									{
+										AddRawDetail(privilege.GPOName, privilege.User, privilege.Privilege);
+									}
+								}
+							}
+							break;
+						}
+					}
                 }
             }
             return null;

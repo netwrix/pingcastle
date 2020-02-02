@@ -21,10 +21,21 @@ namespace PingCastle.Report
 
 		protected override void GenerateFooterInformation()
 		{
-			AddBeginScript();
-			AddLine(TemplateManager.LoadJqueryDatatableJs());
-			AddLine(TemplateManager.LoadDatatableJs());
-			Add(@"
+		}
+
+		protected override void GenerateTitleInformation()
+		{
+			Add("PingCastle Health Check rules - ");
+			Add(DateTime.Now.ToString("yyyy-MM-dd"));
+		}
+
+		protected override void ReferenceJSAndCSS()
+		{
+			AddStyle(TemplateManager.LoadReportBaseCss());
+			AddStyle(TemplateManager.LoadReportHealthCheckRulesCss());
+			AddScript(TemplateManager.LoadJqueryDatatableJs());
+			AddScript(TemplateManager.LoadDatatableJs());
+			AddScript(@"
 
 $(function() {
       $(window).scroll(function() {
@@ -51,75 +62,7 @@ $(document).ready(function(){
 	});
 
 
-});
-</script>
-");
-		}
-
-		protected override void GenerateTitleInformation()
-		{
-			Add("PingCastle Health Check rules - ");
-			Add(DateTime.Now.ToString("yyyy-MM-dd"));
-		}
-
-		protected override void GenerateHeaderInformation()
-		{
-			AddBeginStyle();
-			AddLine(GetStyleSheetTheme());
-			AddLine(GetStyleSheet());
-			Add(@"
-.model_table {
-
-}
-.model_table th {
-	padding: 5px;
-}
-.model_cell {
-	border: 2px solid black;
-	padding: 5px;
-}
-.model_empty_cell {
-}
-div_model {
-	
-}
-.model_cell.model_good {
-	//background-color: #83e043;
-	//color: #FFFFFF;
-}
-.model_cell.model_toimprove
-{
-	background-color: #ffd800;
-	//color: #FFFFFF;
-}
-.model_cell.model_info {
-	background-color: #00AAFF;
-color: #FFFFFF;
-}
-.model_cell.model_warning {
-	background-color: #ff6a00;
-color: #FFFFFF;
-}
-.model_cell.model_danger {
-	background-color: #f12828;
-color: #FFFFFF;
-}
-.model_cell  .popover{
-    max-width: 100%;
-}
-.model_cell .popover-content {
-	color: #000000;
-}
-.model_cell .popover-title {
-	color: #000000;
-}
-");
-			AddLine(@"</style>");
-		}
-
-		private string GetStyleSheet()
-		{
-			return string.Empty;
+});");
 		}
 
 		protected override void GenerateBodyInformation()

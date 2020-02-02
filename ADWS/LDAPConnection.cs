@@ -6,8 +6,10 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.DirectoryServices;
+using System.DirectoryServices.ActiveDirectory;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
@@ -160,13 +162,61 @@ namespace PingCastle.ADWS
 		}
 
 		// connecting using LDAP
+		[SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
 		public override void EstablishConnection()
 		{
-			GetDomainInfo();
-			// in case the domain has been set (instead of the FQDN of the DC), set it to the DC for optimization purpose
-			if (Uri.CheckHostName(Server) == UriHostNameType.Dns)
+			var serverType= Uri.CheckHostName(Server);
+			if (serverType != UriHostNameType.Dns)
 			{
-				Server = domainInfo.DnsHostName;
+				Trace.WriteLine("Server is not DNS - direct connection");
+				GetDomainInfo();
+			}
+			else
+			{
+				Domain domain = null;
+				Trace.WriteLine("Trying to locate the domain");
+				try
+				{
+					if (Credential != null)
+					{
+						domain = Domain.GetDomain(new DirectoryContext(DirectoryContextType.Domain, Server, Credential.UserName, Credential.Password));
+					}
+					else
+					{
+						domain = Domain.GetDomain(new DirectoryContext(DirectoryContextType.Domain, Server));
+					}
+					Trace.WriteLine("Domain located");
+				}
+				catch (ActiveDirectoryObjectNotFoundException)
+				{
+					Trace.WriteLine("DcGetDCName was unable to find a DC using the FQDN - using the fqdn as server name");
+					// server is a FQDN
+					GetDomainInfo();
+					return;
+				}
+				var dc = domain.FindDomainController();
+				try
+				{
+					Server = dc.Name;
+					Trace.WriteLine("DsGetDCName returned " + Server);
+					GetDomainInfo();
+				}
+				catch (COMException ex)
+				{
+					// server not available - force rediscovery of DC
+					if ((uint)ex.ErrorCode == 0x8007203a)
+					{
+						Trace.WriteLine("Unable to connect - force rediscovery of DC");
+						dc = domain.FindDomainController(LocatorOptions.ForceRediscovery);
+						Server = dc.Name;
+						Trace.WriteLine("DsGetDCName returned " + Server);
+						GetDomainInfo();
+					}
+					else
+					{
+						throw;
+					}
+				}
 			}
 		}
 	}

@@ -1,0 +1,78 @@
+.model_table {
+
+}
+.model_table th {
+	padding: 5px;
+}
+.model_cell {
+	border: 2px solid black;
+	padding: 5px;
+}
+.model_empty_cell {
+}
+div_model {
+	
+}
+.model_cell.model_toimprove
+{
+	background-color: #ffd800;
+}
+.model_cell.model_info {
+	background-color: #00AAFF;
+color: #FFFFFF;
+}
+.model_cell.model_warning {
+	background-color: #ff6a00;
+color: #FFFFFF;
+}
+.model_cell.model_danger {
+	background-color: #f12828;
+color: #FFFFFF;
+}
+.model_cell  .popover{
+    max-width: 100%;
+}
+.model_cell .popover-content {
+	color: #000000;
+}
+.model_cell .popover-title {
+	color: #000000;
+}
+
+/* gauge */
+.arc
+{
+}
+.chart-first
+{
+	fill: #83e043;
+}
+.chart-second
+{
+	fill: #ffd800;
+}
+.chart-third
+{
+	fill: #ff6a00;
+}
+.chart-quart
+{
+	fill: #f12828;
+}
+
+.needle, .needle-center
+{
+	fill: #000000;
+}
+.text {
+	color: #112864;
+}
+svg {
+	font: 10px sans-serif;
+}
+.indicators-border
+{
+border: 2px solid #Fa9C1A;
+margin:2px;
+padding: 2px;
+}

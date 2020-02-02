@@ -16,6 +16,7 @@ using PingCastle.Rules;
 using PingCastle.Healthcheck;
 using PingCastle.Data;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
 
 namespace PingCastle.Report
 {
@@ -34,9 +35,14 @@ namespace PingCastle.Report
 			GetUrlCallback = uRLDelegate;
 		}
 
+		private List<string> CSSToAdd = new List<string> { TemplateManager.LoadBootstrapCss() };
+		private List<string> JSToAdd = new List<string> { TemplateManager.LoadJqueryJs(), TemplateManager.LoadPopperJs(), TemplateManager.LoadBootstrapJs() };
+
         public string GenerateReportFile(string filename)
         {
-            var reportSB = new StringBuilder(TemplateManager.LoadResponsiveTemplate());
+			ReferenceJSAndCSS();
+
+			var reportSB = new StringBuilder(TemplateManager.LoadResponsiveTemplate());
 
 			Hook(reportSB);
 
@@ -47,9 +53,8 @@ namespace PingCastle.Report
 			Add("<title>");
 			GenerateTitleInformation();
 			AddLine("</title>");
-			GenerateBaseHeaderInformation();
-			GenerateHeaderInformation();
 			Add(favicon);
+			GenerateCss();
 			reportSB = reportSB.Replace("<%=Header%>", sb.ToString());
 
 			sb.Length = 0;
@@ -57,8 +62,8 @@ namespace PingCastle.Report
 			reportSB = reportSB.Replace("<%=Body%>", sb.ToString());
 
 			sb.Length = 0;
-			GenerateBaseFooterInformation();
 			GenerateFooterInformation();
+			GenerateJavascript();
 			reportSB = reportSB.Replace("<%=Footer%>", sb.ToString());
 
 			var html = reportSB.ToString();
@@ -69,48 +74,62 @@ namespace PingCastle.Report
             return html;
         }
 
-		string CSPScriptNonce;
-		string CSPStyleNonce;
+		private void GenerateJavascript()
+		{
+			foreach (var script in JSToAdd)
+			{
+				AddLine(@"<script type=""text/javascript"">");
+				AddLine(script);
+				AddLine("</script>");
+			}
+		}
+
+		private void GenerateCss()
+		{
+			foreach (var css in CSSToAdd)
+			{
+				AddLine(@"<style type=""text/css"">");
+				AddLine(css);
+				AddLine("</style>");
+			}
+		}
+
 		private void GenerateCspMeta()
 		{
-			CSPScriptNonce = GenerateNonce();
-			CSPStyleNonce = GenerateNonce();
-			Add(@"<meta http-equiv=""Content-Security-Policy"" content=""default-src 'self'; script-src 'nonce-");
-			Add(CSPScriptNonce);
-			Add(@"' 'unsafe-inline'; style-src  'nonce-");
-			Add(CSPStyleNonce);
-			Add(@"' 'unsafe-inline'; object-src 'none'; base-uri 'none' ; img-src data:;""/>");
+			Add(@"<meta http-equiv=""Content-Security-Policy"" content=""default-src 'self'; script-src ");
+			foreach (var script in JSToAdd)
+			{
+				ComputeCSPHash(script);
+			}
+			Add(@" 'unsafe-inline'; style-src ");
+			foreach (var css in CSSToAdd)
+			{
+				ComputeCSPHash(css);
+			}
+			Add(@" 'unsafe-inline'; object-src 'none'; base-uri 'none' ; img-src data:;""/>");
 		}
 
-		protected void AddBeginStyle()
+		private void ComputeCSPHash(string css)
 		{
-			Add(@"<style type=""text/css"" nonce='");
-			Add(CSPStyleNonce);
-			AddLine(@"'>");
+			using (var sha256Hash = SHA256.Create())
+			{
+				byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes("\n" + css.Replace("\r", "") + "\n"));
+				Add("'sha256-");
+				Add(Convert.ToBase64String(bytes));
+				Add("' ");
+			}
 		}
 
-		protected void AddBeginScript()
+		protected void AddStyle(string style)
 		{
-			Add(@"<script type=""text/javascript"" nonce='");
-			Add(CSPScriptNonce);
-			AddLine(@"'>");
+			CSSToAdd.Add(style);
 		}
 
-		private void GenerateBaseHeaderInformation()
+		protected void AddScript(string script)
 		{
-			AddBeginStyle();
-			AddLine(TemplateManager.LoadBootstrapCss());
-			AddLine(@"</style>");
+			JSToAdd.Add(script);
 		}
 
-		private void GenerateBaseFooterInformation()
-		{
-			AddBeginScript();
-			AddLine(TemplateManager.LoadJqueryJs());
-			AddLine(TemplateManager.LoadPopperJs());
-			AddLine(TemplateManager.LoadBootstrapJs());
-			AddLine(@"</script>");
-		}
 
 		protected virtual void Hook(StringBuilder sbHtml)
         {
@@ -162,215 +181,283 @@ namespace PingCastle.Report
             sb.Append(date.ToString("u"));
         }
 
+		protected void AddAnchor(string label)
+		{
+			Add(@"<a name=""");
+			Add(label);
+			Add(@"""></a>");
+		}
+
+		protected void AddParagraph(string content)
+		{
+			Add("<div class='row'><div class='col-lg-12'><p>");
+			Add(content);
+			Add("</p></div></div>");
+		}
+
+		protected void AddBeginTable()
+		{
+			Add(@"
+		<div class=""row"">
+			<div class=""col-md-12 table-responsive"">
+				<table class=""table table-striped table-bordered"">
+					<thead>
+					<tr>");
+		}
+
+		protected void AddBeginTableData()
+		{
+			Add(@"</tr>
+					</thead>
+					<tbody>");
+		}
+
+		private bool footerMode = false;
+		protected void AddEndTable(GenerateContentDelegate footer = null)
+		{
+			Add(@"</tbody>");
+			if (footer != null)
+			{
+				Add("<tfoot>");
+				AddBeginRow();
+				footerMode = true;
+				footer();
+				footerMode = false;
+				AddEndRow();
+				Add("</tfoot>");
+			}
+			else
+			{
+				Add("<tfoot></tfoot>");
+			}
+			Add(@"
+				</table>
+			</div>
+		</div>
+");
+		}
+
+		protected void AddBeginRow()
+		{
+			Add(@"<tr>");
+		}
+
+		protected void AddEndRow()
+		{
+			Add(@"</tr>");
+		}
+
+		protected void AddBeginTooltip(bool wide = false)
+		{
+			Add(@"&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip""");
+			if (wide)
+			{
+				Add(@" data-template=""<div class='tooltip' role='tooltip'><div class='arrow'></div><div class='tooltip-inner tooltip-wide'></div></div>"" ");
+			}
+			Add(@"title=""""  data-original-title=""");
+		}
+
+		protected void AddEndTooltip()
+		{
+			Add(@""">?</i>");
+		}
+
+		protected void AddHeaderText(string text, string tooltip = null, int rowspan = 0, int colspan = 0)
+		{
+			Add("<th");
+			if (rowspan != 0)
+			{
+				Add(@" rowspan=""");
+				Add(rowspan);
+				Add(@"""");
+			}
+			if (colspan != 0)
+			{
+				Add(@" colspan=""");
+				Add(colspan);
+				Add(@"""");
+			}
+			Add(@">");
+			AddEncoded(text);
+			if (!string.IsNullOrEmpty(tooltip))
+			{
+				AddBeginTooltip();
+				// important: not encoded to pass html formatting
+				Add(tooltip);
+				AddEndTooltip();
+			}
+			Add("</th>");
+		}
+
+		protected void AddCellText(string text, bool highlight = false, bool IsGood = false)
+		{
+			Add("<td class='text'>");
+			if (footerMode)
+				Add("<b>");
+			if (highlight)
+			{
+				if (IsGood)
+					Add("<span class=\"ticked\">");
+				else
+					Add("<span class=\"unticked\">");
+			}
+            AddEncoded(text);
+			if (highlight)
+				Add("</span>");
+			if (footerMode)
+				Add("</b>");
+			Add(@"</td>");
+		}
+
+		protected void AddCellTextNoWrap(string text)
+		{
+			Add(@"<td class='text text-nowrap'>");
+			if (footerMode)
+				Add("<b>");
+			Add(text);
+			if (footerMode)
+				Add("</b>");
+			Add(@"</td>");
+		}
+
+		protected void AddCellDateNoWrap(DateTime text)
+		{
+			Add(@"<td class='text text-nowrap'>");
+			if (footerMode)
+				Add("<b>");
+			Add(text);
+			if (footerMode)
+				Add("</b>");
+			Add(@"</td>");
+		}
+
+		protected void AddCellNumScore(int num)
+		{
+			Add("<td class='num ");
+			if (num == 100)
+			{
+				Add("risk_model_high");
+			}
+			else if (num >= 75)
+			{
+				Add("risk_model_high");
+			}
+			else if (num >= 50)
+			{
+				Add("risk_model_medium");
+			}
+			else if (num >= 25)
+			{
+				Add("risk_model_low");
+			}
+			Add("'>");
+			Add(num);
+			Add(@"</td>");
+		}
+
+		protected void AddCellNum(int num, bool HideIfZero = false)
+		{
+			Add("<td class='num'>");
+			if (footerMode)
+				Add("<b>");
+			if (!(HideIfZero && num == 0))
+			{
+				Add(num);
+			}
+			if (footerMode)
+				Add("</b>");
+			Add(@"</td>");
+		}
+
+		protected void AddCellDate(DateTime date)
+		{
+			Add("<td>");
+			if (footerMode)
+				Add("<b>");
+			Add(date);
+			if (footerMode)
+				Add("</b>");
+			Add(@"</td>");
+		}
+
+		protected enum ShowModalType
+		{
+			Normal,
+			XL,
+			FullScreen
+		}
+
+		protected void AddBeginModal(string id, string title, ShowModalType modalType = ShowModalType.Normal)
+		{
+			Add(@"
+<!--TAB dependancy -->
+<div class=""modal");
+			if (modalType == ShowModalType.FullScreen)
+			{
+				Add(" modal-full-screen");
+			}
+			Add(@""" id=""");
+			Add(id);
+			Add(@""" tabindex=""-1"" role=""dialog"" aria-hidden=""true"">
+	<div class=""modal-dialog");
+			if(modalType == ShowModalType.XL)
+			{
+				Add(" modal-xl");
+			}
+			else if (modalType == ShowModalType.FullScreen)
+			{
+				Add(" modal-full-screen-dialog");
+			}
+			Add(@""" role=""dialog"">
+		<div class=""modal-content");
+			if (modalType == ShowModalType.FullScreen)
+			{
+				Add(" modal-full-screen-content");
+			}
+			Add(@""">
+			<div class=""modal-header"">
+				<h4 class=""modal-title"">");
+			AddEncoded(title);
+			Add(@"</h4>
+					<button type=""button"" class=""close"" data-dismiss=""modal"" aria-label=""Close"">
+						<span aria-hidden=""true"">&times;</span>
+					</button>
+			</div>
+			<div class=""modal-body");
+			if (modalType == ShowModalType.FullScreen)
+			{
+				Add(" modal-full-screen-body");
+			}
+			Add(@""">
+");
+		}
+
+		protected void AddEndModal(ShowModalType modalType = ShowModalType.Normal)
+		{
+			Add(@"
+			</div>
+			<div class=""modal-footer");
+			if (modalType == ShowModalType.FullScreen)
+			{
+				Add(" modal-full-screen-footer");
+			}
+			Add(@""">
+				<button type=""button"" class=""btn btn-secondary"" data-dismiss=""modal"">Close</button>
+			</div>
+		</div>
+	</div>
+</div>");
+		}
+
         protected delegate void GenerateContentDelegate();
 
         protected abstract void GenerateFooterInformation();
 
 		protected abstract void GenerateTitleInformation();
 
-		protected abstract void GenerateHeaderInformation();
+		protected abstract void ReferenceJSAndCSS();
 
 		protected abstract void GenerateBodyInformation();
-
-        public static string GetStyleSheetTheme()
-        {
-            return @"
-body { 
-	background:#e1e1e1;
-	height: 100%;
-	min-height: 100%;
-}
-html
-{
-	height:100%;
-	min-height: 100%;
-}
-@media screen {
-	body {
-		padding-top: 50px;
-		margin-top: 10px;
-	}
-
-	h1, h2, h3, h4 {
-		color: #Fa9C1A;
-	}
-	a {
-		color: #fa9c1a;
-	}
-
-	a:hover {
-		color: #58595b;
-	}
-}
-#wrapper {
-	box-shadow:0 0 8px rgba(0,0,0,0.25);
-}
-#wrapper.well {
-	background:#fff;
-	border-radius:0;
-}
-
-.ticked { color: #4CAF50;}
-
-.unticked { color: #FF1744;}
-
-
-.navbar-custom {
-	background-color: #ffffff;
-}
-
-.navbar-custom .navbar-toggler-icon {
-	background-image: url(""data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(0, 0, 0, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E"");
-}
-.navbar-custom .navbar-toggler {
-	color: rgba(0, 0, 0, 0.5);
-	border-color: rgba(0, 0, 0, 0.1);
-}
-
-/* change the brand and text color */
-.navbar-custom .navbar-brand, .navbar-custom .navbar-text {
-	color: #fa9c1a;
-}
-/* change the link color */
-.navbar-custom .navbar-nav .nav-link {
-	color: #58595b;
-}
-
-.navbar-custom .navbar-nav > .active > a,
-.navbar-custom .navbar-nav > .active > a:hover,
-.navbar-custom .navbar-nav > .active > a:focus {
-	color: #fff;
-	background-color: #fa9c1a;
-}
-
-.nav-tabs .nav-link {
-	border-color: #e9ecef #e9ecef #dee2e6;
-	color: #58595b;
-}
-
-.nav-tabs .nav-link.disabled {
-	color: #6c757d;
-	background-color: transparent;
-	border-color: transparent;
-}
-
-.nav-tabs .nav-link.active,
-.nav-tabs .nav-item.show .nav-link {
-	color: #fff;
-	background-color: #fa9c1a;
-	border-color: #dee2e6 #dee2e6 #fff;
-}
-
-/* navbar */
-.navbar-brand {
-	margin: 0;
-	padding: 0;
-}
-
-.navbar-brand img {
-	max-height: 100%;
-}
-	
-.dropdown-item.active, .dropdown-item:active {
-	background-color: #fa9c1a;
-}
-
-.border-bottom {
-	border-bottom-color: #fa9c1a !important;
-}
-
-.risk_model_none
-{background-color: #00AAFF; padding:5px;}
-.risk_model_low
-{background-color: #ffd800; padding:5px;}
-.risk_model_medium
-{background-color: #ff6a00; padding:5px;}
-.risk_model_high
-{background-color: #f12828; padding:5px;}
-.modal-header{background-color: #FA9C1A;}
-.modal-header h4 {color: #fff;}
-
-/* no transition to be used in the carto mode */
-.progress .progress-bar{
-	-webkit-transition: none;
-	-o-transition: none;
-	transition: none;
-}
-.info-mark {
-	display: inline-block;
-	font-family: sans-serif;
-	font-weight: bold;
-	text-align: center;
-	width: 20px;
-	height: 20px;
-	font-size: 16px;
-	line-height: 20px;
-	border-radius: 14px;
-	margin-right: 4px;
-	padding: 1px;
-	color: #fa9c1a;
-	background: white;
-	border: 1px solid #fa9c1a;
-	text-decoration: none;
-}
-
-.info-mark:hover {
-	color: white;
-	background: #fa9c1a;
-	border-color: white;
-	text-decoration: none;
-}
-.num
-{
-	text-align: right !important;
-}
-@media screen
-{
-	a[name] {
-		padding-top: 60px;
-		margin-top: -60px;
-		display: inline-block; /* required for webkit browsers */
-	}
-}
-.pagebreak { page-break-before: always; } /* page-break-after works, as well */
-
-
-.btn-default {
-	color: #58595B;
-	background-color: transparent;
-	background-image: none;
-	border-color: #58595B;
-}
-
-.btn-default:hover {
-	color: #fff;
-	background-color: #58595B;
-	border-color: #58595B;
-}
-
-.btn-default:focus, .btn-outline-primary.focus {
-	box-shadow: 0 0 0 0.2rem rgba(88, 89, 91, 0.5);
-}
-
-.btn-default.disabled, .btn-outline-primary:disabled {
-	color: #58595B;
-	background-color: transparent;
-}
-
-.btn-default:not(:disabled):not(.disabled):active, .btn-outline-primary:not(:disabled):not(.disabled).active,
-.show > .btn-default.dropdown-toggle {
-	color: #fff;
-	background-color: #58595B;
-	border-color: #58595B;
-}
-
-.btn-default:not(:disabled):not(.disabled):active:focus, .btn-default:not(:disabled):not(.disabled).active:focus,
-.show > .btn-default.dropdown-toggle:focus {
-	box-shadow: 0 0 0 0.2rem rgba(88, 89, 91, 0.5);
-}
-
-";
-        }
 
 		protected static string favicon = @"<link href=""data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAE10lEQVRYw71XfWwTdRhet4xBssFigMja61rafbK5bGFuiqh1ISaMP2QI++jaXtvUZGKIigUkUTTzmwUxIQtRYBZHr3e9rjYOY4zLlprMEDROJagZAzEgMYiTZJvr7zrmc0cHXekXxfWSJ9f2rvc8977P+76/X0YGDsKubiSuwh2ELy8SfPVZGek+QG4hTjkhDPUrPh8grOYJwhXlCV9tSZMAdnUDBEwRZ8HsTcivE0bxJQR1QEyJ0L8+e2EFcEWlhJFfuS3gFoIQcpG4VMcRmUbcd58wqJeJ/2FYfhGwDegG9gKrUhfAly4H0UgUAWGQTyAiw8Sl3kv6qpaDcDMwDswCQaCH5fqWpCRA8D2YQ1zK/vgCQnCprgv9j9aD8FCIfA4XAGVqAj7fIBrxg6QEMIop4i7ZADI7IIQJ8AP5qaeBobYnJ0D5O6LwsIvzrADhQWAUGHJxfEOA1TwE09LEU6EUPnsk8y4rQfO0VIqxyW+IHgh4KnVWs6HaaDI/85J9t+Z4r1Pl599ZSbjiRlz/Ec8QcD4rRdRdrCOcNlcYaE6mErS1qITxGAYkeKDzam9VsdlibWptaz8DCPp2488Wq20H8daUg/TCndGS/wN8IUWXK9YSvix2k4NaCvkdi0I+DvJ9gwcbKIOR3gXiqy2t+tk5QITvoqNODZLRONELSs9mqI/wohshJl8YbJPNF+BZk4sb/BGGOw/y1lefb1WD6DDIp8LJQwK+P9bZrIQ3hpLykFTOiq/x3F1o/QW3K+GkLhPqGgir3omS9OOmoQCrXW+hjTVtesMAyIKR5CJw7fL2DlsZxDuSEyAhAAE9SIk8I9TVZHC1Fmc9zrpL7k3yPx1rCvTthkYx39GI54Drk7TZCrNp3k2uiqSUvoJSXnbr7UG6FuQjoY4mdrcXOp59biXe7nQ88hBm4A0TBJgR3pkE5KOYO83EW50zL/8gfDuiq/105NjHFPL7aRICZlGSL2NOPCblNzr5jJhSvHmtwFfI7qgAEL4ZIWDkaI8DKTAyILiRSEC7weSYYCtLQHI5Cvk0DNoDbxXic/QSBGEF8A0wDVwBbKc+sS2maVpsOJ1IxQiIpmMJgFC//9CTqATFdxGO/xu/7YG5l8VtQvCAKKKAdfdtQkutHufqNchVN1S/9i+jrurc2aI0muitIDoBwkuRUYHAM512Won7D4DwN8kLDDWGkG8F+aK7XB2pWvCAb6W8ie3XiXUCo2Dxu/7c0ZpCq9n0AEJuB+mwWAHAWXx/an/X+3l+91v3T/Loii7Vi3B5vdD/eGYKqyP1nhhGQi4VPyAyXeLQ+XBfE2WizRtNtEWsoHWAFzgNvM5xHDqdPuXl2ZbEQ0l+DSE+Cedv7uOZfJAOhBk4AFjuZX24VjJPUouTQqfXfUIFwvMRVdR1L+tDcSidS66rUcNjfNsqELrDyCdg6m2pC3CX5krDIvFQgSeobuKpXIq1YBmI3wN6ARoClqQsQPDVZUFAbwLyvzCwdmOEL537H0pYxvHeLAj4XzYq++P0c2xeVE2o7+wF3KiobaE+ENHPqUFcq8Ucly3wVk2lQ5gn5/UAp/ywaNDgKXsatmpckThY/gitiq5J+Xap8tK3WeXLb+6UGMUvWC03EV9ddkY6D2y9cpDrN9CU1kHAgub7P7CsZhuj7eUMAAAAAElFTkSuQmCC"" rel=""icon"" type=""image/x-icon"" />";
 
@@ -448,7 +535,7 @@ html
 ");
 		}
 
-        protected void GenerateSection(string title, GenerateContentDelegate generateContent)
+        protected virtual void GenerateSection(string title, GenerateContentDelegate generateContent)
         {
             string id = "section" + title.Replace(" ", "");
             Add(@"
@@ -687,7 +774,7 @@ html
             return 0;
         }
 
-        protected string GetPSOStringValue(GPPSecurityPolicy policy, string propertyName)
+        protected void AddPSOStringValue(GPPSecurityPolicy policy, string propertyName)
         {
             foreach (var property in policy.Properties)
             {
@@ -697,54 +784,73 @@ html
                     {
                         if (propertyName == "PasswordComplexity")
                         {
-                            return "<span class=\"unticked\">False</span>";
+                            Add("<td><span class=\"unticked\">False</span></td>");
+							return;
                         }
-                        if (propertyName == "ClearTextPassword"
-                            || propertyName == "ScreenSaveActive" || propertyName == "ScreenSaverIsSecure")
-                            return "False";
-
+						if (propertyName == "ClearTextPassword"
+							|| propertyName == "ScreenSaveActive" || propertyName == "ScreenSaverIsSecure")
+						{
+							AddCellText("False");
+							return;
+						}
                     }
                     if (property.Value == -1 && propertyName == "MaximumPasswordAge")
                     {
-                        return "<span class=\"unticked\">Never expires</span>";
+                        Add("<td><span class=\"unticked\">Never expires</span></td>");
+						return;
                     }
                     if (property.Value == 1)
                     {
                         if (propertyName == "ClearTextPassword")
-                            return "<span class=\"unticked\">True</span>";
-                        if (propertyName == "PasswordComplexity"
-                            || propertyName == "ScreenSaveActive" || propertyName == "ScreenSaverIsSecure")
-                            return "True";
+						{
+							Add("<td><span class=\"unticked\">True</span></td>");
+							return;
+						}
+						if (propertyName == "PasswordComplexity"
+							|| propertyName == "ScreenSaveActive" || propertyName == "ScreenSaverIsSecure")
+						{
+							AddCellText("True");
+							return;
+						}
                     }
                     if (propertyName == "MinimumPasswordLength")
                     {
                         if (property.Value < 8)
                         {
-                            return "<span class=\"unticked\">" + property.Value.ToString() + "</span>";
+                            Add("<td><span class=\"unticked\">" + property.Value.ToString() + "</span></td>");
+							return;
                         }
                     }
                     if (propertyName == "MinimumPasswordAge")
                     {
                         if (property.Value == 0)
                         {
-                            return "<span class=\"unticked\">0 day</span>";
+                            Add("<td><span class=\"unticked\">0 day</span></td>");
+							return;
                         }
-                        return property.Value.ToString() + " day(s)";
+                        AddCellText(property.Value + " day(s)");
+						return;
                     }
                     if (propertyName == "MaximumPasswordAge")
                     {
-                        return property.Value.ToString() + " day(s)";
+						AddCellText(property.Value + " day(s)");
+						return;
                     }
                     if (propertyName == "ResetLockoutCount" || propertyName == "LockoutDuration")
                     {
 						if (property.Value <= 0)
-							return "Infinite";
-                        return property.Value.ToString() + " minute(s)";
+						{
+							AddCellText("Infinite");
+							return;
+						}
+						AddCellText(property.Value + " minute(s)");
+						return;
                     }
-                    return property.Value.ToString();
+                    AddCellNum(property.Value);
+					return;
                 }
             }
-            return "Not Set";
+            AddCellText("Not Set");
         }
 
         protected string GetLinkForLsaSetting(string property)
@@ -779,67 +885,88 @@ html
 					return @"<a href=""https://getadmx.com/?Category=Windows_10_2016&Policy=Microsoft.Policies.DNSClient::Turn_Off_Multicast"">Turn off multicast name resolution</a> (<a href=""https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-llmnrp/02b1d227-d7a2-4026-9fd6-27ea5651fe85"">Technical details</a>)";
 				case "enablesecuritysignature":
 					return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/smbv1-microsoft-network-server-digitally-sign-communications-if-client-agrees"">Microsoft network server: Digitally sign communications (if client agrees)</a> (<a href=""https://www.stigviewer.com/stig/windows_server_2016/2017-11-20/finding/V-73663"">Technical details</a>)";
+				case "enablemodulelogging":
+					return @"<a href=""https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_group_policy_settings?view=powershell-6"">Powershell: Turn on Module logging</a>";
+				case "enablescriptblocklogging":
+					return @"<a href=""https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_group_policy_settings?view=powershell-6"">Powershell: Turn on Powershell Script Block logging</a>";
             }
             return property;
         }
 
-		protected string GetLsaSettingsValue(string property, int value)
+		protected void AddLsaSettingsValue(string property, int value)
 		{
+			Add("<td class='text'>");
 			switch (property.ToLowerInvariant())
 			{
 				case "enablemulticast":
 					if (value == 0)
 					{
-						return @"<span class=""ticked"">LLMNR disabled</span>";
+						Add(@"<span class=""ticked"">LLMNR disabled</span>");
 					}
 					else
 					{
-						return @"<span class=""unticked"">LLMNR Enabled</span>";
+						Add(@"<span class=""unticked"">LLMNR Enabled</span>");
 					}
+					break;
 				case "lmcompatibilitylevel":
 					if (value == 0)
 					{
-						return @"<span class=""unticked"">Send LM & NTLM responses</span>";
+						Add(@"<span class=""unticked"">Send LM & NTLM responses</span>");
 					}
 					else if (value == 1)
 					{
-						return @"<span class=""unticked"">Send LM & NTLM</span>";
+						Add(@"<span class=""unticked"">Send LM & NTLM</span>");
 					}
 					else if (value == 2)
 					{
-						return @"<span class=""unticked"">Send NTLM response only</span>";
+						Add(@"<span class=""unticked"">Send NTLM response only</span>");
 					}
 					else if (value == 3)
 					{
-						return "Send NTLMv2 response only";
+						Add("Send NTLMv2 response only");
 					}
 					else if (value == 4)
 					{
-						return "Send NTLMv2 response only. Refuse LM Client devices";
+						Add("Send NTLMv2 response only. Refuse LM Client devices");
 					}
 					else if (value == 5)
 					{
-						return "Send NTLMv2 response only. Refuse LM & NTLM";
+						Add("Send NTLMv2 response only. Refuse LM & NTLM");
 					}
 					break;
 				case "ldapclientintegrity":
 					if (value == 0)
 					{
-						return @"<span class=""unticked"">None</span> (Do not request signature)";
+						Add(@"<span class=""unticked"">None</span> (Do not request signature)");
 					}
 					else
 					{
-						return value.ToString();
+						Add(value);
 					}
+					break;
+				case "enablemodulelogging":
+				case "enablescriptblocklogging":
+					if (value == 0)
+					{
+						Add(@"<span class=""unticked"">Disabled</span>");
+					}
+					else
+					{
+						Add(@"<span class=""ticked"">Enabled</span>");
+					}
+					break;
+				default:
+					if (value == 0)
+					{
+						Add(@"<span class=""unticked"">Disabled</span>");
+					}
+					else
+					{
+						Add(@"<span class=""unticked"">Enabled</span>");
+					}
+					break;
 			}
-			if (value == 0)
-			{
-				return @"<span class=""unticked"">Disabled</span>";
-			}
-			else
-			{
-				return @"<span class=""unticked"">Enabled</span>";
-			}
+			Add("</td>");
 		}
 
         protected void GenerateGauge(int percentage)
@@ -898,14 +1025,6 @@ html
 			if (String.IsNullOrEmpty(data))
 				return data;
 			return data.Replace("\r\n", "<br>\r\n");
-		}
-
-		protected string GenerateNonce()
-		{
-			Random rand = new Random();
-			byte[] bytes = new byte[18];
-			rand.NextBytes(bytes);
-			return Convert.ToBase64String(bytes);
 		}
 	}
 }

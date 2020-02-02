@@ -6,12 +6,12 @@
 //
 using PingCastle.ADWS;
 using PingCastle.Graph.Database;
-using PingCastle.Export;
+using PingCastle.Graph.Export;
 using PingCastle.Healthcheck;
 using PingCastle.Scanners;
 using PingCastle.misc;
 using PingCastle.RPC;
-using PingCastle.Reporting;
+using PingCastle.Graph.Reporting;
 using PingCastle.shares;
 using System;
 using System.Collections.Generic;
@@ -34,10 +34,8 @@ namespace PingCastle
 	{
 		bool PerformHealthCheckReport = false;
 		bool PerformHealthCheckConsolidation = false;
-		bool PerformGraphConsolidation = false;
 		bool PerformGenerateKey = false;
 		bool PerformCarto = false;
-		bool PerformAdvancedLive;
 		bool PerformUploadAllReport;
 		bool PerformHCRules = false;
 		private bool PerformRegenerateReport;
@@ -172,17 +170,9 @@ namespace PingCastle
 			{
 				if (!tasks.AnalysisTask<HealthcheckData>()) return;
 			}
-			if (PerformAdvancedLive)
-			{
-				if (!tasks.AnalysisTask<CompromiseGraphData>()) return;
-			}
 			if (PerformHealthCheckConsolidation || (PerformHealthCheckReport && tasks.Server == "*" && tasks.InteractiveMode))
 			{
 				if (!tasks.ConsolidationTask<HealthcheckData>()) return;
-			}
-			if (PerformGraphConsolidation || (PerformAdvancedLive && tasks.Server == "*" && tasks.InteractiveMode))
-			{
-				if (!tasks.ConsolidationTask<CompromiseGraphData>()) return;
 			}
 			if (PerformHCRules)
 			{
@@ -207,7 +197,7 @@ namespace PingCastle
 			tasks.CompleteTasks();
 		}
 
-		const string basicEditionLicense = "PC2H4sIAAAAAAAEAO29B2AcSZYlJi9tynt/SvVK1+B0oQiAYBMk2JBAEOzBiM3mkuwdaUcjKasqgcplVmVdZhZAzO2dvPfee++999577733ujudTif33/8/XGZkAWz2zkrayZ4hgKrIHz9+fB8/In7NX+PX+DV+A/r/r/EH/Un/wZPFv/lr/tr060v6//Nfo/g1pr9G/mssf42G/k1/jfNfo/o1avr5kj5f/hoXv8bJr5HRN+2vUfK3e7/G+Nd4QD+f8Kd4M/01Tn+NGf3W0v+rX2P5a6CLP+jX+DV+jd//J/+4//TP+Ymf+Qv+hH/+X9j69L/81/6F//L3+5d3zl79T/P/6z/4s/+v/+nX/L9/5rfb/Wv/4d9n8k++/qW/9D/49p/2b/zPP/kXfPUHz+/+Z3/tPzj+K/78F7/5H/pn/R//+7/13/zdO//R//yLv731+/3Uv/9X/rO/3V/V/pd/1Ce/+W91cf9X/rEPf6vzf3j5T3+x9zf9KQ8X//x/9Tpf/QX/6/2/+0/55dv/0PFP/XZ//eFf+ev+on/6Z/6W/+P/AY4sXy/wAAAA";
+		const string basicEditionLicense = "PC2H4sIAAAAAAAEAO29B2AcSZYlJi9tynt/SvVK1+B0oQiAYBMk2JBAEOzBiM3mkuwdaUcjKasqgcplVmVdZhZAzO2dvPfee++999577733ujudTif33/8/XGZkAWz2zkrayZ4hgKrIHz9+fB8/In7NX+PX+DV+A/r/r/EH/Sk/9W//n//mr/lr068v6f/Pf43i15j+Gvmvsfw1Gvo3/TXOf43q16jp50v6fPlrXPwaJ79GRt+0v0bJ3+79GuNf44B+PuFP8Wb6a5z+GjP6raX/V7/G8tdAF3/Qr/Fr/BqXf9Nv8M/+tr/e3797+mf/8f/D7/jkF/0xf2/xR4y+/eRv++m/8+if+HV/yZ/+d/6Nf+3RH/6X/+G/+Lf/N/+WV3/+n1Od3fv7//1f/h/+C//T7/uH/rf/4i8b/a3f/d3+kj/rD/31/qj/9Onf+U/Vf+uzX/tv+13+jT/rd/wj/7e//Y/+X0b/2K/5T/yL/+4vfPqP/V9/xfWf/xv91OP/8Df5g//Yn/hzxn/rw0/Hv/lf+Cd//uSv+zV/+l/5d3+jf+q/+M5/81/+P30RpgzwAAAA";
 		string _serialNumber;
 		public string GetSerialNumber()
 		{
@@ -386,17 +376,11 @@ namespace PingCastle
 						case "--generate-key":
 							PerformGenerateKey = true;
 							break;
-						case "--graph":
-							PerformAdvancedLive = true;
-							break;
 						case "--healthcheck":
 							PerformHealthCheckReport = true;
 							break;
 						case "--hc-conso":
 							PerformHealthCheckConsolidation = true;
-							break;
-						case "--cg-conso":
-							PerformGraphConsolidation = true;
 							break;
 						case "--help":
 							DisplayHelp();
@@ -700,10 +684,10 @@ namespace PingCastle
 				}
 				Trace.WriteLine("After parsing arguments");
 			}
-			if (!PerformHealthCheckReport && !PerformHealthCheckConsolidation && !PerformGraphConsolidation
+			if (!PerformHealthCheckReport && !PerformHealthCheckConsolidation
 				&& !PerformRegenerateReport && !PerformHealthCheckReloadReport && !delayedInteractiveMode
 				&& !PerformScanner
-				&& !PerformGenerateKey && !PerformHealthCheckGenerateDemoReports && !PerformCarto && !PerformAdvancedLive
+				&& !PerformGenerateKey && !PerformHealthCheckGenerateDemoReports && !PerformCarto
 				&& !PerformUploadAllReport
 				&& !PerformHCRules)
 			{
@@ -716,7 +700,7 @@ namespace PingCastle
 			{
 				RunInteractiveMode();
 			}
-			if (PerformHealthCheckReport || PerformScanner || PerformAdvancedLive)
+			if (PerformHealthCheckReport || PerformScanner)
 			{
 				if (String.IsNullOrEmpty(tasks.Server))
 				{
@@ -743,7 +727,7 @@ namespace PingCastle
 					}
 				}
 			}
-			if (PerformHealthCheckConsolidation || PerformGraphConsolidation)
+			if (PerformHealthCheckConsolidation)
 			{
 				if (String.IsNullOrEmpty(tasks.FileOrDirectory))
 				{
@@ -814,7 +798,6 @@ namespace PingCastle
 			AskForServer,
 			Run,
 			AvancedMenu,
-			AskForAdditionalUsers,
 			AskForScannerParameter,
 			ProtocolMenu,
 			AskForFile,
@@ -823,15 +806,12 @@ namespace PingCastle
 		DisplayState DisplayMainMenu()
 		{
 			PerformHealthCheckReport = false;
-			PerformGraphConsolidation = false;
-			PerformAdvancedLive = false;
 			PerformCarto = false;
 			PerformHealthCheckConsolidation = false;
 			PerformScanner = false;
 
 			List<ConsoleMenuItem> choices = new List<ConsoleMenuItem>() {
 				new ConsoleMenuItem("healthcheck","Score the risk of a domain", "This is the main functionnality of PingCastle. In a matter of minutes, it produces a report which will give you an overview of your Active Directory security. This report can be generated on other domains by using the existing trust links."),
-				new ConsoleMenuItem("permissions","Analyze admin groups and delegations with diagrams", "Once you have run the healthcheck report and apply all the recommandations, you can run this report to get deeper into the permission model."),
 				new ConsoleMenuItem("conso","Aggregate multiple reports into a single one", "With many healthcheck reports, you can get a single report for a whole scope. Maps will be generated."),
 				new ConsoleMenuItem("carto","Build a map of all interconnected domains", "It combines the healthcheck reports that would be run on all trusted domains and then the conso option. But lighter and then faster."),
 				new ConsoleMenuItem("scanner","Perform specific security checks on workstations", "You can know your local admins, if Bitlocker is properly configured, discover unprotect shares, ... A menu will be shown to select the right scanner."),
@@ -851,15 +831,11 @@ namespace PingCastle
 				case "healthcheck":
 					PerformHealthCheckReport = true;
 					return DisplayState.AskForServer;
-				case "permissions":
-					PerformAdvancedLive = true;
-					return DisplayState.AskForServer;
 				case "carto":
 					PerformCarto = true;
 					return DisplayState.AskForServer;
 				case "conso":
 					PerformHealthCheckConsolidation = true;
-					PerformGraphConsolidation = true;
 					return DisplayState.Run;
 				case "scanner":
 					PerformScanner = true;
@@ -931,18 +907,6 @@ namespace PingCastle
 					break;
 				}
 			}
-			if (PerformAdvancedLive)
-			{
-				return DisplayState.AskForAdditionalUsers;
-			}
-			return DisplayState.Run;
-		}
-
-		DisplayState DisplayAskForAdditionalUsers()
-		{
-			ConsoleMenu.Title = "Indicate additional users";
-			ConsoleMenu.Information = "Please specify any additional users to investigate (sAMAccountName, display name) in addition to the classic admin groups. One entry per line. End by an empty line.";
-			tasks.NodesToInvestigate = ConsoleMenu.AskForListString();
 			return DisplayState.Run;
 		}
 
@@ -1058,9 +1022,6 @@ namespace PingCastle
 						break;
 					case DisplayState.AskForServer:
 						state = DisplayAskServer();
-						break;
-					case DisplayState.AskForAdditionalUsers:
-						state = DisplayAskForAdditionalUsers();
 						break;
 					case DisplayState.AskForScannerParameter:
 						state = DisplayAskForScannerParameter();

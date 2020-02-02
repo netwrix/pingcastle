@@ -171,6 +171,7 @@ namespace PingCastle.ADWS
 		// in a domain with W2003, ... not every server has ADWS installed
 		// each binding try to resolve the dns entry which is taking some time ..
 		// the trick is to test each ip and to assign a working one as the server
+		[SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
 		public override void EstablishConnection()
 		{
 			if (Uri.CheckHostName(Server) != UriHostNameType.Dns)
@@ -179,121 +180,33 @@ namespace PingCastle.ADWS
 				GetDomainInfo();
 				return;
 			}
-			string initialServer = Server;
-			Trace.WriteLine("Server is a DNS entry. Checking for connectity on each ip resolved");
-			IPAddress[] addresses = null;
-			try
-			{
-				addresses = Dns.GetHostEntry(Server).AddressList;
-			}
-			catch (Exception ex)
-			{
-				Trace.WriteLine("Exception while resolving " + Server);
-				Trace.WriteLine(ex.Message);
-				Trace.WriteLine(ex.StackTrace);
-				throw new EndpointNotFoundException("Unable to resolve the DNS address of " + Server + " (" + ex.Message + ")");
-			}
-			if (addresses.Length <= 1)
-			{
-				Trace.WriteLine("Only one server found");
-				GetDomainInfo();
-				return;
-			}
-			foreach (IPAddress ip in addresses)
-			{
-				try
-				{
-					Server = ip.ToString();
-					Trace.WriteLine("Trying " + Server);
-					GetDomainInfo();
-					Trace.WriteLine("The connection worked");
-					return;
-				}
-				catch (EndpointNotFoundException ex)
-				{
-					Trace.WriteLine("The connection didn't worked (EndpointNotFoundException)");
-					Trace.WriteLine("Exception: " + ex.Message);
-					CleanConnection<Resource>(_resource);
-					_resource = null;
-				}
-				catch (Exception ex)
-				{
-					Trace.WriteLine("Exception: " + ex.Message);
-					Trace.WriteLine("Type: " + ex.GetType().ToString());
-					Trace.WriteLine("The connection didn't worked");
-					CleanConnection<Resource>(_resource);
-					_resource = null;
-				}
-			}
-			Trace.WriteLine("No connection worked");
-			Trace.WriteLine("Trying ldap to find DC (dns entries are limited by ad site)");
-			EstablishADWSConnectionUsingDomainConnection(initialServer, addresses);
-		}
-
-		[SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-		private void EstablishADWSConnectionUsingDomainConnection(string initialServer, IPAddress[] triedIPAddresses)
-		{
 			Domain domain = null;
+			Trace.WriteLine("Trying to locate the domain");
 			try
 			{
-				domain = Domain.GetDomain(new DirectoryContext(DirectoryContextType.Domain, initialServer));
+				if (Credential != null)
+				{
+					domain = Domain.GetDomain(new DirectoryContext(DirectoryContextType.Domain, Server, Credential.UserName, Credential.Password));
+				}
+				else
+				{
+					domain = Domain.GetDomain(new DirectoryContext(DirectoryContextType.Domain, Server));
+				}
+				Trace.WriteLine("Domain located");
 			}
 			catch (ActiveDirectoryObjectNotFoundException ex)
 			{
-				Trace.WriteLine("Unable to get the domain info");
+				Trace.WriteLine("Unable to get the domain info - trying direct connection");
 				Trace.WriteLine("Exception: " + ex.Message);
-				Trace.WriteLine("Type: " + ex.GetType().ToString());
-				throw;
+				GetDomainInfo();
+				return;
 			}
-			catch (Exception ex)
+			Trace.WriteLine("Locating a DC");
+			Server = NativeMethods.GetDC(domain.Name, true, false);
+			for (int i = 0; i < 2; i++)
 			{
-				Trace.WriteLine("Unable to get the domain info");
-				Trace.WriteLine("Exception: " + ex.Message);
-				Trace.WriteLine("Type: " + ex.GetType().ToString());
-			}
-			string message = null;
-			if (domain == null)
-			{
-				Trace.WriteLine("Unable to connect to the domain. Trying manually some ip");
-				foreach (IPAddress ip in triedIPAddresses)
-				{
-					try
-					{
-						Trace.WriteLine("Ip tried: " + ip.ToString());
-						domain = Domain.GetDomain(new DirectoryContext(DirectoryContextType.DirectoryServer, ip.ToString()));
-						Trace.WriteLine("OK");
-						break;
-					}
-					catch (Exception ex)
-					{
-						Trace.WriteLine("Unable to get the domain info");
-						Trace.WriteLine("Exception: " + ex.Message);
-						Trace.WriteLine("Type: " + ex.GetType().ToString());
-						message = ex.Message;
-					}
-				}
-			}
-			if (domain == null)
-			{
-				throw new EndpointNotFoundException("The program was unable to connect to the server/domain " + initialServer + " to find ADWS server. Check that you have access to this domain. Do not forget that you can enter a specific domain controller in replacement of the domain name. (" + message + ")");
-			}
-
-			foreach (DomainController dc in domain.FindAllDomainControllers())
-			{
-				bool found = false;
-				for (int i = 0; i < triedIPAddresses.Length; i++)
-				{
-					if (triedIPAddresses[i].ToString() == dc.IPAddress)
-					{
-						found = true;
-						break;
-					}
-				}
-				if (found)
-					continue;
 				try
 				{
-					Server = dc.IPAddress;
 					Trace.WriteLine("Trying " + Server);
 					GetDomainInfo();
 					Trace.WriteLine("The connection worked");
@@ -313,9 +226,9 @@ namespace PingCastle.ADWS
 					CleanConnection<Resource>(_resource);
 					_resource = null;
 				}
+				if (i > 0)
+					Server = NativeMethods.GetDC(domain.Name, true, true);
 			}
-			Trace.WriteLine("No connection worked");
-			throw new EndpointNotFoundException("The connection to ADWS for " + initialServer + " didn't worked. Check that ADWS is installed in at least one server (by default since Windows 2008 R2, manually since Windows 2003) or that the port 9389 is not firewalled. Do not forget that you can enter a specific domain controller as a replacement for the domain name.");
 		}
 
 		public override void Enumerate(string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope)

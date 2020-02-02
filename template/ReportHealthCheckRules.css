@@ -1,0 +1,43 @@
+.model_table {
+
+}
+.model_table th {
+	padding: 5px;
+}
+.model_cell {
+	border: 2px solid black;
+	padding: 5px;
+}
+.model_empty_cell {
+}
+div_model {
+	
+}
+.model_cell.model_good {
+
+}
+.model_cell.model_toimprove
+{
+	background-color: #ffd800;
+}
+.model_cell.model_info {
+	background-color: #00AAFF;
+color: #FFFFFF;
+}
+.model_cell.model_warning {
+	background-color: #ff6a00;
+color: #FFFFFF;
+}
+.model_cell.model_danger {
+	background-color: #f12828;
+color: #FFFFFF;
+}
+.model_cell  .popover{
+    max-width: 100%;
+}
+.model_cell .popover-content {
+	color: #000000;
+}
+.model_cell .popover-title {
+	color: #000000;
+}

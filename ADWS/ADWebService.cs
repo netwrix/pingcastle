@@ -36,7 +36,7 @@ namespace PingCastle.ADWS
         LDAPThenADWS = 3,
     }
 
-	internal class ADWebService : IDisposable, IADConnection
+	public class ADWebService : IDisposable, IADConnection
     {
 
         public ADWebService(string server, int port, NetworkCredential credential)

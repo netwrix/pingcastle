@@ -95,6 +95,11 @@ namespace PingCastle.Healthcheck
                 attributes.Add("Parent and child (obsolete)");
                 value -= 0x00400000;
             }
+            if ((trustAttributes & 0x800) != 0)
+            {
+                attributes.Add("Enable TGT delegation");
+                value -= 0x800;
+            }
             if ((trustAttributes & 0x400) != 0)
             {
                 attributes.Add("PIM Trust");
@@ -102,7 +107,7 @@ namespace PingCastle.Healthcheck
             }
             if ((trustAttributes & 0x200) != 0)
             {
-                attributes.Add("No TGT delegation");
+                attributes.Add("No TGT delegation allowed");
                 value -= 0x200;
             }
             if ((trustAttributes & 128) != 0)

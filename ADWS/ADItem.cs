@@ -33,66 +33,216 @@ namespace PingCastle.ADWS
 			public long UsnLocalChange { get; set; }
 		}
 
+		[AttributeUsage(AttributeTargets.Property)]
+		private class ADAttributeAttribute : Attribute
+		{
+			public ADAttributeAttribute(string aDAttribute, ADAttributeValueKind valueKind)
+			{
+				ADAttribute = aDAttribute;
+				ValueKind = valueKind;
+			}
+			public string ADAttribute { get; set; }
+			public ADAttributeValueKind ValueKind { get; set; }
+		}
 
-		public int AdminCount { get; set; }
-		public string AttributeID { get; set; }
-		public X509Certificate2Collection CACertificate { get; set; }
+		private enum ADAttributeValueKind
+		{
+			BoolValue,
+			IntValue,
+			LongValue,
+			DateValue,
+			DateValue2,
+			GUIDValue,
+			ByteArrayValue,
+			StringValue,
+			StringValueLowerInvariant,
+			StringArrayValue,
+			SecurityDescriptorValue,
+			ReplMetadataValue,
+			CertificateStore,
+			ForestInfoValue,
+			SIDValue,
+			SIDArrayValue,
+			ReplMetadataValue2,
+		}
+
+		private class ADAttributeTranslation
+		{
+			public ADAttributeAttribute aDAttributeAttribute { get; private set; }
+			public System.Reflection.PropertyInfo prop { get; private set; }
+
+			public ADAttributeTranslation(ADAttributeAttribute aDAttributeAttribute, System.Reflection.PropertyInfo prop)
+			{
+				this.aDAttributeAttribute = aDAttributeAttribute;
+				this.prop = prop;
+			}
+			
+		}
+
+		static Dictionary<string, ADAttributeTranslation> AttributeTranslation;
+		static ADItem()
+		{
+			AttributeTranslation = new Dictionary<string, ADAttributeTranslation>();
+			foreach (var prop in typeof(ADItem).GetProperties())
+			{
+				var attributes = prop.GetCustomAttributes(typeof(ADAttributeAttribute), false);
+				if (attributes != null && attributes.Length != 0)
+				{
+					AttributeTranslation.Add(((ADAttributeAttribute)attributes[0]).ADAttribute.ToLowerInvariant(), new ADAttributeTranslation((ADAttributeAttribute)attributes[0], prop));
+				}
+			}
+		}
+
 		public string Class { get; set; }
+		
+		[ADAttributeAttribute("adminCount", ADAttributeValueKind.IntValue)]
+		public int AdminCount { get; set; }
+		[ADAttributeAttribute("attributeID", ADAttributeValueKind.StringValue)]
+		public string AttributeID { get; set; }
+		[ADAttributeAttribute("cACertificate", ADAttributeValueKind.CertificateStore)]
+		public X509Certificate2Collection CACertificate { get; set; }
+		[ADAttributeAttribute("description", ADAttributeValueKind.StringValue)]
 		public string Description { get; set; }
-		public string DistinguishedName { get; set; }
+		[ADAttributeAttribute("displayName", ADAttributeValueKind.StringValue)]
 		public string DisplayName { get; set; }
-		public string DnsRoot { get; set; }
+		[ADAttributeAttribute("distinguishedName", ADAttributeValueKind.StringValue)]
+		public string DistinguishedName { get; set; }
+		[ADAttributeAttribute("dNSHostName", ADAttributeValueKind.StringValue)]
 		public string DNSHostName { get; set; }
+		[ADAttributeAttribute("dnsRoot", ADAttributeValueKind.StringValueLowerInvariant)]
+		public string DnsRoot { get; set; }
+		[ADAttributeAttribute("dSHeuristics", ADAttributeValueKind.StringValue)]
 		public string DSHeuristics { get; set; }
+		[ADAttributeAttribute("ms-DS-MachineAccountQuota", ADAttributeValueKind.IntValue)]
 		public int DSMachineAccountQuota { get; set; }
+		[ADAttributeAttribute("flags", ADAttributeValueKind.IntValue)]
 		public int Flags { get; set; }
+		[ADAttributeAttribute("fSMORoleOwner", ADAttributeValueKind.StringValue)]
 		public string fSMORoleOwner { get; set; }
-		public string GPLink { get; set; }
+		[ADAttributeAttribute("gPCFileSysPath", ADAttributeValueKind.StringValue)]
 		public string GPCFileSysPath { get; set; }
+		[ADAttributeAttribute("gPLink", ADAttributeValueKind.StringValue)]
+		public string GPLink { get; set; }
+		[ADAttributeAttribute("lastLogonTimestamp", ADAttributeValueKind.DateValue)]
 		public DateTime LastLogonTimestamp { get; set; }
+		[ADAttributeAttribute("lDAPDisplayName", ADAttributeValueKind.StringValue)]
 		public string lDAPDisplayName { get; set; }
+		[ADAttributeAttribute("location", ADAttributeValueKind.StringValue)]
 		public string Location { get; set; }
+		[ADAttributeAttribute("member", ADAttributeValueKind.StringArrayValue)]
 		public string[] Member { get; set; }
+		[ADAttributeAttribute("memberOf", ADAttributeValueKind.StringArrayValue)]
 		public string[] MemberOf { get; set; }
+		[ADAttributeAttribute("msDS-AllowedToActOnBehalfOfOtherIdentity", ADAttributeValueKind.SecurityDescriptorValue)]
 		public ActiveDirectorySecurity msDSAllowedToActOnBehalfOfOtherIdentity { get; set; }
+		[ADAttributeAttribute("msDS-AllowedToDelegateTo", ADAttributeValueKind.StringArrayValue)]
+		public string[] msDSAllowedToDelegateTo { get; set; }
+		[ADAttributeAttribute("msDS-EnabledFeature", ADAttributeValueKind.StringArrayValue)]
 		public string[] msDSEnabledFeature { get; set; }
+		[ADAttributeAttribute("msDS-SupportedEncryptionTypes", ADAttributeValueKind.IntValue)]
 		public int msDSSupportedEncryptionTypes { get; set; }
+		[ADAttributeAttribute("msDS-MinimumPasswordAge", ADAttributeValueKind.LongValue)]
 		public long msDSMinimumPasswordAge { get; set; }
+		[ADAttributeAttribute("msDS-MaximumPasswordAge", ADAttributeValueKind.LongValue)]
 		public long msDSMaximumPasswordAge { get; set; }
+		[ADAttributeAttribute("msDS-MinimumPasswordLength", ADAttributeValueKind.IntValue)]
 		public int msDSMinimumPasswordLength { get; set; }
+		[ADAttributeAttribute("msDS-PasswordComplexityEnabled", ADAttributeValueKind.BoolValue)]
 		public bool msDSPasswordComplexityEnabled { get; set; }
+		[ADAttributeAttribute("msDS-PasswordHistoryLength", ADAttributeValueKind.IntValue)]
 		public int msDSPasswordHistoryLength { get; set; }
+		[ADAttributeAttribute("msDS-LockoutThreshold", ADAttributeValueKind.IntValue)]
 		public int msDSLockoutThreshold { get; set; }
+		[ADAttributeAttribute("msDS-LockoutObservationWindow", ADAttributeValueKind.LongValue)]
 		public long msDSLockoutObservationWindow { get; set; }
+		[ADAttributeAttribute("msDS-LockoutDuration", ADAttributeValueKind.LongValue)]
 		public long msDSLockoutDuration { get; set; }
+		[ADAttributeAttribute("msDS-PasswordReversibleEncryptionEnabled", ADAttributeValueKind.BoolValue)]
 		public bool msDSPasswordReversibleEncryptionEnabled { get; set; }
+		[ADAttributeAttribute("msDS-ReplAttributeMetaData", ADAttributeValueKind.ReplMetadataValue2)]
 		public Dictionary<string, ReplPropertyMetaDataItem> msDSReplAttributeMetaData { get; set; }
+		[ADAttributeAttribute("msDS-TrustForestTrustInfo", ADAttributeValueKind.ForestInfoValue)]
 		public List<HealthCheckTrustDomainInfoData> msDSTrustForestTrustInfo { get; set; }
+		[ADAttributeAttribute("msiFileList", ADAttributeValueKind.StringArrayValue)]
 		public string[] msiFileList { get; set; }
+		[ADAttributeAttribute("name", ADAttributeValueKind.StringValue)]
 		public string Name { get; set; }
+		[ADAttributeAttribute("nETBIOSName", ADAttributeValueKind.StringValue)]
 		public string NetBIOSName { get; set; }
+		[ADAttributeAttribute("nTSecurityDescriptor", ADAttributeValueKind.SecurityDescriptorValue)]
 		public ActiveDirectorySecurity NTSecurityDescriptor { get; set; }
+		[ADAttributeAttribute("objectSid", ADAttributeValueKind.SIDValue)]
 		public SecurityIdentifier ObjectSid { get; set; }
+		[ADAttributeAttribute("objectVersion", ADAttributeValueKind.IntValue)]
 		public int ObjectVersion { get; set; }
+		[ADAttributeAttribute("operatingSystem", ADAttributeValueKind.StringValue)]
 		public string OperatingSystem { get; set; }
+		[ADAttributeAttribute("primaryGroupID", ADAttributeValueKind.IntValue)]
 		public int PrimaryGroupID { get; set; }
+		[ADAttributeAttribute("pwdLastSet", ADAttributeValueKind.DateValue)]
 		public DateTime PwdLastSet { get; set; }
+		[ADAttributeAttribute("sAMAccountName", ADAttributeValueKind.StringValue)]
 		public string SAMAccountName { get; set; }
+		[ADAttributeAttribute("schemaIDGUID", ADAttributeValueKind.GUIDValue)]
 		public Guid SchemaIDGUID { get; set; }
+		[ADAttributeAttribute("schemaInfo", ADAttributeValueKind.ByteArrayValue)]
 		public byte[] SchemaInfo { get; set; }
+		[ADAttributeAttribute("scriptPath", ADAttributeValueKind.StringValue)]
 		public string ScriptPath { get; set; }
+		[ADAttributeAttribute("securityIdentifier", ADAttributeValueKind.SIDValue)]
 		public SecurityIdentifier SecurityIdentifier { get; set; }
+		[ADAttributeAttribute("servicePrincipalName", ADAttributeValueKind.StringArrayValue)]
 		public string[] ServicePrincipalName { get; set; }
+		[ADAttributeAttribute("sIDHistory", ADAttributeValueKind.SIDArrayValue)]
 		public SecurityIdentifier[] SIDHistory { get; set; }
+		[ADAttributeAttribute("siteObjectBL", ADAttributeValueKind.StringArrayValue)]
 		public string[] SiteObjectBL { get; set; }
+		[ADAttributeAttribute("trustAttributes", ADAttributeValueKind.IntValue)]
 		public int TrustAttributes { get; set; }
+		[ADAttributeAttribute("trustDirection", ADAttributeValueKind.IntValue)]
 		public int TrustDirection { get; set; }
+		[ADAttributeAttribute("trustPartner", ADAttributeValueKind.StringValueLowerInvariant)]
 		public string TrustPartner { get; set; }
+		[ADAttributeAttribute("trustType", ADAttributeValueKind.IntValue)]
 		public int TrustType { get; set; }
+		[ADAttributeAttribute("userAccountControl", ADAttributeValueKind.IntValue)]
 		public int UserAccountControl { get; set; }
+		[ADAttributeAttribute("whenCreated", ADAttributeValueKind.DateValue2)]
 		public DateTime WhenCreated { get; set; }
+		[ADAttributeAttribute("whenChanged", ADAttributeValueKind.DateValue2)]
 		public DateTime WhenChanged { get; set; }
+		[ADAttributeAttribute("replPropertyMetaData", ADAttributeValueKind.ReplMetadataValue)]
 		public Dictionary<int, ReplPropertyMetaDataItem> ReplPropertyMetaData { get; set; }
+
+		public List<string> GetApplicableGPO()
+		{
+			var output = new List<string>();
+			if (string.IsNullOrEmpty(GPLink))
+				return output;
+			string[] gplinks = GPLink.Split(']');
+			foreach (string gplink in gplinks)
+			{
+				if (string.IsNullOrEmpty(gplink.TrimEnd()))
+					continue;
+				string[] gpodata = gplink.Split(';');
+				if (gpodata.Length != 2)
+				{
+					Trace.WriteLine("invalid gpolink1:" + gplink);
+					continue;
+				}
+				int flag = int.Parse(gpodata[1]);
+				if (flag == 1)
+					continue;
+				if (!gpodata[0].StartsWith("[LDAP://", StringComparison.InvariantCultureIgnoreCase))
+				{
+					Trace.WriteLine("invalid gpolink2:" + gplink);
+					continue;
+				}
+				string dn = gpodata[0].Substring(8);
+				output.Add(dn);
+			}
+			return output;
+		}
 
 		private static string StripNamespace(string input)
 		{
@@ -357,186 +507,88 @@ namespace PingCastle.ADWS
 
 			while (child != null && child is XmlElement)
 			{
-				string name = StripNamespace(child.Name);
-				switch(name)
+				string name = StripNamespace(child.Name).ToLowerInvariant();
+				if (AttributeTranslation.ContainsKey(name))
 				{
-					case "adminCount":
-						aditem.AdminCount = ExtractIntValue(child);
-						break;
-					case "attributeID":
-						aditem.AttributeID = ExtractStringValue(child);
-						break;
-					case "cACertificate":
-						aditem.CACertificate = ExtractCertificateStore(child);
-						break;
-					case "description":
-						aditem.Description = ExtractStringValue(child);
-						break;
-					case "displayName":
-						aditem.DisplayName = ExtractStringValue(child);
-						break;
-					case "distinguishedName":
-						aditem.DistinguishedName = ExtractStringValue(child);
-						break;
-					case "dNSHostName":
-						aditem.DNSHostName = ExtractStringValue(child);
-						break;
-					case "dnsRoot":
-						aditem.DnsRoot = ExtractStringValue(child).ToLowerInvariant();
-						break;
-					case "dSHeuristics":
-						aditem.DSHeuristics = ExtractStringValue(child);
-						break;
-					case "flags":
-						aditem.Flags = ExtractIntValue(child);
-						break;
-					case "fSMORoleOwner":
-						aditem.fSMORoleOwner = ExtractStringValue(child);
-						break;
-					case "gPCFileSysPath":
-						aditem.GPCFileSysPath = ExtractStringValue(child);
-						break;
-					case "gPLink":
-						aditem.GPLink = ExtractStringValue(child);
-						break;
-					case "lastLogonTimestamp":
-						aditem.LastLogonTimestamp = ExtractDateValue(child);
-						break;
-					case "lDAPDisplayName":
-						aditem.lDAPDisplayName = ExtractStringValue(child);
-						break;
-					case "location":
-						aditem.Location = ExtractStringValue(child);
-						break;
-					case "memberOf":
-						aditem.MemberOf = ExtractStringArrayValue(child);
-						break;
-					case "member":
-						aditem.Member = ExtractStringArrayValue(child);
-						break;
-					case "name":
-						aditem.Name = ExtractStringValue(child);
-						break;
-					case "msDS-AllowedToActOnBehalfOfOtherIdentity":
-						aditem.msDSAllowedToActOnBehalfOfOtherIdentity = ExtractSDValue(child);
-						break;
-					case "msDS-EnabledFeature":
-						aditem.msDSEnabledFeature = ExtractStringArrayValue(child);
-						break;
-					case "ms-DS-MachineAccountQuota":
-						aditem.DSMachineAccountQuota = ExtractIntValue(child);
-						break;
-					case "msDS-SupportedEncryptionTypes":
-						aditem.msDSSupportedEncryptionTypes = ExtractIntValue(child);
-						break;
-					case "msDS-TrustForestTrustInfo":
-						aditem.msDSTrustForestTrustInfo = ExtractTrustForestInfo(child);
-						break;
-					case "msDS-MinimumPasswordAge":
-						aditem.msDSMinimumPasswordAge = ExtractLongValue(child);
-						break;
-					case "msDS-MaximumPasswordAge":
-						aditem.msDSMaximumPasswordAge = ExtractLongValue(child);
-						break;
-					case "msDS-MinimumPasswordLength":
-						aditem.msDSMinimumPasswordLength = ExtractIntValue(child);
-						break;
-					case "msDS-PasswordComplexityEnabled":
-						aditem.msDSPasswordComplexityEnabled = ExtractBoolValue(child);
-						break;
-					case "msDS-PasswordHistoryLength":
-						aditem.msDSPasswordHistoryLength = ExtractIntValue(child);
-						break;
-					case "msDS-LockoutThreshold":
-						aditem.msDSLockoutThreshold = ExtractIntValue(child);
-						break;
-					case "msDS-LockoutObservationWindow":
-						aditem.msDSLockoutObservationWindow = ExtractLongValue(child);
-						break;
-					case "msDS-LockoutDuration":
-						aditem.msDSLockoutDuration = ExtractLongValue(child);
-						break;
-					case "msDS-PasswordReversibleEncryptionEnabled":
-						aditem.msDSPasswordReversibleEncryptionEnabled = ExtractBoolValue(child);
-						break;
-					case "msDS-ReplAttributeMetaData":
-						aditem.msDSReplAttributeMetaData=ConvertStringArrayToMetaDataInfo(ExtractStringArrayValue(child));
-						break;
-					case "msiFileList":
-						aditem.msiFileList = ExtractStringArrayValue(child);
-						break;
-					case "nETBIOSName":
-						aditem.NetBIOSName = ExtractStringValue(child);
-						break;
-					case "nTSecurityDescriptor":
-						aditem.NTSecurityDescriptor = ExtractSDValue(child);
-						break;
-					case "objectSid":
-						aditem.ObjectSid = ExtractSIDValue(child);
-						break;
-					case "objectVersion":
-						aditem.ObjectVersion = ExtractIntValue(child);
-						break;
-					case "operatingSystem":
-						aditem.OperatingSystem = ExtractStringValue(child);
-						break;
-					case "primaryGroupID":
-						aditem.PrimaryGroupID = ExtractIntValue(child);
-						break;
-					case "pwdLastSet":
-						aditem.PwdLastSet = ExtractDateValue(child);
-						break;
-					case "replPropertyMetaData":
-						aditem.ReplPropertyMetaData = ExtractReplPropertyMetadata(child);
-						break;
-					case "sAMAccountName":
-						aditem.SAMAccountName = ExtractStringValue(child);
-						break;
-					case "schemaIDGUID":
-						aditem.SchemaIDGUID = new Guid(Convert.FromBase64String(ExtractStringValue(child)));
-						break;
-					case "schemaInfo":
-						aditem.SchemaInfo = Convert.FromBase64String(ExtractStringValue(child));
-						break;
-					case "scriptPath":
-						aditem.ScriptPath = ExtractStringValue(child);
-						break;
-					case "securityIdentifier":
-						aditem.SecurityIdentifier = ExtractSIDValue(child);
-						break;
-					case "servicePrincipalName":
-						aditem.ServicePrincipalName = ExtractStringArrayValue(child);
-						break;
-					case "sIDHistory":
-						aditem.SIDHistory = ExtractSIDArrayValue(child);
-						break;
-					case "siteObjectBL":
-						aditem.SiteObjectBL = ExtractStringArrayValue(child);
-						break;
-					case "trustAttributes":
-						aditem.TrustAttributes = ExtractIntValue(child);
-						break;
-					case "trustDirection":
-						aditem.TrustDirection = ExtractIntValue(child);
-						break;
-					case "trustPartner":
-						aditem.TrustPartner = ExtractStringValue(child).ToLowerInvariant();
-						break;
-					case "trustType":
-						aditem.TrustType = ExtractIntValue(child);
-						break;
-					case "userAccountControl":
-						aditem.UserAccountControl = ExtractIntValue(child);
-						break;
-					case "whenCreated":
-						aditem.WhenCreated = DateTime.ParseExact(ExtractStringValue(child), "yyyyMMddHHmmss.f'Z'", CultureInfo.InvariantCulture);
-						break;
-					case "whenChanged":
-						aditem.WhenChanged = DateTime.ParseExact(ExtractStringValue(child), "yyyyMMddHHmmss.f'Z'", CultureInfo.InvariantCulture);
-						break;
+					try
+					{
+						var translation = AttributeTranslation[name];
+						switch (translation.aDAttributeAttribute.ValueKind)
+						{
+							case ADAttributeValueKind.BoolValue:
+								translation.prop.SetValue(aditem, ExtractBoolValue(child), null);
+								break;
+							case ADAttributeValueKind.IntValue:
+								translation.prop.SetValue(aditem, ExtractIntValue(child), null);
+								break;
+							case ADAttributeValueKind.LongValue:
+								translation.prop.SetValue(aditem, ExtractLongValue(child), null);
+								break;
+							case ADAttributeValueKind.DateValue:
+								translation.prop.SetValue(aditem, ExtractDateValue(child), null);
+								break;
+							case ADAttributeValueKind.DateValue2:
+								translation.prop.SetValue(aditem, DateTime.ParseExact(ExtractStringValue(child), "yyyyMMddHHmmss.f'Z'", CultureInfo.InvariantCulture), null);
+								break;
+							case ADAttributeValueKind.GUIDValue:
+								translation.prop.SetValue(aditem, new Guid(Convert.FromBase64String(ExtractStringValue(child))), null);
+								break;
+							case ADAttributeValueKind.ByteArrayValue:
+								translation.prop.SetValue(aditem, Convert.FromBase64String(ExtractStringValue(child)), null);
+								break;
+							case ADAttributeValueKind.StringValue:
+								translation.prop.SetValue(aditem, ExtractStringValue(child), null);
+								break;
+							case ADAttributeValueKind.StringValueLowerInvariant:
+								translation.prop.SetValue(aditem, ExtractStringValue(child).ToLowerInvariant(), null);
+								break;
+							case ADAttributeValueKind.StringArrayValue:
+								translation.prop.SetValue(aditem, ExtractStringArrayValue(child), null);
+								break;
+							case ADAttributeValueKind.SecurityDescriptorValue:
+								translation.prop.SetValue(aditem, ExtractSDValue(child), null);
+								break;
+							case ADAttributeValueKind.ReplMetadataValue:
+								translation.prop.SetValue(aditem, ExtractReplPropertyMetadata(child), null);
+								break;
+							case ADAttributeValueKind.ReplMetadataValue2:
+								translation.prop.SetValue(aditem, ConvertStringArrayToMetaDataInfo(ExtractStringArrayValue(child)), null);
+								break;
+							case ADAttributeValueKind.CertificateStore:
+								translation.prop.SetValue(aditem, ExtractCertificateStore(child), null);
+								break;
+							case ADAttributeValueKind.ForestInfoValue:
+								translation.prop.SetValue(aditem, ExtractTrustForestInfo(child), null);
+								break;
+							case ADAttributeValueKind.SIDValue:
+								translation.prop.SetValue(aditem, ExtractSIDValue(child), null);
+								break;
+							case ADAttributeValueKind.SIDArrayValue:
+								translation.prop.SetValue(aditem, ExtractSIDArrayValue(child), null);
+								break;
+						}
+					}
+					catch (Exception)
+					{
+						Trace.WriteLine("Error when translation attribute " + name);
+						throw;
+					}
+				}
+				else
+				{
+					switch (name)
+					{
+						case "objectreferenceproperty":
+							break;
+						case "objectclass":
+							break;
+						default:
+							Trace.WriteLine("Unknown attribute: " + name);
+							break;
+					}
 				}
 				child = child.NextSibling;
-			}          
+			}
 			return aditem;
 		}
 
@@ -566,254 +618,126 @@ namespace PingCastle.ADWS
 				aditem.NTSecurityDescriptor = directoryEntry.ObjectSecurity;
 			}
 			aditem.Class = directoryEntry.SchemaClassName;
+
 			foreach (string name in sr.Properties.PropertyNames)
 			{
-				switch (name)
+				if (name == "ntsecuritydescriptor")
+					continue;
+				if (AttributeTranslation.ContainsKey(name))
 				{
-					case "admincount":
-						aditem.AdminCount = (int) sr.Properties[name][0];
-						break;
-					case "attributeid":
-						aditem.AttributeID = sr.Properties[name][0] as string;
-						break;
-					case "adspath":
-						break;
-					case "cacertificate":
-						X509Certificate2Collection store = new X509Certificate2Collection();
-						foreach( byte[] data in sr.Properties["cACertificate"])
+					try
+					{
+						var translation = AttributeTranslation[name];
+						switch (translation.aDAttributeAttribute.ValueKind)
 						{
-							store.Add(new X509Certificate2(data));
+							case ADAttributeValueKind.BoolValue:
+								translation.prop.SetValue(aditem, (bool)sr.Properties[name][0], null);
+								break;
+							case ADAttributeValueKind.IntValue:
+								translation.prop.SetValue(aditem, (int)sr.Properties[name][0], null);
+								break;
+							case ADAttributeValueKind.LongValue:
+								translation.prop.SetValue(aditem, (long)sr.Properties[name][0], null);
+								break;
+							case ADAttributeValueKind.DateValue:
+								translation.prop.SetValue(aditem, SafeExtractDateTimeFromLong((long)sr.Properties[name][0]), null);
+								break;
+							case ADAttributeValueKind.DateValue2:
+								translation.prop.SetValue(aditem, (DateTime)sr.Properties[name][0], null);
+								break;
+							case ADAttributeValueKind.GUIDValue:
+								translation.prop.SetValue(aditem, new Guid((byte[])sr.Properties[name][0]), null);
+								break;
+							case ADAttributeValueKind.ByteArrayValue:
+								translation.prop.SetValue(aditem, (byte[])sr.Properties[name][0], null);
+								break;
+							case ADAttributeValueKind.StringValue:
+								translation.prop.SetValue(aditem, sr.Properties[name][0] as string, null);
+								break;
+							case ADAttributeValueKind.StringValueLowerInvariant:
+								translation.prop.SetValue(aditem, (sr.Properties[name][0] as string).ToLowerInvariant(), null);
+								break;
+							case ADAttributeValueKind.StringArrayValue:
+								{
+									List<string> list = new List<string>();
+									foreach (string data in sr.Properties[name])
+									{
+										list.Add(data);
+									}
+									translation.prop.SetValue(aditem, list.ToArray(), null);
+								}
+								break;
+							case ADAttributeValueKind.SecurityDescriptorValue:
+								{
+									var sd = new ActiveDirectorySecurity();
+									sd.SetSecurityDescriptorBinaryForm((byte[])sr.Properties[name][0], AccessControlSections.Access);
+									translation.prop.SetValue(aditem, sd, null);
+								}
+								break;
+							case ADAttributeValueKind.ReplMetadataValue:
+								translation.prop.SetValue(aditem, ConvertByteToMetaDataInfo((byte[])sr.Properties[name][0]), null);
+								break;
+							case ADAttributeValueKind.ReplMetadataValue2:
+								{
+									List<string> list = new List<string>();
+									foreach (string data in sr.Properties[name])
+									{
+										list.Add(data);
+									}
+									translation.prop.SetValue(aditem, ConvertStringArrayToMetaDataInfo(list), null);
+								}
+								break;
+							case ADAttributeValueKind.CertificateStore:
+								{
+									X509Certificate2Collection store = new X509Certificate2Collection();
+									foreach (byte[] data in sr.Properties[name])
+									{
+										store.Add(new X509Certificate2(data));
+									}
+									translation.prop.SetValue(aditem, store, null);
+								}
+								break;
+							case ADAttributeValueKind.ForestInfoValue:
+								translation.prop.SetValue(aditem, ConvertByteToTrustInfo((byte[])sr.Properties[name][0]), null);
+								break;
+							case ADAttributeValueKind.SIDValue:
+								translation.prop.SetValue(aditem, new SecurityIdentifier((byte[])sr.Properties[name][0], 0), null);
+								break;
+							case ADAttributeValueKind.SIDArrayValue:
+								{
+									List<SecurityIdentifier> list = new List<SecurityIdentifier>();
+									foreach (byte[] data in sr.Properties[name])
+									{
+										list.Add(new SecurityIdentifier(data, 0));
+									}
+									translation.prop.SetValue(aditem, list.ToArray(), null);
+								}
+								break;
 						}
-						aditem.CACertificate = store;
-						break;
-					case "description":
-						aditem.Description = sr.Properties[name][0] as string;
-						break;
-					case "displayname":
-						aditem.DisplayName = sr.Properties[name][0] as string;
-						break;
-					case "distinguishedname":
-						aditem.DistinguishedName = sr.Properties[name][0] as string;
-						break;
-					case "dnshostname":
-						aditem.DNSHostName = sr.Properties[name][0] as string;
-						break;
-					case "dnsroot":
-						aditem.DnsRoot = (sr.Properties[name][0] as string).ToLowerInvariant();
-						break;
-					case "dsheuristics":
-						aditem.DSHeuristics = sr.Properties[name][0] as string;
-						break;
-					case "flags":
-						aditem.Flags = (int)sr.Properties[name][0];
-						break;
-					case "fsmoroleowner":
-						aditem.fSMORoleOwner = sr.Properties[name][0] as string;
-						break;
-					case "gpcfilesyspath":
-						aditem.GPCFileSysPath = sr.Properties[name][0] as string;
-						break;
-					case "gplink":
-						aditem.GPLink = sr.Properties[name][0] as string;
-						break;
-					case "lastlogontimestamp":
-						aditem.LastLogonTimestamp = SafeExtractDateTimeFromLong((long)sr.Properties[name][0]);
-						break;
-					case "ldapdisplayname":
-						aditem.lDAPDisplayName = sr.Properties[name][0] as string;
-						break;
-					case "location":
-						aditem.Location = sr.Properties[name][0] as string;
-						break;
-					case "memberof":
-						{
-							List<string> list = new List<string>();
-							foreach (string data in sr.Properties[name])
-							{
-								list.Add(data);
-							}
-							aditem.MemberOf = list.ToArray();
-						}
-						break;
-					case "member":
-						{
-							List<string> list = new List<string>();
-							foreach (string data in sr.Properties[name])
-							{
-								list.Add(data);
-							}
-							aditem.Member = list.ToArray();
-						}
-						break;
-					case "name":
-						aditem.Name = sr.Properties[name][0] as string;
-						break;
-					case "msds-allowedtoactonbehalfofotheridentity":
-						aditem.msDSAllowedToActOnBehalfOfOtherIdentity = new ActiveDirectorySecurity();
-						aditem.msDSAllowedToActOnBehalfOfOtherIdentity.SetSecurityDescriptorBinaryForm((byte[])sr.Properties[name][0], AccessControlSections.Access);
-						break;
-					case "msds-enabledfeature":
-						{
-							List<string> list = new List<string>();
-							foreach (string data in sr.Properties[name])
-							{
-								list.Add(data);
-							}
-							aditem.msDSEnabledFeature = list.ToArray();
-						}
-						break;
-					case "ms-ds-machineaccountquota":
-						aditem.DSMachineAccountQuota = (int)sr.Properties[name][0];
-						break;
-					case "msds-supportedencryptiontypes":
-						aditem.msDSSupportedEncryptionTypes = (int)sr.Properties[name][0];
-						break;
-					case "msds-trustforesttrustinfo":
-						aditem.msDSTrustForestTrustInfo = ConvertByteToTrustInfo((byte[])sr.Properties[name][0]);
-						break;
-					case "msds-minimumpasswordage":
-						aditem.msDSMinimumPasswordAge = (long)sr.Properties[name][0];
-						break;
-					case "msds-maximumpasswordage":
-						aditem.msDSMaximumPasswordAge = (long)sr.Properties[name][0];
-						break;
-					case "msds-minimumpasswordlength":
-						aditem.msDSMinimumPasswordLength = (int)sr.Properties[name][0];
-						break;
-					case "msds-passwordcomplexityenabled":
-						aditem.msDSPasswordComplexityEnabled = (bool)sr.Properties[name][0];
-						break;
-					case "msds-passwordhistorylength":
-						aditem.msDSPasswordHistoryLength = (int)sr.Properties[name][0];
-						break;
-					case "msds-lockoutthreshold":
-						aditem.msDSLockoutThreshold = (int)sr.Properties[name][0];
-						break;
-					case "msds-lockoutobservationwindow":
-						aditem.msDSLockoutObservationWindow = (long)sr.Properties[name][0];
-						break;
-					case "msds-lockoutduration":
-						aditem.msDSLockoutDuration = (long)sr.Properties[name][0];
-						break;
-					case "msds-passwordreversibleencryptionenabled":
-						aditem.msDSPasswordReversibleEncryptionEnabled = (bool)sr.Properties[name][0];
-						break;
-					case "msds-replattributemetadata":
-						{
-							List<string> list = new List<string>();
-							foreach (string data in sr.Properties[name])
-							{
-								list.Add(data);
-							}
-							aditem.msDSReplAttributeMetaData = ConvertStringArrayToMetaDataInfo(list);
-						}
-						break;
-					case "msifilelist":
-						{
-							List<string> list = new List<string>();
-							foreach (string data in sr.Properties[name])
-							{
-								list.Add(data);
-							}
-							aditem.msiFileList = list.ToArray();
-						}
-						break;
-					case "netbiosname":
-						aditem.NetBIOSName = sr.Properties[name][0] as string;
-						break;
-					case "ntsecuritydescriptor":
-						// ignored
-						break;
-					case "objectsid":
-						aditem.ObjectSid = new SecurityIdentifier((byte[])sr.Properties[name][0],0);
-						break;
-					case "objectversion":
-						aditem.ObjectVersion = (int)sr.Properties[name][0];
-						break;
-					case "operatingsystem":
-						aditem.OperatingSystem = sr.Properties[name][0] as string;
-						break;
-					case "primarygroupid":
-						aditem.PrimaryGroupID = (int)sr.Properties[name][0];
-						break;
-					case "pwdlastset":
-						aditem.PwdLastSet = SafeExtractDateTimeFromLong((long)sr.Properties[name][0]);
-						break;
-					case "replpropertymetadata":
-						aditem.ReplPropertyMetaData = ConvertByteToMetaDataInfo((byte[])sr.Properties[name][0]);
-						break;
-					case "samaccountname":
-						aditem.SAMAccountName = sr.Properties[name][0] as string;
-						break;
-					case "schemaidguid":
-						aditem.SchemaIDGUID = new Guid((byte[])sr.Properties[name][0]);
-						break;
-					case "schemainfo":
-						aditem.SchemaInfo = (byte[])sr.Properties[name][0];
-						break;
-					case "scriptpath":
-						aditem.ScriptPath = sr.Properties[name][0] as string;
-						break;
-					case "securityidentifier":
-						aditem.SecurityIdentifier = new SecurityIdentifier((byte[])sr.Properties[name][0], 0);
-						break;
-					case "serviceprincipalname":
-						{
-							List<string> list = new List<string>();
-							foreach (string data in sr.Properties[name])
-							{
-								list.Add(data);
-							}
-							aditem.ServicePrincipalName = list.ToArray();
-						}
-						break;
-					case "sidhistory":
-						{
-							List<SecurityIdentifier> list = new List<SecurityIdentifier>();
-							foreach (byte[] data in sr.Properties[name])
-							{
-								list.Add(new SecurityIdentifier(data, 0));
-							}
-							aditem.SIDHistory = list.ToArray();
-						}
-						break;
-					case "siteobjectbl":
-						{
-							List<string> list = new List<string>();
-							foreach (string data in sr.Properties[name])
-							{
-								list.Add(data);
-							}
-							aditem.SiteObjectBL = list.ToArray();
-						}
-						break;
-					case "trustattributes":
-						aditem.TrustAttributes = (int)sr.Properties[name][0];
-						break;
-					case "trustdirection":
-						aditem.TrustDirection = (int)sr.Properties[name][0];
-						break;
-					case "trustpartner":
-						aditem.TrustPartner = ((string)sr.Properties[name][0]).ToLowerInvariant();
-						break;
-					case "trusttype":
-						aditem.TrustType = (int)sr.Properties[name][0];
-						break;
-					case "useraccountcontrol":
-						aditem.UserAccountControl = (int)sr.Properties[name][0];
-						break;
-					case "whencreated":
-						aditem.WhenCreated = (DateTime)sr.Properties[name][0];
-						break;
-					case "whenchanged":
-						aditem.WhenChanged = (DateTime)sr.Properties[name][0];
-						break;
-					default:
-						Trace.WriteLine("Unknown attribute: " + name);
-						break;
+					}
+					catch (Exception)
+					{
+						Trace.WriteLine("Error when translation attribute " + name);
+						throw;
+					}
+				}
+				else
+				{
+					switch (name)
+					{
+						case "adspath":
+							break;
+						case "ntsecuritydescriptor":
+							break;
+						case "objectclass":
+							break;
+						default:
+							Trace.WriteLine("Unknown attribute: " + name);
+							break;
+					}
 				}
 			}
-			if (String.IsNullOrEmpty(aditem.DistinguishedName))
+			if (string.IsNullOrEmpty(aditem.DistinguishedName))
 			{
 				string path = (string) sr.Properties["adspath"][0];
 				int i = path.IndexOf('/', 7);

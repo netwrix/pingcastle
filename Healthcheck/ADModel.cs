@@ -336,6 +336,26 @@ namespace PingCastle.Healthcheck
         public OwnerInformation Entity { get; set; }
         public Dictionary<DomainKey, GraphEdge> Trusts { get; private set; }
 
+        private bool CloneIsPotentiallyRemoved;
+        public bool IsPotentiallyRemoved
+        {
+            get
+            {
+                if (CloneIsPotentiallyRemoved)
+                    return true;
+                if (HealthCheckData != null)
+                    return false;
+                if (Trusts.Count == 0)
+                    return false;
+                foreach(var edge in Trusts.Values)
+                {
+                    if (edge.IsActive)
+                        return false;
+                }
+                return true;
+            }
+        }
+
         public GraphNode(int Id, DomainKey Domain, DateTime ReferenceDate)
         {
             Trace.WriteLine("Creating " + Domain);
@@ -445,9 +465,15 @@ namespace PingCastle.Healthcheck
             Link(destination, externalTrust, false);
         }
 
+        public void SetCloneIsPotentiallyRemoved()
+        {
+            CloneIsPotentiallyRemoved = true;
+        }
         public static GraphNode CloneWithoutTrusts(GraphNode inputNode)
         {
             GraphNode output = new GraphNode(inputNode.Id, inputNode.Domain, inputNode.ReferenceDate);
+            if (inputNode.IsPotentiallyRemoved)
+                output.SetCloneIsPotentiallyRemoved();
             output.Forest = inputNode.Forest;
             output.HealthCheckData = inputNode.HealthCheckData;
             output.Entity = inputNode.Entity;

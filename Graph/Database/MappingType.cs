@@ -10,10 +10,12 @@ using System.Text;
 
 namespace PingCastle.Graph.Database
 {
-    public enum MappingType
-    {
-        Shortname,
-        Name,
-        Sid
-    }
+	public enum MappingType
+	{
+		Shortname,
+		DistinguishedName,
+		Sid,
+		FileName,
+		GPODirectory,
+	}
 }

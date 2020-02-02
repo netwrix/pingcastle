@@ -6,13 +6,17 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 
 namespace PingCastle.Rules
 {
 	public enum RiskRuleCategory
 	{
+		Unknown,
+		[Description("Stale Objects")]
 		StaleObjects,
+		[Description("Privileged Accounts")]
 		PrivilegedAccounts,
 		Trusts,
 		Anomalies,

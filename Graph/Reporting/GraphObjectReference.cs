@@ -29,18 +29,18 @@ namespace PingCastle.Graph.Reporting
 			{
 				{CompromiseGraphDataTypology.PrivilegedAccount, new List<GraphSingleObject>(){
 					new GraphSingleObject("S-1-5-32-544","Administrators", CompromiseGraphDataObjectRisk.Critical),
-					new GraphSingleObject("S-1-5-32-548","Account Operator", CompromiseGraphDataObjectRisk.High),
+					new GraphSingleObject("S-1-5-32-548","Account Operators", CompromiseGraphDataObjectRisk.High),
 					new GraphSingleObject("S-1-5-32-549","Server Operators", CompromiseGraphDataObjectRisk.High),
 					new GraphSingleObject("S-1-5-32-550","Print Operators", CompromiseGraphDataObjectRisk.Medium),
 					new GraphSingleObject("S-1-5-32-551","Backup Operators", CompromiseGraphDataObjectRisk.High),
-					new GraphSingleObject("S-1-5-32-556","Network Operators", CompromiseGraphDataObjectRisk.Medium),
-					new GraphSingleObject("S-1-5-32-557","Incoming Forest Trust Builders", CompromiseGraphDataObjectRisk.Medium),
 					new GraphSingleObject("S-1-5-32-569","Certificate Operators", CompromiseGraphDataObjectRisk.Medium),
 					new GraphSingleObject(data.DomainSid.Value + "-500","Administrator", CompromiseGraphDataObjectRisk.Critical),
 					new GraphSingleObject(data.DomainSid.Value + "-512","Domain Administrators", CompromiseGraphDataObjectRisk.Critical),
 					new GraphSingleObject(data.DomainSid.Value + "-517","Certificate Publishers"),
 					new GraphSingleObject(data.DomainSid.Value + "-518","Schema Administrators", CompromiseGraphDataObjectRisk.Critical),
 					new GraphSingleObject(data.DomainSid.Value + "-519","Enterprise Administrators", CompromiseGraphDataObjectRisk.Critical),
+					new GraphSingleObject(data.DomainSid.Value + "-526","Key Administrators", CompromiseGraphDataObjectRisk.Medium),
+					new GraphSingleObject(data.DomainSid.Value + "-527","Enterprise Key Administrators", CompromiseGraphDataObjectRisk.Medium),
 				}},
 				{CompromiseGraphDataTypology.Infrastructure, new List<GraphSingleObject>(){
 					new GraphSingleObject(data.DomainSid.Value,"Domain Root", CompromiseGraphDataObjectRisk.Medium),
@@ -50,6 +50,9 @@ namespace PingCastle.Graph.Reporting
 					new GraphSingleObject(data.DomainSid.Value + "-520","Group Policy Creator Owners", CompromiseGraphDataObjectRisk.Medium),
 					new GraphSingleObject(data.DomainSid.Value + "-521","Read Only Domain Controllers", CompromiseGraphDataObjectRisk.Medium),
 					new GraphSingleObject("CN=Builtin," + data.DefaultNamingContext,"Builtin OU", CompromiseGraphDataObjectRisk.Medium),
+					new GraphSingleObject("CN=Users," + data.DefaultNamingContext,"Users container", CompromiseGraphDataObjectRisk.Medium),
+					new GraphSingleObject("CN=Computers," + data.DefaultNamingContext,"Computers container", CompromiseGraphDataObjectRisk.Medium),
+					new GraphSingleObject("CN=NTAuthCertificates,CN=Public Key Services,CN=Services," + data.ConfigurationNamingContext,"Certificate store", CompromiseGraphDataObjectRisk.Medium),
 				}},
 				{CompromiseGraphDataTypology.UserDefined, new List<GraphSingleObject>(){
 				}},

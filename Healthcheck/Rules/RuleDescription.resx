@@ -151,7 +151,7 @@
     <value>The subnet declaration is incomplete [{count} IP of DC not found in declared subnets]</value>
   </data>
   <data name="S_DC_SubnetMissing_Detail" xml:space="preserve">
-    <value>Domain Controller {0} ip address {1}</value>
+    <value>Domain controller: {0} ip: {1}</value>
   </data>
   <data name="A_BackupMetadata_Description" xml:space="preserve">
     <value>The purpose is check if the backups are actually up to date in case they are needed. The alert can be triggered when a domain is backed up using non-recommended methods</value>
@@ -191,7 +191,7 @@
     <value>Number of DC(s) vulnerable to MS17-010 = {count} (&gt;0)</value>
   </data>
   <data name="S_Vuln_MS17_010_Detail" xml:space="preserve">
-    <value>Domain controller {0} based on {1}</value>
+    <value>Domain controller: {0} Reason: {1}</value>
   </data>
   <data name="S_SMB_v1_Description" xml:space="preserve">
     <value>The purpose is to verify if Domain Controller(s) are vulnerable to the SMB v1 vulnerability</value>
@@ -215,7 +215,7 @@
     <value>Number of DC(s) vulnerable to MS14-068 = {count} (&gt;0)</value>
   </data>
   <data name="S_Vuln_MS14_068_Detail" xml:space="preserve">
-    <value>Domain controller {0} based on {1}</value>
+    <value>Domain controller: {0} Reason: {1}</value>
   </data>
   <data name="A_MembershipEveryone_Description" xml:space="preserve">
     <value>The purpose is to identify if there are restricted group such as local administrators, terminal server access, … where Authenticated Users or Everyone is being granted access by a GPO</value>
@@ -227,7 +227,7 @@
     <value>Presence of restricted group where anybody is a member: {count}</value>
   </data>
   <data name="A_MembershipEveryone_Detail" xml:space="preserve">
-    <value>Found in GPO {0} member of {1} user {2}</value>
+    <value>GPO: {0} MemberOf: {1} User: {2}</value>
   </data>
   <data name="P_DCOwner_Description" xml:space="preserve">
     <value>The purpose is to perform a review of which accounts have ownership rights on a domain controller and can then modify their permissions</value>
@@ -254,7 +254,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>{count} unknown domain(s) used in SIDHistory</value>
   </data>
   <data name="T_SIDHistoryUnknownDomain_Detail" xml:space="preserve">
-    <value>{0} [{1} object(s)]</value>
+    <value>SID: {0} Object(s): {1}</value>
   </data>
   <data name="T_SIDHistorySameDomain_Description" xml:space="preserve">
     <value>The purpose is to ensure that accounts are not linked for more privileged accounts in the same domain</value>
@@ -287,7 +287,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>At least one trusted ROOT certificate found has a SHA1 signature [{count}]</value>
   </data>
   <data name="A_SHA1RootCert_Detail" xml:space="preserve">
-    <value>Found in GPO {0} Subject is {1}</value>
+    <value>GPO: {0} Subject: {1}</value>
   </data>
   <data name="A_SHA0RootCert_Description" xml:space="preserve">
     <value>The purpose is to ensure that there is no use of the SHA0 hashing algorithm in Root Certificate</value>
@@ -299,7 +299,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>At least one trusted ROOT certificate found has a SHA0 signature [{count}]</value>
   </data>
   <data name="A_SHA0RootCert_Detail" xml:space="preserve">
-    <value>Found in GPO {0} Subject is {1}</value>
+    <value>GPO: {0} Subject: {1}</value>
   </data>
   <data name="A_MD5RootCert_Description" xml:space="preserve">
     <value>The purpose is to ensure that there is no use of the MD5 hashing algorithm in Root Certificate</value>
@@ -311,7 +311,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>At least one trusted ROOT certificate found has a MD5 signature [{count}]</value>
   </data>
   <data name="A_MD5RootCert_Detail" xml:space="preserve">
-    <value>Found in GPO {0} Subject is {1}</value>
+    <value>GPO: {0} Subject: {1}</value>
   </data>
   <data name="A_MD4RootCert_Description" xml:space="preserve">
     <value>The purpose is to ensure that there is no use of the MD4 hashing algorithm in Root Certificate</value>
@@ -323,7 +323,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>At least one trusted ROOT certificate found has a MD4 signature [{count}]</value>
   </data>
   <data name="A_MD4RootCert_Detail" xml:space="preserve">
-    <value>Found in GPO {0} Subject is {1}</value>
+    <value>GPO: {0} Subject: {1}</value>
   </data>
   <data name="A_MD2RootCert_Description" xml:space="preserve">
     <value>The purpose is to ensure that there is no use of the MD2 hashing algorithm in Root Certificate</value>
@@ -335,7 +335,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>At least one trusted ROOT certificate found has a MD2 signature [{count}]</value>
   </data>
   <data name="A_MD2RootCert_Detail" xml:space="preserve">
-    <value>Found in GPO {0} Subject is {1}</value>
+    <value>GPO: {0} Subject: {1}</value>
   </data>
   <data name="A_WeakRSARootCert_Description" xml:space="preserve">
     <value>The purpose is to ensure that there is no use of a certificate using a weak RSA key</value>
@@ -347,7 +347,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>At least one trusted certificate found has a weak RSA key [{count}]</value>
   </data>
   <data name="A_WeakRSARootCert_Detail" xml:space="preserve">
-    <value>Found in GPO {0} Subject is {1} Module is {2}</value>
+    <value>GPO: {0} Subject: {1} Module: {2}</value>
   </data>
   <data name="A_SHA0IntermediateCert_Description" xml:space="preserve">
     <value>The purpose is to ensure that there is no use of the SHA0 hashing algorithm in Intermediate Certificate</value>
@@ -359,7 +359,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>At least one trusted INTERMEDIATE certificate found has a SHA0 signature [{count}]</value>
   </data>
   <data name="A_SHA0IntermediateCert_Detail" xml:space="preserve">
-    <value>Found in GPO {0} Subject is {1}</value>
+    <value>GPO: {0} Subject: {1}</value>
   </data>
   <data name="A_MD2IntermediateCert_Description" xml:space="preserve">
     <value>The purpose is to ensure that there is no use of the MD2 hashing algorithm in Intermediate Certificate</value>
@@ -371,7 +371,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>At least one trusted INTERMEDIATE certificate found has a MD2 signature [{count}]</value>
   </data>
   <data name="A_MD2IntermediateCert_Detail" xml:space="preserve">
-    <value>Found in GPO {0} Subject is {1}</value>
+    <value>GPO: {0} Subject: {1}</value>
   </data>
   <data name="A_MD4IntermediateCert_Description" xml:space="preserve">
     <value>The purpose is to ensure that there is no use of the MD4 hashing algorithm in Intermediate Certificate</value>
@@ -383,13 +383,13 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>At least one trusted INTERMEDIATE certificate found has a MD4 signature [{count}]</value>
   </data>
   <data name="A_MD4IntermediateCert_Detail" xml:space="preserve">
-    <value>Found in GPO {0} Subject is {1}</value>
+    <value>GPO: {0} Subject: {1}</value>
   </data>
   <data name="S_Domain____Description" xml:space="preserve">
     <value>The purpose is to ensure that the SID History creation is not enabled</value>
   </data>
   <data name="S_Domain____Solution" xml:space="preserve">
-    <value>If a migration is in progress, declare it in PingCastle so this rule won't be triggered. Else, remove this auditing group. You can locate it by using the LDAP query (sAMAccountNmae=*$$$)</value>
+    <value>If a migration is in progress, declare it in PingCastle so this rule won't be triggered. Else, remove this auditing group. You can locate it by using the LDAP query (sAMAccountName=*$$$)</value>
   </data>
   <data name="S_Domain____Rationale" xml:space="preserve">
     <value>The SIDHistory auditing group is present: SID History creation is enabled</value>
@@ -404,7 +404,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>Number of login scripts hosted in another domain: {count}</value>
   </data>
   <data name="T_ScriptOutOfDomain_Detail" xml:space="preserve">
-    <value>{0}</value>
+    <value>Script: {0}</value>
   </data>
   <data name="A_NullSession_Description" xml:space="preserve">
     <value>The purpose is to access without any account, aka NULL Sessions, within the Active Directory. A NULL Session is a session opened anonymously to access the AD, often used by attackers to perform a recon operation on the AD, to identify weaknesses</value>
@@ -416,7 +416,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>Number of DC(s) with NULL SESSION enabled: {count}</value>
   </data>
   <data name="A_NullSession_Detail" xml:space="preserve">
-    <value>DC involved: {0}</value>
+    <value>Domain controller: {0}</value>
   </data>
   <data name="A_PreWin2000Anonymous_Description" xml:space="preserve">
     <value>The purpose is to identify domains which allow access without any account because of a Pre-Windows 2000 compatibility. </value>
@@ -437,7 +437,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>At least one trusted INTERMEDIATE certificate found has a SHA1 signature [{count}]</value>
   </data>
   <data name="A_SHA1IntermediateCert_Detail" xml:space="preserve">
-    <value>Found in GPO {0} Subject is {1}</value>
+    <value>GPO: {0} Subject: {1}</value>
   </data>
   <data name="A_MD5IntermediateCert_Description" xml:space="preserve">
     <value>The purpose is to ensure that there is no use of the MD5 hashing algorithm in Intermediate Certificate</value>
@@ -449,7 +449,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>At least one trusted INTERMEDIATE certificate found has a MD5 signature [{count}]</value>
   </data>
   <data name="A_MD5IntermediateCert_Detail" xml:space="preserve">
-    <value>Found in GPO {0} Subject is {1}</value>
+    <value>GPO: {0} Subject: {1}</value>
   </data>
   <data name="A_NoServicePolicy_Description" xml:space="preserve">
     <value>The purpose is to give information regarding a best practice for the Service Account password policy. Indeed, having a 20+ characters password for this account greatly helps reducing the risk behind Kerberoast attack (offline crack of the TGS tickets)</value>
@@ -462,7 +462,7 @@ To solve the anomaly, you should implement a PSO or GPO password guarantying a 2
     <value>No password policy for service account found (MinimumPasswordLength&gt;=20)</value>
   </data>
   <data name="A_NoServicePolicy_Detail" xml:space="preserve">
-    <value>Found in GPO {0}</value>
+    <value>GPO: {0}</value>
   </data>
   <data name="A_LimitBlankPasswordUse_Description" xml:space="preserve">
     <value>The purpose is to identify if accounts without password are allowed to be accessed from the network. This represents a high risk, as an account without a password is essentially an account that cannot be assigned to anyone. </value>
@@ -486,7 +486,7 @@ To solve the anomaly, you should implement a PSO or GPO password guarantying a 2
     <value>{count} policies have been found where anonymous accesses can be used</value>
   </data>
   <data name="A_AnonymousAuthorizedGPO_Detail" xml:space="preserve">
-    <value>Found in GPO {0}</value>
+    <value>GPO: {0}</value>
   </data>
   <data name="A_LMHashAuthorized_Description" xml:space="preserve">
     <value>The authentication protocol NTLM v1 can use the LM password hash algorithm which is weak if enabled by a GPO.</value>
@@ -501,7 +501,7 @@ For LmCompatibilityLevel the setting is located in: Network security: LAN Manage
     <value>At least one policy has been found where the LM hash can be used [{count}]</value>
   </data>
   <data name="A_LMHashAuthorized_Detail" xml:space="preserve">
-    <value>Found in GPO {0} with setting {1}</value>
+    <value>GPO: {0} Setting: {1}</value>
   </data>
   <data name="A_MinPwdLen_Description" xml:space="preserve">
     <value>The purpose is to verify if the password policy of the domain enforces users to have at least 8 characters in their password</value>
@@ -513,7 +513,7 @@ For LmCompatibilityLevel the setting is located in: Network security: LAN Manage
     <value>Policy where the password complexity is less than 8 characters: {count}</value>
   </data>
   <data name="A_MinPwdLen_Detail" xml:space="preserve">
-    <value>Found in GPO {0}</value>
+    <value>GPO: {0}</value>
   </data>
   <data name="A_ReversiblePwd_Description" xml:space="preserve">
     <value>The purpose is to verify if a GPO alters the password policy of the domain to enable reversible passwords</value>
@@ -583,7 +583,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>Presence of dangerous extended right in delegation: {count}</value>
   </data>
   <data name="P_DangerousExtendedRight_Detail" xml:space="preserve">
-    <value>Found in DN {0} for account {1} and right {2}</value>
+    <value>DN: {0} Account: {1} Right: {2}</value>
   </data>
   <data name="P_DelegationEveryone_Description" xml:space="preserve">
     <value>The purpose is to verify that there is no delegation granted to "Everyone" and to "Authenticated Users"</value>
@@ -637,7 +637,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>Presence of Admin accounts which have not the flag "this account is sensitive and cannot be delegated": {count}</value>
   </data>
   <data name="P_Delegated_Detail" xml:space="preserve">
-    <value>Domain controller {0} based on {1}</value>
+    <value>Domain controller: {0} Reason: {1}</value>
   </data>
   <data name="P_Inactive_Description" xml:space="preserve">
     <value>The purpose is to ensure that the Administrator Accounts in the AD are all necessary and used</value>
@@ -694,7 +694,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>At least one inactive trust has been found: {count}</value>
   </data>
   <data name="T_Inactive_Detail" xml:space="preserve">
-    <value>{0}</value>
+    <value>Trust: {0}</value>
   </data>
   <data name="T_Downlevel_Description" xml:space="preserve">
     <value>The purpose is to ensure that there is no NT4 compatible trusts</value>
@@ -706,7 +706,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>At least one trust DownLevel has been found. This is a NT4 compatible trust: {count}</value>
   </data>
   <data name="T_Downlevel_Detail" xml:space="preserve">
-    <value>{0}</value>
+    <value>Trust: {0}</value>
   </data>
   <data name="S_DC_2003_Description" xml:space="preserve">
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 2003 as Domain Controller within the domain</value>
@@ -772,7 +772,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>Number of DC not updated = {count}</value>
   </data>
   <data name="S_DC_NotUpdated_Detail" xml:space="preserve">
-    <value>Domain controller {0} based on {1}</value>
+    <value>Domain controller: {0} Reason: {1}</value>
   </data>
   <data name="T_SIDFiltering_Description" xml:space="preserve">
     <value>The purpose is to check if all trusts are protected using the functionality named SID Filtering</value>
@@ -789,7 +789,7 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
     <value>Number of trusts without SID Filtering: {count}</value>
   </data>
   <data name="T_SIDFiltering_Detail" xml:space="preserve">
-    <value>trust without SID Filtering: {0}</value>
+    <value>Trust: {0}</value>
   </data>
   <data name="S_Duplicate_Description" xml:space="preserve">
     <value>The purpose is to very if there currently are duplicate accounts within the domain. A duplicate account is essentially a duplicate of two objects having the same attributes.</value>
@@ -883,7 +883,7 @@ Each security descriptor of the domain (including file shares for example) shoul
     <value>{count} domain(s) used in SIDHistory</value>
   </data>
   <data name="S_SIDHistory_Detail" xml:space="preserve">
-    <value>{0} [{1} object(s)]</value>
+    <value>SID: {0} Object(s): {1}</value>
   </data>
   <data name="P_UnkownDelegation_Title" xml:space="preserve">
     <value>Check delegations for the recipient's existence</value>
@@ -1594,7 +1594,7 @@ https://github.com/misterch0c/shadowbroker/tree/master/windows/exploits </value>
     <value>When there’s an account with unconstrained delegation configured (which is fairly common) and the Print Spooler service running on a computer, you can get that computers credentials sent to the system with unconstrained delegation as a user. With a domain controller, the TGT of the DC can be extracted allowing an attacker to reuse it with a DCSync attack and obtain all user hashes and impersonate them.</value>
   </data>
   <data name="A_DC_Spooler_Detail" xml:space="preserve">
-    <value>Domain Controller {0}</value>
+    <value>Domain controller: {0}</value>
   </data>
   <data name="A_DC_Spooler_Documentation" xml:space="preserve">
     <value>https://adsecurity.org/?p=4056
@@ -1638,7 +1638,7 @@ https://www.slideshare.net/harmj0y/derbycon-the-unintended-risks-of-trusting-act
 https://adsecurity.org/?p=1667</value>
   </data>
   <data name="P_UnconstrainedDelegation_Detail" xml:space="preserve">
-    <value>{0},{1}</value>
+    <value>DN: {0} Name: {1}</value>
   </data>
   <data name="P_ExchangeAdminSDHolder_Title" xml:space="preserve">
     <value>Ensure that Exchange did not modify the AdminSDHolder object to introduce vulnerabilities</value>
@@ -1680,7 +1680,7 @@ Note: The SID will only be resolvable after the PDC emulator role is transferred
   </value>
   </data>
   <data name="P_DelegationKeyAdmin_Detail" xml:space="preserve">
-    <value>Found in DN {0} for account {1} and right {2}</value>
+    <value>DN: {0} Account: {1} Right: {2}</value>
   </data>
   <data name="P_DelegationKeyAdmin_Documentation" xml:space="preserve">
     <value>https://gallery.technet.microsoft.com/scriptcenter/Enterprise-Key-Admins-720eb270
@@ -1690,7 +1690,7 @@ https://secureidentity.se/adprep-bug-in-windows-server-2016/</value>
     <value>The purpose is to ensure that the operator groups, which can have indirect control to the domain, are empty</value>
   </data>
   <data name="P_OperatorsEmpty_Detail" xml:space="preserve">
-    <value>Group: {0} Member counts: {1}</value>
+    <value>Group: {0} Members: {1}</value>
   </data>
   <data name="P_OperatorsEmpty_Documentation" xml:space="preserve">
     <value />
@@ -1754,7 +1754,8 @@ SeRestorePrivilege can be used to modify a service running as local system and s
 SeBackupPrivilege can be used to backup Windows registry and use third party tools for extracting local NTLM hashes.
 SeTakeOwnershipPrivilege can be used to take ownership of any secureable object in the system including a service registry key. Then to change its ACL to define its own service running as LocalSystem.
 SeCreateTokenPrivilege can be used to create a custom token with all privileges and thus be abused like SeTcbPrivilege 
-SeImpersonatePrivilege and SeAssignPrimaryTokenPrivilege can be abused to impersonate privileged tokens. These tokens can be retrieved by establishing security context such as Local DCOM DCE/RPC reflexion.</value>
+SeImpersonatePrivilege and SeAssignPrimaryTokenPrivilege can be abused to impersonate privileged tokens. These tokens can be retrieved by establishing security context such as Local DCOM DCE/RPC reflexion.
+SeSecurityPrivilege can be use to clear the security event log and shrink it to make events flushed soon. Also read security log and view events where the user inverted the login and its password.</value>
   </data>
   <data name="P_PrivilegeEveryone_Title" xml:space="preserve">
     <value>Ensure that dangerous privileges are not granted to everyone by GPO</value>
@@ -2230,7 +2231,7 @@ As an alternative, the file GptTmpl.inf can be manually edited.</value>
     <value>Number of files deployed hosted in another domain: {count}</value>
   </data>
   <data name="T_FileDeployedOutOfDomain_Detail" xml:space="preserve">
-    <value>Server: {0} found in GPO: {1} with File: {2}</value>
+    <value>Server: {0} GPO: {1} File: {2}</value>
   </data>
   <data name="T_FileDeployedOutOfDomain_TechnicalExplanation" xml:space="preserve">
     <value>Files deployed (Application as msi, file copied by GPO, ...) can be stored in any file share available in the network and that includes trusted domains shares. If such file is located in a compromise domain, it can be used to compromise other domains.</value>
@@ -2255,7 +2256,7 @@ As an alternative, the file GptTmpl.inf can be manually edited.</value>
     <value>No GPO has been found which disables LLMNR or at least one GPO does enable it explicitly</value>
   </data>
   <data name="A_NoGPOLLMNR_Detail" xml:space="preserve">
-    <value>GPO overriding the setting: {0}</value>
+    <value>GPO: {0}</value>
   </data>
   <data name="A_NoGPOLLMNR_TechnicalExplanation" xml:space="preserve">
     <value>LLMNR is a protocol which translates names such as foo.bar.com into an ip address. LLMNR has been designed to translate name locally in case the default protocol DNS is not available.
@@ -2373,7 +2374,7 @@ See the official Microsoft recommandations and a script to find potentially impa
     <value>At least one forest trust has been found where TGT delegation over forest trust is allowed</value>
   </data>
   <data name="T_TGTDelegation_Detail" xml:space="preserve">
-    <value>Forest trust misconfigured: {0}</value>
+    <value>Trust: {0}</value>
   </data>
   <data name="T_TGTDelegation_TechnicalExplanation" xml:space="preserve">
     <value>A Forest trust is a link between two forests. By default, this trust is secure and prohibits SID History attacks.
@@ -2426,5 +2427,298 @@ Please note that this program skips service accounts having their password chang
   </data>
   <data name="P_Kerberoasting_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href=&quot;#admingroups&quot;&gt;Admin Groups&lt;/a&gt;</value>
+  </data>
+  <data name="P_DNSDelegation_Description" xml:space="preserve">
+    <value>The purpose is to ensure that no specific delegation has been setup to manage the Microsoft DNS.</value>
+  </data>
+  <data name="P_DNSDelegation_Solution" xml:space="preserve">
+    <value>You should remove the explicit delegation located in the CN=MicrosoftDNS,CN=System container and make the user or group member of the DnsAdmins group.</value>
+  </data>
+  <data name="P_DNSDelegation_Rationale" xml:space="preserve">
+    <value>An explicit delegation has been put in place to manage the Microsoft DNS service.</value>
+  </data>
+  <data name="P_DNSDelegation_Detail" xml:space="preserve">
+    <value>Account: {0} Right: {1}</value>
+  </data>
+  <data name="P_DNSDelegation_TechnicalExplanation" xml:space="preserve">
+    <value>Administrators of the DNS Service have the possibility to inject a DLL in this service.
+However this service is hosted most of the time in the domain controller and is running as system.
+That means that DNS Admins are potentially domain admins.
+
+The security descriptor used to grant admin rights is located on the nTSecurityDescriptor attribute of the object CN=MicrosoftDNS,CN=System.
+
+In this case, an explicit delegation has been setup and this delegation is not using the existing DnsAdmins group.</value>
+  </data>
+  <data name="P_DNSDelegation_Documentation" xml:space="preserve">
+    <value>https://medium.com/@esnesenon/feature-not-bug-dnsadmin-to-dc-compromise-in-one-line-a0f779b8dc83
+https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dnsp/007efcd2-2955-46dd-a59e-f83ae88f4678</value>
+  </data>
+  <data name="P_DNSDelegation_Title" xml:space="preserve">
+    <value>Check if there is an explicit delegation on DNS which is not using the DnsAdmins group.</value>
+  </data>
+  <data name="P_DNSDelegation_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#admindelegation&quot;&gt;Delegations&lt;/a&gt;</value>
+  </data>
+  <data name="P_TrustedCredManAccessPrivilege_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no assignment of the SeTrustedCredManAccessPrivilege privilege.</value>
+  </data>
+  <data name="P_TrustedCredManAccessPrivilege_Solution" xml:space="preserve">
+    <value>You should edit the GPO and remove the GPO right assignment.
+    
+The setting is located in Computer Policy -> Computer Configuration -> Windows Settings -> Security Settings -> Local Policies -> User Rights Assignment.</value>
+  </data>
+  <data name="P_TrustedCredManAccessPrivilege_Rationale" xml:space="preserve">
+    <value>The privilege "Access Credential Manager as a trusted caller user right" has been explicitly granted.</value>
+  </data>
+  <data name="P_TrustedCredManAccessPrivilege_Detail" xml:space="preserve">
+    <value>GPO: {0} User: {1}</value>
+  </data>
+  <data name="P_TrustedCredManAccessPrivilege_TechnicalExplanation" xml:space="preserve">
+    <value>The Credential Manger is a vault where credentials are being stored.
+This privilege can be used to retrieve the secret data.
+
+Please note that, as today, there is no public POC published to exploit this privilege and no supported API needing that privilege.
+    </value>
+  </data>
+  <data name="P_TrustedCredManAccessPrivilege_Documentation" xml:space="preserve">
+    <value>https://docs.microsoft.com/en-us/windows/win32/secauthn/credentials-management
+https://docs.microsoft.com/en-us/windows/win32/secauthn/authentication-functions#credentials-management-functions</value>
+  </data>
+  <data name="P_TrustedCredManAccessPrivilege_Title" xml:space="preserve">
+    <value>Check if there is the privilege Access Credential Manager as a trusted caller user right has been explicitly granted.</value>
+  </data>
+  <data name="P_TrustedCredManAccessPrivilege_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#gpoprivileges&quot;&gt;Privileges&lt;/a&gt;</value>
+  </data>
+  <data name="P_LogonDenied_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is a tier isolation.</value>
+  </data>
+  <data name="P_LogonDenied_Solution" xml:space="preserve">
+    <value>You should add a GPO prohibing the logon for the specific group: Domain Admins and Administrators.
+    
+The setting is located in Computer Policy -> Computer Configuration -> Windows Settings -> Security Settings -> Local Policies -> User Rights Assignment.
+Then Deny log on locally and Deny logon through Remote Desktop Services.</value>
+  </data>
+  <data name="P_LogonDenied_Rationale" xml:space="preserve">
+    <value>No GPO preventing the logon of administrators has been found.</value>
+  </data>
+  <data name="P_LogonDenied_Detail" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="P_LogonDenied_TechnicalExplanation" xml:space="preserve">
+    <value>A way to collect an administrator credential is to take control of a workstation in the unsecure tiers and expect that an administrator will connect to it.
+    An attack such as credential theft or kerberos delegation is then performed.
+    To reduce the impact of such compromise, the best practice is to isolate components (such as admins, DC) in tiers.
+    Typically, a domain admin should not be allowed to connect to any workstation but login only to perform highly privileged operations.
+    
+    To check for this policy, PingCastle looks at all GPO and check if there is a GPO denying logon (SeDenyRemoteInteractiveLogonRight, SeDenyInteractiveLogonRight) of admins (Domain Admins or Administrators) to a specific scope.
+    
+    False positives can occurs for this rule:
+    * if the expected GPO is hidden due to ACL checks
+    * if the targeted group is not "checked" when saving the GPO. Indeed the group will be saved as is without a convertion to its technical name and it will prohibit a match if there are groups internationalized, aka renamed given a specific language.
+    
+    As a consequence, only one deny policy on one group will fulfill this requirements. The program also do not check if the GPO is applied on an Organizational Unit or a Container.
+    Also this rule is enforced only if there is more than 200 users and 200 computers.
+    </value>
+  </data>
+  <data name="P_LogonDenied_Documentation" xml:space="preserve">
+    <value>https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/appendix-f--securing-domain-admins-groups-in-active-directory</value>
+  </data>
+  <data name="P_LogonDenied_Title" xml:space="preserve">
+    <value>Check if there is a policy preventing administrators to connect to unsecured workstations.</value>
+  </data>
+  <data name="P_LogonDenied_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#gpologin&quot;&gt;GPO Login&lt;/a&gt;</value>
+  </data>
+  <data name="P_ControlPathIndirectEveryone_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no control path involving everyone.</value>
+  </data>
+  <data name="P_ControlPathIndirectEveryone_Solution" xml:space="preserve">
+    <value>You should analyze the chart and determine which underlying object is involved and grants write permissions to everyone.
+    Then edit the permissions and locate the write permission involved.
+    Then delete it or replace it according to your delegation model.</value>
+  </data>
+  <data name="P_ControlPathIndirectEveryone_Rationale" xml:space="preserve">
+    <value>Everyone can take control of a key domain object by abusing targeted permissions.</value>
+  </data>
+  <data name="P_ControlPathIndirectEveryone_Detail" xml:space="preserve">
+    <value>Group: {0}</value>
+  </data>
+  <data name="P_ControlPathIndirectEveryone_TechnicalExplanation" xml:space="preserve">
+    <value>
+      If you have access to a key server and the helpdesk can reset your password, then the helpdesk has access to the key server.
+This is the kind of logic used by hackers to take control of the domain using key infrastructure objects (domain root, ...) or groups (domain administrators, ...).
+Permissions are collected and analyzed to produce a control paths analysis.
+Only write permissions (and specific ones) are used for this analysis.
+Then the program identifies which users or computers, that are not members of known groups, can take control of this object.
+To be fast, some tradeoffs have been selected. For example, logged on users on servers are ignored.
+The program may also select paths which are not exploitable and ignore paths if it cannot read every permissions.
+[Everyone] includes the anonymous, everyone, authenticated users, domain users, domain computers and builtin-users groups.
+    </value>
+  </data>
+  <data name="P_ControlPathIndirectEveryone_Documentation" xml:space="preserve">
+    <value>https://github.com/BloodHoundAD/BloodHound
+https://github.com/ANSSI-FR/AD-control-paths</value>
+  </data>
+  <data name="P_ControlPathIndirectEveryone_Title" xml:space="preserve">
+    <value>Check if there is a control path involving everyone-like groups.</value>
+  </data>
+  <data name="P_ControlPathIndirectEveryone_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#controlpath&quot;&gt;Control Paths Analysis&lt;/a&gt;</value>
+  </data>
+  <data name="P_ControlPathIndirectMany_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no control path involving a large number of users.</value>
+  </data>
+  <data name="P_ControlPathIndirectMany_Solution" xml:space="preserve">
+    <value>You should analyze the chart and determine which underlying object is involved and grants too much write permissions.
+    Then edit the permissions and locate the write permission involved.
+    Then delete it or replace it according to your delegation model.</value>
+  </data>
+  <data name="P_ControlPathIndirectMany_Rationale" xml:space="preserve">
+    <value>A large number of users or computers can take control of a key domain object by abusing targeted permissions.</value>
+  </data>
+  <data name="P_ControlPathIndirectMany_Detail" xml:space="preserve">
+    <value>Group: {0}, Number: {1}</value>
+  </data>
+  <data name="P_ControlPathIndirectMany_TechnicalExplanation" xml:space="preserve">
+    <value>
+      If you have access to a key server and the helpdesk can reset your password, then the helpdesk has access to the key server.
+This is the kind of logic used by hackers to take control of the domain using key infrastructure objects (domain root, ...) or groups (domain administrators, ...).
+Permissions are collected and analyzed to produce a control paths analysis.
+Only write permissions (and specific ones) are used for this analysis.
+Then the program identifies which users or computers, that are not members of known groups, can take control of this object.
+To be fast, some tradeoffs have been selected. For example, logged on users on servers are ignored.
+The program may also select paths which are not exploitable and ignore paths if it cannot read every permissions.
+    </value>
+  </data>
+  <data name="P_ControlPathIndirectMany_Documentation" xml:space="preserve">
+    <value>https://github.com/BloodHoundAD/BloodHound
+https://github.com/ANSSI-FR/AD-control-paths</value>
+  </data>
+  <data name="P_ControlPathIndirectMany_Title" xml:space="preserve">
+    <value>Check if there is a control path involving too much users or computers.</value>
+  </data>
+  <data name="P_ControlPathIndirectMany_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#controlpath&quot;&gt;Control Paths Analysis&lt;/a&gt;</value>
+  </data>
+  <data name="A_AuditDC_Description" xml:space="preserve">
+    <value>The purpose is to ensure that the audit policy on domain controllers collect the right set of events.</value>
+  </data>
+  <data name="A_AuditDC_Solution" xml:space="preserve">
+    <value>Identitfy the Audit settings to apply and fix them.
+    Beware that there is two places for audit settings:
+    a) in Computer Configuration -> Policies -> Windows Settings -> Security Settings -> Local Policies -> Audit Policies
+    b) in Computer Configuration -> Policies -> Windows Settings -> Security Settings -> Advanced Audit Policy Configuration
+  </value>
+  </data>
+  <data name="A_AuditDC_Rationale" xml:space="preserve">
+    <value>The audit policy on domain controllers does not collect key events.</value>
+  </data>
+  <data name="A_AuditDC_Detail" xml:space="preserve">
+    <value>Audit: {0} Problem: {1} Rationale: {2}</value>
+  </data>
+  <data name="A_AuditDC_TechnicalExplanation" xml:space="preserve">
+    <value>To detect and mitigate an attack, the right set of events need to be collected.
+      The audit policy is a compromise between too much and too few events to collect.
+      To solve this problem, the suggested audit policy from adsecurity.org is checked against the audit policy in place.
+    </value>
+  </data>
+  <data name="A_AuditDC_Documentation" xml:space="preserve">
+    <value>https://adsecurity.org/?p=3299</value>
+  </data>
+  <data name="A_AuditDC_Title" xml:space="preserve">
+    <value>Check if there is the expected audit policy on domain controllers.</value>
+  </data>
+  <data name="A_AuditDC_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#auditsettings&quot;&gt;Audit settings&lt;/a&gt;</value>
+  </data>
+  <data name="A_DCLdapsProtocol_Description" xml:space="preserve">
+    <value>The purpose is to ensure that all DC don't use weak SSL protocols when acting as server.</value>
+  </data>
+  <data name="A_DCLdapsProtocol_Solution" xml:space="preserve">
+    <value>Apply Windows updates and registry tweaks described in the documentation section to disable the weak SSL protocols.
+  </value>
+  </data>
+  <data name="A_DCLdapsProtocol_Rationale" xml:space="preserve">
+    <value>At least one DC uses a weak SSL protocol for server side purposes.</value>
+  </data>
+  <data name="A_DCLdapsProtocol_Detail" xml:space="preserve">
+    <value>DC: {0} Protocol: {1}</value>
+  </data>
+  <data name="A_DCLdapsProtocol_TechnicalExplanation" xml:space="preserve">
+    <value>SSL version 2 and SSL version 3 are considered weak and it is strongly advised to disable them.
+    The SSL protocols in Windows is provided by the Schannel component.
+The Schannel component needs to be tuned in order to not propose these weak protocols. Many guidelines to handle this problem issued by Microsoft do not talk about Schannel but rather IIS. These guidlines are quoted in the documentation section below.
+
+PingCastle is able to check the SSL version if LDAPS is exposed. LDAPS is automatically exposed once a certificate is available for the DC and the service restarted.
+Please note that PingCastle is using the native .Net SSL stack to perform this test. .Net begins to ignore these weak protocols starting the version 4.7 of the framework and as a consequence, PingCasle may miss some weak protocol detection.
+
+To test these protocol, you can use openssl with the following commands:
+openssl s_client -connect dc.domain.local:636 -ssl2
+openssl s_client -connect dc.domain.local:636 -ssl3
+    </value>
+  </data>
+  <data name="A_DCLdapsProtocol_Documentation" xml:space="preserve">
+    <value>https://social.technet.microsoft.com/wiki/contents/articles/2249.windows-server-20082008r2-how-to-disable-sslv2-on-domain-controller-dsforum2wiki.aspx
+https://support.microsoft.com/en-us/help/187498/how-to-disable-pct-1-0-ssl-2-0-ssl-3-0-or-tls-1-0-in-internet-informat
+https://adsecurity.org/?p=376</value>
+  </data>
+  <data name="A_DCLdapsProtocol_Title" xml:space="preserve">
+    <value>Check if LDAPS is used with weak SSL protocol.</value>
+  </data>
+  <data name="A_DCLdapsProtocol_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#domaincontrollersection&quot;&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="A_AuditPowershell_Description" xml:space="preserve">
+    <value>The purpose is to ensure that Powershell logging is enabled.</value>
+  </data>
+  <data name="A_AuditPowershell_Solution" xml:space="preserve">
+    <value>Go to Computer Configuration -> Administrative Templates -> Windows Components -> Windows PowerShell
+And enable "Turn on Module logging" and "Turn on Powershell Script Block logging"
+We recommend to set "*" as the module list.
+  </value>
+  </data>
+  <data name="A_AuditPowershell_Rationale" xml:space="preserve">
+    <value>The powershell audit configuration is not fully enabled.</value>
+  </data>
+  <data name="A_AuditPowershell_Detail" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="A_AuditPowershell_TechnicalExplanation" xml:space="preserve">
+    <value>Powershell is a powerful language, also used by hackers because of this quality. Hackers are able to run programs such as mimikatz in memory using obfuscated commands such as Invoke-Mimikatz.
+    Because there is no artefact on the disk, the incident response task is difficult for the forensic analysts.
+    For this reason, we recommend to enable Powershell logging via a group policy, despite the fact that these security settings may be part of the workstation or server images.
+    </value>
+  </data>
+  <data name="A_AuditPowershell_Documentation" xml:space="preserve">
+    <value>https://adsecurity.org/?p=2604
+https://docs.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-logging?view=powershell-6</value>
+  </data>
+  <data name="A_AuditPowershell_Title" xml:space="preserve">
+    <value>Check if there is powershell logging enabled.</value>
+  </data>
+  <data name="A_AuditPowershell_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#lsasettings&quot;&gt;Security settings&lt;/a&gt;</value>
+  </data>
+  <data name="S_OS_Vista_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows Vista for the workstations within the domain</value>
+  </data>
+  <data name="S_OS_Vista_Solution" xml:space="preserve">
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap –Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+  </data>
+  <data name="S_OS_Vista_Rationale" xml:space="preserve">
+    <value>Presence of Windows Vista = {count}</value>
+  </data>
+  <data name="S_OS_Vista_Title" xml:space="preserve">
+    <value>Obsolete OS (Windows Vista)</value>
+  </data>
+  <data name="S_OS_Vista_TechnicalExplanation" xml:space="preserve">
+    <value>The Windows Vista OS is not supported any longer, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
+  </data>
+  <data name="S_OS_Vista_Documentation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S_OS_Vista_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href=&quot;#operatingsystems&quot;&gt;Operating Systems&lt;/a&gt;</value>
   </data>
 </root>

@@ -19,17 +19,14 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 
-namespace PingCastle.Export
+namespace PingCastle.Graph.Export
 {
     public class ExportDataFromActiveDirectoryLive
     {
-        string Server;
-        int Port;
-        NetworkCredential Credential;
-
 		List<string> properties = new List<string> {
                         "distinguishedName",
 						"displayName",
+						"dnsHostName",
                         "name",
                         "objectSid",
 						"objectClass",
@@ -47,13 +44,17 @@ namespace PingCastle.Export
 						"userAccountControl",
             };
 
-		public LiveDataStorage Storage { get; set; }
-        
-        public ExportDataFromActiveDirectoryLive(string server, int port, NetworkCredential credential)
+		public IDataStorage Storage { get; set; }
+		private IRelationFactory RelationFactory;
+		private ADDomainInfo domainInfo;
+		private ADWebService adws;
+		private NetworkCredential Credential;
+
+		public ExportDataFromActiveDirectoryLive(ADDomainInfo domainInfo, ADWebService adws, NetworkCredential credential)
         {
-            Server = server;
-            Port = port;
-            Credential = credential;
+			this.domainInfo = domainInfo;
+			this.adws = adws;
+			Credential = credential;
 			Storage = new LiveDataStorage();
         }
 
@@ -66,87 +67,64 @@ namespace PingCastle.Export
 
 		public GraphObjectReference ExportData(List<string> UsersToInvestigate)
         {
-            ADDomainInfo domainInfo = null;
-            IRelationFactory relationFactory = null;
+            
 			GraphObjectReference objectReference = null;
-			DisplayAdvancement("Getting domain information (" + Server + ")");
-            using (ADWebService adws = new ADWebService(Server, Port, Credential))
-            {
-                domainInfo = GetDomainInformation(adws);
-				Storage.Initialize(domainInfo);
-                Trace.WriteLine("Creating new relation factory");
-				relationFactory = new RelationFactory(Storage, domainInfo);
-				relationFactory.Initialize(adws);
-                DisplayAdvancement("Exporting objects from Active Directory");
-				objectReference = new GraphObjectReference(domainInfo);
-				ExportReportData(adws, domainInfo, relationFactory, Storage, objectReference, UsersToInvestigate);
-
-            }
-            DisplayAdvancement("Inserting relations between nodes in the database");
+			DisplayAdvancement("- Initialize");
+            Storage.Initialize(domainInfo);
+            Trace.WriteLine("- Creating new relation factory");
+			RelationFactory = new RelationFactory(Storage, domainInfo);
+			RelationFactory.Initialize(adws);
+            DisplayAdvancement("- Searching for critical and infrastructure objects");
+			objectReference = new GraphObjectReference(domainInfo);
+			BuildDirectDelegationData();
+			
+			ExportReportData(objectReference, UsersToInvestigate);
+			DisplayAdvancement("- Completing object collection");
             Trace.WriteLine("Inserting relations on hold");
 			Storage.InsertRelationOnHold();
-			Trace.WriteLine("Add trusted domains");
-			AddTrustedDomains(Storage);
             Trace.WriteLine("Done");
-            DisplayAdvancement("Export completed");
-			DisplayAdvancement("Doing the analysis");
+            DisplayAdvancement("- Export completed");
 			return objectReference;
         }
 
-        private ADDomainInfo GetDomainInformation(ADWebService adws)
+		private void BuildDirectDelegationData()
+		{
+			if (domainInfo.ForestFunctionality < 2)
+				return;
+			var map = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+			WorkOnReturnedObjectByADWS callback =
+					(ADItem aditem) =>
+					{
+						foreach (var d in aditem.msDSAllowedToDelegateTo)
+						{
+							var spn = d.Split('/');
+							if (spn.Length < 2)
+								continue;
+							if (!map.ContainsKey(spn[1]))
+								map[spn[1]] = new List<string>();
+							var sid = aditem.ObjectSid.Value;
+							if (!map[spn[1]].Contains(sid))
+								map[spn[1]].Add(sid);
+						}
+					};
+			adws.Enumerate(domainInfo.DefaultNamingContext,
+												"(&(msDS-AllowedToDelegateTo=*)((userAccountControl:1.2.840.113556.1.4.804:=16777216)))",
+												new string[] { "objectSid", "msDS-AllowedToDelegateTo" }, callback);
+			RelationFactory.InitializeDelegation(map);
+		}
+
+        private void ExportReportData(GraphObjectReference objectReference, List<string> UsersToInvestigate)
         {
-            ADDomainInfo domainInfo = null;
-            
-            domainInfo = adws.DomainInfo;
-            if (adws.useLdap)
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("Performance warning: using LDAP instead of ADWS");
-                Console.ResetColor();
-            }
-            // adding the domain sid
-            string[] propertiesdomain = new string[] {"objectSid",
-            };
-            WorkOnReturnedObjectByADWS callback =
-                (ADItem aditem) => 
-                { 
-                    domainInfo.DomainSid = aditem.ObjectSid;
-                };
-
-            adws.Enumerate(domainInfo.DefaultNamingContext,
-                                            "(&(objectClass=domain)(distinguishedName=" + domainInfo.DefaultNamingContext + "))",
-											propertiesdomain, callback);
-			// adding the domain Netbios name
-			string[] propertiesNetbios = new string[] { "nETBIOSName" };
-			adws.Enumerate("CN=Partitions," + domainInfo.ConfigurationNamingContext,
-											"(&(objectCategory=crossRef)(systemFlags:1.2.840.113556.1.4.803:=3)(nETBIOSName=*)(nCName=" + domainInfo.DefaultNamingContext + "))",
-											propertiesNetbios,
-											(ADItem aditem) =>
-											{
-												domainInfo.NetBIOSName = aditem.NetBIOSName;
-											}
-											, "OneLevel");
-
-			if (domainInfo.ForestFunctionality >= 5)
-			{
-				properties.Add("msDS-AllowedToActOnBehalfOfOtherIdentity");
-			}
-
-            return domainInfo;
-        }
-
-        private void ExportReportData(ADWebService adws, ADDomainInfo domainInfo, IRelationFactory relationFactory, IDataStorage storage, GraphObjectReference objectReference, List<string> UsersToInvestigate)
-        {
-            ADItem aditem = null;
+            List<ADItem> aditems = null;
 			foreach (var typology in objectReference.Objects.Keys)
 			{
 				var toDelete = new List<GraphSingleObject>();
 				foreach (var obj in objectReference.Objects[typology])
 				{
-					DisplayAdvancement("Working on " + obj.Description);
-					aditem = Search(adws, domainInfo, obj.Name);
-					if (aditem != null)
-						relationFactory.AnalyzeADObject(aditem);
+					Trace.WriteLine("Working on " + obj.Description);
+					aditems = Search(obj.Name);
+					if (aditems.Count != 0)
+						RelationFactory.AnalyzeADObject(aditems[0]);
 					else
 					{
 						Trace.WriteLine("Unable to find the user: " + obj.Description);
@@ -160,128 +138,93 @@ namespace PingCastle.Export
 			}
 			foreach (string user in UsersToInvestigate)
 			{
-				DisplayAdvancement("Working on " + user);
-				aditem = Search(adws, domainInfo, user);
-				if (aditem != null)
+				Trace.WriteLine("Working on " + user);
+				aditems = Search(user);
+				if (aditems.Count != 0)
 				{
 					string userKey = user;
-					if (aditem.ObjectSid != null)
+					if (aditems[0].ObjectSid != null)
 					{
-						userKey = aditem.ObjectSid.Value;
+						userKey = aditems[0].ObjectSid.Value;
 					}
 					objectReference.Objects[Data.CompromiseGraphDataTypology.UserDefined].Add(new GraphSingleObject(userKey, user));
-					relationFactory.AnalyzeADObject(aditem);
+					RelationFactory.AnalyzeADObject(aditems[0]);
 				}
 				else
 					Trace.WriteLine("Unable to find the user: " + user);
 			}
             
-            AnalyzeMissingObjets(adws, domainInfo, relationFactory, storage);
+            AnalyzeMissingObjets();
         }
 
-		int AnalyzeMissingObjets(ADWebService adws, ADDomainInfo domainInfo, IRelationFactory relationFactory, IDataStorage Storage)
+		void AnalyzeMissingObjets()
         {
-            int num = 0;
+            int step = 1;
             while (true)
             {
-                List<string> cns = Storage.GetCNToInvestigate();
-                if (cns.Count > 0)
-                {
-                    num += cns.Count;
-                    ExportCNData(adws, domainInfo, relationFactory, cns);
-                }
-                List<string> sids = Storage.GetSIDToInvestigate();
-                if (sids.Count > 0)
-                {
-                    num += sids.Count;
-                    ExportSIDData(adws, domainInfo, relationFactory, sids);
-                }
-				List<int> primaryGroupId = Storage.GetPrimaryGroupIDToInvestigate();
-				if (primaryGroupId.Count > 0)
+				int num = 0;
+				DisplayAdvancement("- Collecting objects - Iteration " + step++);
+				foreach (SearchType searchType in Enum.GetValues(typeof(SearchType)))
 				{
-					num += primaryGroupId.Count;
-					ExportPrimaryGroupData(adws, domainInfo, relationFactory, primaryGroupId);
+					List<string> items = Storage.GetMissingItem(searchType);
+					if (items != null && items.Count > 0)
+					{
+						num += items.Count;
+						foreach (var aditem in GetRemainingData(items, searchType))
+						{
+							RelationFactory.AnalyzeADObject(aditem);
+						}
+					}
 				}
                 List<string> files = Storage.GetFilesToInvestigate();
                 if (files.Count > 0)
                 {
                     num += files.Count;
-                    ExportFilesData(adws, domainInfo, relationFactory, files);
+                    ExportFilesData(files, false);
                 }
-                if (cns.Count == 0 && sids.Count == 0 && primaryGroupId.Count == 0 && files.Count == 0)
+				List<string> gpo = Storage.GetGPOToInvestigate();
+				if (gpo.Count > 0)
 				{
-					return num;
+					num += gpo.Count;
+					ExportFilesData(gpo, true);
+				}
+                if (num == 0)
+				{
+					return;
 				}
             }
         }
 
-        private void ExportCNData(ADWebService adws, ADDomainInfo domainInfo, IRelationFactory relationFactory, List<string> cns)
+        private List<ADItem> GetRemainingData(List<string> itemList, SearchType searchType)
         {
-            WorkOnReturnedObjectByADWS callback =
-                    (ADItem aditem) =>
-                    {
-                        relationFactory.AnalyzeADObject(aditem);
-                    };
-
-            foreach (string cn in cns)
+			var output = new List<ADItem>();
+            foreach (string item in itemList)
             {
-                adws.Enumerate(domainInfo.DefaultNamingContext,
-                                                "(distinguishedName=" + ADConnection.EscapeLDAP(cn) + ")",
-												properties.ToArray(), callback);
+				var aditem = Search(item, searchType);
+				if (aditem.Count > 0)
+					output.AddRange(aditem);
             }
+			return output;
         }
 
-        private void ExportSIDData(ADWebService adws, ADDomainInfo domainInfo, IRelationFactory relationFactory, List<string> sids)
-        {
-            WorkOnReturnedObjectByADWS callback =
-                    (ADItem aditem) =>
-                    {
-                        relationFactory.AnalyzeADObject(aditem);
-                    };
-
-            foreach (string sid in sids)
-            {
-                adws.Enumerate(domainInfo.DefaultNamingContext,
-												"(objectSid=" + ADConnection.EncodeSidToString(sid) + ")",
-                                                properties.ToArray(), callback);
-            }
-        }
-
-		private void ExportPrimaryGroupData(ADWebService adws, ADDomainInfo domainInfo, IRelationFactory relationFactory, List<int> primaryGroupIDs)
-        {
-            WorkOnReturnedObjectByADWS callback =
-                    (ADItem aditem) =>
-                    {
-                        relationFactory.AnalyzeADObject(aditem);
-                    };
-
-			foreach (int id in primaryGroupIDs)
-            {
-                adws.Enumerate(domainInfo.DefaultNamingContext,
-												"(primaryGroupID=" + id + ")",
-												properties.ToArray(), callback);
-            }
-        }
-
-
-        private void ExportFilesData(ADWebService adws, ADDomainInfo domainInfo, IRelationFactory relationFactory, List<string> files)
+		private void ExportFilesData(List<string> files, bool isGPO)
         {
             if (Credential != null)
             {
                 using (WindowsIdentity identity = NativeMethods.GetWindowsIdentityForUser(Credential, domainInfo.DnsHostName))
                 using (var context = identity.Impersonate())
                 {
-                    ExportFilesDataWithImpersonation(adws, domainInfo, relationFactory, files);
+					ExportFilesDataWithImpersonation(files, isGPO);
                     context.Undo();
                 }
             }
             else
             {
-                ExportFilesDataWithImpersonation(adws, domainInfo, relationFactory, files);
+				ExportFilesDataWithImpersonation(files, isGPO);
             }
         }
 
-        private void ExportFilesDataWithImpersonation(ADWebService adws, ADDomainInfo domainInfo, IRelationFactory relationFactory, List<string> files)
+        private void ExportFilesDataWithImpersonation(List<string> files, bool isGPO)
         {
             // insert relation related to the files already seen.
             // add subdirectory / sub file is the permission is not inherited
@@ -298,7 +241,10 @@ namespace PingCastle.Export
                         if (!queue.Dequeue(out fileName)) break;
                         
                         // function is safe and will never trigger an exception
-                        relationFactory.AnalyzeFile(fileName);
+						if (isGPO)
+							RelationFactory.AnalyzeGPO(fileName);
+						else
+							RelationFactory.AnalyzeFile(fileName);
 
                     }
                     Trace.WriteLine("Consumer quitting");
@@ -337,54 +283,79 @@ namespace PingCastle.Export
             }
         }
 
-        private ADItem Search(ADWebService adws, ADDomainInfo domainInfo, string userName)
-        {
-            ADItem output = null;
-            WorkOnReturnedObjectByADWS callback =
-                    (ADItem aditem) =>
-                    {
-                        output = aditem;
-                    };
-
-            if (userName.StartsWith("S-1-5"))
-            {
-                adws.Enumerate(domainInfo.DefaultNamingContext,
-												"(objectSid=" + ADConnection.EncodeSidToString(userName) + ")",
-												properties.ToArray(), callback);
-				if (output != null)
-					return output;
-            }
-			if (userName.StartsWith("CN=") && userName.EndsWith(domainInfo.DefaultNamingContext))
+		private List<ADItem> Search(string userName, SearchType search = SearchType.Unknown)
+		{
+			List<ADItem> output = new List<ADItem>();
+			string searchString = null;
+			string namingContext = domainInfo.DefaultNamingContext;
+			switch (search)
 			{
-				adws.Enumerate(domainInfo.DefaultNamingContext,
-												"(distinguishedName=" + ADConnection.EscapeLDAP(userName) + ")",
-												properties.ToArray(), callback);
-				if (output != null)
-					return output;
+				default:
+				case SearchType.Unknown:
+					if (userName.StartsWith("S-1-5"))
+					{
+						output = Search(userName, SearchType.Sid);
+						if (output != null)
+							return output;
+					}
+					if (userName.StartsWith("CN=") && userName.EndsWith(domainInfo.DefaultNamingContext))
+					{
+						output = Search(userName, SearchType.DistinguishedName);
+						if (output != null)
+							return output;
+					}
+					if (userName.Length <= 20)
+					{
+						output = Search(userName, SearchType.SAMAccountName);
+						if (output != null)
+							return output;
+					}	
+					output = Search(userName, SearchType.Name);
+					if (output != null)
+						return output;
+					output = Search(userName, SearchType.DisplayName);
+					if (output != null)
+						return output;
+					return null;
+				case SearchType.Sid:
+					searchString = "(|(objectSid=" + ADConnection.EncodeSidToString(userName) + ")(sidhistory=" + ADConnection.EncodeSidToString(userName) + "))";
+					break;
+				case SearchType.DistinguishedName:
+					searchString = "(distinguishedName=" + ADConnection.EscapeLDAP(userName) + ")";
+					if (userName.EndsWith(domainInfo.ConfigurationNamingContext, StringComparison.InvariantCultureIgnoreCase))
+					{
+						namingContext = domainInfo.ConfigurationNamingContext;
+					}
+					else if (userName.EndsWith(domainInfo.SchemaNamingContext, StringComparison.InvariantCultureIgnoreCase))
+					{
+						namingContext = domainInfo.SchemaNamingContext;
+					}
+					break;
+				case SearchType.SAMAccountName:
+					searchString = "(&(objectCategory=person)(objectClass=user)(sAMAccountName=" + ADConnection.EscapeLDAP(userName) + "))";
+					break;
+				case SearchType.Name:
+					searchString = "(cn=" + ADConnection.EscapeLDAP(userName) + ")";
+					break;
+				case SearchType.DisplayName:
+					searchString = "(displayName=" + ADConnection.EscapeLDAP(userName) + ")";
+					break;
+				case SearchType.PrimaryGroupId:
+					searchString = "(primaryGroupID=" + userName + ")";
+					break;
 			}
-			if (userName.Length <= 20)
-			{
-				adws.Enumerate(domainInfo.DefaultNamingContext,
-												"(&(objectCategory=person)(objectClass=user)(sAMAccountName=" + ADConnection.EscapeLDAP(userName) + "))",
+			WorkOnReturnedObjectByADWS callback =
+					(ADItem aditem) =>
+					{
+						output.Add(aditem);
+					};
+			adws.Enumerate(namingContext,
+												searchString,
 												properties.ToArray(), callback);
-				if (output != null)
-					return output;
-			}
-            adws.Enumerate(domainInfo.DefaultNamingContext,
-											"(cn=" + ADConnection.EscapeLDAP(userName) + ")",
-											properties.ToArray(), callback);
-            if (output != null)
-                return output;
-            adws.Enumerate(domainInfo.DefaultNamingContext,
-											"(displayName=" + ADConnection.EscapeLDAP(userName) + ")",
-											properties.ToArray(), callback);
-            if (output != null)
-                return output;
-            return output;
-        }
+			return output;
+		}
 
-
-		private List<DataStorageDomainTrusts> GetAllDomainTrusts(string server)
+		private static List<DataStorageDomainTrusts> GetAllDomainTrusts(string server)
 		{
 			var output = new List<DataStorageDomainTrusts>();
 			IntPtr ptr = IntPtr.Zero;
@@ -412,45 +383,6 @@ namespace PingCastle.Export
 				NativeMethods.NetApiBufferFree(ptr);
 			}
 			return output;
-		}
-
-		private void AddTrustedDomains(LiveDataStorage storage)
-		{
-			storage.KnownDomains.Clear();
-			List<DataStorageDomainTrusts> domains;
-			List<SecurityIdentifier> KnownSID = new List<SecurityIdentifier>();
-
-
-			domains = GetAllDomainTrusts(Server);
-			storage.KnownDomains.AddRange(domains);
-			KnownSID.AddRange( domains.ConvertAll(x => x.DomainSid));
-
-			var domainLocator = new DomainLocator(Server);
-			foreach (var node in storage.nodes.Values)
-			{
-				if (!String.IsNullOrEmpty(node.Sid) && node.Sid.StartsWith("S-1-5-21-") && node.Shortname.Contains("\\"))
-				{
-					var sid = new SecurityIdentifier(node.Sid);
-					var domainSid = sid.AccountDomainSid;
-					if (!KnownSID.Contains(domainSid))
-					{
-						string domainName;
-						string forestName;
-						string NetbiosName = node.Shortname.Split('\\')[0];
-						if (domainLocator.LocateDomainFromNetbios(NetbiosName, out domainName, out forestName))
-						{
-							KnownSID.Add(domainSid);
-							storage.KnownDomains.Add(new DataStorageDomainTrusts()
-							{
-								DnsDomainName = domainName,
-								DomainSid = domainSid,
-								NetbiosDomainName = NetbiosName,
-							}
-							);
-						}
-					}
-				}
-			}
 		}
     }
 }

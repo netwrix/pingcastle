@@ -258,6 +258,8 @@
     <Compile Include="Scanners\startupScanner.cs" />
     <Compile Include="Scanners\localAdminsEnumerator.cs" />
     <Compile Include="Scanners\localAdminsScanner.cs" />
+    <Compile Include="Scanners\localRDPEnumerator.cs" />
+    <Compile Include="Scanners\localRDPScanner.cs" />
     <Compile Include="misc\BlockingQueue.cs" />
     <Compile Include="Healthcheck\HealthcheckAnalyzer.cs" />
     <Compile Include="Data\HealthcheckData.cs" />

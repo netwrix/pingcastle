@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -258,6 +258,8 @@
     <Compile Include="Scanners\startupScanner.cs" />
     <Compile Include="Scanners\localAdminsEnumerator.cs" />
     <Compile Include="Scanners\localAdminsScanner.cs" />
+    <Compile Include="Scanners\localRDPEnumerator.cs" />
+    <Compile Include="Scanners\localRDPScanner.cs" />
     <Compile Include="misc\BlockingQueue.cs" />
     <Compile Include="Healthcheck\HealthcheckAnalyzer.cs" />
     <Compile Include="Data\HealthcheckData.cs" />
@@ -370,7 +372,7 @@
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
       <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">

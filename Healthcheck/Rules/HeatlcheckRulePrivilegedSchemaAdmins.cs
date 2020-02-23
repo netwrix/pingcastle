@@ -21,7 +21,7 @@ namespace PingCastle.Healthcheck.Rules
         {
             foreach (HealthCheckGroupData group in healthcheckData.PrivilegedGroups)
             {
-                if (group.GroupName == "Schema Admins")
+				if (group.GroupName == "Schema Administrators")
                 {
                     if (group.NumberOfMember > 0)
                     {

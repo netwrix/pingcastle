@@ -1097,9 +1097,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
 			if (data.Dependancies.Count != 0)
 			{
+				Add("<td>");
 				for (int i = 0; i < data.Dependancies.Count; i++)
 				{
-					Add("<td>");
 					var d = data.Dependancies[i];
 					if (i > 0)
 						Add("<br>");

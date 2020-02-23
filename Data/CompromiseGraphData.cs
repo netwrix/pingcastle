@@ -308,8 +308,9 @@ namespace PingCastle.Data
 		public string Name { get; set; }
 		[XmlAttribute]
 		public string Type { get; set; }
-		
-		[XmlIgnore]
+
+        [IgnoreDataMember]
+        [XmlIgnore]
 		public bool IsTypeAUser
 		{
 			get
@@ -330,7 +331,8 @@ namespace PingCastle.Data
 		public bool Critical { get; set; }
 		// used when building the structure
 		[XmlIgnore]
-		public ADItem ADItem { get; set; }
+        [IgnoreDataMember]
+        internal ADItem ADItem { get; set; }
 	}
 
 	[XmlType("link")]

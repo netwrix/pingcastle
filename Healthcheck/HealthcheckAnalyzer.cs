@@ -3334,10 +3334,10 @@ namespace PingCastle.Healthcheck
             {
                 using (TextReader tr = new StreamReader(path))
                 {
-                    string line = tr.ReadLine();
-                    // skip first line
-                    if (line != null)
-                        line = tr.ReadLine();
+					// skip first line
+					string line = tr.ReadLine();
+					if (line == null)
+						return;
                     while ((line = tr.ReadLine()) != null)
                     {
                         var b = line.Split(',');

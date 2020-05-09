@@ -90,6 +90,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ADWS\IADConnection.cs" />
+    <Compile Include="Bot\Bot.cs" />
+    <Compile Include="Bot\BotData.cs" />
+    <Compile Include="Bot\BotStream.cs" />
     <Compile Include="ConsoleMenu.cs" />
     <Compile Include="Data\IPingCastleReport.cs" />
     <Compile Include="Data\IPingCastleReportGenerator.cs" />

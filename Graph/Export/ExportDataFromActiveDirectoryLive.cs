@@ -84,10 +84,36 @@ namespace PingCastle.Graph.Export
 			Storage.InsertRelationOnHold();
             Trace.WriteLine("Done");
             DisplayAdvancement("- Export completed");
+            DumpObjectReferenceOnTrace();
 			return objectReference;
         }
 
-		private void BuildDirectDelegationData()
+        private void DumpObjectReferenceOnTrace()
+        {
+            Trace.WriteLine("============================");
+            Trace.WriteLine("Dump graph");
+            Trace.WriteLine("============================");
+            var s = (LiveDataStorage)Storage;
+            foreach(var id in s.nodes.Keys)
+            {
+                var node = s.nodes[id];
+                if (s.relations.ContainsKey(id))
+                {
+                    var relations = s.relations[id];
+                    foreach(var rid in relations.Keys)
+                    {
+                        Trace.WriteLine(node.Name + " -> " + s.nodes[rid].Name + " [" + string.Join(",", relations[rid].Hint.ToArray()) + "]");
+                    }
+                }
+                else
+                {
+                    Trace.WriteLine(node.Name + " -> <ALONE>");
+                }
+            }
+            Trace.WriteLine("============================");
+        }
+
+        private void BuildDirectDelegationData()
 		{
 			if (domainInfo.ForestFunctionality < 2)
 				return;
@@ -136,24 +162,28 @@ namespace PingCastle.Graph.Export
 					objectReference.Objects[typology].Remove(obj);
 				}
 			}
-			foreach (string user in UsersToInvestigate)
+			if (UsersToInvestigate != null)
 			{
-				Trace.WriteLine("Working on " + user);
-				aditems = Search(user);
-				if (aditems.Count != 0)
+				foreach (string user in UsersToInvestigate)
 				{
-					string userKey = user;
-					if (aditems[0].ObjectSid != null)
+					Trace.WriteLine("Working on " + user);
+					aditems = Search(user);
+					if (aditems.Count != 0)
 					{
-						userKey = aditems[0].ObjectSid.Value;
+						string userKey = user;
+						if (aditems[0].ObjectSid != null)
+						{
+							userKey = aditems[0].ObjectSid.Value;
+						}
+						objectReference.Objects[Data.CompromiseGraphDataTypology.UserDefined].Add(new GraphSingleObject(userKey, user));
+						RelationFactory.AnalyzeADObject(aditems[0]);
 					}
-					objectReference.Objects[Data.CompromiseGraphDataTypology.UserDefined].Add(new GraphSingleObject(userKey, user));
-					RelationFactory.AnalyzeADObject(aditems[0]);
+					else
+					{
+						Trace.WriteLine("Unable to find the user: " + user);
+					}
 				}
-				else
-					Trace.WriteLine("Unable to find the user: " + user);
 			}
-            
             AnalyzeMissingObjets();
         }
 

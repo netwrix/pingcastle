@@ -61,6 +61,7 @@ namespace PingCastle
 		public string apiEndpoint;
 		public string apiKey;
 		public bool AnalyzeReachableDomains;
+		public string botPipe;
 
 		Dictionary<string, string> xmlreports = new Dictionary<string, string>();
 		Dictionary<string, string> htmlreports = new Dictionary<string, string>();
@@ -224,7 +225,7 @@ namespace PingCastle
 			return true;
 		}
 
-		public bool AnalysisCheckTask<T>(string server)
+        public bool AnalysisCheckTask<T>(string server)
 		{
 			return true;
 		}
@@ -767,6 +768,17 @@ This is the PingCastle program sending reports for:
 						string url = sharepointdirectory + (sharepointdirectory.EndsWith("/") ? null : "/") + filename;
 						Trace.WriteLine("url: " + url);
 						client.UploadData(url, "PUT", Encoding.UTF8.GetBytes(filecontent));
+					}
+			);
+		}
+
+		public bool BotTask()
+		{
+			return StartTask("Running Bot",
+					() =>
+					{
+						var bot = new PingCastle.Bot.Bot();
+						bot.Run(botPipe);
 					}
 			);
 		}

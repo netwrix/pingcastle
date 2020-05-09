@@ -42,6 +42,7 @@ namespace PingCastle
 		private bool PerformHealthCheckReloadReport;
 		bool PerformHealthCheckGenerateDemoReports;
 		bool PerformScanner = false;
+		bool PerformBot = false;
 		Tasks tasks = new Tasks();
 
 
@@ -165,6 +166,10 @@ namespace PingCastle
 			if (PerformCarto)
 			{
 				if (!tasks.CartoTask(PerformHealthCheckGenerateDemoReports)) return;
+			}
+			if (PerformBot)
+			{
+				if (!tasks.BotTask()) return;
 			}
 			if (PerformHealthCheckReport)
 			{
@@ -310,6 +315,15 @@ namespace PingCastle
 								return false;
 							}
 							tasks.apiKey = args[++i];
+							break;
+						case "--bot":
+							if (i + 1 >= args.Length)
+							{
+								WriteInRed("argument for --bot is mandatory");
+								return false;
+							}
+							tasks.botPipe = args[++i];
+							PerformBot = true;
 							break;
 						case "--carto":
 							PerformCarto = true;
@@ -689,7 +703,8 @@ namespace PingCastle
 				&& !PerformScanner
 				&& !PerformGenerateKey && !PerformHealthCheckGenerateDemoReports && !PerformCarto
 				&& !PerformUploadAllReport
-				&& !PerformHCRules)
+				&& !PerformHCRules
+				&& !PerformBot)
 			{
 				WriteInRed("You must choose at least one value among --healthcheck --hc-conso --advanced-export --advanced-report --nullsession --carto");
 				DisplayHelp();

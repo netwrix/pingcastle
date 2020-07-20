@@ -249,12 +249,12 @@ namespace PingCastle.Report
 
 		protected void AddBeginTooltip(bool wide = false)
 		{
-			Add(@"&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip""");
+			Add(@"&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip"" ");
 			if (wide)
 			{
 				Add(@" data-template=""<div class='tooltip' role='tooltip'><div class='arrow'></div><div class='tooltip-inner tooltip-wide'></div></div>"" ");
 			}
-			Add(@"title=""""  data-original-title=""");
+			Add(@"title="""" data-original-title=""");
 		}
 
 		protected void AddEndTooltip()

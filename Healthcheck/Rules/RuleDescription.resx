@@ -452,7 +452,8 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>GPO: {0} Subject: {1}</value>
   </data>
   <data name="A_NoServicePolicy_Description" xml:space="preserve">
-    <value>The purpose is to give information regarding a best practice for the Service Account password policy. Indeed, having a 20+ characters password for this account greatly helps reducing the risk behind Kerberoast attack (offline crack of the TGS tickets)</value>
+    <value>The purpose is to give information regarding a best practice for the Service Account password policy. Indeed, having a 20+ characters password for this account greatly helps reducing the risk behind Kerberoast attack (offline crack of the TGS tickets)
+Note: PSO (Password Settings Objects) will be visible only if the user which collected the information has the permission to view it.</value>
   </data>
   <data name="A_NoServicePolicy_Solution" xml:space="preserve">
     <value> The recommended way to handle service accounts is to use "Managed service accounts" introduced since Windows 2008 R2 (search for "msDS-ManagedServiceAccount").

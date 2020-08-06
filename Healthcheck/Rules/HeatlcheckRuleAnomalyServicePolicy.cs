@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
 {
 	[RuleModel("A-NoServicePolicy", RiskRuleCategory.Anomalies, RiskModelCategory.WeakPassword)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
+    [RuleMaturityLevel(4)]
     public class HeatlcheckRuleAnomalyServicePolicy : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

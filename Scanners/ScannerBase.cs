@@ -49,6 +49,7 @@ namespace PingCastle.Scanners
 				new ConsoleMenuItem("one","This is a computer. Scan only this computer."),
 				new ConsoleMenuItem("workstation","Scan all computers except servers."),
 				new ConsoleMenuItem("server","Scan all servers."),
+                new ConsoleMenuItem("domaincontrollers","Scan all domain controllers."),
 			};
 			ConsoleMenu.Title = "Select the scanning mode";
 			ConsoleMenu.Information = "This scanner can collect all the active computers from a domain and scan them one by one automatically. Or scan only one computer";
@@ -208,6 +209,9 @@ namespace PingCastle.Scanners
 					case 4:
 						filterClause = "(operatingSystem=*server*)";
 						break;
+                    case 5:
+                        filterClause = "(userAccountControl:1.2.840.113556.1.4.803:=8192)";
+                        break;
 				}
 				adws.Enumerate(domainInfo.DefaultNamingContext, "(&(ObjectCategory=computer)" + filterClause + "(!userAccountControl:1.2.840.113556.1.4.803:=2)(lastLogonTimeStamp>=" + DateTime.Now.AddDays(-60).ToFileTimeUtc() + "))", properties, callback);
 			}

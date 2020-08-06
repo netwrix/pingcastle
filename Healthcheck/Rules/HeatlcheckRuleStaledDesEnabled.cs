@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
 {
 	[RuleModel("S-DesEnabled", RiskRuleCategory.StaleObjects, RiskModelCategory.OldAuthenticationProtocols)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
+    [RuleDurANSSI(2, "kerberos_properties_deskey", "Use of Kerberos with weak encryption")]
     public class HeatlcheckRuleStaledDesEnabled : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

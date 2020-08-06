@@ -132,6 +132,7 @@ namespace PingCastle.Rules
 			data.PrivilegiedGroupScore = 0;
 			data.TrustScore = 0;
 			data.AnomalyScore = 0;
+			data.MaturityLevel = 5;
 			foreach (var rule in rules)
 			{
 				switch (rule.Category)
@@ -148,6 +149,13 @@ namespace PingCastle.Rules
 					case RiskRuleCategory.Trusts:
 						data.TrustScore += rule.Points;
 						break;
+				}
+				var hcrule = RuleSet<T>.GetRuleFromID(rule.RiskId);
+				if (hcrule != null)
+				{
+					int level = hcrule.MaturityLevel;
+					if (level > 0 && level < data.MaturityLevel)
+						data.MaturityLevel = level;
 				}
 			}
 			// limit to 100

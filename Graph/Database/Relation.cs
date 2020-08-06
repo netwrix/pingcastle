@@ -6,10 +6,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace PingCastle.Graph.Database
 {
+    [DebuggerDisplay("From: {FromId} To: {ToId} Hints: {string.Join(\" \", Hint)}")]
     public class Relation
     {
         public int FromId { get; set; }

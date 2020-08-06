@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("P-DsHeuristicsAdminSDExMask", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
 	[RuleIntroducedIn(2,7)]
+    [RuleDurANSSI(1, "dsheuristics_bad", "Dangerous dsHeuristics settings")]
 	public class HeatlcheckRulePrivilegedDsHeuristicsAdminSDExMaskModified : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

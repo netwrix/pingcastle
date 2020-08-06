@@ -180,29 +180,18 @@ namespace PingCastle.ADWS
 				GetDomainInfo();
 				return;
 			}
-			Domain domain = null;
 			Trace.WriteLine("Trying to locate the domain");
+            Trace.WriteLine("Locating a DC");
 			try
 			{
-				if (Credential != null)
-				{
-					domain = Domain.GetDomain(new DirectoryContext(DirectoryContextType.Domain, Server, Credential.UserName, Credential.Password));
-				}
-				else
-				{
-					domain = Domain.GetDomain(new DirectoryContext(DirectoryContextType.Domain, Server));
-				}
-				Trace.WriteLine("Domain located");
+				Server = NativeMethods.GetDC(Server, true, false);
 			}
-			catch (ActiveDirectoryObjectNotFoundException ex)
+			catch(Exception)
 			{
-				Trace.WriteLine("Unable to get the domain info - trying direct connection");
-				Trace.WriteLine("Exception: " + ex.Message);
+				Trace.WriteLine("The domain location didn't worked - trying it directly");
 				GetDomainInfo();
 				return;
 			}
-			Trace.WriteLine("Locating a DC");
-			Server = NativeMethods.GetDC(domain.Name, true, false);
 			for (int i = 0; i < 2; i++)
 			{
 				try
@@ -227,8 +216,10 @@ namespace PingCastle.ADWS
 					_resource = null;
 				}
 				if (i > 0)
-					Server = NativeMethods.GetDC(domain.Name, true, true);
+					Server = NativeMethods.GetDC(Server, true, true);
 			}
+            // if we coulnd't connect to the select DC, even after a refresh, go to exception
+            throw new EndpointNotFoundException();
 		}
 
 		public override void Enumerate(string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope)

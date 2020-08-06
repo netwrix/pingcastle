@@ -17,6 +17,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("A-WeakRSARootCert", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
 	[RuleSTIG("V-14820", "PKI certificates (server and clients) must be issued by the DoD PKI or an approved External Certificate Authority (ECA).", STIGFramework.ActiveDirectoryService2003)]
+    [RuleDurANSSI(1, "certificates_vuln", "Weak or vulnerable certificates")]
     public class HeatlcheckRuleAnomalyCertWeakRSA : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
@@ -39,8 +40,8 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         if (rsaparams.Modulus.Length * 8 < 1024)
                         {
-                            Trace.WriteLine("Modulus len = " + rsaparams.Exponent.Length * 8);
-							AddRawDetail(data.Source, cert.Subject, rsaparams.Exponent.Length * 8); 
+                            Trace.WriteLine("Modulus len = " + rsaparams.Modulus.Length * 8);
+							AddRawDetail(data.Source, cert.Subject, rsaparams.Modulus.Length * 8, cert.NotAfter); 
                         }
                     }
                 }

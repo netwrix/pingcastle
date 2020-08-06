@@ -174,7 +174,7 @@ namespace PingCastle.Healthcheck
             // get trust map based on direct trusts data
             foreach (HealthcheckData data in consolidation)
             {
-				Trace.WriteLine("Working on " + data.DomainFQDN);
+				//Trace.WriteLine("Working on " + data.DomainFQDN);
                 GraphNode source = nodes.Locate(data);
                 foreach (var trust in data.Trusts)
                 {
@@ -185,7 +185,7 @@ namespace PingCastle.Healthcheck
             Trace.WriteLine("forest trust");
             foreach (HealthcheckData data in consolidation)
             {
-				Trace.WriteLine("Working on " + data.DomainFQDN);
+				//Trace.WriteLine("Working on " + data.DomainFQDN);
                 foreach (var trust in data.Trusts)
                 {
                     // do not examine if we have more accurate information (aka the forest report)
@@ -218,7 +218,7 @@ namespace PingCastle.Healthcheck
                 {
                     continue;
                 }
-				Trace.WriteLine("Working on " + data.DomainFQDN);
+				//Trace.WriteLine("Working on " + data.DomainFQDN);
                 foreach (HealthCheckTrustDomainInfoData di in data.ReachableDomains)
                 {
                     // domain info can contain only netbios name (not FQDN)
@@ -358,7 +358,7 @@ namespace PingCastle.Healthcheck
 
         public GraphNode(int Id, DomainKey Domain, DateTime ReferenceDate)
         {
-            Trace.WriteLine("Creating " + Domain);
+            //Trace.WriteLine("Creating " + Domain);
             this.Id = Id;
             this.Domain = Domain;
             this.ReferenceDate = ReferenceDate;
@@ -395,7 +395,7 @@ namespace PingCastle.Healthcheck
         public void SetForest(DomainKey forest)
         {
             // compatibility with older report without forest information
-            if (String.IsNullOrEmpty(forest.DomainName))
+            if (forest == null || string.IsNullOrEmpty(forest.DomainName))
             {
                 return;
             }

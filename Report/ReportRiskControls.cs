@@ -41,7 +41,7 @@ namespace PingCastle.Report
 					<p>It is the maximum score of the 4 indicators and one score cannot be higher than 100. The lower the better</p>
 			</div>
 		</div>
-		<div class=""row"" class=""indicators-border"">
+		<div class=""row indicators-border"">
 ");
 			GenerateSubIndicator("Stale Object", data.GlobalScore, data.StaleObjectsScore, rules, RiskRuleCategory.StaleObjects, "It is about operations related to user or computer objects");
 			GenerateSubIndicator("Trusts", data.GlobalScore, data.TrustScore, rules, RiskRuleCategory.Trusts, "It is about links between two Active Directories");
@@ -268,7 +268,7 @@ namespace PingCastle.Report
 						foreach (HealthcheckRiskRule rule in rules)
 						{
 							if (rule.Category == category)
-								GenerateIndicatorPanelDetail(category, rule);
+                                GenerateIndicatorPanelDetail(category.ToString(), rule);
 						}
 					});
 			}
@@ -322,13 +322,13 @@ namespace PingCastle.Report
 ");
 		}
 
-		protected void GenerateIndicatorPanelDetail(RiskRuleCategory category, HealthcheckRiskRule rule)
+		protected void GenerateIndicatorPanelDetail(string category, HealthcheckRiskRule rule)
 		{
 			string safeRuleId = rule.RiskId.Replace("$", "dollar");
-			GenerateAccordionDetail("rules" + safeRuleId, "rules" + category.ToString(), rule.Rationale, rule.Points, true,
+			var hcrule = RuleSet<T>.GetRuleFromID(rule.RiskId);
+			GenerateAccordionDetail("rules" + safeRuleId, "rules" + category, rule.Rationale, rule.Points, true,
 				() =>
 				{
-					var hcrule = RuleSet<T>.GetRuleFromID(rule.RiskId);
 					if (hcrule == null)
 					{
 					}
@@ -336,7 +336,9 @@ namespace PingCastle.Report
 					{
 						Add("<h3>");
 						Add(hcrule.Title);
-						Add("</h3>\r\n<strong>Description:</strong><p class=\"text-justify\">");
+						Add("</h3>\r\n<strong>Rule ID:</strong><p class=\"text-justify\">");
+						Add(hcrule.RiskId);
+						Add("</p>\r\n<strong>Description:</strong><p class=\"text-justify\">");
 						Add(NewLineToBR(hcrule.Description));
 						Add("</p>\r\n<strong>Technical explanation:</strong><p class=\"text-justify\">");
 						Add(NewLineToBR(hcrule.TechnicalExplanation));
@@ -395,10 +397,10 @@ namespace PingCastle.Report
 									{
 										if (j < tokens.Count && t[i] == tokens[j])
 										{
-											j++;
 											if (j != 0)
 												Add("</td>");
-											Add("<td>");
+                                            j++;
+                                            Add("<td>");
 										}
 										else
 										{

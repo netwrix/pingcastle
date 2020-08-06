@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("P-LogonDenied", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AccountTakeOver)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 1)]
 	[RuleIntroducedIn(2, 8)]
+    [RuleMaturityLevel(4)]
 	public class HeatlcheckRulePrivilegedLogonDenied : RuleBase<HealthcheckData>
 	{
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 {
 	[RuleModel("P-DCOwner", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    [RuleDurANSSI(3, "owner", "Incorrect object owners")]
     public class HeatlcheckRulePrivilegedDCOwner : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

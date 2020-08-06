@@ -6,6 +6,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ServiceModel.Activation;
 using System.Text;
 
 namespace PingCastle.Rules
@@ -39,6 +40,11 @@ namespace PingCastle.Rules
 		public RiskRuleCategory Category { get; private set; }
 		public RiskModelObjective Objective { get; private set; }
 	}
+
+    public interface IRuleMaturity
+    {
+        int Level { get; }
+    }
 
 	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
 	public class RuleIntroducedInAttribute : Attribute
@@ -162,14 +168,33 @@ namespace PingCastle.Rules
             get; set;
         }
 
-        public int CompareTo(RuleFrameworkReference other)
+        public virtual string Country { get; set; }
+
+        public virtual int CompareTo(RuleFrameworkReference other)
         {
             return String.CompareOrdinal(Label, other.Label);
         }
 
-        public bool Equals(RuleFrameworkReference other)
+        public virtual bool Equals(RuleFrameworkReference other)
         {
             return String.Equals(Label, other.Label) && String.Equals(URL, other.URL);
+        }
+
+        public virtual string GenerateLink()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("<a href=\"");
+            sb.Append(URL);
+            sb.Append("\">");
+            if (!string.IsNullOrEmpty(Country))
+            {
+                sb.Append("[");
+                sb.Append(Country.ToUpperInvariant());
+                sb.Append("]");
+            }
+            sb.Append(Label);
+            sb.Append("</a>");
+            return sb.ToString();
         }
     }
 
@@ -184,7 +209,7 @@ namespace PingCastle.Rules
 		ActiveDirectoryService2008
 	}
 
-    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple= true)]
     public class RuleSTIGAttribute : RuleFrameworkReference
     {
 		public RuleSTIGAttribute(string id, string title = null, STIGFramework framework = STIGFramework.Domain)
@@ -192,13 +217,16 @@ namespace PingCastle.Rules
             ID = id;
 			Framework = framework;
 			Title = title;
+            Country = "us";
         }
 
 		public string ID { get; private set; }
 		public STIGFramework Framework { get; private set; }
 		public string Title { get; private set; }
 
-        public override string URL { get
+        public override string URL
+        {
+            get
             {
 				switch (Framework)
 				{
@@ -220,7 +248,7 @@ namespace PingCastle.Rules
             }
         }
 
-		public override string Label { get { return "STIG " + ID + (!String.IsNullOrEmpty(Title) ? " - " + Title : null); } }
+        public override string Label { get { return "STIG " + ID + (!String.IsNullOrEmpty(Title) ? " - " + Title : null); } }
     }
 
 	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple=true)]
@@ -230,12 +258,13 @@ namespace PingCastle.Rules
 		{
 			ID = id;
 			Location = location;
-		}
+            Country = "fr";
+        }
 
 		public string ID { get; private set; }
 		public string Location { get; private set; }
 
-		public override string URL
+        public override string URL
 		{
 			get
 			{
@@ -243,15 +272,16 @@ namespace PingCastle.Rules
 			}
 		}
 
-		public override string Label { get { return "ANSSI - Recommandations de sécurité relatives à Active Directory - " + ID + (!String.IsNullOrEmpty(Location)? " [" + Location + "]": null); } }
+        public override string Label { get { return "ANSSI - Recommandations de sécurité relatives à Active Directory - " + ID + (!String.IsNullOrEmpty(Location) ? " [" + Location + "]" : null); } }
 	}
 
-	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+	/*[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
 	public class RuleBSIAttribute : RuleFrameworkReference
 	{
 		public RuleBSIAttribute(string id)
 		{
-			switch (id)
+            Country = "de";
+            switch (id)
 			{
 				case "M 2.412":
 					ID = "M 2.412 Schutz der Authentisierung beim Einsatz von Active Directory";
@@ -272,8 +302,8 @@ namespace PingCastle.Rules
 
 		public string ID { get; private set; }
 
-		public override string Label { get { return "BSI " + ID; } }
-	}
+        public override string Label { get { return "BSI " + ID; } }
+	}*/
 
 	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
 	public class RuleCERTFRAttribute : RuleFrameworkReference
@@ -282,11 +312,12 @@ namespace PingCastle.Rules
 		{
 			ID = id;
 			Section = section;
-		}
+            Country = "fr";
+        }
 
 		public string ID { get; private set; }
 		public string Section { get; private set; }
-		public override string URL
+        public override string URL
 		{
 			get
 			{
@@ -299,6 +330,61 @@ namespace PingCastle.Rules
 			}
 		}
 
-		public override string Label { get { return "ANSSI " + ID; } }
+        public override string Label { get { return "ANSSI " + ID; } }
 	}
+
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+    public class RuleDurANSSIAttribute : RuleFrameworkReference, IRuleMaturity
+    {
+        public RuleDurANSSIAttribute(int level, string id, string description)
+        {
+            ID = id;
+            Level = level;
+            Country = "fr";
+            Label = "ANSSI - " + description + " (vuln" + level + "_" + id + ")";
+            ANSSILabel = description;
+        }
+
+        public int Level { get; set; }
+        public string ID { get; private set; }
+        public string ANSSILabel { get; private set; }
+
+        public override string URL
+        {
+            get
+            {
+                return "https://www.cert.ssi.gouv.fr/uploads/guide-ad.html#" + ID;
+            }
+        }
+
+        //public override string Label { get { return "[ANSSI] ID: " + ID; } }
+
+        public override bool Equals(RuleFrameworkReference other)
+        {
+            if (other is RuleDurANSSIAttribute)
+            {
+                return String.Equals(Label, other.Label) && String.Equals(URL, other.URL) && Level == ((RuleDurANSSIAttribute)other).Level;
+            }
+            else
+            {
+                return base.Equals(other);
+            }
+        }
+
+        public override string GenerateLink()
+        {
+            return base.GenerateLink() + "<span class=\"badge grade-" + Level + "\">" + Level + "</span>";
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public class RuleMaturityLevelAttribute : Attribute, IRuleMaturity
+    {
+        public RuleMaturityLevelAttribute(int Level)
+        {
+            this.Level = Level;
+        }
+
+        public int Level { get; set; }
+    }
 }

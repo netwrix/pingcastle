@@ -5,6 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.ADWS;
+using PingCastle.Data;
 using PingCastle.Graph.Database;
 using PingCastle.Graph.Export;
 using PingCastle.Graph.Reporting;
@@ -42,6 +43,8 @@ namespace PingCastle.Graph.Export
 						"servicePrincipalName",
                         "sIDHistory",
 						"userAccountControl",
+                        "whencreated",
+                        "pwdlastset",
             };
 
 		public IDataStorage Storage { get; set; }
@@ -76,6 +79,7 @@ namespace PingCastle.Graph.Export
 			RelationFactory.Initialize(adws);
             DisplayAdvancement("- Searching for critical and infrastructure objects");
 			objectReference = new GraphObjectReference(domainInfo);
+            AddDnsAdmins(objectReference);
 			BuildDirectDelegationData();
 			
 			ExportReportData(objectReference, UsersToInvestigate);
@@ -86,6 +90,28 @@ namespace PingCastle.Graph.Export
             DisplayAdvancement("- Export completed");
             DumpObjectReferenceOnTrace();
 			return objectReference;
+        }
+
+        private void AddDnsAdmins(GraphObjectReference objectReference)
+        {
+            string[] properties = new string[] {
+                        "name",
+                        "objectSid"
+            };
+            bool dnsAdminFound = false;
+            WorkOnReturnedObjectByADWS callback =
+                (ADItem x) =>
+                {
+                    objectReference.Objects[CompromiseGraphDataTypology.PrivilegedAccount].Add(new GraphSingleObject(x.ObjectSid.Value, "Dns Admins", CompromiseGraphDataObjectRisk.Medium));
+                    dnsAdminFound = true;
+                };
+            // we do a one level search just case the group is in the default position
+            adws.Enumerate("CN=Users," + domainInfo.DefaultNamingContext, "(&(objectClass=group)(description=DNS Administrators Group))", properties, callback, "OneLevel");
+            if (!dnsAdminFound)
+            {
+                // then full tree. This is an optimization for LDAP request
+                adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=group)(description=DNS Administrators Group))", properties, callback);
+            }
         }
 
         private void DumpObjectReferenceOnTrace()
@@ -118,6 +144,7 @@ namespace PingCastle.Graph.Export
 			if (domainInfo.ForestFunctionality < 2)
 				return;
 			var map = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            var protocolTransitionSid = new List<string>();
 			WorkOnReturnedObjectByADWS callback =
 					(ADItem aditem) =>
 					{
@@ -132,11 +159,15 @@ namespace PingCastle.Graph.Export
 							if (!map[spn[1]].Contains(sid))
 								map[spn[1]].Add(sid);
 						}
+                        if ((aditem.UserAccountControl & 0x80000) != 0)
+                        {
+                            protocolTransitionSid.Add(aditem.ObjectSid.Value);
+                        }
 					};
 			adws.Enumerate(domainInfo.DefaultNamingContext,
 												"(&(msDS-AllowedToDelegateTo=*)((userAccountControl:1.2.840.113556.1.4.804:=16777216)))",
-												new string[] { "objectSid", "msDS-AllowedToDelegateTo" }, callback);
-			RelationFactory.InitializeDelegation(map);
+												new string[] { "objectSid", "msDS-AllowedToDelegateTo", "userAccountControl" }, callback);
+            RelationFactory.InitializeDelegation(map, protocolTransitionSid);
 		}
 
         private void ExportReportData(GraphObjectReference objectReference, List<string> UsersToInvestigate)
@@ -184,6 +215,12 @@ namespace PingCastle.Graph.Export
 					}
 				}
 			}
+            foreach (var item in objectReference.TechnicalObjects)
+            {
+                aditems = Search(item);
+                if (aditems.Count != 0)
+                    RelationFactory.AnalyzeADObject(aditems[0]);
+            }
             AnalyzeMissingObjets();
         }
 

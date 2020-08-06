@@ -11,10 +11,11 @@ using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("P-TrustedCredManAccessPrivilege", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+	[RuleModel("P-TrustedCredManAccessPrivilege", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.PrivilegeControl)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
 	[RuleSTIG("V-63843", "The Access Credential Manager as a trusted caller user right must not be assigned to any groups or accounts", STIGFramework.Windows10)]
 	[RuleIntroducedIn(2, 8)]
+    [RuleMaturityLevel(3)]
 	public class HeatlcheckRulePrivilegedTrustedCredManAccessPrivilege : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

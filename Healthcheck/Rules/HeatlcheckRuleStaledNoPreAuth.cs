@@ -13,11 +13,50 @@ namespace PingCastle.Healthcheck.Rules
 {
 	[RuleModel("S-NoPreAuth", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleDurANSSI(2, "kerberos_properties_preauth", "Kerberos pre-authentication disabled")]
     public class HeatlcheckRuleStaledNoPreAuth : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-			return healthcheckData.UserAccountData.NumberNoPreAuth + healthcheckData.ComputerAccountData.NumberNoPreAuth;
+            if (healthcheckData.UserAccountData.ListNoPreAuth != null)
+            {
+                foreach (var i in healthcheckData.UserAccountData.ListNoPreAuth)
+                {
+                    bool fAdmin = false;
+                    foreach (var j in healthcheckData.AllPrivilegedMembers)
+                    {
+                        if (i.DistinguishedName == j.DistinguishedName)
+                        {
+                            fAdmin = true;
+                            break;
+                        }
+                    }
+                    if (!fAdmin)
+                    {
+                        AddRawDetail(i.Name, i.CreationDate, i.LastLogonDate == DateTime.MinValue ? "Never" : i.LastLogonDate.ToString("u"));
+                    }
+                }
+            }
+            if (healthcheckData.ComputerAccountData.ListNoPreAuth != null)
+            {
+                foreach (var i in healthcheckData.ComputerAccountData.ListNoPreAuth)
+                {
+                    bool fAdmin = false;
+                    foreach (var j in healthcheckData.AllPrivilegedMembers)
+                    {
+                        if (i.DistinguishedName == j.DistinguishedName)
+                        {
+                            fAdmin = true;
+                            break;
+                        }
+                    }
+                    if (!fAdmin)
+                    {
+                        AddRawDetail(i.Name, i.CreationDate, i.LastLogonDate == DateTime.MinValue ? "Never" : i.LastLogonDate.ToString("u"));
+                    }
+                }
+            }
+            return null;
         }
     }
 }

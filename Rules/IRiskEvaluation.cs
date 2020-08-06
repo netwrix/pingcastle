@@ -17,6 +17,7 @@ namespace PingCastle.Rules
 		int PrivilegiedGroupScore { get; set; }
 		int TrustScore { get; set; }
 		int AnomalyScore { get; set; }
+		int MaturityLevel { get; set; }
 		IList<IRuleScore> AllRiskRules { get;}
 	}
 

@@ -11,12 +11,13 @@ using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-    [RuleModel("P-ControlPathIndirectMany", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+    [RuleModel("P-ControlPathIndirectMany", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ControlPath)]
     [RuleComputation(RuleComputationType.TriggerOnThreshold, 25, Threshold: 200, Order: 1)]
     [RuleComputation(RuleComputationType.TriggerOnThreshold, 15, Threshold: 100, Order: 2)]
     [RuleComputation(RuleComputationType.TriggerOnThreshold, 10, Threshold: 50, Order: 3)]
     [RuleComputation(RuleComputationType.TriggerOnThreshold, 5, Threshold: 20, Order: 4)]
     [RuleIntroducedIn(2, 8)]
+    [RuleMaturityLevel(2)]
     public class HeatlcheckRulePrivilegedControlPathIndirectMany : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

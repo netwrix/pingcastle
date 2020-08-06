@@ -181,7 +181,7 @@ namespace PingCastle
 				() =>
 				{
 					consolidation.EnrichInformation();
-					ReportHealthCheckMapBuilder nodeAnalyzer = new ReportHealthCheckMapBuilder(consolidation);
+					ReportHealthCheckMapBuilder nodeAnalyzer = new ReportHealthCheckMapBuilder(consolidation, License);
 					nodeAnalyzer.Log = Console.WriteLine;
 					nodeAnalyzer.CenterDomainForSimpliedGraph = CenterDomainForSimpliedGraph;
 					nodeAnalyzer.GenerateReportFile("ad_carto_full_node_map.html");
@@ -223,6 +223,37 @@ namespace PingCastle
 			if (!String.IsNullOrEmpty(apiKey) && !String.IsNullOrEmpty(apiEndpoint))
 				SendViaAPI(xmlreports);
 			return true;
+		}
+
+		public bool GenerateFakeReport()
+        {
+			return StartTask("Generate fake reports",
+					() =>
+					{
+						var fakegenerator = new FakeHealthCheckDataGenerator();
+						var hcconso = fakegenerator.GenerateData();
+
+						foreach(var pingCastleReport in hcconso)
+						{
+							var enduserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<HealthcheckData>();
+							enduserReportGenerator.GenerateReportFile(pingCastleReport, License, pingCastleReport.GetHumanReadableFileName());
+							pingCastleReport.SetExportLevel(ExportLevel);
+							DataHelper<HealthcheckData>.SaveAsXml(pingCastleReport, pingCastleReport.GetMachineReadableFileName(), EncryptReport);
+
+						}
+
+						var reportConso = new ReportHealthCheckConsolidation();
+						reportConso.GenerateReportFile(hcconso, License, "ad_hc_summary.html");
+						ReportHealthCheckMapBuilder nodeAnalyzer = new ReportHealthCheckMapBuilder(hcconso, License);
+						nodeAnalyzer.Log = Console.WriteLine;
+						nodeAnalyzer.GenerateReportFile("ad_hc_summary_full_node_map.html");
+						nodeAnalyzer.FullNodeMap = false;
+						nodeAnalyzer.CenterDomainForSimpliedGraph = CenterDomainForSimpliedGraph;
+						nodeAnalyzer.GenerateReportFile("ad_hc_summary_simple_node_map.html");
+						var mapReport = new ReportNetworkMap();
+						mapReport.GenerateReportFile(hcconso, License, "ad_hc_hilbert_map.html");
+					}
+				);
 		}
 
         public bool AnalysisCheckTask<T>(string server)
@@ -417,7 +448,7 @@ namespace PingCastle
 							var hcconso = consolidation as PingCastleReportCollection<HealthcheckData>;
 							var report = new ReportHealthCheckConsolidation();
 							report.GenerateReportFile(hcconso, License, "ad_hc_summary.html");
-							ReportHealthCheckMapBuilder nodeAnalyzer = new ReportHealthCheckMapBuilder(hcconso);
+							ReportHealthCheckMapBuilder nodeAnalyzer = new ReportHealthCheckMapBuilder(hcconso, License);
 							nodeAnalyzer.Log = Console.WriteLine;
 							nodeAnalyzer.GenerateReportFile("ad_hc_summary_full_node_map.html");
 							nodeAnalyzer.FullNodeMap = false;

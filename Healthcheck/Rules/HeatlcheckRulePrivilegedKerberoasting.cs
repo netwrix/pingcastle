@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("P-Kerberoasting", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AccountTakeOver)]
 	[RuleComputation(RuleComputationType.PerDiscover, 5)]
 	[RuleIntroducedIn(2, 7)]
+    [RuleDurANSSI(1, "spn_priv", "Privileged accounts with SPN")]
 	public class HeatlcheckRulePrivilegedKerberoasting : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

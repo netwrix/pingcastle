@@ -22,6 +22,7 @@ namespace PingCastle.RPC
         private GCHandle procString;
         private GCHandle formatString;
         private GCHandle stub;
+        protected IntPtr rpcClientInterface;
         private GCHandle faultoffsets;
         private GCHandle clientinterface;
         private GCHandle bindinghandle;
@@ -190,6 +191,7 @@ namespace PingCastle.RPC
                                                             Marshal.GetFunctionPointerForDelegate(AllocateMemoryDelegate),
                                                             Marshal.GetFunctionPointerForDelegate(FreeMemoryDelegate),
                                                             bindinghandle.AddrOfPinnedObject());
+            rpcClientInterface = stubObject.RpcInterfaceInformation;
 
             stub = GCHandle.Alloc(stubObject, GCHandleType.Pinned);
         }
@@ -279,6 +281,31 @@ namespace PingCastle.RPC
             }
             Trace.WriteLine("binding ok (handle=" + binding + ")");
             return binding;
+        }
+
+        protected Int32 Bind(string server, out IntPtr binding)
+        {
+            IntPtr bindingstring = IntPtr.Zero;
+            binding = IntPtr.Zero;
+            Int32 status;
+
+            status = NativeMethods.RpcStringBindingCompose(null, "ncacn_ip_tcp", server, "135", null, out bindingstring);
+            if (status != 0)
+                return status;
+            status = NativeMethods.RpcBindingFromStringBinding(Marshal.PtrToStringUni(bindingstring), out binding);
+            NativeMethods.RpcBindingFree(ref bindingstring);
+            if (status != 0)
+                return status;
+
+            status = NativeMethods.RpcBindingSetAuthInfo(binding, null, 1, 0, IntPtr.Zero, 0);
+            if (status != 0)
+            {
+                Unbind(IntPtr.Zero, binding);
+                return status;
+            }
+
+            status = NativeMethods.RpcBindingSetOption(binding, 12, RPCTimeOut);
+            return status;
         }
 
         delegate void unbind(IntPtr IntPtrserver, IntPtr hBinding);

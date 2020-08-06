@@ -15,16 +15,30 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
 	[RuleIntroducedIn(2,8)]
 	[RuleSTIG("V-68819", "PowerShell script block logging must be enabled", STIGFramework.Windows10)]
+    [RuleMaturityLevel(3)]
 	public class HeatlcheckRuleAnomalyAuditPowershell : RuleBase<HealthcheckData>
 	{
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
 		{
 			var EnableModuleLogging = false;
 			var EnableScriptBlockLogging = false;
-			if (healthcheckData.GPPPasswordPolicy != null)
+            if (healthcheckData.GPOLsaPolicy != null)
 			{
 				foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
 				{
+                    if (healthcheckData.GPOInfoDic == null || !healthcheckData.GPOInfoDic.ContainsKey(policy.GPOId))
+                    {
+                        continue;
+                    }
+                    var refGPO = healthcheckData.GPOInfoDic[policy.GPOId];
+                    if (refGPO.IsDisabled)
+                    {
+                        continue;
+                    }
+                    if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
+                    {
+                        continue;
+                    }
 					foreach (GPPSecurityPolicyProperty property in policy.Properties)
 					{
 						if (property.Property == "EnableModuleLogging" && property.Value > 0)

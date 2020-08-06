@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 {
 	[RuleModel("S-ADRegistration", RiskRuleCategory.StaleObjects, RiskModelCategory.Provisioning)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    [RuleMaturityLevel(3)]
     public class HeatlcheckRuleStaleADRegistrationEnabled : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

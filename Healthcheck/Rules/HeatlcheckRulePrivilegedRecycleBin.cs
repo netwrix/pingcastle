@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("P-RecycleBin", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.IrreversibleChange)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
 	[RuleIntroducedIn(2, 7)]
+    [RuleMaturityLevel(3)]
 	public class HeatlcheckRulePrivilegedRecycleBin : RuleBase<HealthcheckData>
 	{
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

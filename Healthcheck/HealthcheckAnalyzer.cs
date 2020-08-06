@@ -40,22 +40,22 @@ using System.Security.Authentication;
 
 namespace PingCastle.Healthcheck
 {
-	public class HealthcheckAnalyzer : IPingCastleAnalyzer<HealthcheckData>
+    public class HealthcheckAnalyzer : IPingCastleAnalyzer<HealthcheckData>
     {
         public static bool SkipNullSession { get; set; }
-		HealthcheckData healthcheckData;
+        HealthcheckData healthcheckData;
 
-		public HealthcheckAnalyzer()
-		{
-			if (Environment.OSVersion.Version.Major < 6)
-			{
-				SkipNullSession = true;
-			}
-			else if (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor == 0)
-			{
-				SkipNullSession = true;
-			}
-		}
+        public HealthcheckAnalyzer()
+        {
+            if (Environment.OSVersion.Version.Major < 6)
+            {
+                SkipNullSession = true;
+            }
+            else if (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor == 0)
+            {
+                SkipNullSession = true;
+            }
+        }
 
         private void DisplayAdvancement(string data)
         {
@@ -64,30 +64,30 @@ namespace PingCastle.Healthcheck
             Trace.WriteLine(value);
         }
 
-		public HealthcheckData GenerateCartoReport(string server, int port, NetworkCredential credential, bool AnalyzeReachableDomains)
-		{
-			healthcheckData = new HealthcheckData();
-			ADDomainInfo domainInfo = null;
-			using (ADWebService adws = new ADWebService(server, port, credential))
-			{
-				domainInfo = adws.DomainInfo;
-				GenerateGeneralData(domainInfo, adws);
-				GenerateTrustData(domainInfo, adws);
-				if (AnalyzeReachableDomains)
-				{
-					GenerateReachableTrustData(domainInfo, adws);
-				}
-			}
-			return healthcheckData;
-		}
-
-		public HealthcheckData PerformAnalyze(PingCastleAnalyzerParameters parameters)
+        public HealthcheckData GenerateCartoReport(string server, int port, NetworkCredential credential, bool AnalyzeReachableDomains)
         {
-			healthcheckData = new HealthcheckData();
-			LoadHoneyPotData();
+            healthcheckData = new HealthcheckData();
+            ADDomainInfo domainInfo = null;
+            using (ADWebService adws = new ADWebService(server, port, credential))
+            {
+                domainInfo = adws.DomainInfo;
+                GenerateGeneralData(domainInfo, adws);
+                GenerateTrustData(domainInfo, adws);
+                if (AnalyzeReachableDomains)
+                {
+                    GenerateReachableTrustData(domainInfo, adws);
+                }
+            }
+            return healthcheckData;
+        }
+
+        public HealthcheckData PerformAnalyze(PingCastleAnalyzerParameters parameters)
+        {
+            healthcheckData = new HealthcheckData();
+            LoadHoneyPotData();
             ADDomainInfo domainInfo = null;
             DisplayAdvancement("Getting domain information (" + parameters.Server + ")");
-			using (ADWebService adws = new ADWebService(parameters.Server, parameters.Port, parameters.Credential))
+            using (ADWebService adws = new ADWebService(parameters.Server, parameters.Port, parameters.Credential))
             {
                 domainInfo = adws.DomainInfo;
                 if (adws.useLdap)
@@ -115,49 +115,54 @@ namespace PingCastle.Healthcheck
                 DisplayAdvancement("Gathering delegation data");
                 GenerateDelegationData(domainInfo, adws);
                 DisplayAdvancement("Gathering gpo data");
-				GenerateGPOData(domainInfo, adws, parameters.Credential);
-				GeneratePSOData(domainInfo, adws, parameters.Credential);
+                GenerateGPOData(domainInfo, adws, parameters.Credential);
+                GeneratePSOData(domainInfo, adws, parameters.Credential);
                 DisplayAdvancement("Gathering anomaly data");
                 GenerateAnomalies(domainInfo, adws);
-                DisplayAdvancement("Gathering domain controller data" + (SkipNullSession?null:" (including null session)"));
+                DisplayAdvancement("Gathering dns data");
+                GenerateDnsData(domainInfo, adws);
+                DisplayAdvancement("Gathering domain controller data" + (SkipNullSession ? null : " (including null session)"));
                 GenerateDomainControllerData(domainInfo);
-				GenerateFSMOData(domainInfo, adws);
+                GenerateRODCData(domainInfo, adws);
+                GenerateFSMOData(domainInfo, adws);
+                GenerateCheckDCConfig(domainInfo, adws);
+                GenerateCheckFRS(domainInfo, adws);
                 DisplayAdvancement("Gathering network data");
                 GenerateNetworkData(domainInfo, adws);
             }
             DisplayAdvancement("Computing risks");
             var rules = new RuleSet<HealthcheckData>();
-			healthcheckData.RiskRules = new List<HealthcheckRiskRule>();
-			foreach(var rule in rules.ComputeRiskRules(healthcheckData))
-			{
-				HealthcheckRiskRule risk = new HealthcheckRiskRule();
-				risk.Points = rule.Points;
-				risk.Category = rule.Category;
-				risk.Model = rule.Model;
-				risk.RiskId = rule.RiskId;
-				risk.Rationale = rule.Rationale;
-				risk.Details = rule.Details;
-				healthcheckData.RiskRules.Add(risk);
-			}
+            healthcheckData.RiskRules = new List<HealthcheckRiskRule>();
+            foreach (var rule in rules.ComputeRiskRules(healthcheckData))
+            {
+                HealthcheckRiskRule risk = new HealthcheckRiskRule();
+                risk.Points = rule.Points;
+                risk.Category = rule.Category;
+                risk.Model = rule.Model;
+                risk.RiskId = rule.RiskId;
+                risk.Rationale = rule.Rationale;
+                risk.Details = rule.Details;
+                healthcheckData.RiskRules.Add(risk);
+            }
             DisplayAdvancement("Export completed");
-			return healthcheckData;
+            return healthcheckData;
         }
 
-		private void LoadHoneyPotData()
-		{
-			var s = HoneyPotSettings.GetEncryptionSettings();
-			if (s == null)
-				return;
-			if (s.HoneyPots.Count > 10)
-			{
-				throw new PingCastleException("You entered more than 10 HoneyPots in the configuration. Honey Pots should not be used as a way to setup exceptions to rules");
-			}
-			healthcheckData.ListHoneyPot = new List<HealthcheckAccountDetailData>();
-			foreach (SingleHoneyPotSettings h in s.HoneyPots)
-			{
-				healthcheckData.ListHoneyPot.Add(new HealthcheckAccountDetailData() { Name = h.samAccountName });
-			}
-		}
+        private void LoadHoneyPotData()
+        {
+            var s = HoneyPotSettings.GetEncryptionSettings();
+            if (s == null)
+                return;
+            if (s.HoneyPots.Count > 25)
+            {
+                throw new PingCastleException("You entered more than 25 HoneyPots in the configuration. Honey Pots should not be used as a way to setup exceptions to rules");
+            }
+            healthcheckData.ListHoneyPot = new List<HealthcheckAccountDetailData>();
+            foreach (SingleHoneyPotSettings h in s.HoneyPots)
+            {
+                healthcheckData.ListHoneyPot.Add(new HealthcheckAccountDetailData() { Name = h.samAccountName });
+            }
+        }
 
         public class ReachableDomainInfo : IComparable<ReachableDomainInfo>
         {
@@ -279,63 +284,65 @@ namespace PingCastle.Healthcheck
             healthcheckData.DomainCreation = domainInfo.CreationDate;
 
             // adding the domain Netbios name
-            string[] propertiesNetbios = new string[] { "nETBIOSName"};
+            string[] propertiesNetbios = new string[] { "nETBIOSName" };
             adws.Enumerate("CN=Partitions," + domainInfo.ConfigurationNamingContext,
-                                            "(&(objectCategory=crossRef)(systemFlags:1.2.840.113556.1.4.803:=3)(nETBIOSName=*)(nCName="+ domainInfo.DefaultNamingContext +"))",
-                                            propertiesNetbios, 
-											(ADItem aditem) => { 
-												domainInfo.NetBIOSName = aditem.NetBIOSName;
-											}
-											, "OneLevel");
-			// adding the schema version
-			string[] propertiesSchema = new string[] { "objectVersion", "replPropertyMetaData" , "schemaInfo"};
-			adws.Enumerate(domainInfo.SchemaNamingContext,
-											"(objectClass=dMD)",
-											propertiesSchema, (ADItem aditem) => {
-												domainInfo.SchemaVersion = aditem.ObjectVersion;
-												// version stored in big endian
-												if (aditem.SchemaInfo != null)
-													domainInfo.SchemaInternalVersion = aditem.SchemaInfo[1] * 0x1000000 + aditem.SchemaInfo[2] * 0x10000 + aditem.SchemaInfo[3] * 0x100 + aditem.SchemaInfo[4];
-												if (aditem.ReplPropertyMetaData.ContainsKey(0x9054E))
-												{
-													domainInfo.SchemaLastChanged = aditem.ReplPropertyMetaData[0x9054E].LastOriginatingChange;
-												}
-											}, "Base");
+                                            "(&(objectCategory=crossRef)(systemFlags:1.2.840.113556.1.4.803:=3)(nETBIOSName=*)(nCName=" + domainInfo.DefaultNamingContext + "))",
+                                            propertiesNetbios,
+                                            (ADItem aditem) => {
+                                                domainInfo.NetBIOSName = aditem.NetBIOSName;
+                                            }
+                                            , "OneLevel");
+            // adding the schema version
+            string[] propertiesSchema = new string[] { "objectVersion", "replPropertyMetaData", "schemaInfo" };
+            adws.Enumerate(domainInfo.SchemaNamingContext,
+                                            "(objectClass=dMD)",
+                                            propertiesSchema, (ADItem aditem) => {
+                                                domainInfo.SchemaVersion = aditem.ObjectVersion;
+                                                // version stored in big endian
+                                                if (aditem.SchemaInfo != null)
+                                                    domainInfo.SchemaInternalVersion = aditem.SchemaInfo[1] * 0x1000000 + aditem.SchemaInfo[2] * 0x10000 + aditem.SchemaInfo[3] * 0x100 + aditem.SchemaInfo[4];
+                                                if (aditem.ReplPropertyMetaData.ContainsKey(0x9054E))
+                                                {
+                                                    domainInfo.SchemaLastChanged = aditem.ReplPropertyMetaData[0x9054E].LastOriginatingChange;
+                                                }
+                                            }, "Base");
             healthcheckData.NetBIOSName = domainInfo.NetBIOSName;
             healthcheckData.ForestFunctionalLevel = domainInfo.ForestFunctionality;
             healthcheckData.DomainFunctionalLevel = domainInfo.DomainFunctionality;
-			healthcheckData.SchemaVersion = domainInfo.SchemaVersion;
-			healthcheckData.SchemaInternalVersion = domainInfo.SchemaInternalVersion;
-			healthcheckData.SchemaLastChanged = domainInfo.SchemaLastChanged;
+            healthcheckData.SchemaVersion = domainInfo.SchemaVersion;
+            healthcheckData.SchemaInternalVersion = domainInfo.SchemaInternalVersion;
+            healthcheckData.SchemaLastChanged = domainInfo.SchemaLastChanged;
             healthcheckData.GenerationDate = DateTime.Now;
-			
-			string[] propertiesEnabledFeature = new string[] { "msDS-EnabledFeature" };
-			adws.Enumerate("CN=Partitions," + domainInfo.ConfigurationNamingContext,
-										"(objectClass=*)",
-										propertiesEnabledFeature, (ADItem aditem) =>
-										{
-											if (aditem.msDSEnabledFeature != null)
-											{
-												foreach (string feature in aditem.msDSEnabledFeature)
-												{
-													if (feature.StartsWith("CN=Recycle Bin Feature,", StringComparison.InvariantCultureIgnoreCase))
-													{
-														healthcheckData.IsRecycleBinEnabled = true;
-													}
-												}
-											}
-										}, "Base");
-			
-			Version version = Assembly.GetExecutingAssembly().GetName().Version;
+
+            string[] propertiesEnabledFeature = new string[] { "msDS-EnabledFeature" };
+            adws.Enumerate("CN=Partitions," + domainInfo.ConfigurationNamingContext,
+                                        "(objectClass=*)",
+                                        propertiesEnabledFeature, (ADItem aditem) =>
+                                        {
+                                            if (aditem.msDSEnabledFeature != null)
+                                            {
+                                                foreach (string feature in aditem.msDSEnabledFeature)
+                                                {
+                                                    if (feature.StartsWith("CN=Recycle Bin Feature,", StringComparison.InvariantCultureIgnoreCase))
+                                                    {
+                                                        healthcheckData.IsRecycleBinEnabled = true;
+                                                    }
+                                                }
+                                            }
+                                        }, "Base");
+
+            Version version = Assembly.GetExecutingAssembly().GetName().Version;
             healthcheckData.EngineVersion = version.ToString(4);
 #if DEBUG
-			healthcheckData.EngineVersion += " Beta";
+            healthcheckData.EngineVersion += " Beta";
 #endif
             healthcheckData.Level = PingCastleReportDataExportLevel.Full;
         }
 
         private void GenerateUserData(ADDomainInfo domainInfo, ADWebService adws)
         {
+            var pwdDistribution = new Dictionary<int, int>();
+
             Dictionary<string, int> loginscript = new Dictionary<string, int>();
             string[] properties = new string[] {
                         "objectSid",
@@ -355,125 +362,159 @@ namespace PingCastle.Healthcheck
             WorkOnReturnedObjectByADWS callback =
                 (ADItem x) =>
                 {
-					try
-					{
-						// krbtgt
-						if (x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountKrbtgtSid))
-						{
-							// krbtgt will be processed after - this avoid applying a filter on the object class
-							return;
-						}
-						// admin account
-						if (x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountAdministratorSid))
-						{
-							healthcheckData.AdminLastLoginDate = x.LastLogonTimestamp;
-							healthcheckData.AdminAccountName = x.SAMAccountName;
-						}
-						// ignore trust account
-						if (x.Name.EndsWith("$", StringComparison.InvariantCultureIgnoreCase) && ((x.UserAccountControl & 2048) != 0))
-						{
-							return;
-						}
-						ProcessAccountData(healthcheckData.UserAccountData, x, false);
-						if ((x.UserAccountControl & 0x00000002) == 0)
-						{
-							// login script
-							string scriptName = "None";
-							if (!String.IsNullOrEmpty(x.ScriptPath))
-							{
-								scriptName = x.ScriptPath.ToLowerInvariant();
-							}
-							if (!loginscript.ContainsKey(scriptName))
-								loginscript[scriptName] = 1;
-							else
-								loginscript[scriptName]++;
-						}
-					}
-					catch(Exception)
-					{
-						Trace.WriteLine("Exception while working on " + x.DistinguishedName);
-						throw;
-					}
+                    try
+                    {
+                        // krbtgt
+                        if (x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountKrbtgtSid))
+                        {
+                            // krbtgt will be processed after - this avoid applying a filter on the object class
+                            return;
+                        }
+                        // admin account
+                        if (x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountAdministratorSid))
+                        {
+                            healthcheckData.AdminLastLoginDate = x.LastLogonTimestamp;
+                            healthcheckData.AdminAccountName = x.SAMAccountName;
+                        }
+                        // ignore trust account
+                        if (x.Name.EndsWith("$", StringComparison.InvariantCultureIgnoreCase) && ((x.UserAccountControl & 2048) != 0))
+                        {
+                            return;
+                        }
+                        ProcessAccountData(healthcheckData.UserAccountData, x, false);
+                        // only enabled accounts and no guest account
+                        if ((x.UserAccountControl & 0x00000002) == 0)
+                        {
+                            // login script
+                            string scriptName = "None";
+                            if (!String.IsNullOrEmpty(x.ScriptPath))
+                            {
+                                scriptName = x.ScriptPath.ToLowerInvariant();
+                            }
+                            if (!loginscript.ContainsKey(scriptName))
+                                loginscript[scriptName] = 1;
+                            else
+                                loginscript[scriptName]++;
+                            // avoid system objects where the whenCreated date in not set
+                            // ex: guest, krbtgt for rodc, ...
+                            if (x.WhenCreated != DateTime.MinValue)
+                            {
+                                var i = ConvertPwdLastSetToKey(x);
+                                if (pwdDistribution.ContainsKey(i))
+                                    pwdDistribution[i]++;
+                                else
+                                    pwdDistribution[i] = 1;
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        Trace.WriteLine("Exception while working on " + x.DistinguishedName);
+                        throw;
+                    }
                 };
 
             string filter = "(|(&(objectClass=user)(objectCategory=person))(objectcategory=msDS-GroupManagedServiceAccount)(objectcategory=msDS-ManagedServiceAccount))";
-            adws.Enumerate(() => 
-				{
-					healthcheckData.UserAccountData = new HealthcheckAccountData();
-					loginscript.Clear();
-				},
-				domainInfo.DefaultNamingContext, filter, properties, callback, "SubTree");
+            adws.Enumerate(() =>
+                {
+                    healthcheckData.UserAccountData = new HealthcheckAccountData();
+                    loginscript.Clear();
+                },
+                domainInfo.DefaultNamingContext, filter, properties, callback, "SubTree");
 
-			healthcheckData.LoginScript = new List<HealthcheckLoginScriptData>();
+            healthcheckData.LoginScript = new List<HealthcheckLoginScriptData>();
             foreach (string key in loginscript.Keys)
             {
-				var script = new HealthcheckLoginScriptData(key, loginscript[key]);
-				script.Delegation = CheckScriptPermission(domainInfo, script.LoginScript);
-				healthcheckData.LoginScript.Add(script);
+                var script = new HealthcheckLoginScriptData(key, loginscript[key]);
+                script.Delegation = CheckScriptPermission(domainInfo, script.LoginScript);
+                healthcheckData.LoginScript.Add(script);
+            }
+
+            healthcheckData.PasswordDistribution = new List<HealthcheckPwdDistributionData>();
+
+            foreach (var p in pwdDistribution)
+            {
+                healthcheckData.PasswordDistribution.Add(new HealthcheckPwdDistributionData(){HigherBound = p.Key, Value = p.Value});
             }
         }
 
-		List<HealthcheckScriptDelegationData> CheckScriptPermission(ADDomainInfo domainInfo, string file)
-		{
-			var output = new List<HealthcheckScriptDelegationData>();
-			if (file == "None")
-				return output;
-			try
-			{
-				if (!Path.IsPathRooted(file))
-				{
-					file = Path.Combine(@"\\" + domainInfo.DnsHostName + @"\SYSVOL\" + domainInfo.DomainName + @"\scripts", file);
-				}
-				if (!File.Exists(file))
-				{
-					return output;
-				}
-				var security = File.GetAccessControl(file);
-				var accessRules = security.GetAccessRules(true, true, typeof(SecurityIdentifier));
-				if (accessRules ==null)
-					return output;
+        private int ConvertPwdLastSetToKey(ADItem x)
+        {
+            var dateTime = x.PwdLastSet;
+            if (x.PwdLastSet == DateTime.MinValue)
+                dateTime = x.WhenCreated;
+            return ConvertDateToKey(dateTime);
 
-				foreach (FileSystemAccessRule rule in accessRules)
-				{
-					if (rule.AccessControlType == AccessControlType.Deny)
-						continue;
-					if ((FileSystemRights.Write & rule.FileSystemRights) != FileSystemRights.Write) 
-						continue;
+        }
 
-					var sid = (SecurityIdentifier)rule.IdentityReference;
-					var account = MatchesBadUsersToCheck(sid);
-					if (!account.HasValue)
-						continue;
-					output.Add(new HealthcheckScriptDelegationData() { Account = account.Value.Value, Right = rule.FileSystemRights.ToString() });
-				}
-			}
-			catch(Exception ex)
-			{
-				Trace.WriteLine("Exception CheckScriptPermission " + ex.Message);
-			}
-			return output;
-		}
+        public static int ConvertDateToKey(DateTime dateTime)
+        {
+            var t = (DateTime.Now - dateTime).Days;
+            if (t < 0) t = 0;
+            return t / 30;
+        }
 
-        void ProcessAccountData(HealthcheckAccountData data, ADItem x, bool computerCheck)
+        List<HealthcheckScriptDelegationData> CheckScriptPermission(ADDomainInfo domainInfo, string file)
+        {
+            var output = new List<HealthcheckScriptDelegationData>();
+            if (file == "None")
+                return output;
+            try
+            {
+                if (!Path.IsPathRooted(file))
+                {
+                    file = Path.Combine(@"\\" + domainInfo.DnsHostName + @"\SYSVOL\" + domainInfo.DomainName + @"\scripts", file);
+                }
+                if (!File.Exists(file))
+                {
+                    return output;
+                }
+                var security = File.GetAccessControl(file);
+                var accessRules = security.GetAccessRules(true, true, typeof(SecurityIdentifier));
+                if (accessRules == null)
+                    return output;
+
+                foreach (FileSystemAccessRule rule in accessRules)
+                {
+                    if (rule.AccessControlType == AccessControlType.Deny)
+                        continue;
+                    if ((FileSystemRights.Write & rule.FileSystemRights) != FileSystemRights.Write)
+                        continue;
+
+                    var sid = (SecurityIdentifier)rule.IdentityReference;
+                    var account = MatchesBadUsersToCheck(sid);
+                    if (!account.HasValue)
+                        continue;
+                    output.Add(new HealthcheckScriptDelegationData() { Account = account.Value.Value, Right = rule.FileSystemRights.ToString() });
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("Exception CheckScriptPermission " + ex.Message);
+            }
+            return output;
+        }
+
+        internal void ProcessAccountData(HealthcheckAccountData data, ADItem x, bool computerCheck)
         {
             // see https://msdn.microsoft.com/fr-fr/library/windows/desktop/ms680832%28v=vs.85%29.aspx for the flag
             if (!string.IsNullOrEmpty(x.SAMAccountName) && healthcheckData.ListHoneyPot != null && healthcheckData.ListHoneyPot.Count > 0)
-			{
-				foreach (var h in healthcheckData.ListHoneyPot)
-				{
-					if (string.Equals(h.Name, x.SAMAccountName, StringComparison.InvariantCultureIgnoreCase))
-					{
-						// ignore the account
-						h.Name = x.SAMAccountName;
-						h.CreationDate = x.WhenCreated;
-						h.DistinguishedName = x.DistinguishedName;
-						h.LastLogonDate = x.LastLogonTimestamp;
-						return;
-					}
-				}
-			}
-			data.Number++;
-			if (x.DistinguishedName.Contains("cnf:"))
+            {
+                foreach (var h in healthcheckData.ListHoneyPot)
+                {
+                    if (string.Equals(h.Name, x.SAMAccountName, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        // ignore the account
+                        h.Name = x.SAMAccountName;
+                        h.CreationDate = x.WhenCreated;
+                        h.DistinguishedName = x.DistinguishedName;
+                        h.LastLogonDate = x.LastLogonTimestamp;
+                        return;
+                    }
+                }
+            }
+            data.Number++;
+            if (x.DistinguishedName.Contains("cnf:"))
             {
                 data.NumberDuplicate++;
                 if (data.ListDuplicate == null)
@@ -492,7 +533,7 @@ namespace PingCastle.Healthcheck
             else
             {
                 data.NumberEnabled++;
-                
+
                 if (x.WhenCreated.AddDays(6 * 31) > DateTime.Now || x.LastLogonTimestamp.AddDays(6 * 31) > DateTime.Now)
                     data.NumberActive++;
                 else
@@ -538,9 +579,9 @@ namespace PingCastle.Healthcheck
                 // check for bad primary group
                 if (!computerCheck)
                 {
-					// not domain users & guest or the guest account
-					if (x.PrimaryGroupID != 513 && x.PrimaryGroupID != 514 && !x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountGuestSid) 
-						&& !(x.PrimaryGroupID == 515 && (string.Equals(x.Class,"msDS-GroupManagedServiceAccount", StringComparison.OrdinalIgnoreCase) || string.Equals(x.Class,"msDS-ManagedServiceAccount", StringComparison.OrdinalIgnoreCase))))
+                    // not domain users & guest or the guest account
+                    if (x.PrimaryGroupID != 513 && x.PrimaryGroupID != 514 && x.ObjectSid != null && !x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountGuestSid)
+                        && !(x.PrimaryGroupID == 515 && (string.Equals(x.Class, "msDS-GroupManagedServiceAccount", StringComparison.OrdinalIgnoreCase) || string.Equals(x.Class, "msDS-ManagedServiceAccount", StringComparison.OrdinalIgnoreCase))))
                     {
                         data.NumberBadPrimaryGroup++;
                         if (data.ListBadPrimaryGroup == null)
@@ -590,7 +631,7 @@ namespace PingCastle.Healthcheck
                         data.ListReversibleEncryption = new List<HealthcheckAccountDetailData>();
                     data.ListReversibleEncryption.Add(GetAccountDetail(x));
                 }
-                
+
             }
 
         }
@@ -602,6 +643,7 @@ namespace PingCastle.Healthcheck
             data.Name = x.SAMAccountName;
             data.CreationDate = x.WhenCreated;
             data.LastLogonDate = x.LastLogonTimestamp;
+            data.PwdLastSet = x.PwdLastSet;
             return data;
         }
 
@@ -617,30 +659,31 @@ namespace PingCastle.Healthcheck
                         "userAccountControl",
                         "whenCreated",
                         "lastLogonTimestamp",
+                        "pwdLastSet",
             };
 
-			Dictionary<string, HealthcheckOSData> operatingSystems = new Dictionary<string, HealthcheckOSData>();
+            Dictionary<string, HealthcheckOSData> operatingSystems = new Dictionary<string, HealthcheckOSData>();
             Dictionary<string, int> operatingSystemsDC = new Dictionary<string, int>();
-            
+
             WorkOnReturnedObjectByADWS callback =
                 (ADItem x) =>
                 {
                     string os = GetOperatingSystem(x.OperatingSystem);
                     if (!operatingSystems.ContainsKey(os))
                     {
-						operatingSystems[os] = new HealthcheckOSData(os);
-						operatingSystems[os].data = new HealthcheckAccountData();
-						operatingSystems[os].data.SetProxy(healthcheckData.ComputerAccountData);
+                        operatingSystems[os] = new HealthcheckOSData(os);
+                        operatingSystems[os].data = new HealthcheckAccountData();
+                        operatingSystems[os].data.SetProxy(healthcheckData.ComputerAccountData);
                     }
-					ProcessAccountData(operatingSystems[os].data, x, true);
-					// process only not disabled computers
-					if ((x.UserAccountControl & 0x00000002) == 0)
-					{
-						// we consider DC as a computer in the special OU or having the primary group ID of DC or Enterprise DC
-						// known problem: if the DC is a member (not primary group) & not located in the DC OU
+                    ProcessAccountData(operatingSystems[os].data, x, true);
+                    // process only not disabled computers
+                    if ((x.UserAccountControl & 0x00000002) == 0)
+                    {
+                        // we consider DC as a computer in the special OU or having the primary group ID of DC or Enterprise DC
+                        // known problem: if the DC is a member (not primary group) & not located in the DC OU
                         if (x.DistinguishedName.Contains("OU=Domain Controllers,DC=") || x.PrimaryGroupID == 516 || x.PrimaryGroupID == 521)
                         {
-							healthcheckData.NumberOfDC++;
+                            healthcheckData.NumberOfDC++;
                             if (!operatingSystemsDC.ContainsKey(os))
                             {
                                 operatingSystemsDC[os] = 1;
@@ -651,33 +694,63 @@ namespace PingCastle.Healthcheck
                             }
                             HealthcheckDomainController dc = new HealthcheckDomainController();
                             dc.DCName = x.Name;
-							dc.CreationDate = x.WhenCreated;
+                            dc.CreationDate = x.WhenCreated;
                             // last logon timestam can have a delta of 14 days
-							dc.LastComputerLogonDate = x.LastLogonTimestamp;
+                            dc.LastComputerLogonDate = x.LastLogonTimestamp;
                             dc.DistinguishedName = x.DistinguishedName;
-							dc.OperatingSystem = os;
+                            dc.OperatingSystem = os;
+                            dc.PwdLastSet = x.PwdLastSet;
+                            if (x.PrimaryGroupID == 521) // RODC
+                            {
+                                if ((x.UserAccountControl & 0x05001000) != 0x05001000)
+                                {
+                                    dc.RegistrationProblem = "InvalidUserAccount";
+                                }
+                            }
+                            else // Normal DC
+                            {
+                                if ((x.UserAccountControl & 0x00082000) != 0x00082000)
+                                {
+                                    dc.RegistrationProblem = "InvalidUserAccount";
+                                }
+                            }
                             healthcheckData.DomainControllers.Add(dc);
+                        }
+                        else
+                        {
+                            // this checks excludes the DC because a special case is in place
+                            if (x.WhenCreated.AddDays(45) <= DateTime.Now && x.LastLogonTimestamp.AddDays(45) > DateTime.Now)
+                            {
+                                // computer active for at least 45 days
+                                if (x.PwdLastSet.AddDays(45) <= DateTime.Now)
+                                {
+                                    // computer password not changed
+                                    if (healthcheckData.ListComputerPwdNotChanged == null)
+                                        healthcheckData.ListComputerPwdNotChanged = new List<HealthcheckAccountDetailData>();
+                                    healthcheckData.ListComputerPwdNotChanged.Add(GetAccountDetail(x));
+                                }
+                            }
                         }
                     }
                 };
 
             string filter = "(&(ObjectCategory=computer))";
-			adws.Enumerate(() => 
-				{
-					healthcheckData.ComputerAccountData = new HealthcheckAccountData();
-					healthcheckData.DomainControllers = new List<HealthcheckDomainController>();
-					healthcheckData.OperatingSystem = new List<HealthcheckOSData>();
-					operatingSystems.Clear();
-					operatingSystemsDC.Clear();
-				},
-				domainInfo.DefaultNamingContext, filter, properties, callback, "SubTree");
-            
+            adws.Enumerate(() =>
+                {
+                    healthcheckData.ComputerAccountData = new HealthcheckAccountData();
+                    healthcheckData.DomainControllers = new List<HealthcheckDomainController>();
+                    healthcheckData.OperatingSystem = new List<HealthcheckOSData>();
+                    operatingSystems.Clear();
+                    operatingSystemsDC.Clear();
+                },
+                domainInfo.DefaultNamingContext, filter, properties, callback, "SubTree");
+
             foreach (string key in operatingSystems.Keys)
             {
-				operatingSystems[key].NumberOfOccurence = operatingSystems[key].data.NumberActive;
+                operatingSystems[key].NumberOfOccurence = operatingSystems[key].data.NumberActive;
                 healthcheckData.OperatingSystem.Add(operatingSystems[key]);
-				healthcheckData.ComputerAccountData.Add(operatingSystems[key].data);
-				operatingSystems[key].data.ClearProxy();
+                healthcheckData.ComputerAccountData.Add(operatingSystems[key].data);
+                operatingSystems[key].data.ClearProxy();
             }
         }
 
@@ -695,9 +768,23 @@ namespace PingCastle.Healthcheck
                     if (data.ListDomainSidHistory == null)
                         data.ListDomainSidHistory = new List<HealthcheckSIDHistoryData>();
                     SecurityIdentifier domainSid = sid.AccountDomainSid;
-					// special case when SIDHistory has been modified ...
-					if (domainSid == null)
-						domainSid = sid;
+                    bool dangerousSID = false;
+                    // special case when SIDHistory has been modified ...
+                    if (domainSid == null)
+                    {
+                        domainSid = sid;
+                        dangerousSID = true;
+                    }
+                    else
+                    {
+                        var sidparts = sid.Value.Split('-');
+                        if (sidparts.Length > 1)
+                        {
+                            var lastPart = int.Parse(sidparts[sidparts.Length-1]);
+                            if (lastPart < 1000)
+                                dangerousSID = true;
+                        }
+                    }
                     bool found = false;
                     foreach (HealthcheckSIDHistoryData domainSIDHistory in data.ListDomainSidHistory)
                     {
@@ -706,10 +793,12 @@ namespace PingCastle.Healthcheck
                             domainSIDHistory.Count++;
                             found = true;
 
-							if ((domainSIDHistory.FirstDate > x.WhenCreated && x.WhenCreated != DateTime.MinValue) || domainSIDHistory.FirstDate == DateTime.MinValue)
+                            if ((domainSIDHistory.FirstDate > x.WhenCreated && x.WhenCreated != DateTime.MinValue) || domainSIDHistory.FirstDate == DateTime.MinValue)
                                 domainSIDHistory.FirstDate = x.WhenCreated;
                             if (domainSIDHistory.LastDate < x.WhenCreated)
                                 domainSIDHistory.LastDate = x.WhenCreated;
+                            if (dangerousSID)
+                                domainSIDHistory.DangerousSID = dangerousSID;
                             break;
                         }
                     }
@@ -721,6 +810,7 @@ namespace PingCastle.Healthcheck
                         domainSIDHistory.Count = 1;
                         domainSIDHistory.LastDate = x.WhenCreated;
                         domainSIDHistory.FirstDate = x.WhenCreated;
+                        domainSIDHistory.DangerousSID = dangerousSID;
                     }
                 }
             }
@@ -741,7 +831,7 @@ namespace PingCastle.Healthcheck
                     count++;
                 };
             string groupselection = "(|(|(|(objectClass=posixGroup)(objectClass=groupOfUniqueNames))(objectClass=groupOfNames))(objectClass=group))";
-            adws.Enumerate(domainInfo.DefaultNamingContext, "(&(sidhistory=*)"+groupselection+")", properties, callback);
+            adws.Enumerate(domainInfo.DefaultNamingContext, "(&(sidhistory=*)" + groupselection + ")", properties, callback);
             Trace.WriteLine("Having found " + count + " groups with sid history");
         }
 
@@ -751,6 +841,7 @@ namespace PingCastle.Healthcheck
             {
                 return "OperatingSystem not set";
             }
+            os = os.Replace('\u00A0', ' ');
             if (Regex.Match(os, @"windows(.*) 2000", RegexOptions.IgnoreCase).Success)
             {
                 return "Windows 2000";
@@ -771,10 +862,10 @@ namespace PingCastle.Healthcheck
             {
                 return "Windows 2016";
             }
-			if (Regex.Match(os, @"windows(.*) 2019", RegexOptions.IgnoreCase).Success)
-			{
-				return "Windows 2019";
-			}
+            if (Regex.Match(os, @"windows(.*) 2019", RegexOptions.IgnoreCase).Success)
+            {
+                return "Windows 2019";
+            }
             if (Regex.Match(os, @"windows(.*) 7", RegexOptions.IgnoreCase).Success)
             {
                 return "Windows 7";
@@ -844,12 +935,12 @@ namespace PingCastle.Healthcheck
                     {
                         trust.KnownDomains = x.msDSTrustForestTrustInfo;
                         // remove the trustpartner from the domain infos
-                        foreach(HealthCheckTrustDomainInfoData di in trust.KnownDomains)
+                        foreach (HealthCheckTrustDomainInfoData di in trust.KnownDomains)
                         {
                             di.ForestName = x.TrustPartner;
                             di.ForestSid = trust.SID;
                         }
-                        foreach(HealthCheckTrustDomainInfoData di in trust.KnownDomains)
+                        foreach (HealthCheckTrustDomainInfoData di in trust.KnownDomains)
                         {
                             if (di.DnsName == x.TrustPartner)
                             {
@@ -917,7 +1008,7 @@ namespace PingCastle.Healthcheck
                 {
                     if (forestTrust.KnownDomains == null)
                         forestTrust.KnownDomains = new List<HealthCheckTrustDomainInfoData>();
-                    string[] propertiesCrossRefDomains = new string[] { "dnsRoot","nETBIOSName", "whenCreated" };
+                    string[] propertiesCrossRefDomains = new string[] { "dnsRoot", "nETBIOSName", "whenCreated" };
                     WorkOnReturnedObjectByADWS callbackCrossRef =
                     (ADItem x) =>
                     {
@@ -954,6 +1045,35 @@ namespace PingCastle.Healthcheck
             {
                 EnrichSIDHistoryWithTrustData(healthcheckData.ComputerAccountData.ListDomainSidHistory);
             }
+
+            // process AzureAD SSO
+            string[] AzureAccountproperties = new string[] {
+                        "distinguishedName",
+                        "securityIdentifier",
+                        "pwdLastSet",
+                        "replPropertyMetaData",
+                        "whenCreated",
+            };
+            WorkOnReturnedObjectByADWS callbackAzureAccount =
+                    (ADItem x) =>
+                    {
+                        DateTime d = x.WhenCreated;
+                        if (x.PwdLastSet > d)
+                        {
+                            d = x.PwdLastSet;
+                        }
+                        else
+                        {
+                           if (d < x.ReplPropertyMetaData[0x9005A].LastOriginatingChange)
+					        {
+						        d = x.ReplPropertyMetaData[0x9005A].LastOriginatingChange;
+                                healthcheckData.AzureADSSOVersion = x.ReplPropertyMetaData[0x9005A].Version;
+					        }
+                        }
+                        healthcheckData.AzureADSSOLastPwdChange = d;
+                    };
+            
+            adws.Enumerate(domainInfo.DefaultNamingContext, "(SamAccountName=AZUREADSSOACC$)", AzureAccountproperties, callbackAzureAccount);
         }
 
         private void EnrichSIDHistoryWithTrustData(List<HealthcheckSIDHistoryData> list)
@@ -966,7 +1086,7 @@ namespace PingCastle.Healthcheck
                     if (trustdata.SID == data.DomainSid)
                     {
                         data.FriendlyName = trustdata.TrustPartner;
-						data.NetBIOSName = trustdata.NetBiosName;
+                        data.NetBIOSName = trustdata.NetBiosName;
                         break;
                     }
                     if (trustdata.KnownDomains != null)
@@ -976,17 +1096,17 @@ namespace PingCastle.Healthcheck
                             if (trustdomainInfo.Sid == data.DomainSid)
                             {
                                 data.FriendlyName = trustdomainInfo.DnsName;
-								data.NetBIOSName = trustdomainInfo.NetbiosName;
+                                data.NetBIOSName = trustdomainInfo.NetbiosName;
                                 break;
                             }
                         }
                     }
                 }
-				if (data.DomainSid == healthcheckData.DomainSid)
-				{
-					data.FriendlyName = healthcheckData.DomainFQDN;
-					data.NetBIOSName = healthcheckData.NetBIOSName;
-				}
+                if (data.DomainSid == healthcheckData.DomainSid)
+                {
+                    data.FriendlyName = healthcheckData.DomainFQDN;
+                    data.NetBIOSName = healthcheckData.NetBIOSName;
+                }
                 if (String.IsNullOrEmpty(data.FriendlyName))
                     data.FriendlyName = data.DomainSid;
             }
@@ -1127,7 +1247,7 @@ namespace PingCastle.Healthcheck
             foreach (SecurityIdentifier domainSid in domainSidsToFilter)
             {
                 bool found = false;
-                foreach(HealthCheckTrustData trust in healthcheckData.Trusts)
+                foreach (HealthCheckTrustData trust in healthcheckData.Trusts)
                 {
                     if (!String.IsNullOrEmpty(trust.SID) && new SecurityIdentifier(trust.SID) == domainSid)
                     {
@@ -1136,7 +1256,7 @@ namespace PingCastle.Healthcheck
                     }
                     if (trust.KnownDomains != null)
                     {
-                        foreach(HealthCheckTrustDomainInfoData di in trust.KnownDomains)
+                        foreach (HealthCheckTrustDomainInfoData di in trust.KnownDomains)
                         {
                             if (!String.IsNullOrEmpty(di.Sid) && new SecurityIdentifier(di.Sid) == domainSid)
                             {
@@ -1154,285 +1274,48 @@ namespace PingCastle.Healthcheck
             return output;
         }
 
-		private void GeneratePrivilegedGroupAndPermissionsData(ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
-		{
-			var generator = new ReportGenerator();
-			generator.PerformAnalyze(healthcheckData, domainInfo, adws, parameters);
-		}
-
-		// not used anymore
-        private void GeneratePrivilegedGroupData(ADDomainInfo domainInfo, ADWebService adws)
+        private void GeneratePrivilegedGroupAndPermissionsData(ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
         {
-            healthcheckData.PrivilegedGroups = new List<HealthCheckGroupData>();
-            healthcheckData.AllPrivilegedMembers = new List<HealthCheckGroupMemberData>();
+            var generator = new ReportGenerator();
+            generator.PerformAnalyze(healthcheckData, domainInfo, adws, parameters);
+            // compute other analyses
+            // distribution
+            healthcheckData.PrivilegedDistributionLastLogon = new List<HealthcheckPwdDistributionData>();
+            healthcheckData.PrivilegedDistributionPwdLastSet = new List<HealthcheckPwdDistributionData>();
 
-            // this is the list of group to analyze
-            KeyValuePair<string, string>[] privilegedGroups = new KeyValuePair<string, string>[]{
-                new KeyValuePair<string, string>("S-1-5-32-544","Administrators"),
-                new KeyValuePair<string, string>("S-1-5-32-548","Account Operators"),
-                new KeyValuePair<string, string>("S-1-5-32-549","Server Operators"),
-                new KeyValuePair<string, string>("S-1-5-32-550","Print Operators"),
-                new KeyValuePair<string, string>("S-1-5-32-551","Backup Operators"),
-                new KeyValuePair<string, string>("S-1-5-32-569","Crypto Operators"),
-                new KeyValuePair<string, string>(domainInfo.DomainSid + "-512","Domain Admins"),
-                new KeyValuePair<string, string>(domainInfo.DomainSid + "-519","Enterprise Admins"),
-                new KeyValuePair<string, string>(domainInfo.DomainSid + "-518","Schema Admins"),
-                new KeyValuePair<string, string>(domainInfo.DomainSid + "-517","Cert Publishers"),
-				new KeyValuePair<string, string>(domainInfo.DomainSid + "-526","Key Admins"),
-				new KeyValuePair<string, string>(domainInfo.DomainSid + "-527","Enterprise Key Admins"),
-            };
-
-			// adding Dns Admin
-			// cf https://technet.microsoft.com/en-us/library/dd187148.aspx
-			// and https://medium.com/@esnesenon/feature-not-bug-dnsadmin-to-dc-compromise-in-one-line-a0f779b8dc83
-			string[] properties = new string[] {
-                        "name",
-						"objectSid"
-            };
-			bool dnsAdminFound = false;
-			WorkOnReturnedObjectByADWS callback =
-				(ADItem x) =>
-				{
-					var temp = new List<KeyValuePair<string, string>>(privilegedGroups);
-					temp.Add(new KeyValuePair<string, string>(x.ObjectSid.Value, "Dns Admins"));
-					privilegedGroups = temp.ToArray();
-					dnsAdminFound = true;
-				};
-			// we do a one level search just case the group is in the default position
-			adws.Enumerate("CN=Users," + domainInfo.DefaultNamingContext, "(&(objectClass=group)(description=DNS Administrators Group))", properties, callback, "OneLevel");
-			if (!dnsAdminFound)
-			{
-				// then full tree. This is an optimization for LDAP request
-				adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=group)(description=DNS Administrators Group))", properties, callback);
-			}
-
-            Dictionary<string, HealthCheckGroupMemberData> allMembers = new Dictionary<string, HealthCheckGroupMemberData>();
-            foreach (KeyValuePair<string, string> privilegedGroup in privilegedGroups)
+            var pwdDistribution = new Dictionary<int, int>();
+            var logonDistribution = new Dictionary<int, int>();
+            foreach (var user in healthcheckData.AllPrivilegedMembers)
             {
-                Trace.WriteLine("Working on group " + privilegedGroup.Value);
-                Dictionary<string, ADItem> members = new Dictionary<string, ADItem>();
-                List<string> knownItems = new List<string>();
-                
-                if (GetGroupMembers(domainInfo, adws, privilegedGroup.Key, members, knownItems, 0))
+                if (user.IsEnabled)
                 {
-                    HealthCheckGroupData data = AnalyzeGroupData(domainInfo, privilegedGroup.Value, members);
-                    healthcheckData.PrivilegedGroups.Add(data);
-                    foreach (HealthCheckGroupMemberData member in data.Members)
                     {
-                        if (!allMembers.ContainsKey(member.DistinguishedName))
-                        {
-                            allMembers.Add(member.DistinguishedName, member);
-                        }
+                        var i = ConvertDateToKey(user.PwdLastSet == DateTime.MinValue ? user.Created : user.PwdLastSet);
+
+                        if (pwdDistribution.ContainsKey(i))
+                            pwdDistribution[i]++;
+                        else
+                            pwdDistribution[i] = 1;
+                    }
+                    if (user.LastLogonTimestamp != DateTime.MinValue)
+                    {
+                        var i = ConvertDateToKey(user.LastLogonTimestamp);
+
+                        if (logonDistribution.ContainsKey(i))
+                            logonDistribution[i]++;
+                        else
+                            logonDistribution[i] = 1;
                     }
                 }
             }
-            foreach (HealthCheckGroupMemberData member in allMembers.Values)
+            foreach (var p in logonDistribution)
             {
-                healthcheckData.AllPrivilegedMembers.Add(member);
+                healthcheckData.PrivilegedDistributionLastLogon.Add(new HealthcheckPwdDistributionData() { HigherBound = p.Key, Value = p.Value });
             }
-        }
-
-        private HealthCheckGroupData AnalyzeGroupData(ADDomainInfo domainInfo, string groupName, Dictionary<string, ADItem> members)
-        {
-            HealthCheckGroupData data = new HealthCheckGroupData();
-            data.GroupName = groupName;
-            data.Members = new List<HealthCheckGroupMemberData>();
-            foreach (ADItem x in members.Values)
+            foreach (var p in pwdDistribution)
             {
-                // avoid computer included in the "cert publisher" group
-                if (x.Class == "computer")
-                    continue;
-                data.NumberOfMember++;
-                HealthCheckGroupMemberData member = new HealthCheckGroupMemberData();
-                data.Members.Add(member);
-                member.DistinguishedName = x.DistinguishedName;
-                // special case for foreignsecurityprincipals
-                if (x.Class != "user")
-                {
-                    data.NumberOfExternalMember++;
-                    member.IsExternal = true;
-                    member.Name = x.Name;
-                    if (x.Name.StartsWith("S-1-", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        // try to solve the SID
-                        member.Name = NativeMethods.ConvertSIDToName(x.Name, domainInfo.DnsHostName);
-                    }
-                }
-                else
-                {
-                    // analyse useraccountcontrol
-                    member.Name = x.SAMAccountName;
-                    member.PwdLastSet = x.PwdLastSet;
-                    member.LastLogonTimestamp = x.LastLogonTimestamp;
-					if ((x.UserAccountControl & 0x00000002) != 0)
-						data.NumberOfMemberDisabled++;
-					else
-					{
-						data.NumberOfMemberEnabled++;
-						member.IsEnabled = true;
-						// last login since 6 months
-						if (x.LastLogonTimestamp.AddDays(6 * 31) > DateTime.Now)
-						{
-							data.NumberOfMemberActive++;
-							member.IsActive = true;
-						}
-						else
-							data.NumberOfMemberInactive++;
-						if (x.ServicePrincipalName != null && x.ServicePrincipalName.Length > 0)
-						{
-							member.IsService = true;
-							data.NumberOfServiceAccount++;
-						}
-						if ((x.UserAccountControl & 0x00000010) != 0)
-						{
-							member.IsLocked = true;
-							data.NumberOfMemberLocked++;
-						}
-						if ((x.UserAccountControl & 0x00010000) != 0)
-						{
-							data.NumberOfMemberPwdNeverExpires++;
-							member.DoesPwdNeverExpires = true;
-						}
-						if ((x.UserAccountControl & 0x00000020) != 0)
-							data.NumberOfMemberPwdNotRequired++;
-						// this account is sensitive and cannot be delegated
-						if ((x.UserAccountControl & 0x100000) == 0)
-						{
-							data.NumberOfMemberCanBeDelegated++;
-							member.CanBeDelegated = true;
-						}
-						if ((x.UserAccountControl & 0x40000) != 0)
-						{
-							data.NumberOfSmartCardRequired++;
-							member.SmartCardRequired = true;
-						}
-					}
-                }
+                healthcheckData.PrivilegedDistributionPwdLastSet.Add(new HealthcheckPwdDistributionData() { HigherBound = p.Key, Value = p.Value });
             }
-            return data;
-        }
-
-        // this function is used instead of Get-ADGroupMember because this function doesn't handle ForeignSecurityPrincipals
-        // this function should avoid calling ws-enumerate in the middle of a ws-enumerate operation to avoid the limit of 5 ws-enumeration handles
-        private bool GetGroupMembers(ADDomainInfo domainInfo, ADWebService adws, string dataToSearch, Dictionary<string, ADItem> output, List<string> knownItems, int searchType)
-        {
-            // knownItems is here to avoid a group1 -> group2 -> group1 -> group2 loop
-            if (knownItems.Contains(dataToSearch))
-                return false;
-            knownItems.Add(dataToSearch);
-            string[] properties = new string[] {
-                        "distinguishedName",
-                        "objectSid",
-                        "member",
-                        "name",
-                        "userAccountControl",
-                        "lastLogonTimestamp",
-                        "pwdLastSet",
-                        "sAMAccountName",
-                        "objectClass",
-						"servicePrincipalName",
-						"primaryGroupID",
-            };
-            bool IsObjectFound = false;
-            List<string> FutureDataToSearch = new List<string>();
-			List<int> PrimaryGroupIDToSearch = new List<int>();
-            WorkOnReturnedObjectByADWS callback =
-                (ADItem x) =>
-                {
-                    IsObjectFound = true;
-                    if (output.ContainsKey(x.DistinguishedName))
-                        return;
-
-                    // mapping using primarygroup / sidhistory is ignored on purpose
-                    // (checked on the user section)
-                    if (x.Member != null)
-                    {
-                        foreach (string member in x.Member)
-                        {
-                            // queue search
-                            FutureDataToSearch.Add(member);
-                        }
-                    }
-					if (x.Class != "group")
-					{
-						output.Add(x.DistinguishedName, x);
-					}
-					else
-					{
-						if (!x.ObjectSid.IsWellKnown(WellKnownSidType.AccountDomainUsersSid) && !x.ObjectSid.IsWellKnown(WellKnownSidType.AccountComputersSid))
-						{
-							string sid = x.ObjectSid.Value;
-							if (sid.StartsWith(domainInfo.DomainSid.Value, StringComparison.OrdinalIgnoreCase))
-							{
-								int rid = int.Parse(sid.Substring(sid.LastIndexOf('-') + 1));
-								switch (rid)
-								{
-									default:
-										PrimaryGroupIDToSearch.Add(rid);
-										break;
-								}
-							}
-						}
-					}
-                }
-            ;
-            string ldapSearch;
-            switch (searchType)
-            {
-                case 0:
-                    ldapSearch = "(objectSid=" + ADConnection.EncodeSidToString(dataToSearch) + ")";
-                    break;
-				case 1:
-                default:
-					ldapSearch = "(distinguishedName=" + ADConnection.EscapeLDAP(dataToSearch) + ")";
-                    break;
-				case 2:
-					ldapSearch = "(primaryGroupId=" + dataToSearch + ")";
-					break;
-            }
-            adws.Enumerate(domainInfo.DefaultNamingContext, ldapSearch, properties, callback);
-            // work on queued items
-            foreach (string currentDataToSearch in FutureDataToSearch)
-            {
-                if (!output.ContainsKey(currentDataToSearch))
-                {
-                    // the item can refer to another domain of the forest
-                    if (IsDCMatchDomain(currentDataToSearch, domainInfo.DefaultNamingContext))
-                    {
-                        GetGroupMembers(domainInfo, adws, currentDataToSearch, output, knownItems, 1);
-                    }
-                    else
-                    {
-                        ADItem x = new ADItem();
-                        x.DistinguishedName = currentDataToSearch;
-                        x.Name = GetDisplayName(currentDataToSearch);
-                        output.Add(x.DistinguishedName, x);
-                    }
-                }
-            }
-			foreach (var rid in PrimaryGroupIDToSearch)
-			{
-				GetGroupMembers(domainInfo, adws, rid.ToString(), output, knownItems, 2);
-			}
-            return IsObjectFound;
-        }
-
-        Regex re = new Regex(@"^CN=(?<cn>.+?)(?<!\\),(?<ou>(?:(?:OU|CN).+?(?<!\\),)*(?<dc>DC.+?))$");
-
-        private bool IsDCMatchDomain(string dn, string dc)
-        {
-            Match m = re.Match(dn);
-            if (!m.Success)
-                return false;
-            return m.Groups[3].Value.Equals(dc, StringComparison.InvariantCultureIgnoreCase);
-        }
-
-        private string GetDisplayName(string dn)
-        {
-            Match m = re.Match(dn);
-            if (!m.Success)
-                return dn;
-            return m.Groups[1].Value;
         }
 
         private void GenerateDelegationData(ADDomainInfo domainInfo, ADWebService adws)
@@ -1527,6 +1410,14 @@ namespace PingCastle.Healthcheck
 
 		private void InspectDelegation(ADDomainInfo domainInfo, ADWebService adws)
 		{
+            string[] propertiesLaps = new string[] { "schemaIDGUID" };
+            // note: the LDAP request does not contain ms-MCS-AdmPwd because in the old time, MS consultant was installing customized version of the attriute, * being replaced by the company name
+            // check the oid instead ? (which was the same even if the attribute name was not)
+            adws.Enumerate(domainInfo.SchemaNamingContext, "(name=ms-*-AdmPwd)", propertiesLaps, (ADItem aditem) =>
+            {
+                ReadGuidsControlProperties.Add(new KeyValuePair<Guid,string>(aditem.SchemaIDGUID, "READ_PROP_ms-mcs-admpwd"));
+            }, "OneLevel");
+
 			string[] properties = new string[] {
 						"distinguishedName",
 						"name",
@@ -1537,7 +1428,7 @@ namespace PingCastle.Healthcheck
 				(ADItem x) =>
 				{
 					Dictionary<string, string> permissions = new Dictionary<string, string>();
-					FilterDelegation(x,
+                    FilterDelegation(x,
 						(SecurityIdentifier sid, string right)
 							=>
 						{
@@ -1615,10 +1506,12 @@ namespace PingCastle.Healthcheck
                         new KeyValuePair<Guid, string>(new Guid("bc0ac240-79a9-11d0-9020-00c04fc2d4cf"),"WRITE_PROPSET_MEMBERSHIP"),
                     };
 
-        static KeyValuePair<Guid, string>[] GuidsControlProperties = new KeyValuePair<Guid, string>[] { 
+        List<KeyValuePair<Guid, string>> GuidsControlProperties = new List<KeyValuePair<Guid, string>>{ 
                         new KeyValuePair<Guid, string>(new Guid("bf9679c0-0de6-11d0-a285-00aa003049e2"),"WRITE_PROP_MEMBER"),
                         new KeyValuePair<Guid, string>(new Guid("f30e3bbe-9ff0-11d1-b603-0000f80367c1"),"WRITE_PROP_GPLINK"),
                         new KeyValuePair<Guid, string>(new Guid("f30e3bc1-9ff0-11d0-b603-0000f80367c1"),"WRITE_PROP_GPC_FILE_SYS_PATH"),
+                    };
+        List<KeyValuePair<Guid, string>> ReadGuidsControlProperties = new List<KeyValuePair<Guid, string>>{ 
                     };
         static KeyValuePair<Guid, string>[] GuidsControlPropertiesSets = new KeyValuePair<Guid, string>[] { 
                         new KeyValuePair<Guid, string>(new Guid("bf9679c0-0de6-11d0-a285-00aa003049e2"),"VAL_WRITE_SELF_MEMBERSHIP"),
@@ -1768,6 +1661,17 @@ namespace PingCastle.Healthcheck
                             if (controlpropertyset.Key == accessrule.ObjectType)
                             {
                                 gotDelegation((SecurityIdentifier)accessrule.IdentityReference, controlpropertyset.Value);
+                            }
+                        }
+                    }
+                    // ADS_RIGHT_DS_READ_PROP
+                    if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.ReadProperty) == ActiveDirectoryRights.ReadProperty)
+                    {
+                        foreach (KeyValuePair<Guid, string> controlproperty in ReadGuidsControlProperties)
+                        {
+                            if (controlproperty.Key == accessrule.ObjectType)
+                            {
+                                gotDelegation((SecurityIdentifier)accessrule.IdentityReference, controlproperty.Value);
                             }
                         }
                     }
@@ -2000,16 +1904,23 @@ namespace PingCastle.Healthcheck
 						healthcheckData.GPPFileDeployed.Add(file);
 						if (File.Exists(file.FileName))
 						{
-							var ac = File.GetAccessControl(file.FileName);
-							foreach (var value in AnalyzeFileSystemSecurity(ac, true))
-							{
-								file.Delegation.Add(new HealthcheckScriptDelegationData()
-								{
-									Account = value.Value,
-									Right = value.Key,
-								}
-								);
-							}
+                            try
+                            {
+                                var ac = File.GetAccessControl(file.FileName);
+                                foreach (var value in AnalyzeFileSystemSecurity(ac, true))
+                                {
+                                    file.Delegation.Add(new HealthcheckScriptDelegationData()
+                                    {
+                                        Account = value.Value,
+                                        Right = value.Key,
+                                    }
+                                    );
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Trace.WriteLine("Unable to analyze " + file.FileName + " " + ex.Message);
+                            }
 						}
 					}
 
@@ -2086,6 +1997,12 @@ namespace PingCastle.Healthcheck
                 }
 				step = "check GPO permissions";
 				ExtractGPODelegation(directoryInfo.FullName, GPO);
+                step = "check GPO settings";
+                path = directoryInfo.FullName + @"\Machine\Preferences\Registry\Registry.xml";
+                if (File.Exists(path))
+                {
+                    ExtractGPOSettingsFromRegistryXml(path, GPO);
+                }
 
             }
             catch (UnauthorizedAccessException ex)
@@ -2116,7 +2033,7 @@ namespace PingCastle.Healthcheck
 		{
 			XmlDocument doc = new XmlDocument();
 			doc.Load(path);
-			XmlNodeList nodeList = doc.SelectNodes(@"/RegistrySettings/Registry[@name=""DefaultPassword""]");
+			XmlNodeList nodeList = doc.SelectNodes(@"//Registry[@name=""DefaultPassword""]");
 			foreach (XmlNode node in nodeList)
 			{
 				XmlNode password = node.SelectSingleNode("Properties/@value");
@@ -2131,7 +2048,7 @@ namespace PingCastle.Healthcheck
 				PasswordData.GPOId = (GPO == null ? null : GPO.InternalName);
 				PasswordData.Password = password.Value;
 
-				XmlNode userNameNode = node.SelectSingleNode(@"/RegistrySettings/Registry[@name=""DefaultUserName""]/Properties/@value");
+				XmlNode userNameNode = node.SelectSingleNode(@"//Registry[@name=""DefaultUserName""]/Properties/@value");
 				PasswordData.UserName = (userNameNode != null ? userNameNode.Value : string.Empty);
 
 				XmlNode changed = node.SelectSingleNode("@changed");
@@ -2152,6 +2069,38 @@ namespace PingCastle.Healthcheck
 				}
 			}
 		}
+
+        private void ExtractGPOSettingsFromRegistryXml(string path, GPO GPO)
+        {
+            XmlDocument doc = new XmlDocument();
+			doc.Load(path);
+            XmlNodeList nodeList = doc.SelectNodes(@"//Registry/Properties[@name=""SrvsvcSessionInfo""][@key=""SYSTEM\CurrentControlSet\Services\LanmanServer\DefaultSecurity""]");
+            if (nodeList.Count > 0)
+            {
+                GPPSecurityPolicy SecurityPolicy = null;
+                foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
+                {
+                    if (policy.GPOId == GPO.InternalName)
+                    {
+                        SecurityPolicy = policy;
+                        break;
+                    }
+                }
+                if (SecurityPolicy == null)
+                {
+                    SecurityPolicy = new GPPSecurityPolicy();
+                    SecurityPolicy.GPOName = GPO.DisplayName;
+                    SecurityPolicy.GPOId = GPO.InternalName;
+
+                    lock (healthcheckData.GPOLsaPolicy)
+                    {
+                        healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
+                    }
+                    SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
+                }
+                SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("SrvsvcSessionInfo", 1));
+            }
+        }
 
 		private void ExtractRegistryPolInfo(ADDomainInfo domainInfo, DirectoryInfo directoryInfo, GPO GPO)
         {
@@ -2363,7 +2312,7 @@ namespace PingCastle.Healthcheck
 						loginscript.Action = "Logon";
 						// this is bad, I'm assuming that the file name doesn't contain any space which is wrong.
 						// but a real command line parsing will bring more anomalies.
-						var filePart = filename.Split(' ');
+                        var filePart = NativeMethods.SplitArgs(filename);
 						loginscript.Source = "Registry.pol (" + (gpotarget == "Machine" ? "Computer" : "User") + " section)";
 						loginscript.CommandLine = filePart[0];
 						if (loginscript.CommandLine.StartsWith("\\\\"))
@@ -2372,7 +2321,12 @@ namespace PingCastle.Healthcheck
 						}
 						if (filePart.Length > 1)
 						{
-							loginscript.Parameters = filePart[1];
+                            for (int i = 1; i < filePart.Length; i++)
+                            {
+                                if (i > 1)
+                                    loginscript.Parameters += " ";
+                                loginscript.Parameters += filePart[i];
+                            }
 						}
 						lock (healthcheckData.GPOLoginScript)
 						{
@@ -3393,7 +3347,7 @@ namespace PingCastle.Healthcheck
 					healthcheckData.GPPPasswordPolicy.Add(PSO);
 					PSO.Properties = new List<GPPSecurityPolicyProperty>();
 					PSO.Properties.Add(new GPPSecurityPolicyProperty("MinimumPasswordAge", (int) (x.msDSMinimumPasswordAge / -864000000000)));
-					if (x.msDSMinimumPasswordAge == -9223372036854775808)
+                    if (x.msDSMaximumPasswordAge == -9223372036854775808)
 						PSO.Properties.Add(new GPPSecurityPolicyProperty("MaximumPasswordAge",-1));
 					else
 						PSO.Properties.Add(new GPPSecurityPolicyProperty("MaximumPasswordAge", (int) (x.msDSMaximumPasswordAge / -864000000000)));
@@ -3458,12 +3412,20 @@ namespace PingCastle.Healthcheck
                         "sAMAccountName",
                         "whenCreated",
                         "lastLogonTimestamp",
+                        "replPropertyMetaData",
             };
 
             List<string> privilegedUser = new List<string>();
             foreach (var member in healthcheckData.AllPrivilegedMembers)
             {
                 privilegedUser.Add(member.DistinguishedName);
+            }
+            if (healthcheckData.ProtectedUsersNotPrivileged != null && healthcheckData.ProtectedUsersNotPrivileged.Members != null)
+            {
+                foreach (var member in healthcheckData.ProtectedUsersNotPrivileged.Members)
+                {
+                    privilegedUser.Add(member.DistinguishedName);
+                }
             }
 
             healthcheckData.AdminSDHolderNotOK = new List<HealthcheckAccountDetailData>();
@@ -3482,7 +3444,12 @@ namespace PingCastle.Healthcheck
 									return;
 							}
 						}
-                        healthcheckData.AdminSDHolderNotOK.Add(GetAccountDetail(x));
+                        var w = GetAccountDetail(x);
+                        if (x.ReplPropertyMetaData.ContainsKey(589974))
+                        {
+                            w.Event = x.ReplPropertyMetaData[589974].LastOriginatingChange;
+                        }
+                        healthcheckData.AdminSDHolderNotOK.Add(w);
                     }
                 };
 
@@ -3528,7 +3495,12 @@ namespace PingCastle.Healthcheck
                             if (member.Contains("S-1-5-7") || member.Contains("S-1-1-0"))
                             {
                                 healthcheckData.PreWindows2000AnonymousAccess = true;
-                                return;
+                                continue;
+                            }
+                            if (!member.StartsWith("CN=S-"))
+                            {
+                                healthcheckData.PreWindows2000NoDefault = true;
+                                continue;
                             }
                         }
                     }
@@ -3548,7 +3520,11 @@ namespace PingCastle.Healthcheck
                         {
                             healthcheckData.DsHeuristicsAnonymousAccess = true;
                         }
-						if (x.DSHeuristics.Length >= 16 && x.DSHeuristics.Substring(15, 1) != "0")
+                        if (x.DSHeuristics.Length >= 8 && x.DSHeuristics.Substring(7, 1) != "0")
+                        {
+                            healthcheckData.DsHeuristicsAllowAnonNSPI = true;
+                        }
+                        if (x.DSHeuristics.Length >= 16 && x.DSHeuristics.Substring(15, 1) != "0")
 						{
 							healthcheckData.DsHeuristicsAdminSDExMaskModified = true;
 						}
@@ -3628,6 +3604,36 @@ namespace PingCastle.Healthcheck
 					}
 				};
 			adws.Enumerate(domainInfo.DefaultNamingContext, "(objectClass=*)", ExchangePrivEscProperties, callbackExchangePrivEscProperties, "Base");
+
+            // adding the domain sid
+            string[] propertiesUnixPassword = new string[] {
+                        "distinguishedName",
+                        "name",
+                        "sAMAccountName",
+                        "whenCreated",
+                        "lastLogonTimestamp",
+                        "replPropertyMetaData",
+            };
+
+            healthcheckData.UnixPasswordUsers = new List<HealthcheckAccountDetailData>();
+
+            WorkOnReturnedObjectByADWS callbackUnixPassword =
+                (ADItem x) =>
+                {
+                    var w = GetAccountDetail(x);
+                    if (x.ReplPropertyMetaData.ContainsKey(35)) // userPassword
+                    {
+                        w.Event = x.ReplPropertyMetaData[35].LastOriginatingChange;
+                    }
+                    if (x.ReplPropertyMetaData.ContainsKey(591734)) // unixUserPassword
+                    {
+                        w.Event = x.ReplPropertyMetaData[591734].LastOriginatingChange;
+                    }
+                    healthcheckData.UnixPasswordUsers.Add(w);
+                };
+            adws.Enumerate(domainInfo.DefaultNamingContext, "(|(unixUserPassword=*)(userPassword=*))", propertiesUnixPassword, callbackUnixPassword);
+            healthcheckData.UnixPasswordUsersCount = healthcheckData.UnixPasswordUsers.Count;
+
         }
 
         private void GenerateDomainControllerData(ADDomainInfo domainInfo)
@@ -3826,6 +3832,169 @@ namespace PingCastle.Healthcheck
             adws.Enumerate(domainInfo.ConfigurationNamingContext, "(objectClass=site)", properties, callback);
         }
 
+        private void GenerateRODCData(ADDomainInfo domainInfo, ADWebService adws)
+        {
+            
+            string[] properties = new string[] { "distinguishedName", "member" };
+
+            healthcheckData.DeniedRODCPasswordReplicationGroup = new List<string>();
+            var members = new List<string>();
+            adws.Enumerate(domainInfo.DefaultNamingContext, "(objectSid=" + ADConnection.EncodeSidToString(domainInfo.DomainSid.Value + "-572") + ")", properties,
+                (ADItem aditem) =>
+                {
+                    Trace.WriteLine("CN=Denied RODC Password Replication Group found");
+                    if (aditem.Member != null)
+                    {
+                        foreach (var member in aditem.Member)
+                        {
+                            members.Add(member);
+                        }
+                    }
+                }
+            );
+
+            string[] properties2 = new string[] { "objectSid" };
+            foreach (var member in members)
+            {
+                bool found = false;
+                adws.Enumerate(domainInfo.DefaultNamingContext,
+                                            "(distinguishedName=" + member + ")",
+                                            properties2, 
+                                            (ADItem aditem) =>
+                                                {
+                                                    found = true;
+                                                    healthcheckData.DeniedRODCPasswordReplicationGroup.Add(aditem.ObjectSid.Value);
+                                                }
+                                            );
+                if (!found)
+                {
+                    healthcheckData.DeniedRODCPasswordReplicationGroup.Add(member);
+                }
+            }
+
+            healthcheckData.AllowedRODCPasswordReplicationGroup = new List<string>();
+            adws.Enumerate(domainInfo.DefaultNamingContext, "(objectSid=" + ADConnection.EncodeSidToString(domainInfo.DomainSid.Value + "-571") + ")", properties,
+                (ADItem aditem) =>
+                {
+                    Trace.WriteLine("CN=Allowed RODC Password Replication Group found");
+                    if (aditem.Member != null)
+                    {
+                        foreach (var member in aditem.Member)
+                        {
+                            healthcheckData.AllowedRODCPasswordReplicationGroup.Add(member);
+                        }
+                    }
+                }
+            );
+
+
+            var msDSRevealOnDemandGroup = new Dictionary<string, List<string>>();
+            var msDSNeverRevealGroup = new Dictionary<string, List<string>>();
+
+            var sidResolution = new Dictionary<string, string>();
+
+            adws.Enumerate(domainInfo.DefaultNamingContext, "(primaryGroupID=521)", new string[] { "distinguishedName", "msDS-RevealedUsers", "msDS-RevealOnDemandGroup", "msDS-NeverRevealGroup" },
+                (ADItem aditem) =>
+                {
+                    HealthcheckDomainController dc = null;
+                    foreach (var d in healthcheckData.DomainControllers)
+                    {
+                        if (d.DistinguishedName == aditem.DistinguishedName)
+                        {
+                            dc = d;
+                            break;
+                        }
+                    }
+                    if (dc == null)
+                        return;
+                    dc.RODC = true;
+
+                    dc.msDSRevealedUsers = new List<string>();
+                    if (aditem.msDSRevealedUsers != null)
+                    {
+                        foreach (var u in aditem.msDSRevealedUsers)
+                        {
+                            var i = u.IndexOf(':');
+                            var j = u.IndexOf(':', i + 1);
+                            var k = u.IndexOf(':', j + 1);
+                            var v = u.Substring(k + 1);
+                            if (!dc.msDSRevealedUsers.Contains(v))
+                                dc.msDSRevealedUsers.Add(v);
+                        }
+                    }
+                    if (aditem.msDSRevealOnDemandGroup != null)
+                        msDSRevealOnDemandGroup[aditem.DistinguishedName] = new List<string>(aditem.msDSRevealOnDemandGroup);
+                    if (aditem.msDSNeverRevealGroup != null)
+                        msDSNeverRevealGroup[aditem.DistinguishedName] = new List<string>(aditem.msDSNeverRevealGroup);
+                }
+            );
+            foreach (var v in msDSRevealOnDemandGroup.Values)
+                foreach (var w in v)
+                {
+                    if (!sidResolution.ContainsKey(w))
+                        sidResolution[w] = null;
+                }
+            foreach (var v in msDSNeverRevealGroup.Values)
+                foreach (var w in v)
+                {
+                    if (!sidResolution.ContainsKey(w))
+                        sidResolution[w] = null;
+                }
+            foreach (var dn in new List<string>(sidResolution.Keys))
+            {
+                adws.Enumerate(domainInfo.DefaultNamingContext,
+                                            "(distinguishedName=" + dn + ")",
+                                            properties2,
+                                            (ADItem aditem) =>
+                                            {
+                                                sidResolution[dn] = aditem.ObjectSid.Value;
+                                            }
+                                            );
+            }
+            foreach (var dc in healthcheckData.DomainControllers)
+            {
+                if (msDSRevealOnDemandGroup.ContainsKey(dc.DistinguishedName))
+                {
+                    dc.msDSRevealOnDemandGroup = new List<string>();
+                    foreach (var u in msDSRevealOnDemandGroup[dc.DistinguishedName])
+                    {
+                        if (sidResolution.ContainsKey(u))
+                            dc.msDSRevealOnDemandGroup.Add(sidResolution[u]);
+                    }
+                }
+                if (msDSNeverRevealGroup.ContainsKey(dc.DistinguishedName))
+                {
+                    dc.msDSNeverRevealGroup = new List<string>();
+                    foreach (var u in msDSNeverRevealGroup[dc.DistinguishedName])
+                    {
+                        if (sidResolution.ContainsKey(u))
+                            dc.msDSNeverRevealGroup.Add(sidResolution[u]);
+                    }
+                }
+            }
+
+
+            //Search for RODC without Readonly flag on sysvol
+            adws.Enumerate(domainInfo.DefaultNamingContext,
+                                            "(&(msDFSR-ReadOnly=FALSE)(cn=SYSVOL Subscription))",
+                                            new string[] { "distinguishedName"},
+                                            (ADItem aditem) =>
+                                            {
+                                                foreach (var dc in healthcheckData.DomainControllers)
+                                                {
+                                                    if (aditem.DistinguishedName.EndsWith(dc.DistinguishedName, StringComparison.OrdinalIgnoreCase))
+                                                    {
+                                                        if (dc.RODC)
+                                                        {
+                                                            dc.SYSVOLOverwrite = true;
+                                                        }
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            );
+        }
+
 		// this function has been designed to avoid LDAP query reentrance (to avoid the 5 connection limit)
 		private void GenerateFSMOData(ADDomainInfo domainInfo, ADWebService adws)
 		{
@@ -3895,5 +4064,91 @@ namespace PingCastle.Healthcheck
 			}
 		}
 
+        private void GenerateCheckFRS(ADDomainInfo domainInfo, ADWebService adws)
+        {
+            adws.Enumerate("CN=File Replication Service,CN=System," + domainInfo.DefaultNamingContext, "(objectClass=*)", new string[] { "distinguishedName" },
+                (ADItem x) =>
+                {
+                    if (x.DistinguishedName.Contains(",CN=Domain System Volume (SYSVOL share),"))
+                    {
+                        healthcheckData.UsingNTFRSForSYSVOL = true;
+                    }
+                }
+                );
+        }
+
+        private void GenerateCheckDCConfig(ADDomainInfo domainInfo, ADWebService adws)
+        {
+            foreach (var dc in healthcheckData.DomainControllers)
+            {
+                string dn = null;
+                adws.Enumerate("CN=Sites," + domainInfo.ConfigurationNamingContext, "(&(ServerReference=" + dc.DistinguishedName + ")(objectClass=server))", new string[] { "distinguishedName" },
+                    (ADItem x) =>
+                    {
+                        dn = x.DistinguishedName;
+                    }
+                    );
+                if (string.IsNullOrEmpty(dn))
+                {
+                    dc.RegistrationProblem += (string.IsNullOrEmpty(dc.RegistrationProblem) ? null : " ") + "NoConfiguration";
+                }
+                else
+                {
+                    bool NTDSNotOK = false;
+                    adws.Enumerate("CN=Sites," + domainInfo.ConfigurationNamingContext, "(DistinguishedName=CN=NTDS Settings," + dn + ")", new string[] { "objectClass" },
+                    (ADItem x) =>
+                    {
+                        if (string.Equals(x.Class, "nTDSDSA", StringComparison.OrdinalIgnoreCase) || string.Equals(x.Class, "nTDSDSARO", StringComparison.OrdinalIgnoreCase))
+                        {
+                            NTDSNotOK = true;
+                        }
+                    }
+                    );
+                    if (!NTDSNotOK)
+                        dc.RegistrationProblem += (string.IsNullOrEmpty(dc.RegistrationProblem) ? null : " ") + "NoNTDS";
+                }
+
+            }
+        }
+
+        private void GenerateDnsData(ADDomainInfo domainInfo, ADWebService adws)
+        {
+            if (!domainInfo.NamingContexts.Contains("DC=DomainDnsZones," + domainInfo.DefaultNamingContext))
+            {
+                Trace.WriteLine("No naming context for DC=DomainDnsZones," + domainInfo.DefaultNamingContext);
+                return;
+            }
+
+            healthcheckData.DnsZones = new List<HealthcheckDnsZones>();
+            var dn = "CN=MicrosoftDNS,DC=DomainDnsZones," + domainInfo.DefaultNamingContext;
+            try
+            {
+                adws.Enumerate(dn, "(objectClass=dnsZone)", new string[] { "distinguishedName", "dnsProperty", "name" },
+                    (ADItem x) =>
+                    {
+                        var o = new HealthcheckDnsZones();
+                        o.name = x.Name;
+                        foreach (var p in x.dnsProperty)
+                        {
+                            if (p.PropertyId == ADItem.DnsPropertyId.DSPROPERTY_ZONE_ALLOW_UPDATE)
+                            {
+                                if (p.Data.Length == 1 && p.Data[0] == 1)
+                                {
+                                    o.InsecureUpdate = true;
+                                    break;
+                                }
+                            }
+                        }
+                        healthcheckData.DnsZones.Add(o);
+                    }
+                    );
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("Unable to get Dns Data");
+                Trace.WriteLine(ex.Message);
+                Trace.WriteLine(ex.StackTrace);
+            }
+        }
     }
 }

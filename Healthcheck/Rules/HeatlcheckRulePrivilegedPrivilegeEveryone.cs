@@ -11,10 +11,11 @@ using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("P-PrivilegeEveryone", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+	[RuleModel("P-PrivilegeEveryone", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.PrivilegeControl)]
 	[RuleComputation(RuleComputationType.PerDiscover, 15)]
 	[RuleANSSI("R18", "subsubsection.3.3.2")]
 	[RuleIntroducedIn(2, 6)]
+    [RuleMaturityLevel(2)]
 	public class HeatlcheckRulePrivilegedPrivilegeEveryone : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

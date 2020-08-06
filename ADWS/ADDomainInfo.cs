@@ -55,6 +55,7 @@ namespace PingCastle.ADWS
 		public int SchemaVersion { get; set; }
 		public int SchemaInternalVersion { get; set; }
 		public DateTime SchemaLastChanged { get; set; }
+        public List<string> NamingContexts { get; set; }
 
         private static string StripNamespace(string input)
         {
@@ -86,6 +87,18 @@ namespace PingCastle.ADWS
             return 0;
         }
 
+        private static string[] ExtractStringArrayValue(XmlNode item)
+        {
+            XmlNode child = item.FirstChild;
+            List<string> list = new List<string>();
+            while (child != null)
+            {
+                list.Add(child.InnerText);
+                child = child.NextSibling;
+            }
+            return list.ToArray();
+        }
+
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         public static ADDomainInfo Create(DirectoryEntry rootDSE)
         {
@@ -115,6 +128,12 @@ namespace PingCastle.ADWS
                 {
                     Trace.WriteLine(control);
                 }
+            Trace.WriteLine("supportedLDAPVersion: ");
+            info.NamingContexts = new List<string>();
+            foreach (var nc in (object[])rootDSE.Properties["namingContexts"].Value)
+            {
+                info.NamingContexts.Add((string)nc);
+            }
             return info;
         }
 
@@ -144,6 +163,9 @@ namespace PingCastle.ADWS
                         break;
                     case "netBIOSName":
                         info.NetBIOSName = ExtractStringValue(item);
+                        break;
+                    case "namingContexts":
+                        info.NamingContexts = new List<string>(ExtractStringArrayValue(item));
                         break;
                     case "rootDomainNamingContext":
                         info.RootDomainNamingContext = ExtractStringValue(item);

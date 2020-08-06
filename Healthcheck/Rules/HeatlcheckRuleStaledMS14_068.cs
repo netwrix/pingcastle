@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("S-Vuln-MS14-068", RiskRuleCategory.StaleObjects, RiskModelCategory.VulnerabilityManagement)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 100)]
 	[RuleCERTFR("CERTFR-2014-ALE-011")]
+    [RuleMaturityLevel(1)]
     public class HeatlcheckRuleStaledMS14_068 : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("P-OperatorsEmpty", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AdminControl)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
 	[RuleANSSI("R27", "subsection.3.5")]
+    [RuleMaturityLevel(3)]
 	public class HeatlcheckRulePrivilegedOperatorsEmpty : RuleBase<HealthcheckData>
 	{
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

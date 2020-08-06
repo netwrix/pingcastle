@@ -31,7 +31,7 @@ namespace PingCastle.Graph.Export
 		void AnalyzeGPO(string fileName);
 
 		void Initialize(IADConnection adws);
-		void InitializeDelegation(Dictionary<string, List<string>> delegations);
+		void InitializeDelegation(Dictionary<string, List<string>> delegations, List<string> protocolTransitionSid);
 	}
 
     public class RelationFactory : IRelationFactory
@@ -81,10 +81,12 @@ namespace PingCastle.Graph.Export
 
 		// mapping from msDS-AllowedToDelegateTo
 		Dictionary<string, List<string>> delegations;
+        List<string> protocolTransitionSid;
 
-		public void InitializeDelegation(Dictionary<string, List<string>> delegations)
+        public void InitializeDelegation(Dictionary<string, List<string>> delegations, List<string> protocolTransitionSid)
 		{
 			this.delegations = delegations;
+            this.protocolTransitionSid = protocolTransitionSid;
 		}
 
         public void AnalyzeADObject(ADItem aditem)
@@ -181,7 +183,14 @@ namespace PingCastle.Graph.Export
 				}
 				foreach (var item in sidDelegated)
 				{
-					Storage.InsertRelation(item, MappingType.Sid, aditem.DistinguishedName, MappingType.DistinguishedName, RelationType.msDS_Allowed_To_Delegate_To);
+                    if (protocolTransitionSid.Contains(item))
+                    {
+                        Storage.InsertRelation(item, MappingType.Sid, aditem.DistinguishedName, MappingType.DistinguishedName, RelationType.msDS_Allowed_To_Delegate_To_With_Protocol_Transition);
+                    }
+                    else
+                    {
+                        Storage.InsertRelation(item, MappingType.Sid, aditem.DistinguishedName, MappingType.DistinguishedName, RelationType.msDS_Allowed_To_Delegate_To);
+                    }
 				}
 			}
 			if (aditem.msDSAllowedToActOnBehalfOfOtherIdentity != null)
@@ -224,6 +233,14 @@ namespace PingCastle.Graph.Export
             }
         }
 
+        Guid userGuid = new Guid("bf967aba-0de6-11d0-a285-00aa003049e2");
+        Guid computerGuid = new Guid("bf967a86-0de6-11d0-a285-00aa003049e2");
+        Guid OUGuid = new Guid("bf967aa5-0de6-11d0-a285-00aa003049e2");
+        Guid groupGuid = new Guid("bf967a9c-0de6-11d0-a285-00aa003049e2");
+        Guid inetOrgGuid = new Guid("4828cc14-1437-45bc-9b07-ad6f015e5f28");
+        Guid mSAGuid = new Guid("ce206244-5827-4a86-ba1c-1c0c386c1b64");
+        Guid gMSAGuid = new Guid("7b8b558a-93a5-4af7-adca-c017e67f1057");
+
         private void InsertSecurityDescriptorRelation(ADItem aditem)
         {
 
@@ -237,6 +254,36 @@ namespace PingCastle.Graph.Export
                 // ignore audit / denied ace
                 if (accessrule.AccessControlType != AccessControlType.Allow)
                     continue;
+
+                RelationType restrictedObject = RelationType.container_hierarchy;
+                if ((accessrule.ObjectFlags & ObjectAceFlags.ObjectAceTypePresent) != 0)
+                {
+                    switch (accessrule.ObjectType.ToString().ToLowerInvariant())
+                    {
+                        case "4828cc14-1437-45bc-9b07-ad6f015e5f28": // inetorg
+                        case "bf967aba-0de6-11d0-a285-00aa003049e2": // user
+                            restrictedObject = RelationType.RestrictedToUser;
+                            break;
+                        case "bf967a86-0de6-11d0-a285-00aa003049e2":
+                            restrictedObject = RelationType.RestrictedToComputer;
+                            break;
+                        case "bf967aa5-0de6-11d0-a285-00aa003049e2":
+                            restrictedObject = RelationType.RestrictedToOU;
+                            break;
+                        case "bf967a9c-0de6-11d0-a285-00aa003049e2":
+                            restrictedObject = RelationType.RestrictedToGroup;
+                            break;
+                        case "ce206244-5827-4a86-ba1c-1c0c386c1b64":
+                        case "7b8b558a-93a5-4af7-adca-c017e67f1057":
+                            restrictedObject = RelationType.RestrictedToMsaOrGmsa;
+                            break;
+                        case "f30e3bc2-9ff0-11d1-b603-0000f80367c1":
+                            restrictedObject = RelationType.RestrictedToGpo;
+                            break;
+                        default:
+                            continue;
+                    }
+                }
 
                 // ADS_RIGHT_GENERIC_ALL
                 if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.GenericAll))
@@ -331,6 +378,10 @@ namespace PingCastle.Graph.Export
 							}
 						}
                     }
+                }
+                if (restrictedObject != RelationType.container_hierarchy && relationToAdd.ContainsKey(accessrule.IdentityReference.Value))
+                {
+                    IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, restrictedObject);
                 }
             }
             foreach (string target in relationToAdd.Keys)

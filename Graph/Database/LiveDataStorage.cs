@@ -181,10 +181,23 @@ namespace PingCastle.Graph.Database
 		
 		public int InsertUnknowNode(string name)
 		{
+            if (string.IsNullOrEmpty(name))
+                return -1;
+            if (name.Contains(",CN=ForeignSecurityPrincipals,DC="))
+            {
+                return InsertUnknownSidNode(name.Substring(3, name.IndexOf(',') - 3), name);
+            }
 			Node node = new Node();
 			node.Type = "unknown";
-			node.Shortname = name;
 			node.Dn = name;
+            {
+                Regex re = new Regex(@"^(?:OU|CN)=(?<cn>.+?)(?<!\\),(?<ou>(?:(?:OU|CN).+?(?<!\\),)*(?<dc>DC.+?))$");
+                Match m = re.Match(name);
+                if (!m.Success)
+                    node.Shortname = "<none>";
+                else
+                    node.Shortname = m.Groups[1].Value;
+            }
 			return CreateNode(node);
 		}
 
@@ -235,7 +248,7 @@ namespace PingCastle.Graph.Database
 			return CreateNode(node);
 		}
 
-		public int InsertUnknownSidNode(string Sid)
+		public int InsertUnknownSidNode(string Sid, string Dn = null)
 		{
 			string referencedDomain = null;
 			string ntaccount = null;
@@ -288,6 +301,7 @@ namespace PingCastle.Graph.Database
 			node.Sid = Sid;
 			node.Dn = node.Sid;
 			node.EveryoneLikeGroup = EveryoneLikeGroup;
+            node.Dn = Dn;
 			return CreateNode(node);
 		}
 

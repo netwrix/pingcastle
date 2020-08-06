@@ -22,6 +22,7 @@ namespace PingCastle.Graph.Reporting
 	public class GraphObjectReference
 	{
 		public Dictionary<CompromiseGraphDataTypology, List<GraphSingleObject>> Objects {get;set;}
+        public List<string> TechnicalObjects { get; set; }
 
 		public GraphObjectReference(ADDomainInfo data)
 		{
@@ -34,6 +35,7 @@ namespace PingCastle.Graph.Reporting
 					new GraphSingleObject("S-1-5-32-550","Print Operators", CompromiseGraphDataObjectRisk.Medium),
 					new GraphSingleObject("S-1-5-32-551","Backup Operators", CompromiseGraphDataObjectRisk.High),
 					new GraphSingleObject("S-1-5-32-569","Certificate Operators", CompromiseGraphDataObjectRisk.Medium),
+					new GraphSingleObject("S-1-5-32-552", "Replicator", CompromiseGraphDataObjectRisk.Medium),
 					new GraphSingleObject(data.DomainSid.Value + "-500","Administrator", CompromiseGraphDataObjectRisk.Critical),
 					new GraphSingleObject(data.DomainSid.Value + "-512","Domain Administrators", CompromiseGraphDataObjectRisk.Critical),
 					new GraphSingleObject(data.DomainSid.Value + "-517","Certificate Publishers"),
@@ -44,7 +46,7 @@ namespace PingCastle.Graph.Reporting
 				}},
 				{CompromiseGraphDataTypology.Infrastructure, new List<GraphSingleObject>(){
 					new GraphSingleObject(data.DomainSid.Value,"Domain Root", CompromiseGraphDataObjectRisk.Medium),
-					new GraphSingleObject(data.DomainSid.Value + "-498","Enterprise Read Only Domain Controllers"),
+                    new GraphSingleObject(data.DomainSid.Value + "-498","Enterprise Read Only Domain Controllers"),
 					new GraphSingleObject(data.DomainSid.Value + "-502","Krbtgt account", CompromiseGraphDataObjectRisk.Medium),
 					new GraphSingleObject(data.DomainSid.Value + "-516","Domain Controllers", CompromiseGraphDataObjectRisk.Critical),
 					new GraphSingleObject(data.DomainSid.Value + "-520","Group Policy Creator Owners", CompromiseGraphDataObjectRisk.Medium),
@@ -57,6 +59,7 @@ namespace PingCastle.Graph.Reporting
 				{CompromiseGraphDataTypology.UserDefined, new List<GraphSingleObject>(){
 				}},
 			};
+
 			foreach (var typology in Objects.Keys)
 			{
 				Objects[typology].Sort((GraphSingleObject a, GraphSingleObject b)
@@ -65,6 +68,8 @@ namespace PingCastle.Graph.Reporting
 						return String.Compare(a.Description, b.Description);
 					});
 			}
+            TechnicalObjects = new List<string>();
+            TechnicalObjects.Add(data.DomainSid.Value + "-525");
 		}
 	}
 

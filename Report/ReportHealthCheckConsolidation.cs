@@ -22,6 +22,7 @@ namespace PingCastle.Report
 		public string GenerateReportFile(PingCastleReportCollection<HealthcheckData> report, ADHealthCheckingLicense license, string filename)
 		{
 			Report = report;
+			Brand(license);
 			return GenerateReportFile(filename);
 		}
 
@@ -54,7 +55,7 @@ namespace PingCastle.Report
 $('table').not('.model_table').DataTable(
     {
         'paging': false,
-        'searching': false
+        'searching': true
     }
 );");
         }
@@ -238,6 +239,7 @@ $('table').not('.model_table').DataTable(
 			AddBeginTable();
 			AddHeaderText("Domain");
 			AddHeaderText("Domain Risk Level");
+			AddHeaderText("Maturity Level");
 			AddHeaderText("Stale objects");
 			AddHeaderText("Privileged accounts");
 			AddHeaderText("Trusts");
@@ -249,6 +251,7 @@ $('table').not('.model_table').DataTable(
 				AddBeginRow();
                 AddPrintDomain(data.Domain);
 				AddCellNumScore(data.GlobalScore);
+				AddCellNumScore(data.MaturityLevel);
 				AddCellNumScore(data.StaleObjectsScore);
 				AddCellNumScore(data.PrivilegiedGroupScore);
 				AddCellNumScore(data.TrustScore);
@@ -293,6 +296,13 @@ $('table').not('.model_table').DataTable(
 			{
 				AddCellText("Total");
 				AddCellNum(Report.Count);
+				AddCellText(null);
+				AddCellText(null);
+				AddCellText(null);
+				AddCellText(null);
+				AddCellText(null);
+				AddCellText(null);
+				AddCellText(null);
 			});
 
             AddBeginTable();
@@ -346,6 +356,8 @@ $('table').not('.model_table').DataTable(
             HealthcheckAccountData total = new HealthcheckAccountData();
             foreach (HealthcheckData data in Report)
             {
+                if (data.UserAccountData == null)
+                    continue;
                 total.Add(data.UserAccountData);
 				AddEndRow();
                 AddPrintDomain(data.Domain);
@@ -401,6 +413,8 @@ $('table').not('.model_table').DataTable(
             HealthcheckAccountData total = new HealthcheckAccountData();
             foreach (HealthcheckData data in Report)
             {
+                if (data.ComputerAccountData == null)
+                    continue;
                 total.Add(data.ComputerAccountData);
 				AddBeginRow();
 				AddPrintDomain(data.Domain);
@@ -486,7 +500,14 @@ $('table').not('.model_table').DataTable(
                             }
                         }
                     }
-                    AddCellNum(numberOfOccurence, true);
+					if (numberOfOccurence < 0)
+					{
+						AddCellText(null);
+					}
+					else
+					{
+						AddCellNum(numberOfOccurence, true);
+					}
                 }
                 AddEndRow();
             }
@@ -545,6 +566,7 @@ $('table').not('.model_table').DataTable(
 			AddHeaderText("Nb PWd never expire");
 			AddHeaderText("Nb can be delegated");
 			AddHeaderText("Nb external users");
+            AddHeaderText("Nb protected users", "This is the number of users in the Protected Users group");
 			AddBeginTableData();
             foreach (HealthcheckData data in Report)
             {
@@ -560,6 +582,14 @@ $('table').not('.model_table').DataTable(
 					AddCellNum(group.NumberOfMemberPwdNeverExpires);
 					AddCellNum(group.NumberOfMemberCanBeDelegated);
 					AddCellNum(group.NumberOfExternalMember);
+                    if (new Version(data.EngineVersion.Split(' ')[0]) >= new Version(2, 9))
+                    {
+                        AddCellNum(group.NumberOfMemberInProtectedUsers);
+                    }
+                    else
+                    {
+                        AddCellText("N/A");
+                    }
 					AddEndRow();
                 }
             }
@@ -604,16 +634,19 @@ $('table').not('.model_table').DataTable(
 				foreach (var objectRisk in (CompromiseGraphDataObjectRisk[])Enum.GetValues(typeof(CompromiseGraphDataObjectRisk)))
 				{
 					bool found = false;
-					foreach (var analysis in data.ControlPaths.AnomalyAnalysis)
+					if (data.ControlPaths != null && data.ControlPaths.AnomalyAnalysis != null)
 					{
-						if (analysis.ObjectRisk != objectRisk)
-							continue;
-						found = true;
-						AddCellText(analysis.CriticalObjectFound ? "YES" : "NO", true, !analysis.CriticalObjectFound);
-						AddCellNum(analysis.NumberOfObjectsWithIndirect);
-						AddCellNum(analysis.MaximumIndirectNumber);
-						AddCellNum(analysis.MaximumDirectIndirectRatio);
-						break;
+						foreach (var analysis in data.ControlPaths.AnomalyAnalysis)
+						{
+							if (analysis.ObjectRisk != objectRisk)
+								continue;
+							found = true;
+							AddCellText(analysis.CriticalObjectFound ? "YES" : "NO", true, !analysis.CriticalObjectFound);
+							AddCellNum(analysis.NumberOfObjectsWithIndirect);
+							AddCellNum(analysis.MaximumIndirectNumber);
+							AddCellNum(analysis.MaximumDirectIndirectRatio);
+							break;
+						}
 					}
 					if (!found)
 					{
@@ -655,32 +688,35 @@ $('table').not('.model_table').DataTable(
 				if (data.ControlPaths == null)
 					continue;
 
-				foreach (var dependancy in data.ControlPaths.Dependancies)
+				if (data.ControlPaths != null && data.ControlPaths.Dependancies != null)
 				{
-					AddBeginRow();
-					AddPrintDomain(data.Domain);
-					AddPrintDomain(dependancy.Domain);
-					foreach (var typology in (CompromiseGraphDataTypology[])Enum.GetValues(typeof(CompromiseGraphDataTypology)))
+					foreach (var dependancy in data.ControlPaths.Dependancies)
 					{
-						bool found = false;
-						foreach (var item in dependancy.Details)
+						AddBeginRow();
+						AddPrintDomain(data.Domain);
+						AddPrintDomain(dependancy.Domain);
+						foreach (var typology in (CompromiseGraphDataTypology[])Enum.GetValues(typeof(CompromiseGraphDataTypology)))
 						{
-							if (item.Typology != typology)
-								continue;
-							found = true;
-							AddCellNum(item.NumberOfGroupImpacted);
-							AddCellNum(item.NumberOfResolvedItems);
-							AddCellNum(item.NumberOfUnresolvedItems);
-							break;
+							bool found = false;
+							foreach (var item in dependancy.Details)
+							{
+								if (item.Typology != typology)
+									continue;
+								found = true;
+								AddCellNum(item.NumberOfGroupImpacted);
+								AddCellNum(item.NumberOfResolvedItems);
+								AddCellNum(item.NumberOfUnresolvedItems);
+								break;
+							}
+							if (!found)
+							{
+								AddCellNum(0, true);
+								AddCellNum(0, true);
+								AddCellNum(0, true);
+							}
 						}
-						if (!found)
-						{
-							AddCellNum(0, true);
-							AddCellNum(0, true);
-							AddCellNum(0, true);
-						}
+						AddEndRow();
 					}
-					AddEndRow();
 				}
 			}
 			AddEndTable();
@@ -738,7 +774,7 @@ $('table').not('.model_table').DataTable(
             AddBeginTable();
 			AddHeaderText("From");
 			AddHeaderText("Reachable domain");
-			AddHeaderText("Via");
+            AddHeaderText("Discovered using");
 			AddHeaderText("Netbios");
 			AddHeaderText("Creation date");
 			AddBeginTableData();

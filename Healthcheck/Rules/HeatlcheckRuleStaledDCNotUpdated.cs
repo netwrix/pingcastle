@@ -13,7 +13,8 @@ namespace PingCastle.Healthcheck.Rules
 {
 	[RuleModel("S-DC-NotUpdated", RiskRuleCategory.StaleObjects, RiskModelCategory.VulnerabilityManagement)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
-	[RuleBSI("M 4.315")]
+	//[RuleBSI("M 4.315")]
+    [RuleMaturityLevel(1)]
     public class HeatlcheckRuleStaledDCNotRebooted : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

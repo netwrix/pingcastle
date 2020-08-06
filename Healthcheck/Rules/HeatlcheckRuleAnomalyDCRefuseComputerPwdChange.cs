@@ -15,24 +15,41 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
 	[RuleIntroducedIn(2, 7)]
 	[RuleSTIG("V-4408", "The domain controller must be configured to allow reset of machine account passwords.", STIGFramework.ActiveDirectoryService2008)]
+    [RuleMaturityLevel(2)]
 	public class HeatlcheckRuleAnomalyDCRefuseComputerPwdChange : RuleBase<HealthcheckData>
 	{
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
 		{
-			foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
-			{
-				foreach (GPPSecurityPolicyProperty property in policy.Properties)
-				{
-					if (property.Property == "RefusePasswordChange")
-					{
-						if (property.Value == 1)
-						{
-							AddRawDetail(policy.GPOName);
-							break;
-						}
-					}
-				}
-			}
+            if (healthcheckData.GPOLsaPolicy != null)
+            {
+                foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
+                {
+                    if (healthcheckData.GPOInfoDic == null || !healthcheckData.GPOInfoDic.ContainsKey(policy.GPOId))
+                    {
+                        continue;
+                    }
+                    var refGPO = healthcheckData.GPOInfoDic[policy.GPOId];
+                    if (refGPO.IsDisabled)
+                    {
+                        continue;
+                    }
+                    if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
+                    {
+                        continue;
+                    }
+                    foreach (GPPSecurityPolicyProperty property in policy.Properties)
+                    {
+                        if (property.Property == "RefusePasswordChange")
+                        {
+                            if (property.Value == 1)
+                            {
+                                AddRawDetail(policy.GPOName);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
 			return null;
 		}
 	}

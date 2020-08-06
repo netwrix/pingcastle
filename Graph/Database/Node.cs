@@ -6,11 +6,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using PingCastle.ADWS;
 
 namespace PingCastle.Graph.Database
 {
+    [DebuggerDisplay("{Type} {Shortname}")]
     public class Node
     {
         public int Id { get; set; }
@@ -21,7 +23,11 @@ namespace PingCastle.Graph.Database
 		{
 			get
 			{
-				return (string.Equals(Type, "user", StringComparison.OrdinalIgnoreCase) || string.Equals(Type, "inetOrgPerson", StringComparison.OrdinalIgnoreCase));
+                return (string.Equals(Type, "user", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(Type, "inetOrgPerson", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(Type, "msDS-GroupManagedServiceAccount", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(Type, "msDS-ManagedServiceAccountt", StringComparison.OrdinalIgnoreCase)
+                    );
 			}
 		}
 

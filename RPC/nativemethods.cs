@@ -70,6 +70,10 @@ namespace PingCastle.RPC
 			CharSet = CharSet.Unicode, SetLastError = false)]
 		internal static extern IntPtr NdrClientCall2x64(IntPtr intPtr1, IntPtr intPtr2, IntPtr hPrinter, uint fdwFlags, uint fdwOptions, string pszLocalMachine, uint dwPrinterLocal, IntPtr intPtr3);
 
+        [DllImport("Rpcrt4.dll", EntryPoint = "NdrClientCall2", CallingConvention = CallingConvention.Cdecl,
+           CharSet = CharSet.Unicode, SetLastError = false)]
+        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr Handle, ref PingCastle.RPC.OxidBindings.COMVERSION i1, out System.IntPtr i2, ref uint i3);
+
         [DllImport("Rpcrt4.dll", EntryPoint = "RpcBindingFree", CallingConvention = CallingConvention.StdCall,
             CharSet = CharSet.Unicode, SetLastError = false)]
         internal static extern Int32 RpcBindingFree(ref IntPtr lpString);
@@ -107,6 +111,13 @@ namespace PingCastle.RPC
             public Int32 ImpersonationType;
         };
 
+        [DllImport("Rpcrt4.dll", EntryPoint = "RpcBindingSetAuthInfoW", CallingConvention = CallingConvention.StdCall,
+            CharSet = CharSet.Unicode, SetLastError = false)]
+        internal static extern Int32 RpcBindingSetAuthInfo(IntPtr Binding, String ServerPrincName,
+                                                             UInt32 AuthnLevel, UInt32 AuthnSvc,
+                                                             IntPtr identity,
+                                                             uint AuthzSvc);
+
         [DllImport("Rpcrt4.dll", EntryPoint = "RpcBindingSetAuthInfoExW", CallingConvention = CallingConvention.StdCall,
             CharSet = CharSet.Unicode, SetLastError = false)]
         internal static extern Int32 RpcBindingSetAuthInfoEx(IntPtr lpBinding, string ServerPrincName,
@@ -124,6 +135,9 @@ namespace PingCastle.RPC
 
         [DllImport("Rpcrt4.dll", EntryPoint = "RpcBindingSetOption", CallingConvention = CallingConvention.StdCall,SetLastError= false)]
         internal static extern Int32 RpcBindingSetOption(IntPtr Binding,UInt32 Option, UInt32 OptionValue);
+
+        [DllImport("Rpcrt4.dll", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = false)]
+        internal static extern Int32 RpcEpResolveBinding(IntPtr Binding, IntPtr RpcClientInterface);
 
         [DllImport("advapi32.dll", SetLastError = true)]
         internal static extern IntPtr GetSidSubAuthority(IntPtr sid, UInt32 subAuthorityIndex);

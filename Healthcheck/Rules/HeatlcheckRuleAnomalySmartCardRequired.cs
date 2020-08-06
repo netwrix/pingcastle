@@ -15,6 +15,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 30)]
     [RuleSTIG("V-72821", "All accounts, privileged and unprivileged, that require smart cards must have the underlying NT hash rotated at least every 60 days.")]
 	[RuleANSSI("R38", "paragraph.3.6.2.2")]
+    [RuleMaturityLevel(3)]
     public class HeatlcheckRuleAnomalySmartCardRequired : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

@@ -11,10 +11,11 @@ using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("P-UnconstrainedDelegation", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+	[RuleModel("P-UnconstrainedDelegation", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.DelegationCheck)]
 	[RuleComputation(RuleComputationType.PerDiscover, 5)]
 	[RuleANSSI("R18", "subsubsection.3.3.2")]
 	[RuleIntroducedIn(2, 6)]
+    [RuleDurANSSI(2, "delegation_t4d", "Unconstrained authentication delegation")]
 	public class HeatlcheckRulePrivilegedUnconstrainedDelegation : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

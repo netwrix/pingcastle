@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("A-NotEnoughDC", RiskRuleCategory.Anomalies, RiskModelCategory.Backup)]
 	[RuleComputation(RuleComputationType.TriggerIfLessThan, 5, Threshold: 2)]
 	[RuleIntroducedIn(2, 6)]
+    [RuleMaturityLevel(3)]
 	public class HeatlcheckRuleAnomalyNotEnoughDC : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

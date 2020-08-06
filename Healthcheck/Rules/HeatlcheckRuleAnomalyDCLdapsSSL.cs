@@ -15,6 +15,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("A-DCLdapsProtocol", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
 	[RuleIntroducedIn(2, 8)]
+    [RuleMaturityLevel(3)]
 	public class HeatlcheckRuleAnomalyDCLdapsSSL : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

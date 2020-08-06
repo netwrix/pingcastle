@@ -13,6 +13,7 @@ using System.DirectoryServices.ActiveDirectory;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
+using System.ServiceModel;
 using System.Text;
 
 namespace PingCastle.ADWS
@@ -170,53 +171,50 @@ namespace PingCastle.ADWS
 			{
 				Trace.WriteLine("Server is not DNS - direct connection");
 				GetDomainInfo();
+				return;
 			}
-			else
+			Trace.WriteLine("Locating a DC");
+			try
 			{
-				Domain domain = null;
-				Trace.WriteLine("Trying to locate the domain");
+				Server = NativeMethods.GetDC(Server, false, false);
+			}
+			catch (Exception)
+			{
+				Trace.WriteLine("The domain location didn't worked - trying it directly");
+				GetDomainInfo();
+				return;
+			}
+			for (int i = 0; i < 2; i++)
+			{
 				try
 				{
-					if (Credential != null)
-					{
-						domain = Domain.GetDomain(new DirectoryContext(DirectoryContextType.Domain, Server, Credential.UserName, Credential.Password));
-					}
-					else
-					{
-						domain = Domain.GetDomain(new DirectoryContext(DirectoryContextType.Domain, Server));
-					}
-					Trace.WriteLine("Domain located");
-				}
-				catch (ActiveDirectoryObjectNotFoundException)
-				{
-					Trace.WriteLine("DcGetDCName was unable to find a DC using the FQDN - using the fqdn as server name");
-					// server is a FQDN
+					Trace.WriteLine("Trying " + Server);
 					GetDomainInfo();
+					Trace.WriteLine("The connection worked");
 					return;
-				}
-				var dc = domain.FindDomainController();
-				try
-				{
-					Server = dc.Name;
-					Trace.WriteLine("DsGetDCName returned " + Server);
-					GetDomainInfo();
 				}
 				catch (COMException ex)
 				{
 					// server not available - force rediscovery of DC
 					if ((uint)ex.ErrorCode == 0x8007203a)
 					{
-						Trace.WriteLine("Unable to connect - force rediscovery of DC");
-						dc = domain.FindDomainController(LocatorOptions.ForceRediscovery);
-						Server = dc.Name;
-						Trace.WriteLine("DsGetDCName returned " + Server);
-						GetDomainInfo();
+						if (i == 0)
+						{
+							// if we coulnd't connect to the select DC, even after a refresh, go to exception
+							Trace.WriteLine("Unable to connect - force rediscovery of DC");
+						}
+						else
+						{
+							throw;
+						}
 					}
 					else
 					{
 						throw;
 					}
 				}
+				if (i > 0)
+					Server = NativeMethods.GetDC(Server, false, true);
 			}
 		}
 	}

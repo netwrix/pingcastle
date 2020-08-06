@@ -33,6 +33,33 @@ namespace PingCastle.ADWS
 			public long UsnLocalChange { get; set; }
 		}
 
+        public enum DnsPropertyId
+        {
+            DSPROPERTY_ZONE_TYPE = 0x00000001,
+            DSPROPERTY_ZONE_ALLOW_UPDATE = 0x00000002,
+            DSPROPERTY_ZONE_SECURE_TIME = 0x00000008,
+            DSPROPERTY_ZONE_NOREFRESH_INTERVAL = 0x00000010,
+            DSPROPERTY_ZONE_REFRESH_INTERVAL = 0x00000020,
+            DSPROPERTY_ZONE_AGING_STATE = 0x00000040,
+            DSPROPERTY_ZONE_SCAVENGING_SERVERS = 0x00000011,
+            DSPROPERTY_ZONE_AGING_ENABLED_TIME = 0x00000012,
+            DSPROPERTY_ZONE_DELETED_FROM_HOSTNAME = 0x00000080,
+            DSPROPERTY_ZONE_MASTER_SERVERS = 0x00000081,
+            DSPROPERTY_ZONE_AUTO_NS_SERVERS = 0x00000082,
+            DSPROPERTY_ZONE_DCPROMO_CONVERT = 0x00000083,
+            DSPROPERTY_ZONE_SCAVENGING_SERVERS_DA = 0x00000090,
+            DSPROPERTY_ZONE_MASTER_SERVERS_DA = 0x00000091,
+            DSPROPERTY_ZONE_AUTO_NS_SERVERS_DA = 0x00000092,
+            DSPROPERTY_ZONE_NODE_DBFLAGS = 0x00000100,
+        }
+
+        [DebuggerDisplay("{PropertyId}")]
+        public class DnsProperty
+        {
+            public DnsPropertyId PropertyId { get; set; }
+            public byte[] Data { get; set; }
+        }
+
 		[AttributeUsage(AttributeTargets.Property)]
 		private class ADAttributeAttribute : Attribute
 		{
@@ -64,6 +91,7 @@ namespace PingCastle.ADWS
 			SIDValue,
 			SIDArrayValue,
 			ReplMetadataValue2,
+            DnsProperty,
 		}
 
 		private class ADAttributeTranslation
@@ -107,8 +135,10 @@ namespace PingCastle.ADWS
 		public string DisplayName { get; set; }
 		[ADAttributeAttribute("distinguishedName", ADAttributeValueKind.StringValue)]
 		public string DistinguishedName { get; set; }
-		[ADAttributeAttribute("dNSHostName", ADAttributeValueKind.StringValue)]
-		public string DNSHostName { get; set; }
+        [ADAttributeAttribute("dnsProperty", ADAttributeValueKind.DnsProperty)]
+        public List<DnsProperty> dnsProperty { get; set; }
+        [ADAttributeAttribute("dNSHostName", ADAttributeValueKind.StringValue)]
+        public string DNSHostName { get; set; }
 		[ADAttributeAttribute("dnsRoot", ADAttributeValueKind.StringValueLowerInvariant)]
 		public string DnsRoot { get; set; }
 		[ADAttributeAttribute("dSHeuristics", ADAttributeValueKind.StringValue)]
@@ -161,6 +191,12 @@ namespace PingCastle.ADWS
 		public bool msDSPasswordReversibleEncryptionEnabled { get; set; }
 		[ADAttributeAttribute("msDS-ReplAttributeMetaData", ADAttributeValueKind.ReplMetadataValue2)]
 		public Dictionary<string, ReplPropertyMetaDataItem> msDSReplAttributeMetaData { get; set; }
+        [ADAttributeAttribute("msDS-RevealedUsers", ADAttributeValueKind.StringArrayValue)]
+        public string[] msDSRevealedUsers { get; set; }
+        [ADAttributeAttribute("msDS-RevealOnDemandGroup", ADAttributeValueKind.StringArrayValue)]
+        public string[] msDSRevealOnDemandGroup { get; set; }
+        [ADAttributeAttribute("msDS-NeverRevealGroup", ADAttributeValueKind.StringArrayValue)]
+        public string[] msDSNeverRevealGroup { get; set; }
 		[ADAttributeAttribute("msDS-TrustForestTrustInfo", ADAttributeValueKind.ForestInfoValue)]
 		public List<HealthCheckTrustDomainInfoData> msDSTrustForestTrustInfo { get; set; }
 		[ADAttributeAttribute("msiFileList", ADAttributeValueKind.StringArrayValue)]
@@ -499,6 +535,25 @@ namespace PingCastle.ADWS
 			return list.ToArray();
 		}
 
+
+        private static List<DnsProperty> ExtractDnsProperty(ICollection<byte[]> data)
+        {
+            var output = new List<DnsProperty>();
+            foreach (var d in data)
+            {
+                var propertyId = BitConverter.ToInt32(d, 16);
+                var inData = new byte[BitConverter.ToInt32(d, 0)];
+                Array.Copy(d, 20, inData, 0, inData.Length);
+                output.Add(new DnsProperty() 
+                {
+                    PropertyId = (DnsPropertyId) propertyId,
+                    Data = inData,
+                }
+                );
+            }
+            return output;
+        }
+
 		public static ADItem Create(XmlElement item)
 		{
 			ADItem aditem = new ADItem();
@@ -565,6 +620,17 @@ namespace PingCastle.ADWS
 								break;
 							case ADAttributeValueKind.SIDArrayValue:
 								translation.prop.SetValue(aditem, ExtractSIDArrayValue(child), null);
+								break;
+                            case ADAttributeValueKind.DnsProperty:
+                                {
+                                    var l = ExtractStringArrayValue(child);
+                                    var o = new List<byte[]>();
+                                    foreach(var k in l)
+                                    {
+                                        o.Add(Convert.FromBase64String(k));
+                                    }
+                                    translation.prop.SetValue(aditem, ExtractDnsProperty(o), null);
+                                }
 								break;
 						}
 					}
@@ -713,11 +779,22 @@ namespace PingCastle.ADWS
 									translation.prop.SetValue(aditem, list.ToArray(), null);
 								}
 								break;
+                            case ADAttributeValueKind.DnsProperty:
+                                {
+                                    var o = new List<byte[]>();
+                                    for(int k = 0; k < sr.Properties[name].Count; k++)
+                                    {
+                                        o.Add((byte[])sr.Properties[name][k]);
+                                    }
+                                    translation.prop.SetValue(aditem, ExtractDnsProperty(o), null);
+                                }
+                                break;
 						}
 					}
-					catch (Exception)
+					catch (Exception ex)
 					{
 						Trace.WriteLine("Error when translation attribute " + name);
+                        Trace.WriteLine(ex.Message);
 						throw;
 					}
 				}

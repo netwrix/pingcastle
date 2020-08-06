@@ -12,9 +12,10 @@ using PingCastle.Rules;
 namespace PingCastle.Healthcheck.Rules
 {
 	[RuleModel("P-AdminNum", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AdminControl)]
-	[RuleComputation(RuleComputationType.TriggerOnThreshold, 10, Threshold: 10)]
+	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
 	[RuleANSSI("R26", "subsection.3.5")]
 	[RuleANSSI("R30", "subsubsection.3.5.7")]
+    [RuleDurANSSI(1, "privileged_members", "Large privileged group member count")]
     public class HeatlcheckRulePrivilegedAdminNumber : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
@@ -23,7 +24,15 @@ namespace PingCastle.Healthcheck.Rules
 				return 0;
 			if (healthcheckData.AllPrivilegedMembers.Count == 0)
 				return 0;
-			return healthcheckData.AllPrivilegedMembers.Count * 100 / healthcheckData.UserAccountData.NumberActive;
+            if ((healthcheckData.AllPrivilegedMembers.Count * 100 / healthcheckData.UserAccountData.NumberActive) > 10)
+            {
+                return 1;
+            }
+            if (healthcheckData.AllPrivilegedMembers.Count > 50)
+            {
+                return 1;
+            }
+            return 0;
         }
     }
 }

@@ -26,24 +26,37 @@ namespace PingCastle.Report
 
 		protected HealthcheckData Report;
 		public static int MaxNumberUsersInHtmlReport = 100;
-		private ADHealthCheckingLicense _license;
+		protected ADHealthCheckingLicense _license;
 
 		public string GenerateReportFile(HealthcheckData report, ADHealthCheckingLicense license, string filename)
 		{
 			Report = report;
 			_license = license;
 			report.InitializeReportingData();
+            ReportID = GenerateUniqueID(report);
+			Brand(license);
 			return GenerateReportFile(filename);
 		}
 
-		public string GenerateRawContent(HealthcheckData report)
+        private string GenerateUniqueID(IPingCastleReport report)
+        {
+            var s= report.Domain.DomainSID.Split('-');
+            return GenerateUniqueID(report.Domain.DomainName, long.Parse(s[s.Length-1]));
+        }
+
+		public string GenerateRawContent(HealthcheckData report, ADHealthCheckingLicense aDHealthCheckingLicense)
 		{
 			Report = report;
-			_license = null;
+			_license = aDHealthCheckingLicense;
 			report.InitializeReportingData();
 			sb.Length = 0;
 			GenerateContent();
 			return sb.ToString();
+		}
+
+		public string GenerateRawContent(HealthcheckData report)
+		{
+			return GenerateRawContent(report, null);
 		}
 
 		protected override void GenerateTitleInformation()
@@ -78,7 +91,14 @@ $(function() {
       });
    });
 $(document).ready(function(){
-	$('table').not('.model_table').DataTable(
+	$('table').not('.model_table').not('.nopaging').DataTable(
+		{
+			'paging': true,
+			'searching': true,
+			'lengthMenu': [[10, 25, 50, 100, 500, 1000, -1], [10, 25, 50, 100, 500, 1000, 'All']],
+		}
+	);
+	$('table').not('.model_table').filter('.nopaging').DataTable(
 		{
 			'paging': false,
 			'searching': false
@@ -128,13 +148,19 @@ $(document).ready(function(){
 			Add(@"<div class=""alert alert-info"">
 This report has been generated with the ");
 			Add(String.IsNullOrEmpty(_license.Edition) ? "Basic" : _license.Edition);
-			Add(@" Edition of PingCastle.");
+			Add(@" Edition of PingCastle");
+			if (!string.IsNullOrEmpty(_license.CustomerNotice))
+			{
+				Add(@"&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip""");
+				Add(@" title="""" data-original-title=""");
+				AddEncoded(_license.CustomerNotice);
+				Add(@""">?</i>.");
+			}
 			if (String.IsNullOrEmpty(_license.Edition))
 			{
 				Add(@"
-<br><strong>Being part of a commercial package is forbidden</strong> (selling the information contained in the report).<br>
-If you are an auditor, you MUST purchase an Auditor license to share the development effort.
-");
+<br><strong class='auditor'>Being part of a commercial package is forbidden</strong> (selling the information contained in the report).<br>
+If you are an auditor, you MUST purchase an Auditor license to share the development effort.");
 			}
 			Add(@"</div>
 ");
@@ -154,6 +180,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 				GenerateIndicators(Report, Report.AllRiskRules);
 				GenerateRiskModelPanel(Report.RiskRules);
 			});
+
+            GenerateSection("Maturity Level", GenerateMaturityInformation);
 
 			GenerateSection("Stale Objects", () =>
 			{
@@ -192,19 +220,148 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
 
 
+        #region maturity
+
+        protected void GenerateMaturityInformation()
+        {
+			Add(@"<p>This section represents the maturity score (inspired from <a href='https://www.cert.ssi.gouv.fr/dur/CERTFR-2020-DUR-001/'>ANSSI</a>).</p>");
+            if (string.IsNullOrEmpty(_license.Edition))
+            {
+                AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
+                return;
+            }
+            var data = GetCurrentMaturityLevel();
+            Add("<div class='row'><div class='col-sm-6 my-auto'><p class='display-4'>Maturity Level:</span></div><div class='col-sm-6'>");
+            for(int i = 1 ; i <= 5; i++)
+            {
+                if (Report.MaturityLevel == i)
+                {
+                    Add("<span class=\"display-1\">");
+                }
+                Add("<span class=\"badge grade-");
+                Add(i);
+                Add("\">");
+                Add(i);
+                Add("</span>");
+                if (Report.MaturityLevel == i)
+                {
+                    Add("</span>");
+                }
+            }
+            Add("</div></div>");
+
+			Add(@"<p>Maturity levels:<p>
+<ul>
+    <li><span class='badge grade-1'>1</span> Critical weaknesses and misconfigurations pose an immediate threat to all hosted resources. Corrective actions should be taken as soon as possible;</li>
+	<li><span class='badge grade-2'>2</span> Configuration and management weaknesses put all hosted resources at risk of a short-term compromise. Corrective actions should be carefully planned and implemented shortly;</li>
+    <li><span class='badge grade-3'>3</span> The Active Directory infrastructure does not appear to have been weakened from what default installation settings provide;</li>
+    <li><span class='badge grade-4'>4</span> The Active Directory infrastructure exhibits an enhanced level of security and management;</li>
+    <li><span class='badge grade-5'>5</span> The Active Directory infrastructure correctly implements the latest state-of-the-art administrative model and security features.</li>
+</ul>");
+
+            Add("<div class='row'><div class='col-lg-12'>");
+            Add("<div class='card-deck'>");
+            for (int i = 1; i <= 5; i++)
+            {
+                Add("<div class='card'>");
+                Add("<div class='card-body'>");
+                Add("<h5 class='card-title'>");
+                Add("<span class=\"badge grade-");
+                Add(i);
+                Add("\">");
+                Add("Level ");
+                Add(i);
+                Add("</span>");
+                Add("</h5>");
+                if (data.ContainsKey(i))
+                {
+                    Add("<p class='card-text'>");
+                    if (Report.MaturityLevel == i)
+                        Add("<strong>");
+                    Add(data[i].Count);
+                    Add(" rule(s) matched");
+                    if (Report.MaturityLevel == i)
+                        Add("</strong>");
+                    Add("</p>");
+                }
+                else
+                {
+                    Add("<p class='card-text'>No rule matched</p>");
+                }
+                Add("</div>");
+                Add("</div>");
+            }
+            Add("</div>");
+            Add("</div></div>");
+
+            List<string> l = null;
+            int nextLevel = 0;
+            for (int i = Report.MaturityLevel + 1; i < 6; i++)
+            {
+                if (data.ContainsKey(i) && data[i].Count > 0)
+                {
+                    l = data[Report.MaturityLevel];
+                    nextLevel = i;
+                    break;
+                }
+            }
+            if (nextLevel != 0)
+            {
+                Add("<p class='mt-2'>To reach ");
+                Add("<span class=\"badge grade-");
+                Add(nextLevel);
+                Add("\">");
+                Add("Level ");
+                Add(nextLevel);
+                Add("</span> you need to fix the following rules:</p>");
+                GenerateAccordion("rulesmaturity", () =>
+                {
+                    Report.RiskRules.Sort((HealthcheckRiskRule a, HealthcheckRiskRule b)
+                        =>
+                    {
+                        return -a.Points.CompareTo(b.Points);
+                    }
+                    );
+                    foreach (HealthcheckRiskRule rule in Report.RiskRules)
+                    {
+                        if (l.Contains(rule.RiskId))
+                            GenerateIndicatorPanelDetail("maturity", rule);
+                    }
+                });
+            }
+            
+        }
+
+        private Dictionary<int, List<string>> GetCurrentMaturityLevel()
+        {
+            var output = new Dictionary<int, List<string>>();
+            foreach (var rule in Report.RiskRules)
+            {
+                var hcrule = RuleSet<HealthcheckData>.GetRuleFromID(rule.RiskId);
+                if (hcrule == null)
+                {
+                    continue;
+                }
+				int level = hcrule.MaturityLevel;
+                if (!output.ContainsKey(level))
+                    output[level] = new List<string>();
+                output[level].Add(hcrule.RiskId);
+            }
+            return output;
+        }
+        #endregion
 
 
 
-
-		#region domain info
-		protected void GenerateDomainInformation()
+        #region domain info
+        protected void GenerateDomainInformation()
 		{
 			bool checkRecycleBin = Report.version >= new Version(2, 7, 0, 0);
 			AddAnchor("domaininformation");
 
 			AddParagraph("This section shows the main technical characteristics of the domain.");
 
-			AddBeginTable();
+			AddBeginTable(true);
 			AddHeaderText("Domain");
 			AddHeaderText("Netbios Name");
 			AddHeaderText("Domain Functional Level");
@@ -276,7 +433,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 				GenerateAccordion("honeypotaccordion", () => GenerateListAccountDetail("honeypotaccordion", "honeypotid", "Honey pot accounts", Report.ListHoneyPot));
 			}
 			GenerateSubSection("Account analysis", "useraccountanalysis");
-			AddBeginTable();
+			AddBeginTable(true);
 			AddHeaderText("Nb User Accounts");
 			AddAccountCheckHeader(false);
 			AddBeginTableData();
@@ -297,10 +454,139 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			AddEndRow();
 			AddEndTable();
 			GenerateListAccount(Report.UserAccountData, "user", "usersaccordion");
+            if (Report.PasswordDistribution != null && Report.PasswordDistribution.Count > 0)
+            {
+                GenerateSubSection("Password Age Distribution", "passworddistribution");
+                if (string.IsNullOrEmpty(_license.Edition))
+                {
+                    AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
+                }
+                else
+                {
+                    AddParagraph("Here is the distribution where the password has been changed for the last time. Only enabled user accounts are analyzed (no guest account for example).");
+                    AddPasswordDistributionChart(Report.PasswordDistribution, "general");
+                }
+            }
 			GenerateDomainSIDHistoryList(Report.UserAccountData);
 		}
 
-		private void GenerateListAccount(HealthcheckAccountData data, string root, string accordion)
+        private void AddPasswordDistributionChart(List<HealthcheckPwdDistributionData> input, string id, Dictionary<int, string> tooltips = null)
+        {
+            NumberFormatInfo nfi = new NumberFormatInfo();
+            nfi.NumberDecimalSeparator = ".";
+            var data = new SortedDictionary<int, int>();
+            int highest = 0;
+            int max = 0;
+            const int division = 36;
+			const double horizontalStep = 25;
+            foreach (var entry in input)
+            {
+                data.Add(entry.HigherBound, entry.Value);
+                if (highest < entry.HigherBound)
+                    highest = entry.HigherBound;
+                if (max < entry.Value)
+                    max = entry.Value;
+            }
+            // add missing data
+            if (max > 10000)
+                max = 10000;
+			else if (max >= 5000)
+				max = 10000;
+			else if (max >= 1000)
+                max = 5000;
+			else if (max >= 500)
+				max = 1000;
+			else if (max >= 100)
+                max = 500;
+			else if (max >= 50)
+				max = 100;
+			else if (max >= 10)
+                max = 50;
+            else
+                max = 10;
+
+            int other = 0;
+            for (int i = 0; i < division; i++)
+            {
+                if (!data.ContainsKey(i))
+                    data[i] = 0;
+            }
+            for (int i = division; i <= highest; i++)
+            {
+                if (data.ContainsKey(i))
+                    other += data[i];
+            }
+            Add(@"<div id='pdwdistchart");
+            Add(id);
+            Add(@"'><svg viewBox='0 0 1000 400'>");
+            Add(@"<g transform=""translate(40,20)"">");
+            // horizontal scale
+            Add(@"<g transform=""translate(0,290)"" fill=""none"" font-size=""10"" font-family=""sans-serif"" text-anchor=""middle"">");
+            Add(@"<path class=""domain"" stroke=""#000"" d=""M0.5,0V0.5H950V0""></path>");
+            for (int i = 0; i < division; i++)
+            {
+                double v = 13.06 + (i) * horizontalStep;
+                Add(@"<g class=""tick"" opacity=""1"" transform=""translate(" + v.ToString(nfi) + @",30)""><line stroke=""#000"" y2=""0""></line><text fill=""#000"" y=""3"" dy="".15em"" dx=""-.8em"" transform=""rotate(-65)"">" +
+                    (i * 30) + "-" + ((i + 1) * 30) + @" days</text></g>");
+            }
+            {
+                double v = 13.06 + (division) * horizontalStep;
+                Add(@"<g class=""tick"" opacity=""1"" transform=""translate(" + v.ToString(nfi) + @",30)""><line stroke=""#000"" y2=""0""></line><text fill=""#000"" y=""3"" dy="".15em"" dx=""-.8em"" transform=""rotate(-65)"">Other</text></g>");
+            }
+            Add(@"</g>");
+            // vertical scale
+            Add(@"<g fill=""none"" font-size=""10"" font-family=""sans-serif"" text-anchor=""end"">");
+            Add(@"<path class=""domain"" stroke=""#000"" d=""M-6,290.5H0.5V0.5H-6""></path>");
+            for (int i = 0; i < 6; i++)
+            {
+                double v = 290 - i * 55;
+                Add(@"<g class=""tick"" opacity=""1"" transform=""translate(0," + v.ToString(nfi) + @")""><line stroke=""#000"" x2=""-6""></line><text fill=""#000"" x=""-9"" dy=""0.32em"">" +
+                    (max / 5 * i) + @"</text></g>");
+            }
+            Add(@"</g>");
+            // bars
+            for (int i = 0; i < division; i++)
+            {
+                double v = 3.28 + horizontalStep * (i);
+                int value = 0;
+                if (data.ContainsKey(i))
+                    value = data[i];
+                double size = 290 * value / max;
+                if (size > 290) size = 290;
+				double w = horizontalStep - 3;
+                string tooltip = value.ToString();
+                if (tooltips != null && tooltips.ContainsKey(i))
+                    tooltip = tooltips[i];
+                Add(@"<rect class=""bar"" fill=""#Fa9C1A"" x=""" + v.ToString(nfi) + @""" width=""" + w.ToString(nfi) + @""" y=""" + (290 - size).ToString(nfi) + @""" height=""" + (size).ToString(nfi) + @""" data-toggle=""tooltip"" title=""");
+                AddEncoded(tooltip);
+                Add(@"""></rect>");
+            }
+            {
+                double v = 3.28 + horizontalStep * (division);
+                int value = 0;
+                value = other;
+                double size = 290 * value / max;
+                if (size > 290) size = 290;
+				double w = horizontalStep - 3;
+                string tooltip = string.Empty;
+                if (tooltips != null)
+                {
+                    foreach(var t in tooltips)
+                    {
+                        if (t.Key > division)
+                            tooltip += t.Value + "\r\n";
+                    }
+                }
+                if (string.IsNullOrEmpty(tooltip))
+                     tooltip = value.ToString();
+                Add(@"<rect class=""bar"" fill=""#Fa9C1A"" x=""" + v.ToString(nfi) + @""" width=""" + w.ToString(nfi) + @""" y=""" + (290 - size).ToString(nfi) + @""" height=""" + (size).ToString(nfi) + @""" data-toggle=""tooltip"" title=""");
+                AddEncoded(tooltip);
+                Add(@"""></rect>");
+            }
+            Add(@"</g></svg></div>");
+        }
+
+        private void GenerateListAccount(HealthcheckAccountData data, string root, string accordion)
 		{
 			GenerateAccordion(accordion,
 				() =>
@@ -376,12 +662,25 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			{
 				return;
 			}
+            bool eventDate = false;
+            foreach (var u in list)
+            {
+                if (u.Event != DateTime.MinValue)
+                {
+                    eventDate = true;
+                    break;
+                }
+            }
 			GenerateAccordionDetail(id, accordion, title, list.Count, false, () =>
 				{
 					AddBeginTable();
 					AddHeaderText("Name");
 					AddHeaderText("Creation");
 					AddHeaderText("Last logon");
+                    if (eventDate)
+                    {
+                        AddHeaderText("Event date");
+                    }
 					AddHeaderText("Distinguished name");
 					AddBeginTableData();
 
@@ -398,6 +697,17 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 						AddCellText(detail.Name);
 						AddCellText((detail.CreationDate > DateTime.MinValue ? detail.CreationDate.ToString("u") : "Access Denied"));
 						AddCellText((detail.LastLogonDate > DateTime.MinValue ? detail.LastLogonDate.ToString("u") : "Never"));
+                        if (eventDate)
+                        {
+                            if (detail.Event == DateTime.MinValue)
+                            {
+                                AddCellText("Unknown");
+                            }
+                            else
+                            {
+                                AddCellText(detail.Event.ToString("u"));
+                            }
+                        }
 						AddCellText(detail.DistinguishedName);
 						AddEndRow();
 						number++;
@@ -410,7 +720,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 					{
 						if (number >= MaxNumberUsersInHtmlReport)
 						{
-							Add("<td colspan='4' class='text'>Output limited to ");
+							Add("<td colspan='");
+                            Add(eventDate ? 5 : 4);
+                            Add("' class='text'>Output limited to ");
 							Add(MaxNumberUsersInHtmlReport);
 							Add(" items - go to the advanced menu before running the report or add \"--no-enum-limit\" to remove that limit</td>");
 						}
@@ -429,6 +741,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			AddHeaderText("First date seen", "This is the oldest creation date of an object having SIDHistory related to this domain");
 			AddHeaderText("Last date seen", "This is the youngest creation date of an object having SIDHistory related to this domain");
 			AddHeaderText("Count");
+			if (Report.version >= new Version(2, 9))
+			{
+				AddHeaderText("Dangerous SID Found");
+			}
 			AddBeginTableData();
 
 			data.ListDomainSidHistory.Sort(
@@ -444,6 +760,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 				AddCellDate(domainSidHistory.FirstDate);
 				AddCellDate(domainSidHistory.LastDate);
 				AddCellNum(domainSidHistory.Count);
+				if (Report.version >= new Version(2, 9))
+				{
+					AddCellText(domainSidHistory.DangerousSID.ToString());
+				}
 				AddEndRow();
 			}
 			AddEndTable();
@@ -455,7 +775,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 		{
 			GenerateSubSection("Account analysis", "computeraccountanalysis");
 			AddParagraph("This section gives information about the computer accounts stored in the Active Directory");
-			AddBeginTable();
+			AddBeginTable(true);
 			AddHeaderText("Nb Computer Accounts");
 			AddAccountCheckHeader(true);
 			AddBeginTableData();
@@ -637,6 +957,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 				}
 				AddHeaderText("Nb can be delegated", "This is the number of enabled user accounts which doesn't have the flag 'this account is sensitive and cannot be delegated'. This is an effective mitigation against unconstrained delegation attacks.");
 				AddHeaderText("Nb external users", "This is the number of item identified as coming from a foreign domain");
+                if (Report.version >= new Version(2, 9))
+                {
+                    AddHeaderText("Nb protected users", "This is the number of users in the Protected Users group");
+                }
 				AddBeginTableData();
 
 				Report.PrivilegedGroups.Sort((HealthCheckGroupData a, HealthCheckGroupData b)
@@ -675,6 +999,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 					}
 					AddCellNum(group.NumberOfMemberCanBeDelegated);
 					AddCellNum(group.NumberOfExternalMember);
+                    if (Report.version >= new Version(2, 9))
+                    {
+                        AddCellNum(group.NumberOfMemberInProtectedUsers);
+                    }
 					AddEndRow();
 				}
 				AddEndTable();
@@ -702,6 +1030,50 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 					});
 				Add("</div></div>");
 			}
+			if (Report.ProtectedUsersNotPrivileged != null && Report.ProtectedUsersNotPrivileged.Members != null && Report.ProtectedUsersNotPrivileged.Members.Count > 0)
+			{
+				Add(@"
+		<div class=""row"">
+			<div class=""col-md-12"">
+");
+				GenerateAccordion("protectedusersaccordeon",
+					() =>
+					{
+						GenerateAccordionDetail("protectedusers", "protectedusersaccordeon", "Protected Users and not Admins", Report.ProtectedUsersNotPrivileged.Members.Count, false, () => GenerateAdminGroupsDetail(Report.ProtectedUsersNotPrivileged.Members));
+					});
+				Add("</div></div>");
+			}
+			GenerateSubSection("Last Logon Distribution", "adminlastlogondistribution");
+			if (string.IsNullOrEmpty(_license.Edition))
+			{
+				AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
+			}
+			else
+			{
+				List<HealthcheckPwdDistributionData> lastLogon = new List<HealthcheckPwdDistributionData>();
+				Dictionary<int, string> tooltips = new Dictionary<int, string>();
+				Dictionary<int, string> tooltips2 = new Dictionary<int, string>();
+				List<HealthcheckPwdDistributionData> pwdLastSet = new List<HealthcheckPwdDistributionData>();
+
+				ComputePrivilegedDistribution(lastLogon, tooltips, pwdLastSet, tooltips2);
+
+				if (lastLogon.Count == 0)
+					lastLogon = Report.PrivilegedDistributionLastLogon;
+				if (lastLogon != null && lastLogon.Count > 0)
+				{
+					AddParagraph("Here is the distribution of the last logon of privileged users. Only enabled accounts are analyzed.");
+					AddPasswordDistributionChart(lastLogon, "logonadmin", tooltips);
+				}
+
+				GenerateSubSection("Password Age Distribution", "adminpwdagedistribution");
+				if (pwdLastSet.Count == 0)
+					pwdLastSet = Report.PrivilegedDistributionPwdLastSet;
+				if (pwdLastSet != null && pwdLastSet.Count > 0)
+				{
+					AddParagraph("Here is the distribution of the password age for privileged users. Only enabled accounts are analyzed.");
+					AddPasswordDistributionChart(pwdLastSet, "pwdlastsetadmin", tooltips2);
+				}
+			}
 			if (Report.Delegations != null && Report.Delegations.Count > 0)
 			{
 				Add(@"
@@ -718,6 +1090,65 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 				Add("</div></div>");
 			}
 		}
+
+		private void ComputePrivilegedDistribution(List<HealthcheckPwdDistributionData> lastLogon, Dictionary<int, string> tooltips, List<HealthcheckPwdDistributionData> pwdLastSet, Dictionary<int, string> tooltips2)
+		{
+			if (Report.AllPrivilegedMembers != null && Report.AllPrivilegedMembers.Count > 0)
+			{
+				var pwdDistribution = new Dictionary<int, int>();
+				var logonDistribution = new Dictionary<int, int>();
+				foreach (var user in Report.AllPrivilegedMembers)
+				{
+					if (user.IsEnabled)
+					{
+						int i;
+						if (user.LastLogonTimestamp != DateTime.MinValue)
+						{
+							i = HealthcheckAnalyzer.ConvertDateToKey(user.LastLogonTimestamp);
+						}
+						else
+						{
+							i = 10000;
+						}
+						
+						if (logonDistribution.ContainsKey(i))
+							logonDistribution[i]++;
+						else
+							logonDistribution[i] = 1;
+						if (tooltips.ContainsKey(i))
+							tooltips[i] += "\r\n" + user.Name;
+						else
+							tooltips[i] = user.Name;
+
+						if (user.PwdLastSet != DateTime.MinValue)
+						{
+							i = HealthcheckAnalyzer.ConvertDateToKey(user.PwdLastSet);
+						}
+						else
+						{
+							i = HealthcheckAnalyzer.ConvertDateToKey(user.Created);
+						}
+						if (pwdDistribution.ContainsKey(i))
+							pwdDistribution[i]++;
+						else
+							pwdDistribution[i] = 1;
+						if (tooltips2.ContainsKey(i))
+							tooltips2[i] += "\r\n" + user.Name;
+						else
+							tooltips2[i] = user.Name;
+					}
+				}
+				foreach (var p in pwdDistribution)
+				{
+					pwdLastSet.Add(new HealthcheckPwdDistributionData() { HigherBound = p.Key, Value = p.Value });
+				}
+				foreach (var p in logonDistribution)
+				{
+					lastLogon.Add(new HealthcheckPwdDistributionData() { HigherBound = p.Key, Value = p.Value });
+				}
+			}
+		}
+
 		private string GenerateModalAdminGroupIdFromGroupName(string groupname)
 		{
 			return "modal" + groupname.Replace(" ", "-").Replace("<", "");
@@ -767,8 +1198,18 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 					AddHeaderText("Service account", "Indicates for enabled accounts it has been marked as service. This is done by setting the servicePrincipalName attribute.");
 				}
 				AddHeaderText("Flag Cannot be delegated present", "Indicates for enabled accounts if the protection 'this is account is sensitive and cannot be delegated' is in place.");
-				AddHeaderText("Distinguished name", "Indicates the location of the object in the AD tree.");
-				AddBeginTableData();
+                if (Report.version >= new Version(2, 8, 0))
+                {
+                    AddHeaderText("Creation date", "Indicates when the account has been created.");
+                }
+				AddHeaderText("Last login", "Indicates the last login date. Note: this value has a 14 days error margin.");
+                AddHeaderText("Password last set", "Indicates when the password has been changed for the last time");
+                if (Report.version >= new Version(2, 9, 0))
+                {
+                    AddHeaderText("In Protected Users", "Indicates if the account is a member of the special group Protected Users.");
+                }
+                AddHeaderText("Distinguished name", "Indicates the location of the object in the AD tree.");
+                AddBeginTableData();
 				members.Sort((HealthCheckGroupMemberData a, HealthCheckGroupMemberData b)
 					=>
 						{
@@ -794,8 +1235,18 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 						{
 							AddCellText("External");
 						}
-						AddCellText(member.DistinguishedName);
-						AddEndRow();
+                        if (Report.version >= new Version(2, 8, 0))
+                        {
+                            AddCellText("External");
+                        }
+						AddCellText("External");
+                        AddCellText("External");
+                        if (Report.version >= new Version(2, 9, 0))
+                        {
+                            AddCellText("External");
+                        }
+                        AddCellText(member.DistinguishedName);
+                        AddEndRow();
 					}
 					else
 					{
@@ -814,8 +1265,18 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 							AddCellText((member.IsService ? "YES" : "NO"), true, !member.IsService);
 						}
 						AddCellText((!member.CanBeDelegated ? "YES" : "NO"), true, !member.CanBeDelegated);
-						AddCellText(member.DistinguishedName);
-						AddEndRow();
+                        if (Report.version >= new Version(2, 8, 0))
+                        {
+                            AddCellDate(member.Created);
+                        }
+                        AddCellDate(member.LastLogonTimestamp);
+                        AddCellDate(member.PwdLastSet);
+                        if (Report.version >= new Version(2, 9, 0))
+                        {
+                            AddCellText((member.IsInProtectedUser ? "YES" : "NO"), true, member.IsInProtectedUser);
+                        }
+                        AddCellText(member.DistinguishedName);
+                        AddEndRow();
 					}
 				}
 				AddEndTable();
@@ -851,7 +1312,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             AddAnchor("controlpath");
 			GenerateCompromissionGraphDependanciesInformation();
 			GenerateCompromissionGraphIndirectLinksInformation();
-			GenerateCompromissionGraphDetailledAnalysis();
+			GenerateCompromissionGraphDetailedAnalysis();
 			GenerateCompromissionGraphJasonOutput();
 		}
 
@@ -868,14 +1329,14 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
 			AddParagraph("The following table lists all the foreign domains whose compromission can impact this domain. The impact is listed by typology of objects.");
 			AddBeginTable();
-			AddHeaderText("FQDN", null, 2);
-			AddHeaderText("NetBIOS", null, 2);
-			AddHeaderText("SID", null, 2);
+			AddHeaderText("FQDN", rowspan: 2);
+			AddHeaderText("NetBIOS", rowspan: 2);
+			AddHeaderText("SID", rowspan: 2);
 
 			int numTypology = 0;
 			foreach (var typology in (CompromiseGraphDataTypology[])Enum.GetValues(typeof(CompromiseGraphDataTypology)))
 			{
-				AddHeaderText(ReportHelper.GetEnumDescription(typology), null, 3);
+				AddHeaderText(ReportHelper.GetEnumDescription(typology), colspan: 3);
 				numTypology++;
 			}
 			AddEndRow();
@@ -897,7 +1358,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 				}
 				else
 				{
-					Add(GetUrlCallback(header.Domain, header.FQDN));
+					Add(GetUrlCallback(header.Domain, !string.IsNullOrEmpty(header.FQDN)?header.FQDN : header.Netbios));
 				}
 				Add("</td>");
 				AddCellText(header.Netbios);
@@ -930,7 +1391,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 		protected void GenerateCompromissionGraphIndirectLinksInformation()
 		{
 			GenerateSubSection("Indirect links", "cgindirectlinks");
-			AddParagraph("This part try to summarize in a single table if major issues have been found.<br>Focus on finding critical objects such as the Everyone group then try to decrease the number of objects having indirect access.<br>The detail is displayed below.");
+            AddParagraph("This part tries to summarize in a single table if major issues have been found.<br>Focus on finding critical objects such as the Everyone group then try to decrease the number of objects having indirect access.<br>The detail is displayed below.");
 			if (Report.ControlPaths.AnomalyAnalysis == null || Report.ControlPaths.AnomalyAnalysis.Count == 0)
 			{
 				AddParagraph("No data has been found.");
@@ -971,7 +1432,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			AddEndTable();
 		}
 
-		private void GenerateCompromissionGraphDetailledAnalysis()
+		private void GenerateCompromissionGraphDetailedAnalysis()
 		{
 			if (Report.ControlPaths.Data == null || Report.ControlPaths.Data.Count == 0)
 				return;
@@ -1487,9 +1948,19 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			AddHeaderText("Trust Partner");
 			AddHeaderText("Type");
 			AddHeaderText("Attribut");
-			AddHeaderText("Direction", "<b>Bidirectional:</b> Each domain or forest has access to the resources of the other domain or forest. <br><b>Inbound:</b> The other domain or forest has access to the resources of this domain or forest. This domain or forest does not have access to resources that belong to the other domain or forest. <br><b>Outbound:</b> This domain or forest has access to resources of the other domain or forest. The other domain or forest does not have access to the resources of this domain or forest.");
-			AddHeaderText("SID Filtering active", "Indicates if the protection for the trust has been enabled or disabled.");
-			AddHeaderText("TGT Delegation", "Indicates if the kerberos delegation works accross forest trusts");
+			AddHeaderText("Direction", @"<div class='text-left'><b>Bidirectional:</b> Each domain or forest has access to the resources of the other domain or forest. <br>
+                <b>Inbound:</b> The other domain or forest has access to the resources of this domain or forest. This domain or forest does not have access to resources that belong to the other domain or forest. <br>
+                <b>Outbound:</b> This domain or forest has access to resources of the other domain or forest. The other domain or forest does not have access to the resources of this domain or forest.</div>",
+                true);
+            AddHeaderText("SID Filtering active", @"<div class='text-left'>Indicates if the protection for the trust has been enabled or disabled.<br>
+                A NO means that forged kerberos ticket with a security identifier from this domain will be accepted.<br>
+                Please note that this check is being performed only at ONE direction of a BI-directional trust<br>
+                Make sure you also run PingCastle in the Trust Partner domain for complete information</div>",
+                true);
+            AddHeaderText("TGT Delegation",  @"<div class='text-left'>Indicates if the kerberos delegation works accross forest trusts<br>
+                A YES means that TGTs are being sent over the trust<br>
+                Please note that this check is being performed only at ONE direction of a BI-directional trust<br>Make sure you also run PingCastle in the Trust Partner domain for complete information</div>",
+                true);
 			AddHeaderText("Creation", "Indicates creation date of the underlying AD object");
 			AddHeaderText("Is Active ?", "The account used to store the secret should be modified every 30 days if it is active. It indicates if a change occured during the last 40 days");
 			AddBeginTableData();
@@ -1551,7 +2022,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			AddParagraph("These are the domains that PingCastle was able to detect but which is not releated to direct trusts. It may be children of a forest or bastions.");
 			AddBeginTable();
 			AddHeaderText("Reachable domain");
-			AddHeaderText("Via");
+			AddHeaderText("Discovered using");
 			AddHeaderText("Netbios");
 			AddHeaderText("Creation date");
 			AddBeginTableData();
@@ -1625,6 +2096,22 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			}
 
 			AddEndTable();
+
+            if (Report.AzureADSSOLastPwdChange != DateTime.MinValue)
+            {
+                GenerateSubSection("Azure", "azure");
+                AddParagraph("The account AZUREADSSOACC is used under the hood to provide SSO functionalities with AzureAD.");
+                Add(@"
+		<div class=""row""><div class=""col-lg-12"">
+<p>The password of the AZUREADSSOACC account should be changed twice every 40 days using this <a href=""https://gallery.technet.microsoft.com/Azure-AD-SSO-Key-Rollover-d2f1604a"">script</a></p>
+<p>You can use the version gathered using replication metadata from two reports to guess the frequency of the password change or if the two consecutive resets has been done. Version starts at 1.</p>
+<p><strong>AZUREADSSOACC password last changed: </strong> " + Report.AzureADSSOLastPwdChange.ToString("u") + @"
+<strong>version: </strong> " + Report.AzureADSSOVersion + @"
+</p>
+		</div></div>
+");
+            }
+			
 		}
 		#endregion trust
 
@@ -1753,7 +2240,8 @@ Here is the list of servers configured for WEF found in GPO</p>
 			GenerateSubSection("krbtgt (Used for Golden ticket attacks)", "krbtgt");
 			Add(@"
 		<div class=""row""><div class=""col-lg-12"">
-<p>The password of the krbtgt account should be changed twice every 40 days using this <a href=""https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51"">script</a></p>
+<p>The account password for the <em>krbtgt</em> account should be rotated twice yearly at a minimum. More frequent password rotations are recommended, with 40 days the current recommendation by ANSSI. Additional rotations based on external events, such as departure of an employee who had privileged network access, are also strongly recommended.</p>
+<p>You can perform this action using this <a href=""https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51"">script</a></p>
 <p>You can use the version gathered using replication metadata from two reports to guess the frequency of the password change or if the two consecutive resets has been done. Version starts at 1.</p>
 <p><strong>Kerberos password last changed: </strong> " + Report.KrbtgtLastChangeDate.ToString("u") + @"
 <strong>version: </strong> " + Report.KrbtgtLastVersion + @"
@@ -1775,6 +2263,24 @@ Indeed when an account belongs to a privileged group, the attribute admincount i
 			{
 				GenerateAccordion("adminsdholder", () => GenerateListAccountDetail("adminsdholder", "adminsdholderpanel", "AdminSDHolder User List", Report.AdminSDHolderNotOK));
 			}
+
+            // unix user password
+            GenerateSubSection("Unix Passwords", "unixpasswordsfound");
+            Add(@"
+		<div class=""row""><div class=""col-lg-12"">
+<p>This control detects if one of the attributes userPassword or unixUserPassword has been set on accounts.
+Indeed, these attributes are designed to store encrypted secrets for unix (or mainframe) interconnection. However in the large majority, interconnected systems are poorly designed and the user password is stored in these attributes in clear text or poorly encrypted.
+The userPassword attribute is also used in classic LDAP systems to change the user password by setting its value. But, with Active Directory, it is considered by default as a normal attribute and doesn't trigger a password but shows instead the password in clear text.
+</p>
+<p><strong>Number of accounts to review:</strong> " +
+        (Report.UnixPasswordUsersCount > 0 ? "<span class=\"unticked\">" + Report.UnixPasswordUsersCount + "</span>" : "0")
+    + @"</p>
+		</div></div>
+");
+            if (Report.UnixPasswordUsersCount > 0 && Report.UnixPasswordUsers != null && Report.UnixPasswordUsers.Count > 0)
+            {
+                GenerateAccordion("unixpasswords", () => GenerateListAccountDetail("unixpasswords", "unixpasswordspanel", "User List With Unix Passwords", Report.UnixPasswordUsers));
+            }
 
 			if (Report.DomainControllers != null)
 			{
@@ -2110,7 +2616,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 			AddHeaderText("Setting");
 			AddHeaderText("Value");
 			AddBeginTableData();
-			if (Report.GPPPasswordPolicy != null)
+            if (Report.GPOLsaPolicy != null)
 			{
 				foreach (GPPSecurityPolicy policy in Report.GPOLsaPolicy)
 				{
@@ -2134,6 +2640,8 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                 AddParagraph(@"Audit settings allow the system to generate logs which are useful to detect intrusions. Here are the settings found in GPO.");
                 AddParagraph("Simple audit events are <a href='https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/01f8e057-f6a8-4d6e-8a00-99bcd241b403'>described here</a> and Advanced audit events are <a href='https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpac/77878370-0712-47cd-997d-b07053429f6d'>described here</a>");
 				AddParagraph("You can get a list of all audit settings with the command line: <code>auditpol.exe /get /category:*</code> (<a href='https://blogs.technet.microsoft.com/askds/2011/03/11/getting-the-effective-audit-policy-in-windows-7-and-2008-r2/'>source</a>)");
+                AddParagraph("Simple audit settings are located in: Computer Configuration / Policies / Windows Settings / Security Settings / Local Policies / Audit Policy. Simple audit settings are named [Simple Audit].");
+                AddParagraph("Advanced audit settings are located in: Computer Configuration / Policies / Windows Settings / Security Settings / Advanced Audit Policy Configuration. There category is displayed below.");
                 AddBeginTable();
                 AddHeaderText("Policy Name");
                 AddHeaderText("Category");
@@ -2146,7 +2654,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     {
                         AddBeginRow();
                         AddGPOName(a);
-                        AddCellText("Audit");
+                        AddCellText("[Simple Audit]");
                         AddCellText(GetAuditSimpleDescription(a.Category));
                         AddCellText(GetAuditSimpleValue(a.Value));
                         AddEndRow();
@@ -2332,10 +2840,10 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             {new Guid("{0CCE9229-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("Privilege Use", "Non Sensitive Privilege Use")},
             {new Guid("{0CCE922A-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("Privilege Use", "Other Privilege Use Events")},
             {new Guid("{0CCE9228-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("Privilege Use", "Sensitive Privilege Use")},
-            {new Guid("{0CCE922D-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("Detailled Tracking", "DPAPI Activity")},
-            {new Guid("{0CCE922C-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("Detailled Tracking", "Process Termination")},
-            {new Guid("{0CCE922B-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("Detailled Tracking", "Process Creation")},
-            {new Guid("{0CCE922E-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("Detailled Tracking", "RPC Events")},
+            {new Guid("{0CCE922D-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("Detailed Tracking", "DPAPI Activity")},
+            {new Guid("{0CCE922C-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("Detailed Tracking", "Process Termination")},
+            {new Guid("{0CCE922B-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("Detailed Tracking", "Process Creation")},
+            {new Guid("{0CCE922E-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("Detailed Tracking", "RPC Events")},
             {new Guid("{0CCE9232-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("Policy Change", "MPSSVC Rule-Level Policy Change")},
             {new Guid("{0CCE9234-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("Policy Change", "Other Policy Change Events")},
             {new Guid("{0CCE9233-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("Policy Change", "Filtering Platform Policy Change")},

@@ -15,6 +15,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("T-FileDeployedOutOfDomain", RiskRuleCategory.Trusts, RiskModelCategory.TrustImpermeability)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
 	[RuleIntroducedIn(2, 7)]
+    [RuleMaturityLevel(2)]
 	public class HeatlcheckRuleTrustFileDeployedOutOfDomain : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

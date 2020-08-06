@@ -1,3 +1,61 @@
+2.9.0.0
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Information: the 3.0 version of PingCastle will run by default on .net 4 instead of .net 2 (this may break the compatibiliy with Windows 2000)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+* when building the map, the program was taking the first part of the FQDN as a shortname. Now it uses the Netbios name if it is available
+* change tooltip description for the trust section of the healthcheck report
+* added the rule S-DC-2008 and S-OS-2008 to check for obsolete 2008 servers which are no longer supported
+* Fix: A-AuditDC - GPO at the root level was ignored and OU specific too. Now the GPO is checked per DC.
+* Fix: A-AuditDC - Reword the rule A-AuditDC for better understanding
+* change A-Krbtgt to be triggered only after 1 year (previously 40 days)
+* Fix: In some scanners, the comma was used instead of a tab
+* Fix: Avoid a crash if the security descriptor of the msi files cannot be retrieved
+* Fix: better switch in case of failure of ADWS to LDAP
+* Added the rule A-CertROCA to check for recoverable public key (ROCA vulnerability) [ANSSI: vuln1_certificates_vuln]
+* Added the rule A-CertWeakDSA to check for DSA key use in certificate used for digital signature [ANSSI: vuln1_certificates_vuln]
+* Added the rule A-CertWeakRsaComponent to check for low RSA exponent
+* Added the rule A-WeakRSARootCert2 to check for rsa module length between 1024 & 2048 (friend of A-WeakRSARootCert)
+* Added the rule A-DsHeuristicsAllowAnonNSPI to check if the heuristics fAllowAnonNSPI is enabled
+* Added the rule P-RODCAllowedGroup to check for the Allowed RODC Password Replication Group group
+* Added the rule P-RODCDeniedGroup to check for the Denied RODC Password Replication Group group
+* Added the rule A-NTFRSOnSysvol to check the usage of the old protocol NTFRS on SYSVOL replication
+* Added the rules A-DnsZoneUpdate1 and A-DnsZoneUpdate2 about DNS unsecure updates
+* Added the rule S-DC-Inactive to check for inactive DC
+* Added the rule S-PwdLastSet-DC to check for regular password change on DC
+* Added the rule T-SIDHistoryDangerous to check for SID lower than 1000 or well known in SIDHistory
+* Added the rule S-PwdNeverExpires to check for accounts with never expiring passwords
+* Added the rule S-DCRegistration to check if DC are well registered (aka detect fake DC)
+* Added the rule P-DelegationDCt2a4d P-DelegationDCa2d2 and P-DelegationDCsourcedeleg for DC delegation analysis
+* Added the rule A-PreWin2000Other to be the companion of A-PreWin2000Anonymous
+* Added the rule P-ProtectedUsers to check if all privileged accounts are member of the protected users group
+* Added the rule S-PwdLastSet-45 and S-PwdLastSet-90 for workstations without the automatic password change disabled
+* Added the rule P-AdminPwdTooOld to check for admin passwords older than 3 years
+* Added the rule S-NoPreAuthAdmin, which is a split of the rule S-NoPreAuth, to match admins
+* Added the rule P-DNSAdmin to check for members of the DNS Admins group
+* Added the rule P-RODCRevealOnDemand P-RODCNeverReveal and P-RODCAdminRevealed for RODC checks
+* Added the rule P-RODCSYSVOLWrite to check for RODC write access to the SYSVOL volume
+* Added the rule A-NoNetSessionHardening to check if the NetCease mitigation has been applied
+* Added the rule A-UnixPwd to check for attributes known to contains password
+* Added the rule T-AzureADSSO to check for password rotation with AzureAD SSO (AZUREADSSOACC)
+* Added the rule S-OS-Win7 to check for Windows 7. PingCastle is looking for support purchased from MS.
+* Change the rule reports to include ANSSI rules
+* Change the threshold of S-Inactive from 15 to 25% to match user_accounts_dormant rule
+* Change the category of P-ControlPathIndirectMany and P-ControlPathIndirectEveryone to the new Control Path category
+* Change the rule P-AdminNum to add a new limit of 50 admins
+* Change the cagory of the rule P-DelegationEveryone, P-PrivilegeEveryone, P-TrustedCredManAccessPrivilege, P-UnconstrainedDelegation, P-UnkownDelegation
+* Change the rule A-MinPwdLen to check only GPO applied to something
+* Change the way GPO are evaluated in rules: if the GPO is disabled or not applied, no anomaly is found
+* Change the rule A-MembershipEveryone to not trigger an alert when Authenticated users is a member of BUILTIN\Users
+* Adding features exclusive for our customers, such as maturity evaluation, and charts
+* Added the scanner export_user for a quick user analysis
+* Added pagination and search in healthcheck report
+* For AdminSDHolder users check, added the date in the report (written as 'Event') when the attribute admincount has been set (via replication metadata)
+* Auditor & Enterprise licensee can now brand the report by using Appsettings/BrandLogo for base64 logo and Appsettings/BrandCss & BrandJs for raw Css & Js to inject
+* make visible the rule ID in the healthcheck report in the rule description
+* Removed BSI reference as the document is not online anymore
+* Added ms-mcs-admpwd read check in delegations
+* Fix members of admin groups outside the AD were not visible in the report
+
 2.8.0.0
 * reworked the way third party components are included in reports for better html auditing (aka Content Security Policy)
 * added the rule P-DNSDelegation to check delegation on the MS DNS server which can be used to take control of the domain

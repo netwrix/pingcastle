@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
 {
 	[RuleModel("P-AdminLogin", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AdminControl)]
 	[RuleComputation(RuleComputationType.TriggerIfLessThan, 20, Threshold: 35)]
+    [RuleMaturityLevel(3)]
     public class HeatlcheckRulePrivilegedAdminLogin : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

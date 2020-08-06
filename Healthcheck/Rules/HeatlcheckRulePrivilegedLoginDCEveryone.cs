@@ -15,6 +15,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleComputation(RuleComputationType.PerDiscover, 15)]
 	[RuleANSSI("R18", "subsubsection.3.3.2")]
 	[RuleIntroducedIn(2, 7)]
+    [RuleMaturityLevel(1)]
 	public class HeatlcheckRulePrivilegedLoginDCEveryone : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

@@ -14,24 +14,41 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("A-LDAPSigningDisabled", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
 	[RuleIntroducedIn(2, 7)]
+    [RuleMaturityLevel(3)]
 	public class HeatlcheckRuleAnomalyLDAPSigningDisabled : RuleBase<HealthcheckData>
 	{
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
 		{
-			foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
-			{
-				foreach (GPPSecurityPolicyProperty property in policy.Properties)
-				{
-					if (property.Property == "LDAPClientIntegrity")
-					{
-						if (property.Value == 0)
-						{
-							AddRawDetail(policy.GPOName);
-							break;
-						}
-					}
-				}
-			}
+            if (healthcheckData.GPOLsaPolicy != null)
+            {
+                foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
+                {
+                    if (healthcheckData.GPOInfoDic == null || !healthcheckData.GPOInfoDic.ContainsKey(policy.GPOId))
+                    {
+                        continue;
+                    }
+                    var refGPO = healthcheckData.GPOInfoDic[policy.GPOId];
+                    if (refGPO.IsDisabled)
+                    {
+                        continue;
+                    }
+                    if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
+                    {
+                        continue;
+                    }
+                    foreach (GPPSecurityPolicyProperty property in policy.Properties)
+                    {
+                        if (property.Property == "LDAPClientIntegrity")
+                        {
+                            if (property.Value == 0)
+                            {
+                                AddRawDetail(policy.GPOName);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
 			return null;
 		}
 	}

@@ -46,9 +46,9 @@ namespace PingCastle.Report
 			AddStyle(TemplateManager.LoadDatatableCss());
 			AddStyle(TemplateManager.LoadReportBaseCss());
 			AddStyle(TemplateManager.LoadReportNetworkMapCss());
-			AddLine(TemplateManager.LoadJqueryDatatableJs());
-			AddLine(TemplateManager.LoadDatatableJs());
-			AddLine(TemplateManager.LoadReportNetworkMapJs());
+			AddScript(TemplateManager.LoadJqueryDatatableJs());
+			AddScript(TemplateManager.LoadDatatableJs());
+			AddScript(TemplateManager.LoadReportNetworkMapJs());
 		}
 
 		protected override void GenerateBodyInformation()
@@ -133,14 +133,20 @@ namespace PingCastle.Report
 					{
 						foreach (var network in site.Networks)
 						{
-							list.Add(new NetworkMapDataItem()
+							// avoid bogus network definitions
+							try
 							{
-								Network = Subnet.Parse(network),
-								Source = report.Forest.DomainName,
-								Description = site.Description,
-								Location = site.Location,
-								Name = site.SiteName,
-							});
+								list.Add(new NetworkMapDataItem()
+								{
+									Network = Subnet.Parse(network),
+									Source = report.Forest.DomainName,
+									Description = site.Description,
+									Location = site.Location,
+									Name = site.SiteName,
+								});
+							}
+							catch (Exception)
+							{ }
 						}
 					}
 				}
@@ -155,6 +161,8 @@ namespace PingCastle.Report
 					// collect DC info
 					foreach (var dc in report.DomainControllers)
 					{
+						if (dc.IP == null)
+							continue;
 						foreach (string ip in dc.IP)
 						{
 							IPAddress i;

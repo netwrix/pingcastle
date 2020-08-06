@@ -42,6 +42,7 @@ namespace PingCastle
 		private bool PerformHealthCheckReloadReport;
 		bool PerformHealthCheckGenerateDemoReports;
 		bool PerformScanner = false;
+		bool PerformGenerateFakeReport = false;
 		bool PerformBot = false;
 		Tasks tasks = new Tasks();
 
@@ -50,7 +51,7 @@ namespace PingCastle
 		{
 			try
 			{
-				AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+                AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
 				AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
 				Trace.WriteLine("Running on dotnet:" + Environment.Version);
 				Program program = new Program();
@@ -199,10 +200,14 @@ namespace PingCastle
 			{
 				if (!tasks.UploadAllReportInCurrentDirectory()) return;
 			}
+			if (PerformGenerateFakeReport)
+			{
+				if (!tasks.GenerateFakeReport()) return;
+			}
 			tasks.CompleteTasks();
 		}
 
-		const string basicEditionLicense = "PC2H4sIAAAAAAAEAO29B2AcSZYlJi9tynt/SvVK1+B0oQiAYBMk2JBAEOzBiM3mkuwdaUcjKasqgcplVmVdZhZAzO2dvPfee++999577733ujudTif33/8/XGZkAWz2zkrayZ4hgKrIHz9+fB8/In7NX+PX+DV+A/r/r/EH/Sk/9W//n//mr/lr068v6f/Pf43i15j+Gvmvsfw1Gvo3/TXOf43q16jp50v6fPlrXPwaJ79GRt+0v0bJ3+79GuNf44B+PuFP8Wb6a5z+GjP6raX/V7/G8tdAF3/Qr/Fr/BqXf9Nv8M/+tr/e3797+mf/8f/D7/jkF/0xf2/xR4y+/eRv++m/8+if+HV/yZ/+d/6Nf+3RH/6X/+G/+Lf/N/+WV3/+n1Od3fv7//1f/h/+C//T7/uH/rf/4i8b/a3f/d3+kj/rD/31/qj/9Onf+U/Vf+uzX/tv+13+jT/rd/wj/7e//Y/+X0b/2K/5T/yL/+4vfPqP/V9/xfWf/xv91OP/8Df5g//Yn/hzxn/rw0/Hv/lf+Cd//uSv+zV/+l/5d3+jf+q/+M5/81/+P30RpgzwAAAA";
+        const string basicEditionLicense = "PC2H4sIAAAAAAAEAO29B2AcSZYlJi9tynt/SvVK1+B0oQiAYBMk2JBAEOzBiM3mkuwdaUcjKasqgcplVmVdZhZAzO2dvPfee++999577733ujudTif33/8/XGZkAWz2zkrayZ4hgKrIHz9+fB8/In7NX+PX+DV+A/r/r/F7fve7v9Uf92/9mr82/bqk/z/7NepfI6f/0l/j9NeY/RrFr9HS/yv6JqV/z+nfl/T38te4+DVOfo3s12jo25Lb7v0a41/jIf3cpv+/oJYt/TynnzX9nNLPBf2X019Tejujd9JfY01v578GEPiDfo1f49f4u37DF3/8fzn+03+Dv+8f+MP/nD/lP/5X/uf/7Zc0vyL5E//H//Y3+h3/lPaX/D1/y//1p/w1O9e/5fXz7d/59//0n/nixe/2e/3rv9Zf+P3f/E/7Pf/c3/Svf/q3/G6/+vS3TP6M/+IPfPrJn/NPr/+xf/2n/r6/8A85+Z/+5P/53/q9f9U/+5vc+z3/x99053/9Q/7Q3/5PXvwLu//cf/fLfs1/6w//138y/zP/9H/+F//pv8PFb/mrvvj7/sO/7dt/2L+5u/f/AH1Ox3cOAQAA";
 		string _serialNumber;
 		public string GetSerialNumber()
 		{
@@ -387,6 +392,9 @@ namespace PingCastle
 							}
 							tasks.FileOrDirectory = args[++i];
 							break;
+						case "--generate-fake-reports":
+							PerformGenerateFakeReport = true;
+							break;
 						case "--generate-key":
 							PerformGenerateKey = true;
 							break;
@@ -399,6 +407,9 @@ namespace PingCastle
 						case "--help":
 							DisplayHelp();
 							return false;
+						case "--I-swear-I-paid-win7-support":
+							Healthcheck.Rules.HeatlcheckRuleStaledObsoleteWin7.IPaidSupport = true;
+							break;
 						case "--interactive":
 							delayedInteractiveMode = true;
 							break;
@@ -704,6 +715,7 @@ namespace PingCastle
 				&& !PerformGenerateKey && !PerformHealthCheckGenerateDemoReports && !PerformCarto
 				&& !PerformUploadAllReport
 				&& !PerformHCRules
+				&& !PerformGenerateFakeReport
 				&& !PerformBot)
 			{
 				WriteInRed("You must choose at least one value among --healthcheck --hc-conso --advanced-export --advanced-report --nullsession --carto");
@@ -1117,7 +1129,9 @@ namespace PingCastle
 			Console.WriteLine("    --webuser <user>  : optional user and password");
 			Console.WriteLine("    --webpassword <password>");
 			Console.WriteLine("");
-			Console.WriteLine("--rules               : Generate an html containing all the rules used by PingCastle. Do not forget PingCastleReporting includes a similar option but for .xslx");
+			Console.WriteLine("    --I-swear-I-paid-win7-support : meaningless");
+			Console.WriteLine("");
+			Console.WriteLine("--rules               : Generate an html containing all the rules used by PingCastle");
 			Console.WriteLine("");
 			Console.WriteLine("  --generate-key      : generate and display a new RSA key for encryption");
 			Console.WriteLine("");
@@ -1158,7 +1172,7 @@ namespace PingCastle
 			}
 			Console.WriteLine("  options for scanners:");
 			Console.WriteLine("    --scmode-single   : force scanner to check one single computer");
-			Console.WriteLine("    --nslimit <number>: Limit the number of users to enumerate (default: 5)");
+			Console.WriteLine("    --nslimit <number>: Limit the number of users to enumerate (default: unlimited)");
 			Console.WriteLine("    --foreigndomain <sid> : foreign domain targeted using its FQDN or sids");
 			Console.WriteLine("                        Example of SID: S-1-5-21-4005144719-3948538632-2546531719");
 			Console.WriteLine("");

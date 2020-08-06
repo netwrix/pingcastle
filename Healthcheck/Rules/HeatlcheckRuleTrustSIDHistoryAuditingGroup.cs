@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("S-Domain$$$", RiskRuleCategory.Trusts, RiskModelCategory.SIDHistory)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
 	[RuleANSSI("R15", "paragraph.3.3.1.5")]
+    [RuleMaturityLevel(3)]
     public class HeatlcheckRuleTrustSIDHistoryAuditingGroup : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

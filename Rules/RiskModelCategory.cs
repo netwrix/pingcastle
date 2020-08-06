@@ -41,6 +41,12 @@ namespace PingCastle.Rules
 		IrreversibleChange = 2003,
 		[Description("Account take over")]
 		AccountTakeOver = 2004,
+        [Description("Control paths")]
+        ControlPath = 2005,
+        [Description("Delegation Check")]
+        DelegationCheck = 2006,
+        [Description("Read-Only Domain Controllers")]
+        RODC = 2007,
 		[Description("SID Filtering")]
 		SIDFiltering = 3000,
 		[Description("Trust inactive")]
@@ -51,7 +57,9 @@ namespace PingCastle.Rules
 		SIDHistory = 3003,
 		[Description("Old trust protocol")]
 		OldTrustProtocol = 3004,
-		[Description("Reconnaissance")]
+        [Description("Trust with Azure")]
+        TrustAzure = 3005,
+        [Description("Reconnaissance")]
 		Reconnaissance = 4000,
 		[Description("Local group vulnerability")]
 		LocalGroupVulnerability = 4001,

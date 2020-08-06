@@ -62,10 +62,10 @@ namespace PingCastle.Scanners
 				int i = 0;
 				foreach (var domain in domains)
 				{
-					sw.WriteLine(i++ + "," + domain.DnsDomainName + "," + domain.NetbiosDomainName + "," +
-						TrustAnalyzer.GetTrustAttribute(domain.TrustAttributes) + " (" + domain.TrustAttributes + ")" + "," +
-						TrustAnalyzer.GetTrustType(domain.TrustType) + " (" + domain.TrustType + ")" + "," + domain.Flags + "," +
-						domain.DomainGuid + "," + domain.DomainSid + "," + domain.ParentIndex);
+					sw.WriteLine(i++ + "\t" + domain.DnsDomainName + "\t" + domain.NetbiosDomainName + "\t" +
+						TrustAnalyzer.GetTrustAttribute(domain.TrustAttributes) + " (" + domain.TrustAttributes + ")" + "\t" +
+						TrustAnalyzer.GetTrustType(domain.TrustType) + " (" + domain.TrustType + ")" + "\t" + domain.Flags + "\t" +
+						domain.DomainGuid + "\t" + domain.DomainSid + "\t" + domain.ParentIndex);
 				}
 			}
 		}

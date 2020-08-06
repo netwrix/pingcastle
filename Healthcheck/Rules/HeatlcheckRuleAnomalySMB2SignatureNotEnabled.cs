@@ -13,9 +13,10 @@ namespace PingCastle.Healthcheck.Rules
 {
 	[RuleModel("A-SMB2SignatureNotEnabled", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-	[RuleBSI("M 2.412")]
+	//[RuleBSI("M 2.412")]
 	[RuleCERTFR("CERTFR-2015-ACT-021", "SECTION00010000000000000000")]
 	[RuleIntroducedIn(2, 5)]
+    [RuleMaturityLevel(3)]
 	public class HeatlcheckRuleAnomalySMB2SignatureNotEnabled : RuleBase<HealthcheckData>
 	{
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

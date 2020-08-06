@@ -16,6 +16,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("S-DC-SubnetMissing", RiskRuleCategory.StaleObjects, RiskModelCategory.NetworkTopography)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
 	[RuleIntroducedIn(2, 5)]
+    [RuleMaturityLevel(3)]
 	public class HeatlcheckRuleStaledDCSubnetMissing : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

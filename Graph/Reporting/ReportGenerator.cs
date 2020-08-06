@@ -48,11 +48,14 @@ namespace PingCastle.Graph.Reporting
 
 			PrepareStopNodes(ObjectReference, domainInfo.DomainSid.Value);
 
-			PrepareDetailledData(domainInfo, data, ObjectReference);
+			PrepareDetailedData(domainInfo, data, ObjectReference);
 			PrepareDependancyGlobalData(data.ControlPaths);
 			PrepareAnomalyAnalysisData(data.ControlPaths);
 
 			PrepareAllPrivilegedMembers(data);
+
+            PrepareDCAnalysis(domainInfo, data);
+            PrepareProtectedGroupAnalysis(domainInfo, data);
 		}
 
 		private void PrepareAllPrivilegedMembers(HealthcheckData healthcheckData)
@@ -62,7 +65,7 @@ namespace PingCastle.Graph.Reporting
 			{
 				foreach (HealthCheckGroupMemberData member in group.Members)
 				{
-					if (!allMembers.ContainsKey(member.DistinguishedName))
+                    if (!allMembers.ContainsKey(member.DistinguishedName))
 					{
 						allMembers.Add(member.DistinguishedName, member);
 					}
@@ -74,7 +77,122 @@ namespace PingCastle.Graph.Reporting
 			}
 		}
 
-		void PrepareDetailledData(ADDomainInfo domainInfo, HealthcheckData data, GraphObjectReference ObjectReference)
+        private void PrepareDCAnalysis(ADDomainInfo domainInfo, HealthcheckData data)
+        {
+            int rootNodeId = storage.SearchItem(domainInfo.DomainSid.Value + "-516");
+            if (rootNodeId < 0)
+            {
+                Trace.WriteLine("Domain controller not found in graph ?!");
+                return;
+            }
+            Dictionary<int, Node> chartNodes = new Dictionary<int, Node>();
+            List<int> directUsers = new List<int>();
+            List<int> directComputers = new List<int>();
+            Dictionary<int, List<Relation>> links = new Dictionary<int, List<Relation>>();
+            BuildTree(rootNodeId, chartNodes, directUsers, directComputers, links);
+            foreach (var cid in directComputers)
+            {
+                if (links.ContainsKey(cid))
+                {
+                    foreach (var rel in links[cid])
+                    {
+                        foreach (var h in rel.Hint)
+                        {
+                            if (h == RelationType.msDS_Allowed_To_Delegate_To.ToString())
+                            {
+                                PrepareDCAnalysisSaveData(data, chartNodes[cid], chartNodes[rel.ToId], h);
+                            }
+                            else if (h == RelationType.msDS_Allowed_To_Delegate_To_With_Protocol_Transition.ToString())
+                            {
+                                PrepareDCAnalysisSaveData(data, chartNodes[cid], chartNodes[rel.ToId], h);
+                            }
+                            else if (h == RelationType.msDS_Allowed_To_Act_On_Behalf_Of_Other_Identity.ToString())
+                            {
+                                PrepareDCAnalysisSaveData(data, chartNodes[cid], chartNodes[rel.ToId], h);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void PrepareDCAnalysisSaveData(HealthcheckData data, Node DC, Node Delegate, string DelegationType)
+        {
+            foreach (var dc in data.DomainControllers)
+            {
+                if (dc.DistinguishedName == DC.Name)
+                {
+                    if (dc.Delegations == null)
+                        dc.Delegations = new List<HealthcheckDomainControllerDelegation>();
+                    dc.Delegations.Add(new HealthcheckDomainControllerDelegation()
+                    {
+                        Delegate = Delegate.Shortname,
+                        DelegateSid = Delegate.Sid,
+                        DelegationType = DelegationType,
+                    });
+                    return;
+                }
+            }
+            Trace.WriteLine("Delegation was not resolved to DC (" + DC.Name + "-" + Delegate.Shortname + ")");
+        }
+
+        private void PrepareProtectedGroupAnalysis(ADDomainInfo domainInfo, HealthcheckData data)
+        {
+            int rootNodeId = storage.SearchItem(domainInfo.DomainSid.Value + "-525");
+            if (rootNodeId < 0)
+            {
+                Trace.WriteLine("Protected Users not found ?!");
+                return;
+            }
+            Dictionary<int, Node> chartNodes = new Dictionary<int, Node>();
+            List<int> directUsers = new List<int>();
+            List<int> directComputers = new List<int>();
+            Dictionary<int, List<Relation>> links = new Dictionary<int, List<Relation>>();
+            BuildTree(rootNodeId, chartNodes, directUsers, directComputers, links);
+
+            var dn = new Dictionary<string, Node>();
+			var match = new List<string>();
+            foreach(var u in directUsers)
+            {
+                dn.Add(chartNodes[u].Dn, chartNodes[u]);
+            }
+            foreach(var u in directComputers)
+            {
+                dn.Add(chartNodes[u].Dn, chartNodes[u]);
+			}
+
+            foreach (var group in data.PrivilegedGroups)
+            {
+                foreach (var user in group.Members)
+                {
+                    if (dn.ContainsKey(user.DistinguishedName))
+                    {
+                        user.IsInProtectedUser = true;
+                        group.NumberOfMemberInProtectedUsers++;
+                    }
+                }
+            }
+            foreach (var user in data.AllPrivilegedMembers)
+            {
+                if (dn.ContainsKey(user.DistinguishedName))
+                {
+                    user.IsInProtectedUser = true;
+					match.Add(user.DistinguishedName);
+				}
+            }
+			// build protect users
+			data.ProtectedUsersNotPrivileged = new HealthCheckGroupData();
+			data.ProtectedUsersNotPrivileged.Members = new List<HealthCheckGroupMemberData>();
+			foreach (var k in dn)
+			{
+				if (!match.Contains(k.Key))
+				{
+					BuildMemberDetail(domainInfo.DnsHostName, data.ProtectedUsersNotPrivileged, k.Value);
+				}
+			}
+		}
+
+		void PrepareDetailedData(ADDomainInfo domainInfo, HealthcheckData data, GraphObjectReference ObjectReference)
 		{
 			foreach (var typology in ObjectReference.Objects.Keys)
 			{
@@ -236,7 +354,7 @@ namespace PingCastle.Graph.Reporting
 					if (typology == CompromiseGraphDataTypology.PrivilegedAccount)
 					{
 						Trace.WriteLine("Build privilege data");
-						BuildPrivilegeData(domainInfo, hcdata, singleCompromiseData, directUsers, directComputers);
+						BuildPrivilegeData(domainInfo, hcdata, singleCompromiseData, storage.RetrieveNode(rootNodeId), directUsers, directComputers);
 					}
 				}
 				Trace.WriteLine("Build indirect members");
@@ -268,7 +386,7 @@ namespace PingCastle.Graph.Reporting
 			var domains = storage.GetKnownDomains();
 			foreach (var node in chartNodes.Values)
 			{
-				if (String.Equals(node.Type, "foreignsecurityprincipal", StringComparison.InvariantCultureIgnoreCase))
+				if (string.Equals(node.Type, "foreignsecurityprincipal", StringComparison.InvariantCultureIgnoreCase))
 				{
 					// ignore deleted accounts
 					if (node.Sid.StartsWith(domainInfo.DomainSid.Value + "-"))
@@ -356,8 +474,11 @@ namespace PingCastle.Graph.Reporting
 			foreach (var id in directNodes)
 			{
 				var node = storage.RetrieveNode(id);
-				var user = BuildMembersUser(node.ADItem);
-				singleCompromiseData.DirectUserMembers.Add(user);
+				if (IsNodeTypeAUserNode(node.Type))
+				{
+					var user = BuildMembersUser(node.ADItem);
+					singleCompromiseData.DirectUserMembers.Add(user);
+				}
 			}
 			singleCompromiseData.NumberOfDirectUserMembers = singleCompromiseData.DirectUserMembers.Count;
 		}
@@ -374,106 +495,141 @@ namespace PingCastle.Graph.Reporting
 			singleCompromiseData.NumberOfDirectComputerMembers = singleCompromiseData.DirectComputerMembers.Count;
 		}
 
-		private void BuildPrivilegeData(ADDomainInfo domainInfo, HealthcheckData hcdata, SingleCompromiseGraphData singleCompromiseData, List<int> directNodes1, List<int> directNodes2)
+		private void BuildPrivilegeData(ADDomainInfo domainInfo, HealthcheckData hcdata, SingleCompromiseGraphData singleCompromiseData, Node rootNode, List<int> directNodes1, List<int> directNodes2)
 		{
-			var items = new List<ADItem>();
+			var items = new List<Node>();
 			foreach (var id in directNodes1)
 			{
 				var node = storage.RetrieveNode(id);
-				var item = node.ADItem;
-				items.Add(item);
+				items.Add(node);
 			}
 			foreach (var id in directNodes2)
 			{
 				var node = storage.RetrieveNode(id);
-				var item = node.ADItem;
-				items.Add(item);
+				items.Add(node);
 			}
-			var groupData = AnalyzeGroupData(domainInfo.DnsHostName, singleCompromiseData.Description, items);
+            var groupData = AnalyzeGroupData(domainInfo.DnsHostName, singleCompromiseData.Description, rootNode, items);
 			hcdata.PrivilegedGroups.Add(groupData);
 		}
 
 
-		private HealthCheckGroupData AnalyzeGroupData(string resolveSidServer, string groupName, IEnumerable<ADItem> members)
+        private HealthCheckGroupData AnalyzeGroupData(string resolveSidServer, string groupName, Node rootNode, IEnumerable<Node> members)
 		{
 			HealthCheckGroupData data = new HealthCheckGroupData();
 			data.GroupName = groupName;
+            data.DistinguishedName = rootNode.ADItem.DistinguishedName;
 			data.Members = new List<HealthCheckGroupMemberData>();
-			foreach (ADItem x in members)
+			foreach (Node x in members)
 			{
-				// avoid computer included in the "cert publisher" group
-				if (x.Class == "computer")
+				// avoid computer included in the "cert publisher" group)
+				if (x.ADItem != null && IsNodeTypeAComputerNode(x.ADItem.Class))
 					continue;
 				data.NumberOfMember++;
-				HealthCheckGroupMemberData member = new HealthCheckGroupMemberData();
+				var member = BuildMemberDetail(resolveSidServer, data, x);
 				data.Members.Add(member);
-				member.DistinguishedName = x.DistinguishedName;
-				// special case for foreignsecurityprincipals
-				if (x.Class != "user")
-				{
-					data.NumberOfExternalMember++;
-					member.IsExternal = true;
-					member.Name = x.Name;
-					if (x.Name.StartsWith("S-1-", StringComparison.InvariantCultureIgnoreCase))
-					{
-						// try to solve the SID
-						member.Name = NativeMethods.ConvertSIDToName(x.Name, resolveSidServer);
-					}
-				}
-				else
-				{
-					// analyse useraccountcontrol
-					member.Name = x.SAMAccountName;
-					member.PwdLastSet = x.PwdLastSet;
-					member.LastLogonTimestamp = x.LastLogonTimestamp;
-					if ((x.UserAccountControl & 0x00000002) != 0)
-						data.NumberOfMemberDisabled++;
-					else
-					{
-						data.NumberOfMemberEnabled++;
-						member.IsEnabled = true;
-						// last login since 6 months
-						if (x.LastLogonTimestamp.AddDays(6 * 31) > DateTime.Now)
-						{
-							data.NumberOfMemberActive++;
-							member.IsActive = true;
-						}
-						else
-							data.NumberOfMemberInactive++;
-						if (x.ServicePrincipalName != null && x.ServicePrincipalName.Length > 0)
-						{
-							member.IsService = true;
-							data.NumberOfServiceAccount++;
-						}
-						if ((x.UserAccountControl & 0x00000010) != 0)
-						{
-							member.IsLocked = true;
-							data.NumberOfMemberLocked++;
-						}
-						if ((x.UserAccountControl & 0x00010000) != 0)
-						{
-							data.NumberOfMemberPwdNeverExpires++;
-							member.DoesPwdNeverExpires = true;
-						}
-						if ((x.UserAccountControl & 0x00000020) != 0)
-							data.NumberOfMemberPwdNotRequired++;
-						// this account is sensitive and cannot be delegated
-						if ((x.UserAccountControl & 0x100000) == 0)
-						{
-							data.NumberOfMemberCanBeDelegated++;
-							member.CanBeDelegated = true;
-						}
-						if ((x.UserAccountControl & 0x40000) != 0)
-						{
-							data.NumberOfSmartCardRequired++;
-							member.SmartCardRequired = true;
-						}
-					}
-				}
 			}
 			return data;
 		}
 
+		private HealthCheckGroupMemberData BuildMemberDetail(string resolveSidServer, HealthCheckGroupData data, Node node)
+		{
+			HealthCheckGroupMemberData member = new HealthCheckGroupMemberData();
+			if (node.ADItem == null)
+			{
+				data.NumberOfExternalMember++;
+				data.NumberOfMemberEnabled++;
+				member.IsExternal = true;
+				member.Name = node.Shortname;
+                member.DistinguishedName = node.Dn;
+				if (!string.IsNullOrEmpty(node.Sid))
+				{
+					// try to solve the SID
+					member.Name = NativeMethods.ConvertSIDToName(member.Name, resolveSidServer);
+				}
+                else if (string.IsNullOrEmpty(member.Name))
+                {
+                    member.Name = node.Name;
+                }
+				if (string.IsNullOrEmpty(member.DistinguishedName))
+					member.DistinguishedName = node.Shortname;
+			}
+            else if (!IsNodeTypeAUserNode(node.Type))
+            {
+                data.NumberOfExternalMember++;
+				data.NumberOfMemberEnabled++;
+				var x = node.ADItem;
+                member.IsExternal = true;
+                member.Name = node.Shortname;
+                member.DistinguishedName = x.DistinguishedName;
+                if (!string.IsNullOrEmpty(node.Sid))
+                {
+                    // try to solve the SID
+                    member.Name = NativeMethods.ConvertSIDToName(member.Name, resolveSidServer);
+                }
+                else if (string.IsNullOrEmpty(member.Name))
+                {
+                    member.Name = node.Name;
+                }
+				if (string.IsNullOrEmpty(member.DistinguishedName))
+					member.DistinguishedName = node.Shortname;
+			}
+            else
+			{
+				var x = node.ADItem;
+				member.DistinguishedName = x.DistinguishedName;
+				member.Created = x.WhenCreated;
+
+				// analyse useraccountcontrol
+				member.Name = x.SAMAccountName;
+				member.PwdLastSet = x.PwdLastSet;
+				member.LastLogonTimestamp = x.LastLogonTimestamp;
+				if ((x.UserAccountControl & 0x00000002) != 0)
+					data.NumberOfMemberDisabled++;
+				else
+				{
+					data.NumberOfMemberEnabled++;
+					member.IsEnabled = true;
+					// last login since 6 months
+					if (x.LastLogonTimestamp.AddDays(6 * 31) > DateTime.Now)
+					{
+						data.NumberOfMemberActive++;
+						member.IsActive = true;
+					}
+					else
+						data.NumberOfMemberInactive++;
+					if (x.ServicePrincipalName != null && x.ServicePrincipalName.Length > 0)
+					{
+						member.IsService = true;
+						data.NumberOfServiceAccount++;
+					}
+					if ((x.UserAccountControl & 0x00000010) != 0)
+					{
+						member.IsLocked = true;
+						data.NumberOfMemberLocked++;
+					}
+					if ((x.UserAccountControl & 0x00010000) != 0)
+					{
+						data.NumberOfMemberPwdNeverExpires++;
+						member.DoesPwdNeverExpires = true;
+					}
+					if ((x.UserAccountControl & 0x00000020) != 0)
+						data.NumberOfMemberPwdNotRequired++;
+					// this account is sensitive and cannot be delegated
+					if ((x.UserAccountControl & 0x100000) == 0)
+					{
+						data.NumberOfMemberCanBeDelegated++;
+						member.CanBeDelegated = true;
+					}
+					if ((x.UserAccountControl & 0x40000) != 0)
+					{
+						data.NumberOfSmartCardRequired++;
+						member.SmartCardRequired = true;
+					}
+				}
+			}
+
+			return member;
+		}
 
 		private void BuildIndirectMembers(SingleCompromiseGraphData singleCompromiseData)
 		{
@@ -740,16 +896,21 @@ namespace PingCastle.Graph.Reporting
 							knownNodeAfterThis.Add(link.ToId, node);
 							output.Add(link.ToId);
 						}
-						if (IsNodeTypeAUserNode(node.Type))
-						{
-							if (!directUserNodes.Contains(link.ToId))
-								directUserNodes.Add(link.ToId);
-						}
-						else if (IsNodeTypeAComputerNode(node.Type))
+						if (IsNodeTypeAComputerNode(node.Type))
 						{
 							if (!directComputersNodes.Contains(link.ToId))
 								directComputersNodes.Add(link.ToId);
 						}
+                        else if (IsNodeTypeAUserNode(node.Type))
+						{
+							if (!directUserNodes.Contains(link.ToId))
+								directUserNodes.Add(link.ToId);
+						}
+                        else if (string.Equals(node.Type, "foreignSecurityPrincipal", StringComparison.OrdinalIgnoreCase) || string.Equals(node.Type, "unknown", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (!directUserNodes.Contains(link.ToId))
+                                directUserNodes.Add(link.ToId);
+                        }
 					}
 				}
 				distance++;

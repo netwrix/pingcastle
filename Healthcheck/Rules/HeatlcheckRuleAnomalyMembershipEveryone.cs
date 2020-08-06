@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
 {
 	[RuleModel("A-MembershipEveryone", RiskRuleCategory.Anomalies, RiskModelCategory.LocalGroupVulnerability)]
 	[RuleComputation(RuleComputationType.PerDiscover, 15)]
+    [RuleMaturityLevel(1)]
     public class HeatlcheckRuleAnomalyMembershipEveryone : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
@@ -21,6 +22,8 @@ namespace PingCastle.Healthcheck.Rules
             {
 				if (membership.User == "Authenticated Users" || membership.User == "Everyone" || membership.User == "Users" || membership.User == "Anonymous")
                 {
+                    if (string.Equals(membership.MemberOf, "BUILTIN\\Users", StringComparison.OrdinalIgnoreCase))
+                        continue;
                     AddRawDetail(membership.GPOName, membership.MemberOf, membership.User);
                 }
             }

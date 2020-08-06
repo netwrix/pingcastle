@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("P-DangerousExtendedRight", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
 	[RuleComputation(RuleComputationType.PerDiscover, 5)]
 	[RuleANSSI("R18", "subsubsection.3.3.2")]
+    [RuleMaturityLevel(2)]
     public class HeatlcheckRulePrivilegedDangerousDelegation : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

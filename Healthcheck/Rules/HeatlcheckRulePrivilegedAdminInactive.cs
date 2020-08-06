@@ -15,6 +15,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleComputation(RuleComputationType.TriggerOnThreshold, 30, Threshold: 30, Order: 1)]
 	[RuleComputation(RuleComputationType.TriggerOnThreshold, 20, Threshold: 15, Order: 2)]
 	[RuleANSSI("R36", "subsection.3.6")]
+    [RuleMaturityLevel(3)]
     public class HeatlcheckRulePrivilegedAdminInactive : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

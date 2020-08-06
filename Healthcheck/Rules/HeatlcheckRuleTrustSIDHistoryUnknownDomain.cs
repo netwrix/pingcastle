@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("T-SIDHistoryUnknownDomain", RiskRuleCategory.Trusts, RiskModelCategory.SIDHistory)]
 	[RuleComputation(RuleComputationType.PerDiscover, 10)]
 	[RuleANSSI("R15", "paragraph.3.3.1.5")]
+    [RuleDurANSSI(3, "sidhistory_present", "Accounts or groups with SID history set")]
     public class HeatlcheckRuleTrustSIDHistoryUnknownDomain : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

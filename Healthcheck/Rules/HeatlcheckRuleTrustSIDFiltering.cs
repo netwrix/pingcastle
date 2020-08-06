@@ -18,7 +18,9 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 50, Order: 3)]
     [RuleSTIG("V-8538", "Security identifiers (SIDs) must be configured to use only authentication data of directly trusted external or forest trust. ")]
 	[RuleANSSI("R16", "paragraph.3.3.1.6")]
-	[RuleBSI("M 4.314")]
+	//[RuleBSI("M 4.314")]
+    [RuleDurANSSI(1, "trusts_forest_sidhistory", "Outbound forest trust relationships with sID History enabled")]
+    [RuleDurANSSI(1, "trusts_domain_notfiltered", "Unfiltered outbound domain trust relationship")]
     public class HeatlcheckRuleTrustSIDFiltering : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData, ICollection<DomainKey> AllowedMigrationDomains)

@@ -113,7 +113,7 @@ namespace PingCastle.Scanners
 			{
 				try
 				{
-					tempResult = Smb2Protocol.DoesServerSupportDialectWithSmbV2(server, dialect, out smbv2temp);
+					tempResult = Smb2ProtocolTest.DoesServerSupportDialectWithSmbV2(server, dialect, out smbv2temp);
 					if (tempResult)
 					{
 						result = true;
@@ -162,14 +162,14 @@ namespace PingCastle.Scanners
 				}
 				try
 				{
-					SMBv2_0x0202 = Smb2Protocol.DoesServerSupportDialectWithSmbV2(computer, 0x0202, out smbv2secmode);
-					SMBv2_0x0210 = Smb2Protocol.DoesServerSupportDialectWithSmbV2(computer, 0x0210, out smbv2temp);
+                    SMBv2_0x0202 = Smb2ProtocolTest.DoesServerSupportDialectWithSmbV2(computer, 0x0202, out smbv2secmode);
+                    SMBv2_0x0210 = Smb2ProtocolTest.DoesServerSupportDialectWithSmbV2(computer, 0x0210, out smbv2temp);
 					smbv2secmode = CombineSecurityMode(smbv2secmode, smbv2temp);
-					SMBv2_0x0300 = Smb2Protocol.DoesServerSupportDialectWithSmbV2(computer, 0x0300, out smbv2temp);
+                    SMBv2_0x0300 = Smb2ProtocolTest.DoesServerSupportDialectWithSmbV2(computer, 0x0300, out smbv2temp);
 					smbv2secmode = CombineSecurityMode(smbv2secmode, smbv2temp);
-					SMBv2_0x0302 = Smb2Protocol.DoesServerSupportDialectWithSmbV2(computer, 0x0302, out smbv2temp);
+                    SMBv2_0x0302 = Smb2ProtocolTest.DoesServerSupportDialectWithSmbV2(computer, 0x0302, out smbv2temp);
 					smbv2secmode = CombineSecurityMode(smbv2secmode, smbv2temp);
-					SMBv2_0x0311 = Smb2Protocol.DoesServerSupportDialectWithSmbV2(computer, 0x0311, out smbv2temp);
+                    SMBv2_0x0311 = Smb2ProtocolTest.DoesServerSupportDialectWithSmbV2(computer, 0x0311, out smbv2temp);
 					smbv2secmode = CombineSecurityMode(smbv2secmode, smbv2temp);
 				}
 				catch (Smb2NotSupportedException)

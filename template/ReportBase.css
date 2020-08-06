@@ -193,3 +193,24 @@ html
 }
 
 .tooltip-wide { max-width: 100%; min-width: 80%; }
+
+.grade-1 {
+ color:#fff;
+ background-color:red;
+}
+.grade-2 {
+ background-color:orange;
+ color:#000;
+}
+.grade-3 {
+ background-color:khaki;
+ color:#000;
+}
+.grade-4 {
+ color:#fff;
+ background-color:#007bff
+}
+.grade-5 {
+ color:#fff;
+ background-color:#28a745
+}

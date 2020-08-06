@@ -33,6 +33,8 @@ namespace PingCastle.Rules
 
         public List<string> Details { get; set; }
 
+		public int MaturityLevel { get; private set; }
+
 		// return count if not null or rely on details.count
 		protected virtual int? AnalyzeDataNew(T healthcheckData)
 		{
@@ -129,10 +131,22 @@ namespace PingCastle.Rules
                 {
                     if (i > 0)
                         Documentation += "<br>\r\n";
-                    Documentation += "<a href=\"" + ((RuleFrameworkReference) frameworks[i]).URL + "\">" + ((RuleFrameworkReference)frameworks[i]).Label + "</a>";
+                    Documentation += ((RuleFrameworkReference) frameworks[i]).GenerateLink();
                 }
             }
-        }
+
+			var ruleMaturity = new List<IRuleMaturity>((IRuleMaturity[])GetType().GetCustomAttributes(typeof(IRuleMaturity), true));
+			if (ruleMaturity.Count == 0)
+			{
+				MaturityLevel = 0;
+			}
+			MaturityLevel = 5;
+			foreach (var m in ruleMaturity)
+			{
+				if (MaturityLevel > m.Level)
+					MaturityLevel = m.Level;
+			}
+		}
 
         public void Initialize()
         {

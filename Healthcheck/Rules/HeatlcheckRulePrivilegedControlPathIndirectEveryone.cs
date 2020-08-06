@@ -11,9 +11,10 @@ using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-    [RuleModel("P-ControlPathIndirectEveryone", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+    [RuleModel("P-ControlPathIndirectEveryone", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ControlPath)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 25)]
     [RuleIntroducedIn(2, 8)]
+    [RuleMaturityLevel(1)]
     public class HeatlcheckRulePrivilegedControlPathIndirectEveryone : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

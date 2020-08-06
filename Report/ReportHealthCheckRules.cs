@@ -91,9 +91,6 @@ $(document).ready(function(){
 <div class=""row""><div class=""col-lg-12""><h1>Rules evaluated during PingCastle Healthcheck</h1>
 			<h3>Date: " + DateTime.Now.ToString("yyyy-MM-dd") + @" - Engine version: " + versionString + @"</h3>
 </div></div>
-<div class=""alert alert-info"">
-Do not forget that PingCastleReporting can produce a list of all rules in an Excel format.
-</div>
 ");
 			GenerateContent();
 			Add(@"
@@ -112,6 +109,8 @@ Do not forget that PingCastleReporting can produce a list of all rules in an Exc
 			GenerateRuleAccordeon(RiskRuleCategory.Trusts);
 			GenerateSubSection("Anomalies");
 			GenerateRuleAccordeon(RiskRuleCategory.Anomalies);
+            GenerateSubSection("ANSSI Rules mapping");
+            GenerateANSSISection();
 		}
 
 		ResourceManager _resourceManager = new ResourceManager("PingCastle.Healthcheck.Rules.RuleDescription", typeof(RuleBase<>).Assembly);
@@ -280,7 +279,7 @@ Do not forget that PingCastleReporting can produce a list of all rules in an Exc
 		private void GenerateIndicatorPanelDetail(RiskModelCategory category, RuleBase<HealthcheckData> hcrule)
 		{
 			string safeRuleId = hcrule.RiskId.Replace("$", "dollar");
-			GenerateAccordionDetail("rules" + safeRuleId, "rules" + category.ToString(), hcrule.Title, null, true,
+			GenerateAccordionDetail("rules" + safeRuleId, "rules" + category.ToString(), hcrule.Title + " (" + hcrule.RiskId + ")", null, true,
 				() =>
 				{
 					Add("<h3>");
@@ -314,5 +313,154 @@ Do not forget that PingCastleReporting can produce a list of all rules in an Exc
 					}
 				});
 		}
+
+        private class DurANSSIRegroup
+        {
+            public string ID { get; set; }
+            public List<int> Levels { get; set; }
+            public int MinLevel { get; set; }
+            public string Label { get; set; }
+            public List<RuleBase<HealthcheckData>> PCRules { get; set; }
+
+            public DurANSSIRegroup(RuleDurANSSIAttribute rule, List<RuleBase<HealthcheckData>> data)
+            {
+                PCRules = new List<RuleBase<HealthcheckData>>();
+                ID = rule.ID;
+                Label = rule.ANSSILabel;
+                Levels = new List<int>();
+                Levels.Add(rule.Level);
+                MinLevel = rule.Level;
+                PCRules = new List<RuleBase<HealthcheckData>>();
+                PCRules.AddRange(data);
+            }
+
+            public void Add(RuleDurANSSIAttribute rule, List<RuleBase<HealthcheckData>> data)
+            {
+                if (!Levels.Contains(rule.Level))
+                    Levels.Add(rule.Level);
+                PCRules.AddRange(data);
+                if (MinLevel > rule.Level)
+                    MinLevel = rule.Level;
+            }
+        }
+
+        private void GenerateANSSISection()
+        {
+            AddParagraph("This is the mapping of the ANSSI rules with PingCastle rules.");
+            var reference = new Dictionary<RuleDurANSSIAttribute, List<RuleBase<HealthcheckData>>>();
+            foreach (var rule in RuleSet<HealthcheckData>.Rules)
+            {
+                object[] frameworks = rule.GetType().GetCustomAttributes(typeof(RuleDurANSSIAttribute), true);
+                foreach(RuleDurANSSIAttribute f in frameworks)
+                {
+                    if (!reference.ContainsKey(f))
+                    {
+                        reference[f] = new List<RuleBase<HealthcheckData>>();
+                    }
+                    reference[f].Add(rule);
+                }
+            }
+
+            var perRuleId = new Dictionary<string, DurANSSIRegroup>();
+            foreach (var rule in reference.Keys)
+            {
+                if (!perRuleId.ContainsKey(rule.ID))
+                {
+                    perRuleId[rule.ID] = new DurANSSIRegroup(rule, reference[rule]);
+                }
+                else
+                {
+                    perRuleId[rule.ID].Add(rule, reference[rule]);
+                }
+            }
+
+            var regroup = new List<DurANSSIRegroup>(perRuleId.Values);
+            regroup.Sort(
+                (DurANSSIRegroup a, DurANSSIRegroup b)
+                    =>
+                {
+                    int c = a.MinLevel.CompareTo(b.MinLevel);
+                    if (c != 0)
+                        return c;
+                    return string.CompareOrdinal(a.Label, b.Label);
+                });
+
+            Add("<p>Number of ANSSI rules matched: ");
+            Add(regroup.Count);
+            Add("</p>");
+            var count = new Dictionary<int, int>();
+            foreach (var r in regroup)
+            {
+                if (!count.ContainsKey(r.MinLevel))
+                    count[r.MinLevel] = 1;
+                else
+                    count[r.MinLevel]++;
+            }
+            Add("<div class='row'>");
+            Add("<div class='col-lg-12'>");
+            
+            foreach (var l in count.Keys)
+            {
+                Add("<p>");
+                Add("<span class=\"badge grade-");
+                Add(l);
+                Add("\">");
+                Add(l);
+                Add("</span>: ");
+                Add(count[l]);
+                Add("</p>");
+            }
+            Add("</div>");
+            Add("</div>");
+            foreach (var r in regroup)
+            {
+                Add("<div class='row'>");
+                Add("<div class='col-lg-12'>");
+                Add("<p>");
+                r.Levels.Sort();
+                foreach (var l in r.Levels)
+                {
+                    Add("<span class=\"badge grade-");
+                    Add(l);
+                    Add("\">");
+                    Add(l);
+                    Add("</span>");
+                }
+                Add(r.Label);
+                Add(" (<a href=\"https://www.cert.ssi.gouv.fr/uploads/guide-ad.html#");
+                Add(r.ID);
+                Add("\">link</a>)");
+                Add("</p>");
+                Add("</div>");
+                Add("</div>");
+                Add("<div class='row'>");
+                Add("<div class='col-lg-12'>");
+                Add("<p>ANSSI ID&nbsp;:");
+                foreach (var l in r.Levels)
+                {
+                    Add(" <span class=\"text-monospace\">vuln");
+                    Add(l);
+                    Add("_");
+                    Add(r.ID);
+                    Add("</span>");
+                }
+                Add("</p>");
+                Add("</div>");
+                Add("</div>");
+                Add("<div class='row'>");
+                Add("<div class='col-lg-12'>");
+                Add("<p>PingCastle ID&nbsp;:");
+                r.PCRules.Sort((RuleBase<HealthcheckData> a, RuleBase<HealthcheckData> b) => { return string.CompareOrdinal(a.RiskId, b.RiskId); });
+                foreach (var l in r.PCRules)
+                {
+                    Add(" <span class=\"text-monospace\">");
+                    Add(l.RiskId);
+                    Add("</span>");
+                }
+                Add("</p>");
+                Add("</div>");
+                Add("</div>");
+            }
+        }
 	}
 }

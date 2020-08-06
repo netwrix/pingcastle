@@ -204,6 +204,21 @@ namespace PingCastle.Data
                     }
                 }
             }
+            if (data.MaturityLevel == 0)
+            {
+                data.MaturityLevel = 5;
+                foreach (var rule in data.RiskRules)
+                {
+                    var hcrule = RuleSet<HealthcheckData>.GetRuleFromID(rule.RiskId);
+                    if (hcrule == null)
+                    {
+                        continue;
+                    }
+                    int level = hcrule.MaturityLevel;
+                    if (level > 0 && level < data.MaturityLevel)
+                        data.MaturityLevel = level;
+                }
+            }
         }
 
         static void decipher(string filename, XmlDocument xmlDoc, List<RSA> Keys)

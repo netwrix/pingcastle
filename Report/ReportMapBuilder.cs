@@ -9,6 +9,7 @@ using PingCastle.Healthcheck;
 using PingCastle.template;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Text;
 
@@ -25,9 +26,10 @@ namespace PingCastle.Report
 			EntityData = ownerInformationReferences;
 			FullNodeMap = true;
         }
-		public ReportHealthCheckMapBuilder(PingCastleReportCollection<HealthcheckData> consolidation) : this(consolidation, null)
+		public ReportHealthCheckMapBuilder(PingCastleReportCollection<HealthcheckData> consolidation, ADHealthCheckingLicense license) : this(consolidation, (OwnerInformationReferences)null)
 		{
-		}
+            Brand(license);
+        }
 
 
         public delegate void GraphLogging(string message);
@@ -169,7 +171,8 @@ namespace PingCastle.Report
                 }
                 sb.Append("    {");
                 sb.Append("      \"id\": " + nodenumber + ",");
-                sb.Append("      \"shortname\": \"" + ReportHelper.EscapeJsonString(node.Domain.DomainName.Split('.')[0]) + "\"");
+                var nodeShortName = !string.IsNullOrEmpty(node.Domain.DomainNetBIOS) ? node.Domain.DomainNetBIOS : (node.Domain.DomainName.Split('.')[0]);
+                sb.Append("      \"shortname\": \"" + ReportHelper.EscapeJsonString(nodeShortName) + "\"");
                 if (node.IsPartOfARealForest())
                 {
 					sb.Append("      ,\"forest\": \"" + ReportHelper.EscapeJsonString(node.Forest.DomainName) + "\"");
@@ -188,6 +191,7 @@ namespace PingCastle.Report
                 if (data != null)
                 {
                     sb.Append("      ,\"score\": " + data.GlobalScore);
+                    sb.Append("      ,\"maturityLevel\": " + data.MaturityLevel);
                     sb.Append("      ,\"staleObjectsScore\": " + data.StaleObjectsScore);
                     sb.Append("      ,\"privilegiedGroupScore\": " + data.PrivilegiedGroupScore);
                     sb.Append("      ,\"trustScore\": " + data.TrustScore);
@@ -440,7 +444,8 @@ namespace PingCastle.Report
         {
             sb.Append("{");
 			sb.Append("  \"name\": \"" + ReportHelper.EscapeJsonString(node.Domain.DomainName) + "\"\r\n");
-			sb.Append("  ,\"shortname\": \"" + ReportHelper.EscapeJsonString(node.Domain.DomainName.Split('.')[0]) + "\"\r\n");
+            var nodeShortName = !string.IsNullOrEmpty(node.Domain.DomainNetBIOS) ? node.Domain.DomainNetBIOS : (node.Domain.DomainName.Split('.')[0]);
+            sb.Append("  ,\"shortname\": \"" + ReportHelper.EscapeJsonString(nodeShortName) + "\"\r\n");
             if (node.Forest != null && node.Forest != node.Domain)
             {
 				sb.Append("      ,\"forest\": \"" + ReportHelper.EscapeJsonString(node.Forest.DomainName) + "\"");
@@ -453,6 +458,7 @@ namespace PingCastle.Report
             if (data != null)
             {
                 sb.Append("      ,\"score\": " + data.GlobalScore);
+                sb.Append("      ,\"maturityLevel\": " + data.MaturityLevel);
                 sb.Append("      ,\"staleObjectsScore\": " + data.StaleObjectsScore);
                 sb.Append("      ,\"privilegiedGroupScore\": " + data.PrivilegiedGroupScore);
                 sb.Append("      ,\"trustScore\": " + data.TrustScore);
@@ -512,7 +518,8 @@ namespace PingCastle.Report
 				if (data != null)
 				{
 					sb.Append("      ,\"score\": " + data.GlobalScore);
-					sb.Append("      ,\"staleObjectsScore\": " + data.StaleObjectsScore);
+                    sb.Append("      ,\"maturityLevel\": " + data.MaturityLevel);
+                    sb.Append("      ,\"staleObjectsScore\": " + data.StaleObjectsScore);
 					sb.Append("      ,\"privilegiedGroupScore\": " + data.PrivilegiedGroupScore);
 					sb.Append("      ,\"trustScore\": " + data.TrustScore);
 					sb.Append("      ,\"anomalyScore\": " + data.AnomalyScore);

@@ -122,8 +122,22 @@ namespace PingCastle.Graph.Database
 		msDS_Allowed_To_Act_On_Behalf_Of_Other_Identity,
 		[Description("As part of delegation, the user can act on behalf other identities.")]
 		msDS_Allowed_To_Delegate_To,
+        [Description("As part of delegation, the user can act on behalf other identities.")]
+        msDS_Allowed_To_Delegate_To_With_Protocol_Transition,
 		[RelationAppliesTo("computer")]
 		[Description("This right grant the ability to read the local administrator password defined by LAPS.")]
 		READ_PROP_MS_MCS_ADMPWD,
-	}
+        [Description("The permission described above is restricted to Users.")]
+        RestrictedToUser,
+        [Description("The permission described above is restricted to Computers.")]
+        RestrictedToComputer,
+        [Description("The permission described above is restricted to Group.")]
+        RestrictedToGroup,
+        [Description("The permission described above is restricted to OU.")]
+        RestrictedToOU,
+        [Description("The permission described above is restricted to (Group) Managed Service Accounts.")]
+        RestrictedToMsaOrGmsa,
+        [Description("The permission described above is restricted to GPO.")]
+        RestrictedToGpo,
+    }
 }

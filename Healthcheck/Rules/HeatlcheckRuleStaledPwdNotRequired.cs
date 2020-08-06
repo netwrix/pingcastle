@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("S-PwdNotRequired", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
 	[RuleANSSI("R36", "subsection.3.6")]
+    [RuleMaturityLevel(3)]
     public class HeatlcheckRuleStaledPwdNotRequired : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

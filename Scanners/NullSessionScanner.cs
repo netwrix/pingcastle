@@ -75,7 +75,7 @@ namespace PingCastle.Scanners
 			{
 				DisplayAdvancement(computer,"Null session is disabled");
 				sb.Append(computer);
-				sb.Append(",None,");
+				sb.Append("\tNone\t");
 			}
 			return sb.ToString();
 		}

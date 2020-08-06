@@ -16,6 +16,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleComputation(RuleComputationType.TriggerOnThreshold, 10, Threshold: 20, Order: 2)]
 	[RuleComputation(RuleComputationType.TriggerOnThreshold, 5, Threshold: 15, Order: 3)]
 	[RuleANSSI("R45", "paragraph.3.6.6.2")]
+    [RuleDurANSSI(3, "password_change_inactive_servers", "Inactive servers")]
     public class HeatlcheckRuleStaledInactiveComputer : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

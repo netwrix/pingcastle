@@ -16,6 +16,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleANSSI("R18", "subsubsection.3.3.2")]
 	[RuleSTIG("V-2370", "The access control permissions for the directory service site group policy must be configured to use the required access permissions.", STIGFramework.ActiveDirectoryService2003)]
 	[RuleIntroducedIn(2, 7)]
+    [RuleMaturityLevel(2)]
 	public class HeatlcheckRulePrivilegedDelegationFileDeployed : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

@@ -10,8 +10,9 @@ namespace PingCastle.Report
 	{
 		HealthcheckData[] Reports;
 
-		public string GenerateRawContent(HealthcheckData[] reports)
+		public string GenerateRawContent(HealthcheckData[] reports, ADHealthCheckingLicense aDHealthCheckingLicense)
 		{
+			_license = aDHealthCheckingLicense;
 			Reports = reports;
 			reports[0].InitializeReportingData();
 			reports[1].InitializeReportingData();

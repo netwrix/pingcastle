@@ -15,6 +15,7 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleModel("S-SIDHistory", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
 	[RuleComputation(RuleComputationType.PerDiscoverWithAMinimumOf, 5, Threshold: 15)]
     [RuleANSSI("R15", "paragraph.3.3.1.5")]
+    [RuleMaturityLevel(3)]
     public class HeatlcheckRuleStaledSIDHistory : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData, ICollection<DomainKey> SourceDomains)

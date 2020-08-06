@@ -15,20 +15,37 @@ namespace PingCastle.Healthcheck.Rules
 	[RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
 	[RuleSTIG("V-1159", "The Recovery Console option is set to permit automatic logon to the system.", STIGFramework.Windows7)]
 	[RuleIntroducedIn(2, 7)]
+    [RuleMaturityLevel(2)]
 	public class HeatlcheckRulePrivilegedRecoveryModeUnprotected : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-			foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
+            if (healthcheckData.GPOLsaPolicy != null)
             {
-                foreach (GPPSecurityPolicyProperty property in policy.Properties)
+                foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
                 {
-					if (property.Property == "recoveryconsole_securitylevel")
+                    if (healthcheckData.GPOInfoDic == null || !healthcheckData.GPOInfoDic.ContainsKey(policy.GPOId))
                     {
-                        if (property.Value > 0)
+                        continue;
+                    }
+                    var refGPO = healthcheckData.GPOInfoDic[policy.GPOId];
+                    if (refGPO.IsDisabled)
+                    {
+                        continue;
+                    }
+                    if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
+                    {
+                        continue;
+                    }
+                    foreach (GPPSecurityPolicyProperty property in policy.Properties)
+                    {
+                        if (property.Property == "recoveryconsole_securitylevel")
                         {
-							AddRawDetail(policy.GPOName);
-							break;
+                            if (property.Value > 0)
+                            {
+                                AddRawDetail(policy.GPOName);
+                                break;
+                            }
                         }
                     }
                 }

@@ -11,10 +11,11 @@ using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("P-DelegationEveryone", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+    [RuleModel("P-DelegationEveryone", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.DelegationCheck)]
 	[RuleComputation(RuleComputationType.PerDiscover, 15)]
 	[RuleANSSI("R18", "subsubsection.3.3.2")]
 	[RuleSTIG("V-2370", "The access control permissions for the directory service site group policy must be configured to use the required access permissions.", STIGFramework.ActiveDirectoryService2003)]
+    [RuleMaturityLevel(2)]
     public class HeatlcheckRulePrivilegedDelegationEveryone : RuleBase<HealthcheckData>
     {
 		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

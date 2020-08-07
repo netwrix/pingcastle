@@ -28,6 +28,8 @@ namespace PingCastle.Healthcheck.Rules
             {
                 foreach (var user in group.Members)
                 {
+                    if (user.IsExternal)
+                        continue;
                     if (!user.IsInProtectedUser)
                     {
                         if (!users.Contains(user.Name))

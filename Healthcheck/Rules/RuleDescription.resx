@@ -3741,7 +3741,7 @@ That means that an extraction of its password (using DCSync for example) can lea
     <value>Check if password roation is in place with AzureAD SSO</value>
   </data>
   <data name="S_OS_Win7_Description" xml:space="preserve">
-    <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows Vista for the workstations within the domain</value>
+    <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 7 for the workstations within the domain</value>
   </data>
   <data name="S_OS_Win7_Documentation" xml:space="preserve">
     <value>https://techcommunity.microsoft.com/t5/windows-it-pro-blog/activate-windows-7-esus-on-multiple-devices-with-a-mak/ba-p/1167196</value>

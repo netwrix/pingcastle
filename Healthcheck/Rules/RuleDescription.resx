@@ -629,10 +629,10 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>Presence of service accounts in the domain admin group (at least {threshold} accounts have a password which never expire): {count}</value>
   </data>
   <data name="P_Delegated_Description" xml:space="preserve">
-    <value>The purpose is to ensure that all Administrator Accounts have the configuration flag "this account is sensitive and cannot be delegated"</value>
+    <value>The purpose is to ensure that all Administrator Accounts have the configuration flag "this account is sensitive and cannot be delegated" and are not member of the built-in group "Protected Users".</value>
   </data>
   <data name="P_Delegated_Solution" xml:space="preserve">
-    <value>To correct the situation, you should make sure that all your Administrator Accounts has the check-box "This account is sensitive and cannot be delegated" active. Please not that there is a section bellow in this report named "Admin Groups" which give more information.</value>
+    <value>To correct the situation, you should make sure that all your Administrator Accounts has the check-box "This account is sensitive and cannot be delegated" active or add your Administrator Accounts to the built-in group "Protected Users" (some functionalities may not work properly afterwards, you should check the <a href="https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/how-to-configure-protected-accounts">official documentation</a>). Please note that there is a section bellow in this report named "Admin Groups" which give more information.</value>
   </data>
   <data name="P_Delegated_Rationale" xml:space="preserve">
     <value>Presence of Admin accounts which have not the flag "this account is sensitive and cannot be delegated": {count}</value>

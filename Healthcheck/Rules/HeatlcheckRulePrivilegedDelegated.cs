@@ -22,8 +22,15 @@ namespace PingCastle.Healthcheck.Rules
             int adminCanBeDelegated = 0;
             foreach (var member in healthcheckData.AllPrivilegedMembers)
             {
-                if (member.CanBeDelegated && !member.IsInProtectedUser)
-                    adminCanBeDelegated++;
+                if (member.CanBeDelegated)
+                    if (healthcheckData.SchemaVersion < 69) 
+                    {
+                        adminCanBeDelegated++;
+                    }
+                    else if (!member.IsInProtectedUser)
+                    {
+                        adminCanBeDelegated++;
+                    }
             }
 			return adminCanBeDelegated;
         }

@@ -21,7 +21,7 @@ namespace PingCastle.Healthcheck
         Large,
         Medium,
         Small,
-        VerySmall,
+        VerySmall
     }
     public class FakeHealthCheckDataGeneratorDomainModel
     {
@@ -36,7 +36,7 @@ namespace PingCastle.Healthcheck
             "com",
             "local",
             "org",
-            "net",
+            "net"
         };
 
         static List<string> TopNouns = new List<string>() {
@@ -71,7 +71,7 @@ namespace PingCastle.Healthcheck
             "coffee",
             "construction",
             "energy",
-            "military",
+            "military"
         };
 
         static List<string> TopAdjectives = new List<string>() {
@@ -99,7 +99,7 @@ namespace PingCastle.Healthcheck
             "public",
             "bad",
             "same",
-            "able",
+            "able"
         };
 
         static List<string> LocalNames = new List<string>()
@@ -133,7 +133,7 @@ namespace PingCastle.Healthcheck
             "process",
             "documents",
             "files",
-            "mail",
+            "mail"
         };
 
         static Random rnd = new Random();
@@ -152,7 +152,7 @@ namespace PingCastle.Healthcheck
             return GenerateData(new FakeHealthCheckDataGeneratorModel()
             {
                 NumberOfDomains = 50,
-                TrustRatioInPercent = 40,
+                TrustRatioInPercent = 40
             });
         }
         public PingCastleReportCollection<HealthcheckData> GenerateData(FakeHealthCheckDataGeneratorModel model)

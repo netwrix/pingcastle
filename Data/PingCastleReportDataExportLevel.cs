@@ -9,6 +9,6 @@ namespace PingCastle.Data
 		Full,
 		Normal,
 		Light,
-		Paranoid,
-	}
+		Paranoid
+    }
 }

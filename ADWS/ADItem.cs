@@ -50,7 +50,7 @@ namespace PingCastle.ADWS
             DSPROPERTY_ZONE_SCAVENGING_SERVERS_DA = 0x00000090,
             DSPROPERTY_ZONE_MASTER_SERVERS_DA = 0x00000091,
             DSPROPERTY_ZONE_AUTO_NS_SERVERS_DA = 0x00000092,
-            DSPROPERTY_ZONE_NODE_DBFLAGS = 0x00000100,
+            DSPROPERTY_ZONE_NODE_DBFLAGS = 0x00000100
         }
 
         [DebuggerDisplay("{PropertyId}")]
@@ -91,8 +91,8 @@ namespace PingCastle.ADWS
 			SIDValue,
 			SIDArrayValue,
 			ReplMetadataValue2,
-            DnsProperty,
-		}
+            DnsProperty
+        }
 
 		private class ADAttributeTranslation
 		{
@@ -547,7 +547,7 @@ namespace PingCastle.ADWS
                 output.Add(new DnsProperty() 
                 {
                     PropertyId = (DnsPropertyId) propertyId,
-                    Data = inData,
+                    Data = inData
                 }
                 );
             }

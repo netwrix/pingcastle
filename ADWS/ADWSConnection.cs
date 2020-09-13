@@ -87,7 +87,7 @@ namespace PingCastle.ADWS
 
 					// add the ad:instance soap header
 					SoapHeader[] soapHeaders = new SoapHeader[] {
-                           new SoapHeader("instance", "http://schemas.microsoft.com/2008/1/ActiveDirectory", "ldap:389"),
+                           new SoapHeader("instance", "http://schemas.microsoft.com/2008/1/ActiveDirectory", "ldap:389")
                     };
 					_search.ChannelFactory.Endpoint.Behaviors.Add(new SoapHeaderBehavior(soapHeaders));
 				}
@@ -126,7 +126,7 @@ namespace PingCastle.ADWS
 					// add the ad:instance & ad:objectReference soap header
 					SoapHeader[] soapHeaders = new SoapHeader[] {
                            new SoapHeader("instance", "http://schemas.microsoft.com/2008/1/ActiveDirectory", "ldap:389"),
-                           new SoapHeader("objectReferenceProperty", "http://schemas.microsoft.com/2008/1/ActiveDirectory", "11111111-1111-1111-1111-111111111111"),
+                           new SoapHeader("objectReferenceProperty", "http://schemas.microsoft.com/2008/1/ActiveDirectory", "11111111-1111-1111-1111-111111111111")
                     };
 					_resource.ChannelFactory.Endpoint.Behaviors.Add(new SoapHeaderBehavior(soapHeaders));
 				}

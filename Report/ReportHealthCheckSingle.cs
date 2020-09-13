@@ -2868,7 +2868,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             {new Guid("{0CCE9246-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("System", "Central Access Policy Staging")},
             {new Guid("{0cce9247-69ae-11d9-bed3-505054503030}"), new AuditAdvancedDescription("System", "User/Device Claims")},
             {new Guid("{0cce9248-69ae-11d9-bed3-505054503030}"), new AuditAdvancedDescription("System", "PNP Activity")},
-            {new Guid("{0cce9249-69ae-11d9-bed3-505054503030}"), new AuditAdvancedDescription("System", "Group Membership")},
+            {new Guid("{0cce9249-69ae-11d9-bed3-505054503030}"), new AuditAdvancedDescription("System", "Group Membership")}
 
         };
 

@@ -42,8 +42,8 @@ namespace PingCastle.Graph.Reporting
 					new GraphSingleObject(data.DomainSid.Value + "-518","Schema Administrators", CompromiseGraphDataObjectRisk.Critical),
 					new GraphSingleObject(data.DomainSid.Value + "-519","Enterprise Administrators", CompromiseGraphDataObjectRisk.Critical),
 					new GraphSingleObject(data.DomainSid.Value + "-526","Key Administrators", CompromiseGraphDataObjectRisk.Medium),
-					new GraphSingleObject(data.DomainSid.Value + "-527","Enterprise Key Administrators", CompromiseGraphDataObjectRisk.Medium),
-				}},
+					new GraphSingleObject(data.DomainSid.Value + "-527","Enterprise Key Administrators", CompromiseGraphDataObjectRisk.Medium)
+                }},
 				{CompromiseGraphDataTypology.Infrastructure, new List<GraphSingleObject>(){
 					new GraphSingleObject(data.DomainSid.Value,"Domain Root", CompromiseGraphDataObjectRisk.Medium),
                     new GraphSingleObject(data.DomainSid.Value + "-498","Enterprise Read Only Domain Controllers"),
@@ -54,11 +54,11 @@ namespace PingCastle.Graph.Reporting
 					new GraphSingleObject("CN=Builtin," + data.DefaultNamingContext,"Builtin OU", CompromiseGraphDataObjectRisk.Medium),
 					new GraphSingleObject("CN=Users," + data.DefaultNamingContext,"Users container", CompromiseGraphDataObjectRisk.Medium),
 					new GraphSingleObject("CN=Computers," + data.DefaultNamingContext,"Computers container", CompromiseGraphDataObjectRisk.Medium),
-					new GraphSingleObject("CN=NTAuthCertificates,CN=Public Key Services,CN=Services," + data.ConfigurationNamingContext,"Certificate store", CompromiseGraphDataObjectRisk.Medium),
-				}},
+					new GraphSingleObject("CN=NTAuthCertificates,CN=Public Key Services,CN=Services," + data.ConfigurationNamingContext,"Certificate store", CompromiseGraphDataObjectRisk.Medium)
+                }},
 				{CompromiseGraphDataTypology.UserDefined, new List<GraphSingleObject>(){
-				}},
-			};
+				}}
+            };
 
 			foreach (var typology in Objects.Keys)
 			{

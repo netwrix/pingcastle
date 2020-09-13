@@ -85,8 +85,8 @@ namespace PingCastle.Data
 		[Description("Critical Infrastructure")]
 		Infrastructure = 20,
 		[Description("User Defined")]
-		UserDefined = 100,
-	}
+		UserDefined = 100
+    }
 
 	[DebuggerDisplay("{Name}")]
 	[XmlType("userMember")]

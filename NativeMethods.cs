@@ -232,7 +232,7 @@ namespace PingCastle
             STYPE_HIDDEN_DISK = 0x80000000,  // Admin Disk Shares
             STYPE_HIDDEN_PRINT = 0x80000001,  // Admin Print Shares
             STYPE_HIDDEN_DEVICE = 0x80000002,  // Admin Device Shares
-            STYPE_HIDDEN_IPC = 0x80000003,  // Admin IPC Shares
+            STYPE_HIDDEN_IPC = 0x80000003 // Admin IPC Shares
             // Need to add flags for
             // STYPE_TEMPORARY
         }
@@ -552,8 +552,8 @@ namespace PingCastle
 			DS_IS_DNS_NAME = 0x00020000,
 			DS_RETURN_DNS_NAME = 0x40000000,
 			DS_RETURN_FLAT_NAME = 0x80000000,
-			DS_WEB_SERVICE_REQUIRED = 0x00100000,
-		}
+			DS_WEB_SERVICE_REQUIRED = 0x00100000
+        }
 
         [DllImport("Netapi32.dll", CharSet = CharSet.Unicode)]
         internal static extern int DsGetDcName
@@ -664,8 +664,8 @@ namespace PingCastle
 			DS_DOMAIN_PRIMARY = 0x0008,  // Domain is the primary domain of queried server
 			DS_DOMAIN_NATIVE_MODE = 0x0010,  // Primary domain is running in native mode
 			DS_DOMAIN_DIRECT_INBOUND = 0x0020,   // Domain is directly trusting
-			ALL = 0x003F,
-		}
+			ALL = 0x003F
+        }
 
 		[StructLayout(LayoutKind.Sequential)]
 		internal struct DS_DOMAIN_TRUSTS

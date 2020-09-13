@@ -69,8 +69,8 @@ namespace PingCastle.Scanners
 							DNS = x.DNSHostName,
 							WhenCreated = x.WhenCreated,
 							LastLogonTimestamp = x.LastLogonTimestamp,
-							OperatingSystem = x.OperatingSystem,
-						};
+							OperatingSystem = x.OperatingSystem
+                        };
 						if (x.msDSReplAttributeMetaData.ContainsKey(attributeAdmPwd))
 						{
 							computer.HasLAPS = true;

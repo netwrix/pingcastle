@@ -591,7 +591,7 @@ namespace PingCastle.Report
                 { '4', new KeyValuePair<int, int>(0x269, 10 ) },
                 { 'Q', new KeyValuePair<int, int>(0x268, 10 ) },
                 { 'J', new KeyValuePair<int, int>(0x205, 10 ) },
-                { '_', new KeyValuePair<int, int>(0x204, 10 ) },
+                { '_', new KeyValuePair<int, int>(0x204, 10 ) }
             };
 			string o = null;
 			foreach (char c in input.ToUpperInvariant())

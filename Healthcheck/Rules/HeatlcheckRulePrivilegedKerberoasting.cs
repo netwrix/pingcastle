@@ -23,8 +23,8 @@ namespace PingCastle.Healthcheck.Rules
 				"Domain Admins",
 				"Enterprise Admins",
 				"Schema Admins",
-				"Administrators",
-			};
+				"Administrators"
+            };
 			foreach (var group in healthcheckData.PrivilegedGroups)
 			{
 				if (!dangerousGroups.Contains(group.GroupName))

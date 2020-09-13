@@ -83,7 +83,7 @@ namespace PingCastle.Rules
         PerDiscover,
         PerDiscoverWithAMinimumOf,
         TriggerIfLessThan,
-		Objective,
+		Objective
     }
 
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]

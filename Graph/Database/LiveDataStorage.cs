@@ -37,8 +37,8 @@ namespace PingCastle.Graph.Database
 		SAMAccountName,
 		Name,
 		DisplayName,
-		PrimaryGroupId,
-	}
+		PrimaryGroupId
+    }
 
 
 	public interface IDataStorage

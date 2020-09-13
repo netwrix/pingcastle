@@ -98,15 +98,15 @@ namespace PingCastle.Report
 					Views = new List<NetworkMapDataView>() {
 						new NetworkMapDataView(){
 							framenetwork = Subnet.Parse("10.0.0.0/8"),
-							order = 1024,
-						},
+							order = 1024
+                        },
 						new NetworkMapDataView()
 						{
 							framenetwork = Subnet.Parse("192.168.0.0/16"),
-							order = 256,
-						}
-					},
-				};
+							order = 256
+                        }
+					}
+                };
 				data.networkrange = new Dictionary<string, List<NetworkMapDataItem>>();
 				data.DomainControllers = new List<NetworkMapDCItem>();
 				var latestForestReports = new Dictionary<string, HealthcheckData>();
@@ -142,8 +142,8 @@ namespace PingCastle.Report
 									Source = report.Forest.DomainName,
 									Description = site.Description,
 									Location = site.Location,
-									Name = site.SiteName,
-								});
+									Name = site.SiteName
+                                });
 							}
 							catch (Exception)
 							{ }
@@ -176,8 +176,8 @@ namespace PingCastle.Report
 							{
 								Name = dc.DCName,
 								Source = report.DomainFQDN,
-								Ip = i,
-							});
+								Ip = i
+                            });
 							if (networks != null)
 							{
 								foreach (var network in networks)

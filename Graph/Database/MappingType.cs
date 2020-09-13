@@ -16,6 +16,6 @@ namespace PingCastle.Graph.Database
 		DistinguishedName,
 		Sid,
 		FileName,
-		GPODirectory,
-	}
+		GPODirectory
+    }
 }

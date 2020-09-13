@@ -685,7 +685,7 @@ namespace PingCastle.Healthcheck
         NotTested = 0,
         None = 1,
         SmbSigningEnabled = 2,
-        SmbSigningRequired = 4,
+        SmbSigningRequired = 4
     }
 
     [DebuggerDisplay("{DCName}")]

@@ -19,6 +19,6 @@ namespace PingCastle.Rules
 		[Description("Privileged Accounts")]
 		PrivilegedAccounts,
 		Trusts,
-		Anomalies,
-	}
+		Anomalies
+    }
 }

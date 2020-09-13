@@ -49,7 +49,7 @@ namespace PingCastle.Scanners
 
 				
 				DisplayAdvancement("Iterating through user objects (all except disabled ones)");
-                string[] properties = new string[] { "DistinguishedName", "sAMAccountName", "userAccountControl", "whenCreated", "lastLogonTimestamp", };
+                string[] properties = new string[] { "DistinguishedName", "sAMAccountName", "userAccountControl", "whenCreated", "lastLogonTimestamp" };
 
 				
                 using (var sw = File.CreateText(filename))

@@ -409,8 +409,8 @@ namespace PingCastle
 						Port = Port,
 						Credential = Credential,
 						PerformExtendedTrustDiscovery = AnalyzeReachableDomains,
-						AdditionalNamesForDelegationAnalysis = NodesToInvestigate,
-					});
+						AdditionalNamesForDelegationAnalysis = NodesToInvestigate
+                    });
 					string domain = pingCastleReport.Domain.DomainName;
 					DisplayAdvancement("Generating html report");
 					var enduserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<T>();

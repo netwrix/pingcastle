@@ -80,6 +80,6 @@ namespace PingCastle.Rules
 		[Description("Backup")]
 		Backup = 4009,
         [Description("Audit")]
-        Audit = 4010,
-	}
+        Audit = 4010
+    }
 }

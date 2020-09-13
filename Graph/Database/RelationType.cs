@@ -138,6 +138,6 @@ namespace PingCastle.Graph.Database
         [Description("The permission described above is restricted to (Group) Managed Service Accounts.")]
         RestrictedToMsaOrGmsa,
         [Description("The permission described above is restricted to GPO.")]
-        RestrictedToGpo,
+        RestrictedToGpo
     }
 }

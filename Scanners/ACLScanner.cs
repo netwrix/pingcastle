@@ -98,8 +98,8 @@ namespace PingCastle.Scanners
 		private void EnrichDomainInfo(ADWebService adws, ADDomainInfo domainInfo)
 		{
 			// adding the domain sid
-			string[] properties = new string[] {"objectSid",
-			};
+			string[] properties = new string[] {"objectSid"
+            };
 			WorkOnReturnedObjectByADWS callback =
 				(ADItem aditem) =>
 				{
@@ -186,8 +186,8 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
 						"distinguishedName",
 						"displayName",
 						"name",
-						"objectSid",
-			};
+						"objectSid"
+            };
 			WorkOnReturnedObjectByADWS callback =
 					(ADItem aditem) =>
 					{

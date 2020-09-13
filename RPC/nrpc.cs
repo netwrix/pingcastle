@@ -38,8 +38,8 @@ namespace PingCastle.RPC
 		DS_DOMAIN_TREE_ROOT = 4,
 		DS_DOMAIN_PRIMARY = 8,
 		DS_DOMAIN_NATIVE_MODE = 16,
-		DS_DOMAIN_DIRECT_INBOUND =32,
-	}
+		DS_DOMAIN_DIRECT_INBOUND =32
+    }
 
     public class nrpc : rpcapi
     {

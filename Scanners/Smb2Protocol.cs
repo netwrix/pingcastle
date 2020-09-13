@@ -21,10 +21,10 @@ namespace PingCastle.Scanners
             SMB2_NEGOTIATE = 0,
             SMB2_SESSION_SETUP = 1,
             SMB2_TREE_CONNECT = 3,
-            SMB2_IOCTL = 0x000B,
+            SMB2_IOCTL = 0x000B
         }
 
-        private static byte[] mechTypes = new byte[] { 0x30, 0x0c, 0x06, 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x02, 0x02, 0x0a, };
+        private static byte[] mechTypes = new byte[] { 0x30, 0x0c, 0x06, 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x02, 0x02, 0x0a };
 
 		public const uint STATUS_MORE_PROCESSING_REQUIRED = 0xc0000016;
 
@@ -211,7 +211,7 @@ namespace PingCastle.Scanners
         {
             None = 0,
             RSS_CAPABLE = 1,
-            RDMA_CAPABLE = 2,
+            RDMA_CAPABLE = 2
         }
 
         public struct SMB2_NETWORK_INTERFACE_INFO

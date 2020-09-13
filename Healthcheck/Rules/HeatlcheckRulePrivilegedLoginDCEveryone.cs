@@ -23,8 +23,8 @@ namespace PingCastle.Healthcheck.Rules
 			var dangerousPrivileges = new List<string>()
 			{
 				"SeInteractiveLogonRight",
-				"SeRemoteInteractiveLogonRight",
-			};
+				"SeRemoteInteractiveLogonRight"
+            };
 			foreach (var privilege in healthcheckData.GPPLoginAllowedOrDeny)
             {
 				if (privilege.User == "Authenticated Users" || privilege.User == "Everyone" || privilege.User == "Domain Users"

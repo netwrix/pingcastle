@@ -96,7 +96,7 @@ namespace PingCastle.Healthcheck.Rules
                         {"0CCE9211-69AE-11D9-BED3-505054503030", new RequiredSimple("System / Security System Extension", "Collect events 4610, 4697 to track lsass security packages and services", false)},
                         {"0CCE9228-69AE-11D9-BED3-505054503030", new RequiredSimple("Privilege Use / Sensitive Privilege Use", "Collect events 4672, 4673, 4674 for privileges tracking such as the debug one", false)},
                         {"0CCE921B-69AE-11D9-BED3-505054503030", new RequiredSimple("Logon/Logoff / Special Logon", "Collect event 4964 for special group attributed at logon", false)},
-                        {"0CCE9235-69AE-11D9-BED3-505054503030", new RequiredSimple("Account Management / User Account Management", "Collect events 4720,22,23,38,65,66,80,94 for user account mamangement", false)},
+                        {"0CCE9235-69AE-11D9-BED3-505054503030", new RequiredSimple("Account Management / User Account Management", "Collect events 4720,22,23,38,65,66,80,94 for user account mamangement", false)}
                     }
                 );
             }

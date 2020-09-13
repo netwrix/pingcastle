@@ -21,7 +21,7 @@ namespace PingCastle.Rules
 		[Description("Access to high priority objects")]
 		AnomalyAccessHigh = 420,
 		[Description("Access to medium priority objects")]
-		AnomalyAccessMedium = 430,
+		AnomalyAccessMedium = 430
 
-	}
+    }
 }

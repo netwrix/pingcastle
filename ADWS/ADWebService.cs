@@ -33,7 +33,7 @@ namespace PingCastle.ADWS
         ADWSThenLDAP = 0, 
         ADWSOnly = 1,
         LDAPOnly = 2,
-        LDAPThenADWS = 3,
+        LDAPThenADWS = 3
     }
 
 	public class ADWebService : IDisposable, IADConnection
@@ -215,7 +215,7 @@ namespace PingCastle.ADWS
             List<string> OUToExplore = new List<string>();
             OUToExplore.Add(OU);
             string[] properties = new string[] {
-                        "distinguishedName",
+                        "distinguishedName"
             };
             List<string> futureOuToExplore = null;
             for (int i = 0; i < NumberOfDepthForSplit; i++)

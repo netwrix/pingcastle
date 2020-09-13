@@ -107,10 +107,10 @@ namespace PingCastle.Scanners
 
 			{"WinDefend", "Windows Defender Antivirus Service"},
 			{"Sense ", "Windows Defender Advanced Threat Protection Service"},
-			{"WdNisSvc ", "Windows Defender Antivirus Network Inspection Service"},
+			{"WdNisSvc ", "Windows Defender Antivirus Network Inspection Service"}
 
-			
-		};
+
+        };
 
 		static List<string> customService = new List<string>();
 

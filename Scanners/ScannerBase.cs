@@ -49,8 +49,8 @@ namespace PingCastle.Scanners
 				new ConsoleMenuItem("one","This is a computer. Scan only this computer."),
 				new ConsoleMenuItem("workstation","Scan all computers except servers."),
 				new ConsoleMenuItem("server","Scan all servers."),
-                new ConsoleMenuItem("domaincontrollers","Scan all domain controllers."),
-			};
+                new ConsoleMenuItem("domaincontrollers","Scan all domain controllers.")
+            };
 			ConsoleMenu.Title = "Select the scanning mode";
 			ConsoleMenu.Information = "This scanner can collect all the active computers from a domain and scan them one by one automatically. Or scan only one computer";
 			int choice = ConsoleMenu.SelectMenu(choices);

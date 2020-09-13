@@ -827,8 +827,8 @@ namespace PingCastle
 			AvancedMenu,
 			AskForScannerParameter,
 			ProtocolMenu,
-			AskForFile,
-		}
+			AskForFile
+        }
 
 		DisplayState DisplayMainMenu()
 		{
@@ -842,8 +842,8 @@ namespace PingCastle
 				new ConsoleMenuItem("conso","Aggregate multiple reports into a single one", "With many healthcheck reports, you can get a single report for a whole scope. Maps will be generated."),
 				new ConsoleMenuItem("carto","Build a map of all interconnected domains", "It combines the healthcheck reports that would be run on all trusted domains and then the conso option. But lighter and then faster."),
 				new ConsoleMenuItem("scanner","Perform specific security checks on workstations", "You can know your local admins, if Bitlocker is properly configured, discover unprotect shares, ... A menu will be shown to select the right scanner."),
-				new ConsoleMenuItem("advanced","Open the advanced menu", "This is the place you want to configure PingCastle without playing with command line switches."),
-			};
+				new ConsoleMenuItem("advanced","Open the advanced menu", "This is the place you want to configure PingCastle without playing with command line switches.")
+            };
 
 			ConsoleMenu.Title = "What do you want to do?";
 			ConsoleMenu.Information = "Using interactive mode.\r\nDo not forget that there are other command line switches like --help that you can use";
@@ -951,8 +951,8 @@ namespace PingCastle
 				new ConsoleMenuItem("noenumlimit","Remove the 100 items limitation in healthcheck reports"),
 				new ConsoleMenuItem("decrypt","Decrypt a xml report"),
 				new ConsoleMenuItem("regenerate","Regenerate the html report based on the xml report"),
-				new ConsoleMenuItem("log","Enable logging (log is " + (Trace.Listeners.Count > 1 ? "enabled":"disabled") + ")"),
-			};
+				new ConsoleMenuItem("log","Enable logging (log is " + (Trace.Listeners.Count > 1 ? "enabled":"disabled") + ")")
+            };
 
 			ConsoleMenu.Title = "What do you want to do?";
 			int choice = ConsoleMenu.SelectMenu(choices);
@@ -994,8 +994,8 @@ namespace PingCastle
 				new ConsoleMenuItem("ADWSThenLDAP","default: ADWS then if failed, LDAP"),
 				new ConsoleMenuItem("ADWSOnly","use only ADWS"),
 				new ConsoleMenuItem("LDAPOnly","use only LDAP"),
-				new ConsoleMenuItem("LDAPThenADWS","LDAP then if failed, ADWS"),
-			};
+				new ConsoleMenuItem("LDAPThenADWS","LDAP then if failed, ADWS")
+            };
 
 			ConsoleMenu.Title = "What protocol do you want to use?";
 			ConsoleMenu.Information = "ADWS (Active Directory Web Service - tcp/9389) is the fastest protocol but is limited 5 sessions in parallele and a 30 minutes windows. LDAP is more stable but slower.\r\nCurrent protocol: [" + ADWebService.ConnectionType + "]";

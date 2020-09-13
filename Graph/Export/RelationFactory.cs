@@ -51,21 +51,21 @@ namespace PingCastle.Graph.Export
 
         public static KeyValuePair<Guid, RelationType>[] GuidsControlExtendedRights = new KeyValuePair<Guid, RelationType>[] { 
                     new KeyValuePair<Guid, RelationType>(new Guid("00299570-246d-11d0-a768-00aa006e0529"), RelationType.EXT_RIGHT_FORCE_CHANGE_PWD),
-                    new KeyValuePair<Guid, RelationType>(new Guid("1131f6ad-9c07-11d1-f79f-00c04fc2dcd2"), RelationType.EXT_RIGHT_REPLICATION_GET_CHANGES_ALL),
-                };
+                    new KeyValuePair<Guid, RelationType>(new Guid("1131f6ad-9c07-11d1-f79f-00c04fc2dcd2"), RelationType.EXT_RIGHT_REPLICATION_GET_CHANGES_ALL)
+        };
 
 		public static KeyValuePair<Guid, RelationType>[] GuidsControlValidatedWrites = new KeyValuePair<Guid, RelationType>[] { 
-                        new KeyValuePair<Guid, RelationType>(new Guid("bc0ac240-79a9-11d0-9020-00c04fc2d4cf"),RelationType.WRITE_PROPSET_MEMBERSHIP),
-                    };
+                        new KeyValuePair<Guid, RelationType>(new Guid("bc0ac240-79a9-11d0-9020-00c04fc2d4cf"),RelationType.WRITE_PROPSET_MEMBERSHIP)
+        };
 
 		public static KeyValuePair<Guid, RelationType>[] GuidsControlProperties = new KeyValuePair<Guid, RelationType>[] { 
                         new KeyValuePair<Guid, RelationType>(new Guid("bf9679c0-0de6-11d0-a285-00aa003049e2"),RelationType.WRITE_PROP_MEMBER),
                         new KeyValuePair<Guid, RelationType>(new Guid("f30e3bbe-9ff0-11d1-b603-0000f80367c1"),RelationType.WRITE_PROP_GPLINK),
-                        new KeyValuePair<Guid, RelationType>(new Guid("f30e3bc1-9ff0-11d0-b603-0000f80367c1"),RelationType.WRITE_PROP_GPC_FILE_SYS_PATH),
-                    };
+                        new KeyValuePair<Guid, RelationType>(new Guid("f30e3bc1-9ff0-11d0-b603-0000f80367c1"),RelationType.WRITE_PROP_GPC_FILE_SYS_PATH)
+        };
 		public static KeyValuePair<Guid, RelationType>[] GuidsControlPropertiesSets = new KeyValuePair<Guid, RelationType>[] { 
-                        new KeyValuePair<Guid, RelationType>(new Guid("bf9679c0-0de6-11d0-a285-00aa003049e2"),RelationType.VAL_WRITE_SELF_MEMBERSHIP),
-                    };
+                        new KeyValuePair<Guid, RelationType>(new Guid("bf9679c0-0de6-11d0-a285-00aa003049e2"),RelationType.VAL_WRITE_SELF_MEMBERSHIP)
+        };
 
 		public List<KeyValuePair<Guid, RelationType>> GuidsReadProperties = new List<KeyValuePair<Guid, RelationType>>();
 
@@ -684,7 +684,7 @@ namespace PingCastle.Graph.Export
                 RelationType.SeCreateTokenPrivilege,
                 RelationType.SeDebugPrivilege, 
                 RelationType.SeTakeOwnershipPrivilege,
-                RelationType.SeTcbPrivilege, 
+                RelationType.SeTcbPrivilege
             };
 			string path = gpoPath + "\\" + applyTo + "\\" + artefactPath;
             if (File.Exists(path))

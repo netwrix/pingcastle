@@ -23,8 +23,8 @@ namespace PingCastle.Healthcheck.Rules
 			{
 				var dangerousGroups = new List<string>() {
 					"Domain Admins",
-					"Administrators",
-				};
+					"Administrators"
+                };
 				bool restrictionFound = false;
 				foreach (var policy in healthcheckData.GPPLoginAllowedOrDeny)
 				{

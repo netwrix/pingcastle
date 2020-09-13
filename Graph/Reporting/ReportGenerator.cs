@@ -128,7 +128,7 @@ namespace PingCastle.Graph.Reporting
                     {
                         Delegate = Delegate.Shortname,
                         DelegateSid = Delegate.Sid,
-                        DelegationType = DelegationType,
+                        DelegationType = DelegationType
                     });
                     return;
                 }
@@ -239,8 +239,8 @@ namespace PingCastle.Graph.Reporting
 						detail = new CompromiseGraphDependancyDetailData()
 						{
 							Typology = sg.Typology,
-							Items = new List<string>(),
-						};
+							Items = new List<string>()
+                        };
 						reference[d.Sid].Details.Add(detail);
 					}
 					detail.NumberOfGroupImpacted++;
@@ -275,8 +275,8 @@ namespace PingCastle.Graph.Reporting
 				{
 					analysis = new CompromiseGraphAnomalyAnalysisData()
 					{
-						ObjectRisk = sg.ObjectRisk,
-					};
+						ObjectRisk = sg.ObjectRisk
+                    };
 					reference[sg.ObjectRisk] = analysis;
 				}
 				else
@@ -431,8 +431,8 @@ namespace PingCastle.Graph.Reporting
 					data.Items.Add(new SingleCompromiseGraphDependancyMemberData()
 						{
 							Name = node.Shortname,
-							Sid = node.Sid,
-						}
+							Sid = node.Sid
+                        }
 					);
 				}
 			}
@@ -459,8 +459,8 @@ namespace PingCastle.Graph.Reporting
 					{
 						singleCompromiseData.DeletedObjects.Add(new SingleCompromiseGraphDeletedData()
 						{
-							Sid = node.Sid,
-						}
+							Sid = node.Sid
+                        }
 						);
 					}
 				}
@@ -1142,8 +1142,8 @@ namespace PingCastle.Graph.Reporting
 				Name = rootNode.Name,
 				Type = rootNode.Type,
 				ShortName = rootNode.Shortname,
-				Distance = 0,
-			});
+				Distance = 0
+            });
 			idconversiontable[rootNode.Id] = nodenumber++;
 
 			Trace.WriteLine("Building nodes");
@@ -1166,8 +1166,8 @@ namespace PingCastle.Graph.Reporting
 					Distance = node.Distance,
 					Suspicious = node.IsTypeAUser && !directNodes.Contains(node.Id),
 					Critical = !exception && node.EveryoneLikeGroup,
-					ADItem = node.ADItem,
-				});
+					ADItem = node.ADItem
+                });
 				if (!exception && node.EveryoneLikeGroup)
 					data.CriticalObjectFound = true;
 				idconversiontable[node.Id] = nodenumber++;
@@ -1205,8 +1205,8 @@ namespace PingCastle.Graph.Reporting
 					{
 						Source = idconversiontable[detail.ToId],
 						Target = idconversiontable[detail.FromId],
-						Hints = string.Join(" ", detail.Hint.ToArray()),
-					});
+						Hints = string.Join(" ", detail.Hint.ToArray())
+                    });
 				}
 			}
 			// END OF LINKS

@@ -44,8 +44,8 @@ namespace PingCastle.Graph.Export
                         "sIDHistory",
 						"userAccountControl",
                         "whencreated",
-                        "pwdlastset",
-            };
+                        "pwdlastset"
+        };
 
 		public IDataStorage Storage { get; set; }
 		private IRelationFactory RelationFactory;
@@ -444,8 +444,8 @@ namespace PingCastle.Graph.Export
 							TrustType = domain.TrustType,
 							TrustAttributes = domain.TrustAttributes,
 							DomainSid = domain.DomainSid != IntPtr.Zero ? new SecurityIdentifier(domain.DomainSid) : null,
-							DomainGuid = domain.DomainGuid,
-						});
+							DomainGuid = domain.DomainGuid
+                        });
 				}
 				NativeMethods.NetApiBufferFree(ptr);
 			}

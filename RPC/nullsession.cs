@@ -17,7 +17,7 @@ namespace PingCastle.RPC
     public enum TypeOfEnumeration
     {
         Samr,
-        Lsa,
+        Lsa
     }
 
     public class NullSessionTester

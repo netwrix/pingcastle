@@ -32,14 +32,14 @@ using System.Net.Sockets;
 using System.Net.Security;
 using System.Security.Authentication;
 
-namespace PingCastle.Healthcheck
+namespace PingCastle.HealthCheck
 {
-    public class HealthcheckAnalyzer : IPingCastleAnalyzer<HealthcheckData>
+    public class HealthCheckAnalyzer : IPingCastleAnalyzer<HealthCheckData>
     {
         public static bool SkipNullSession { get; set; }
-        HealthcheckData healthcheckData;
+        HealthCheckData healthcheckData;
 
-        public HealthcheckAnalyzer()
+        public HealthCheckAnalyzer()
         {
             if (Environment.OSVersion.Version.Major < 6)
             {
@@ -58,9 +58,9 @@ namespace PingCastle.Healthcheck
             Trace.WriteLine(value);
         }
 
-        public HealthcheckData GenerateCartoReport(string server, int port, NetworkCredential credential, bool AnalyzeReachableDomains)
+        public HealthCheckData GenerateCartoReport(string server, int port, NetworkCredential credential, bool AnalyzeReachableDomains)
         {
-            healthcheckData = new HealthcheckData();
+            healthcheckData = new HealthCheckData();
             ADDomainInfo domainInfo = null;
             using (ADWebService adws = new ADWebService(server, port, credential))
             {
@@ -75,9 +75,9 @@ namespace PingCastle.Healthcheck
             return healthcheckData;
         }
 
-        public HealthcheckData PerformAnalyze(PingCastleAnalyzerParameters parameters)
+        public HealthCheckData PerformAnalyze(PingCastleAnalyzerParameters parameters)
         {
-            healthcheckData = new HealthcheckData();
+            healthcheckData = new HealthCheckData();
             LoadHoneyPotData();
             ADDomainInfo domainInfo = null;
             DisplayAdvancement("Getting domain information (" + parameters.Server + ")");
@@ -125,11 +125,11 @@ namespace PingCastle.Healthcheck
                 GenerateNetworkData(domainInfo, adws);
             }
             DisplayAdvancement("Computing risks");
-            var rules = new RuleSet<HealthcheckData>();
-            healthcheckData.RiskRules = new List<HealthcheckRiskRule>();
+            var rules = new RuleSet<HealthCheckData>();
+            healthcheckData.RiskRules = new List<HealthCheckRiskRule>();
             foreach (var rule in rules.ComputeRiskRules(healthcheckData))
             {
-                HealthcheckRiskRule risk = new HealthcheckRiskRule();
+                HealthCheckRiskRule risk = new HealthCheckRiskRule();
                 risk.Points = rule.Points;
                 risk.Category = rule.Category;
                 risk.Model = rule.Model;
@@ -151,10 +151,10 @@ namespace PingCastle.Healthcheck
             {
                 throw new PingCastleException("You entered more than 25 HoneyPots in the configuration. Honey Pots should not be used as a way to setup exceptions to rules");
             }
-            healthcheckData.ListHoneyPot = new List<HealthcheckAccountDetailData>();
+            healthcheckData.ListHoneyPot = new List<HealthCheckAccountDetailData>();
             foreach (SingleHoneyPotSettings h in s.HoneyPots)
             {
-                healthcheckData.ListHoneyPot.Add(new HealthcheckAccountDetailData() { Name = h.samAccountName });
+                healthcheckData.ListHoneyPot.Add(new HealthCheckAccountDetailData() { Name = h.samAccountName });
             }
         }
 
@@ -411,24 +411,24 @@ namespace PingCastle.Healthcheck
             string filter = "(|(&(objectClass=user)(objectCategory=person))(objectcategory=msDS-GroupManagedServiceAccount)(objectcategory=msDS-ManagedServiceAccount))";
             adws.Enumerate(() =>
                 {
-                    healthcheckData.UserAccountData = new HealthcheckAccountData();
+                    healthcheckData.UserAccountData = new HealthCheckAccountData();
                     loginscript.Clear();
                 },
                 domainInfo.DefaultNamingContext, filter, properties, callback, "SubTree");
 
-            healthcheckData.LoginScript = new List<HealthcheckLoginScriptData>();
+            healthcheckData.LoginScript = new List<HealthCheckLoginScriptData>();
             foreach (string key in loginscript.Keys)
             {
-                var script = new HealthcheckLoginScriptData(key, loginscript[key]);
+                var script = new HealthCheckLoginScriptData(key, loginscript[key]);
                 script.Delegation = CheckScriptPermission(domainInfo, script.LoginScript);
                 healthcheckData.LoginScript.Add(script);
             }
 
-            healthcheckData.PasswordDistribution = new List<HealthcheckPwdDistributionData>();
+            healthcheckData.PasswordDistribution = new List<HealthCheckPwdDistributionData>();
 
             foreach (var p in pwdDistribution)
             {
-                healthcheckData.PasswordDistribution.Add(new HealthcheckPwdDistributionData(){HigherBound = p.Key, Value = p.Value});
+                healthcheckData.PasswordDistribution.Add(new HealthCheckPwdDistributionData(){HigherBound = p.Key, Value = p.Value});
             }
         }
 
@@ -448,9 +448,9 @@ namespace PingCastle.Healthcheck
             return t / 30;
         }
 
-        List<HealthcheckScriptDelegationData> CheckScriptPermission(ADDomainInfo domainInfo, string file)
+        List<HealthCheckScriptDelegationData> CheckScriptPermission(ADDomainInfo domainInfo, string file)
         {
-            var output = new List<HealthcheckScriptDelegationData>();
+            var output = new List<HealthCheckScriptDelegationData>();
             if (file == "None")
                 return output;
             try
@@ -479,7 +479,7 @@ namespace PingCastle.Healthcheck
                     var account = MatchesBadUsersToCheck(sid);
                     if (!account.HasValue)
                         continue;
-                    output.Add(new HealthcheckScriptDelegationData() { Account = account.Value.Value, Right = rule.FileSystemRights.ToString() });
+                    output.Add(new HealthCheckScriptDelegationData() { Account = account.Value.Value, Right = rule.FileSystemRights.ToString() });
                 }
             }
             catch (Exception ex)
@@ -489,7 +489,7 @@ namespace PingCastle.Healthcheck
             return output;
         }
 
-        internal void ProcessAccountData(HealthcheckAccountData data, ADItem x, bool computerCheck)
+        internal void ProcessAccountData(HealthCheckAccountData data, ADItem x, bool computerCheck)
         {
             // see https://msdn.microsoft.com/fr-fr/library/windows/desktop/ms680832%28v=vs.85%29.aspx for the flag
             if (!string.IsNullOrEmpty(x.SAMAccountName) && healthcheckData.ListHoneyPot != null && healthcheckData.ListHoneyPot.Count > 0)
@@ -512,14 +512,14 @@ namespace PingCastle.Healthcheck
             {
                 data.NumberDuplicate++;
                 if (data.ListDuplicate == null)
-                    data.ListDuplicate = new List<HealthcheckAccountDetailData>();
+                    data.ListDuplicate = new List<HealthCheckAccountDetailData>();
                 data.ListDuplicate.Add(GetAccountDetail(x));
             }
             else if (!String.IsNullOrEmpty(x.SAMAccountName) && x.SAMAccountName.StartsWith("$duplicate-", StringComparison.InvariantCultureIgnoreCase))
             {
                 data.NumberDuplicate++;
                 if (data.ListDuplicate == null)
-                    data.ListDuplicate = new List<HealthcheckAccountDetailData>();
+                    data.ListDuplicate = new List<HealthCheckAccountDetailData>();
                 data.ListDuplicate.Add(GetAccountDetail(x));
             }
             if ((x.UserAccountControl & 0x00000002) != 0)
@@ -534,28 +534,28 @@ namespace PingCastle.Healthcheck
                 {
                     data.NumberInactive++;
                     if (data.ListInactive == null)
-                        data.ListInactive = new List<HealthcheckAccountDetailData>();
+                        data.ListInactive = new List<HealthCheckAccountDetailData>();
                     data.ListInactive.Add(GetAccountDetail(x));
                 }
                 if ((x.UserAccountControl & 0x400000) != 0)
                 {
                     data.NumberNoPreAuth++;
                     if (data.ListNoPreAuth == null)
-                        data.ListNoPreAuth = new List<HealthcheckAccountDetailData>();
+                        data.ListNoPreAuth = new List<HealthCheckAccountDetailData>();
                     data.ListNoPreAuth.Add(GetAccountDetail(x));
                 }
                 if ((x.UserAccountControl & 0x00000010) != 0)
                 {
                     data.NumberLocked++;
                     if (data.ListLocked == null)
-                        data.ListLocked = new List<HealthcheckAccountDetailData>();
+                        data.ListLocked = new List<HealthCheckAccountDetailData>();
                     data.ListLocked.Add(GetAccountDetail(x));
                 }
                 if ((x.UserAccountControl & 0x00010000) != 0)
                 {
                     data.NumberPwdNeverExpires++;
                     if (data.ListPwdNeverExpires == null)
-                        data.ListPwdNeverExpires = new List<HealthcheckAccountDetailData>();
+                        data.ListPwdNeverExpires = new List<HealthCheckAccountDetailData>();
                     data.ListPwdNeverExpires.Add(GetAccountDetail(x));
                 }
                 if ((x.UserAccountControl & 0x00000020) != 0)
@@ -565,7 +565,7 @@ namespace PingCastle.Healthcheck
                     {
                         data.NumberPwdNotRequired++;
                         if (data.ListPwdNotRequired == null)
-                            data.ListPwdNotRequired = new List<HealthcheckAccountDetailData>();
+                            data.ListPwdNotRequired = new List<HealthCheckAccountDetailData>();
                         data.ListPwdNotRequired.Add(GetAccountDetail(x));
                     }
                 }
@@ -579,7 +579,7 @@ namespace PingCastle.Healthcheck
                     {
                         data.NumberBadPrimaryGroup++;
                         if (data.ListBadPrimaryGroup == null)
-                            data.ListBadPrimaryGroup = new List<HealthcheckAccountDetailData>();
+                            data.ListBadPrimaryGroup = new List<HealthCheckAccountDetailData>();
                         data.ListBadPrimaryGroup.Add(GetAccountDetail(x));
                     }
                 }
@@ -597,7 +597,7 @@ namespace PingCastle.Healthcheck
                         {
                             data.NumberBadPrimaryGroup++;
                             if (data.ListBadPrimaryGroup == null)
-                                data.ListBadPrimaryGroup = new List<HealthcheckAccountDetailData>();
+                                data.ListBadPrimaryGroup = new List<HealthCheckAccountDetailData>();
                             data.ListBadPrimaryGroup.Add(GetAccountDetail(x));
                         }
                     }
@@ -608,21 +608,21 @@ namespace PingCastle.Healthcheck
                 {
                     data.NumberDesEnabled++;
                     if (data.ListDesEnabled == null)
-                        data.ListDesEnabled = new List<HealthcheckAccountDetailData>();
+                        data.ListDesEnabled = new List<HealthCheckAccountDetailData>();
                     data.ListDesEnabled.Add(GetAccountDetail(x));
                 }
                 if ((x.UserAccountControl & 0x80000) != 0)
                 {
                     data.NumberTrustedToAuthenticateForDelegation++;
                     if (data.ListTrustedToAuthenticateForDelegation == null)
-                        data.ListTrustedToAuthenticateForDelegation = new List<HealthcheckAccountDetailData>();
+                        data.ListTrustedToAuthenticateForDelegation = new List<HealthCheckAccountDetailData>();
                     data.ListTrustedToAuthenticateForDelegation.Add(GetAccountDetail(x));
                 }
                 if ((x.UserAccountControl & 0x0080) != 0)
                 {
                     data.NumberReversibleEncryption++;
                     if (data.ListReversibleEncryption == null)
-                        data.ListReversibleEncryption = new List<HealthcheckAccountDetailData>();
+                        data.ListReversibleEncryption = new List<HealthCheckAccountDetailData>();
                     data.ListReversibleEncryption.Add(GetAccountDetail(x));
                 }
 
@@ -630,9 +630,9 @@ namespace PingCastle.Healthcheck
 
         }
 
-        private HealthcheckAccountDetailData GetAccountDetail(ADItem x)
+        private HealthCheckAccountDetailData GetAccountDetail(ADItem x)
         {
-            HealthcheckAccountDetailData data = new HealthcheckAccountDetailData();
+            HealthCheckAccountDetailData data = new HealthCheckAccountDetailData();
             data.DistinguishedName = x.DistinguishedName;
             data.Name = x.SAMAccountName;
             data.CreationDate = x.WhenCreated;
@@ -656,7 +656,7 @@ namespace PingCastle.Healthcheck
                         "pwdLastSet"
             };
 
-            Dictionary<string, HealthcheckOSData> operatingSystems = new Dictionary<string, HealthcheckOSData>();
+            Dictionary<string, HealthCheckOSData> operatingSystems = new Dictionary<string, HealthCheckOSData>();
             Dictionary<string, int> operatingSystemsDC = new Dictionary<string, int>();
 
             WorkOnReturnedObjectByADWS callback =
@@ -665,8 +665,8 @@ namespace PingCastle.Healthcheck
                     string os = GetOperatingSystem(x.OperatingSystem);
                     if (!operatingSystems.ContainsKey(os))
                     {
-                        operatingSystems[os] = new HealthcheckOSData(os);
-                        operatingSystems[os].data = new HealthcheckAccountData();
+                        operatingSystems[os] = new HealthCheckOSData(os);
+                        operatingSystems[os].data = new HealthCheckAccountData();
                         operatingSystems[os].data.SetProxy(healthcheckData.ComputerAccountData);
                     }
                     ProcessAccountData(operatingSystems[os].data, x, true);
@@ -686,7 +686,7 @@ namespace PingCastle.Healthcheck
                             {
                                 operatingSystemsDC[os]++;
                             }
-                            HealthcheckDomainController dc = new HealthcheckDomainController();
+                            HealthCheckDomainController dc = new HealthCheckDomainController();
                             dc.DCName = x.Name;
                             dc.CreationDate = x.WhenCreated;
                             // last logon timestam can have a delta of 14 days
@@ -720,7 +720,7 @@ namespace PingCastle.Healthcheck
                                 {
                                     // computer password not changed
                                     if (healthcheckData.ListComputerPwdNotChanged == null)
-                                        healthcheckData.ListComputerPwdNotChanged = new List<HealthcheckAccountDetailData>();
+                                        healthcheckData.ListComputerPwdNotChanged = new List<HealthCheckAccountDetailData>();
                                     healthcheckData.ListComputerPwdNotChanged.Add(GetAccountDetail(x));
                                 }
                             }
@@ -731,9 +731,9 @@ namespace PingCastle.Healthcheck
             string filter = "(&(ObjectCategory=computer))";
             adws.Enumerate(() =>
                 {
-                    healthcheckData.ComputerAccountData = new HealthcheckAccountData();
-                    healthcheckData.DomainControllers = new List<HealthcheckDomainController>();
-                    healthcheckData.OperatingSystem = new List<HealthcheckOSData>();
+                    healthcheckData.ComputerAccountData = new HealthCheckAccountData();
+                    healthcheckData.DomainControllers = new List<HealthCheckDomainController>();
+                    healthcheckData.OperatingSystem = new List<HealthCheckOSData>();
                     operatingSystems.Clear();
                     operatingSystemsDC.Clear();
                 },
@@ -748,19 +748,19 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private void ProcessSIDHistory(ADItem x, HealthcheckAccountData data)
+        private void ProcessSIDHistory(ADItem x, HealthCheckAccountData data)
         {
             if (x.SIDHistory != null && x.SIDHistory.Length > 0)
             {
                 data.NumberSidHistory++;
                 if (data.ListSidHistory == null)
-                    data.ListSidHistory = new List<HealthcheckAccountDetailData>();
+                    data.ListSidHistory = new List<HealthCheckAccountDetailData>();
                 data.ListSidHistory.Add(GetAccountDetail(x));
                 // sum up the count of sid history per remote domain
                 foreach (SecurityIdentifier sid in x.SIDHistory)
                 {
                     if (data.ListDomainSidHistory == null)
-                        data.ListDomainSidHistory = new List<HealthcheckSIDHistoryData>();
+                        data.ListDomainSidHistory = new List<HealthCheckSIDHistoryData>();
                     SecurityIdentifier domainSid = sid.AccountDomainSid;
                     bool dangerousSID = false;
                     // special case when SIDHistory has been modified ...
@@ -780,7 +780,7 @@ namespace PingCastle.Healthcheck
                         }
                     }
                     bool found = false;
-                    foreach (HealthcheckSIDHistoryData domainSIDHistory in data.ListDomainSidHistory)
+                    foreach (HealthCheckSIDHistoryData domainSIDHistory in data.ListDomainSidHistory)
                     {
                         if (domainSIDHistory.DomainSid == domainSid.Value)
                         {
@@ -798,7 +798,7 @@ namespace PingCastle.Healthcheck
                     }
                     if (!found)
                     {
-                        HealthcheckSIDHistoryData domainSIDHistory = new HealthcheckSIDHistoryData();
+                        HealthCheckSIDHistoryData domainSIDHistory = new HealthCheckSIDHistoryData();
                         data.ListDomainSidHistory.Add(domainSIDHistory);
                         domainSIDHistory.DomainSid = domainSid.Value;
                         domainSIDHistory.Count = 1;
@@ -1070,9 +1070,9 @@ namespace PingCastle.Healthcheck
             adws.Enumerate(domainInfo.DefaultNamingContext, "(SamAccountName=AZUREADSSOACC$)", AzureAccountproperties, callbackAzureAccount);
         }
 
-        private void EnrichSIDHistoryWithTrustData(List<HealthcheckSIDHistoryData> list)
+        private void EnrichSIDHistoryWithTrustData(List<HealthCheckSIDHistoryData> list)
         {
-            foreach (HealthcheckSIDHistoryData data in list)
+            foreach (HealthCheckSIDHistoryData data in list)
             {
                 foreach (HealthCheckTrustData trustdata in healthcheckData.Trusts)
                 {
@@ -1115,7 +1115,7 @@ namespace PingCastle.Healthcheck
             // sid history data
             if (healthcheckData.UserAccountData != null && healthcheckData.UserAccountData.ListDomainSidHistory != null)
             {
-                foreach (HealthcheckSIDHistoryData data in healthcheckData.UserAccountData.ListDomainSidHistory)
+                foreach (HealthCheckSIDHistoryData data in healthcheckData.UserAccountData.ListDomainSidHistory)
                 {
                     if (data.FriendlyName.StartsWith("S-1-", StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -1125,7 +1125,7 @@ namespace PingCastle.Healthcheck
             }
             if (healthcheckData.ComputerAccountData != null && healthcheckData.ComputerAccountData.ListDomainSidHistory != null)
             {
-                foreach (HealthcheckSIDHistoryData data in healthcheckData.ComputerAccountData.ListDomainSidHistory)
+                foreach (HealthCheckSIDHistoryData data in healthcheckData.ComputerAccountData.ListDomainSidHistory)
                 {
                     if (data.FriendlyName.StartsWith("S-1-", StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -1174,7 +1174,7 @@ namespace PingCastle.Healthcheck
             {
                 if (healthcheckData.UserAccountData != null && healthcheckData.UserAccountData.ListDomainSidHistory != null)
                 {
-                    foreach (HealthcheckSIDHistoryData data in healthcheckData.UserAccountData.ListDomainSidHistory)
+                    foreach (HealthCheckSIDHistoryData data in healthcheckData.UserAccountData.ListDomainSidHistory)
                     {
                         if (data.FriendlyName.StartsWith("S-1-", StringComparison.InvariantCultureIgnoreCase))
                         {
@@ -1191,7 +1191,7 @@ namespace PingCastle.Healthcheck
                 }
                 if (healthcheckData.ComputerAccountData != null && healthcheckData.ComputerAccountData.ListDomainSidHistory != null)
                 {
-                    foreach (HealthcheckSIDHistoryData data in healthcheckData.ComputerAccountData.ListDomainSidHistory)
+                    foreach (HealthCheckSIDHistoryData data in healthcheckData.ComputerAccountData.ListDomainSidHistory)
                     {
                         if (data.FriendlyName.StartsWith("S-1-", StringComparison.InvariantCultureIgnoreCase))
                         {
@@ -1274,8 +1274,8 @@ namespace PingCastle.Healthcheck
             generator.PerformAnalyze(healthcheckData, domainInfo, adws, parameters);
             // compute other analyses
             // distribution
-            healthcheckData.PrivilegedDistributionLastLogon = new List<HealthcheckPwdDistributionData>();
-            healthcheckData.PrivilegedDistributionPwdLastSet = new List<HealthcheckPwdDistributionData>();
+            healthcheckData.PrivilegedDistributionLastLogon = new List<HealthCheckPwdDistributionData>();
+            healthcheckData.PrivilegedDistributionPwdLastSet = new List<HealthCheckPwdDistributionData>();
 
             var pwdDistribution = new Dictionary<int, int>();
             var logonDistribution = new Dictionary<int, int>();
@@ -1304,17 +1304,17 @@ namespace PingCastle.Healthcheck
             }
             foreach (var p in logonDistribution)
             {
-                healthcheckData.PrivilegedDistributionLastLogon.Add(new HealthcheckPwdDistributionData() { HigherBound = p.Key, Value = p.Value });
+                healthcheckData.PrivilegedDistributionLastLogon.Add(new HealthCheckPwdDistributionData() { HigherBound = p.Key, Value = p.Value });
             }
             foreach (var p in pwdDistribution)
             {
-                healthcheckData.PrivilegedDistributionPwdLastSet.Add(new HealthcheckPwdDistributionData() { HigherBound = p.Key, Value = p.Value });
+                healthcheckData.PrivilegedDistributionPwdLastSet.Add(new HealthCheckPwdDistributionData() { HigherBound = p.Key, Value = p.Value });
             }
         }
 
         private void GenerateDelegationData(ADDomainInfo domainInfo, ADWebService adws)
         {
-            healthcheckData.Delegations = new List<HealthcheckDelegationData>();
+            healthcheckData.Delegations = new List<HealthCheckDelegationData>();
             InspectAdminSDHolder(domainInfo, adws);
             InspectDelegation(domainInfo, adws);
         }
@@ -1347,7 +1347,7 @@ namespace PingCastle.Healthcheck
 			}
 			else
 			{
-				HealthcheckDelegationData data = new HealthcheckDelegationData();
+				HealthCheckDelegationData data = new HealthCheckDelegationData();
                 data.DistinguishedName = "AdminSDHolder";
                 data.Account = "Authenticated Users";
 				data.Right = "Not allowed to read AdminSDHolder";
@@ -1370,7 +1370,7 @@ namespace PingCastle.Healthcheck
             }
             foreach (string key in dic.Keys)
             {
-                HealthcheckDelegationData data = new HealthcheckDelegationData();
+                HealthCheckDelegationData data = new HealthCheckDelegationData();
                 data.DistinguishedName = "AdminSDHolder";
 				data.SecurityIdentifier = key;
 				data.Account = NativeMethods.ConvertSIDToName(key, domainInfo.DnsHostName);
@@ -1438,7 +1438,7 @@ namespace PingCastle.Healthcheck
 					);
 					foreach (string sid in permissions.Keys)
 					{
-						HealthcheckDelegationData delegation = new HealthcheckDelegationData();
+						HealthCheckDelegationData delegation = new HealthCheckDelegationData();
 						healthcheckData.Delegations.Add(delegation);
 						delegation.DistinguishedName = x.DistinguishedName;
 						delegation.SecurityIdentifier = sid;
@@ -1691,8 +1691,8 @@ namespace PingCastle.Healthcheck
             healthcheckData.GPPPasswordPolicy = new List<GPPSecurityPolicy>();
             healthcheckData.GPOLsaPolicy = new List<GPPSecurityPolicy>();
             healthcheckData.GPOScreenSaverPolicy = new List<GPPSecurityPolicy>();
-            healthcheckData.TrustedCertificates = new List<HealthcheckCertificateData>();
-            healthcheckData.GPOLoginScript = new List<HealthcheckGPOLoginScriptData>();
+            healthcheckData.TrustedCertificates = new List<HealthCheckCertificateData>();
+            healthcheckData.GPOLoginScript = new List<HealthCheckGPOLoginScriptData>();
             healthcheckData.GPOLocalMembership = new List<GPOMembership>();
 			healthcheckData.GPOEventForwarding = new List<GPOEventForwardingInfo>();
 			healthcheckData.GPODelegation = new List<GPODelegationData>();
@@ -1843,7 +1843,7 @@ namespace PingCastle.Healthcheck
                     {
                         foreach (X509Certificate2 certificate in x.CACertificate)
                         {
-                            HealthcheckCertificateData data = new HealthcheckCertificateData();
+                            HealthCheckCertificateData data = new HealthCheckCertificateData();
                             data.Source = "NTLMStore";
                             data.Store = "NTLMStore";
                             data.Certificate = certificate.GetRawCertData();
@@ -1894,7 +1894,7 @@ namespace PingCastle.Healthcheck
 						file.GPOId = GPO.InternalName;
 						file.Type = "Application (" + section + " section)";
 						file.FileName = msiFile[1];
-						file.Delegation = new List<HealthcheckScriptDelegationData>();
+						file.Delegation = new List<HealthCheckScriptDelegationData>();
 						healthcheckData.GPPFileDeployed.Add(file);
 						if (File.Exists(file.FileName))
 						{
@@ -1903,7 +1903,7 @@ namespace PingCastle.Healthcheck
                                 var ac = File.GetAccessControl(file.FileName);
                                 foreach (var value in AnalyzeFileSystemSecurity(ac, true))
                                 {
-                                    file.Delegation.Add(new HealthcheckScriptDelegationData()
+                                    file.Delegation.Add(new HealthCheckScriptDelegationData()
                                     {
                                         Account = value.Value,
                                         Right = value.Key
@@ -2281,7 +2281,7 @@ namespace PingCastle.Healthcheck
                         {
                             foreach (X509Certificate2 certificate in store)
                             {
-                                HealthcheckCertificateData data = new HealthcheckCertificateData();
+                                HealthCheckCertificateData data = new HealthCheckCertificateData();
 								data.Source = "GPO:" + GPO.DisplayName + ";" + gpotarget;
                                 data.Store = storename;
                                 data.Certificate = certificate.GetRawCertData();
@@ -2300,7 +2300,7 @@ namespace PingCastle.Healthcheck
 						if (string.IsNullOrEmpty(filename))
 							continue;
 						filename = filename.Replace("\0", string.Empty);
-						HealthcheckGPOLoginScriptData loginscript = new HealthcheckGPOLoginScriptData();
+						HealthCheckGPOLoginScriptData loginscript = new HealthCheckGPOLoginScriptData();
 						loginscript.GPOName = GPO.DisplayName;
 						loginscript.GPOId = GPO.InternalName;
 						loginscript.Action = "Logon";
@@ -2557,7 +2557,7 @@ namespace PingCastle.Healthcheck
                 {
                     break;
                 }
-                HealthcheckGPOLoginScriptData loginscript = new HealthcheckGPOLoginScriptData();
+                HealthCheckGPOLoginScriptData loginscript = new HealthCheckGPOLoginScriptData();
                 loginscript.GPOName = GPO.DisplayName;
 				loginscript.GPOId = GPO.InternalName;
                 loginscript.Action = "Logon";
@@ -2579,7 +2579,7 @@ namespace PingCastle.Healthcheck
                 {
                     break;
                 }
-                HealthcheckGPOLoginScriptData loginscript = new HealthcheckGPOLoginScriptData();
+                HealthCheckGPOLoginScriptData loginscript = new HealthCheckGPOLoginScriptData();
 				loginscript.GPOName = GPO.DisplayName ;
 				loginscript.GPOId = GPO.InternalName;
 				loginscript.Action = "Logoff";
@@ -2619,14 +2619,14 @@ namespace PingCastle.Healthcheck
 				file.GPOId = GPO.InternalName;
 				file.Type = "Files (" + UserOrComputer + " section)";
 				file.FileName = fromPath.Value;
-				file.Delegation = new List<HealthcheckScriptDelegationData>();
+				file.Delegation = new List<HealthCheckScriptDelegationData>();
 				healthcheckData.GPPFileDeployed.Add(file);
 				if (File.Exists(file.FileName))
 				{
 					var ac = File.GetAccessControl(file.FileName);
 					foreach (var value in AnalyzeFileSystemSecurity(ac, true))
 					{
-						file.Delegation.Add(new HealthcheckScriptDelegationData()
+						file.Delegation.Add(new HealthCheckScriptDelegationData()
 						{
 							Account = value.Value,
 							Right = value.Key
@@ -3422,7 +3422,7 @@ namespace PingCastle.Healthcheck
                 }
             }
 
-            healthcheckData.AdminSDHolderNotOK = new List<HealthcheckAccountDetailData>();
+            healthcheckData.AdminSDHolderNotOK = new List<HealthCheckAccountDetailData>();
 
             WorkOnReturnedObjectByADWS callbackAdminSDHolder =
                 (ADItem x) =>
@@ -3460,7 +3460,7 @@ namespace PingCastle.Healthcheck
             };
 
 			// enumerates the account with the flag "smart card required" and not disabled
-            healthcheckData.SmartCardNotOK = new List<HealthcheckAccountDetailData>();
+            healthcheckData.SmartCardNotOK = new List<HealthCheckAccountDetailData>();
             WorkOnReturnedObjectByADWS callbackSmartCard =
                 (ADItem x) =>
                 {
@@ -3609,7 +3609,7 @@ namespace PingCastle.Healthcheck
                         "replPropertyMetaData"
             };
 
-            healthcheckData.UnixPasswordUsers = new List<HealthcheckAccountDetailData>();
+            healthcheckData.UnixPasswordUsers = new List<HealthCheckAccountDetailData>();
 
             WorkOnReturnedObjectByADWS callbackUnixPassword =
                 (ADItem x) =>
@@ -3632,7 +3632,7 @@ namespace PingCastle.Healthcheck
 
         private void GenerateDomainControllerData(ADDomainInfo domainInfo)
         {
-            BlockingQueue<HealthcheckDomainController> queue = new BlockingQueue<HealthcheckDomainController>(200);
+            BlockingQueue<HealthCheckDomainController> queue = new BlockingQueue<HealthCheckDomainController>(200);
             int numberOfThread = 50;
             Thread[] threads = new Thread[numberOfThread];
             try
@@ -3642,7 +3642,7 @@ namespace PingCastle.Healthcheck
                 {
                     for (; ; )
                     {
-                        HealthcheckDomainController DC = null;
+                        HealthCheckDomainController DC = null;
                         if (!queue.Dequeue(out DC)) break;
                         string dns = DC.DCName + "." + domainInfo.DomainName;
 						DC.IP = new List<string>();
@@ -3709,7 +3709,7 @@ namespace PingCastle.Healthcheck
                     threads[i].Start();
                 }
 
-                foreach (HealthcheckDomainController DC in healthcheckData.DomainControllers)
+                foreach (HealthCheckDomainController DC in healthcheckData.DomainControllers)
                 {
                     queue.Enqueue(DC);
                 }
@@ -3799,11 +3799,11 @@ namespace PingCastle.Healthcheck
                         "location",
                         "siteObjectBL"
             };
-            healthcheckData.Sites = new List<HealthcheckSite>();
+            healthcheckData.Sites = new List<HealthCheckSite>();
             WorkOnReturnedObjectByADWS callback =
                 (ADItem x) =>
                 {
-                    var site = new HealthcheckSite();
+                    var site = new HealthCheckSite();
                     site.SiteName = x.Name;
                     site.Description = x.Description;
                     site.Location = x.Location;
@@ -3890,7 +3890,7 @@ namespace PingCastle.Healthcheck
             adws.Enumerate(domainInfo.DefaultNamingContext, "(primaryGroupID=521)", new string[] { "distinguishedName", "msDS-RevealedUsers", "msDS-RevealOnDemandGroup", "msDS-NeverRevealGroup" },
                 (ADItem aditem) =>
                 {
-                    HealthcheckDomainController dc = null;
+                    HealthCheckDomainController dc = null;
                     foreach (var d in healthcheckData.DomainControllers)
                     {
                         if (d.DistinguishedName == aditem.DistinguishedName)
@@ -4038,7 +4038,7 @@ namespace PingCastle.Healthcheck
 					Trace.WriteLine("Unable to get DNSHostName for " + computerToQuery[computerRole]);
 					continue;
 				}
-				HealthcheckDomainController theDC = null;
+				HealthCheckDomainController theDC = null;
 				foreach (var DC in healthcheckData.DomainControllers)
 				{
 					if (string.Equals(DC.DCName + "." + domainInfo.DomainName,dns, StringComparison.OrdinalIgnoreCase))
@@ -4113,14 +4113,14 @@ namespace PingCastle.Healthcheck
                 return;
             }
 
-            healthcheckData.DnsZones = new List<HealthcheckDnsZones>();
+            healthcheckData.DnsZones = new List<HealthCheckDnsZones>();
             var dn = "CN=MicrosoftDNS,DC=DomainDnsZones," + domainInfo.DefaultNamingContext;
             try
             {
                 adws.Enumerate(dn, "(objectClass=dnsZone)", new string[] { "distinguishedName", "dnsProperty", "name" },
                     (ADItem x) =>
                     {
-                        var o = new HealthcheckDnsZones();
+                        var o = new HealthCheckDnsZones();
                         o.name = x.Name;
                         foreach (var p in x.dnsProperty)
                         {

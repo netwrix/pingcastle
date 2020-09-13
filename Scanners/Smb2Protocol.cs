@@ -1,4 +1,4 @@
-﻿using PingCastle.Healthcheck;
+﻿using PingCastle.HealthCheck;
 using PingCastle.RPC;
 using System;
 using System.Collections.Generic;

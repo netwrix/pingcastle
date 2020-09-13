@@ -1,4 +1,4 @@
-﻿using PingCastle.Healthcheck;
+﻿using PingCastle.HealthCheck;
 using System;
 using System.Diagnostics;
 using System.Net.Sockets;

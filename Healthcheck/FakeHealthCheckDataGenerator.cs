@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace PingCastle.Healthcheck
+namespace PingCastle.HealthCheck
 {
 
     public class FakeHealthCheckDataGeneratorModel
@@ -24,7 +24,7 @@ namespace PingCastle.Healthcheck
     }
     public class FakeHealthCheckDataGeneratorDomainModel
     {
-        public HealthcheckData Forest;
+        public HealthCheckData Forest;
         public DomainSizeModel Size;
     }
 
@@ -146,7 +146,7 @@ namespace PingCastle.Healthcheck
             return LocalNames[rnd.Next(LocalNames.Count)] + rnd.Next(100);
         }
 
-        public PingCastleReportCollection<HealthcheckData> GenerateData()
+        public PingCastleReportCollection<HealthCheckData> GenerateData()
         {
             return GenerateData(new FakeHealthCheckDataGeneratorModel()
             {
@@ -154,9 +154,9 @@ namespace PingCastle.Healthcheck
                 TrustRatioInPercent = 40
             });
         }
-        public PingCastleReportCollection<HealthcheckData> GenerateData(FakeHealthCheckDataGeneratorModel model)
+        public PingCastleReportCollection<HealthCheckData> GenerateData(FakeHealthCheckDataGeneratorModel model)
         {
-            var output = new PingCastleReportCollection<HealthcheckData>();
+            var output = new PingCastleReportCollection<HealthCheckData>();
 
             var num = 0;
             while (num < model.NumberOfDomains - 1)
@@ -236,7 +236,7 @@ namespace PingCastle.Healthcheck
             return output;
         }
 
-        HealthcheckData GetItem(PingCastleReportCollection<HealthcheckData> reports, int rank)
+        HealthCheckData GetItem(PingCastleReportCollection<HealthCheckData> reports, int rank)
         {
             var e = reports.GetEnumerator();
             e.MoveNext();
@@ -247,10 +247,10 @@ namespace PingCastle.Healthcheck
             return e.Current;
         }
 
-        public PingCastleReportCollection<HealthcheckData> GenerateForest(int maxDomain = 15)
+        public PingCastleReportCollection<HealthCheckData> GenerateForest(int maxDomain = 15)
         {
             int numberDomains = rnd.Next(5, maxDomain > 15 ? 15 : maxDomain);
-            var children = new PingCastleReportCollection<HealthcheckData>();
+            var children = new PingCastleReportCollection<HealthCheckData>();
             // head of forest
             var root = GenerateSingleReport(new FakeHealthCheckDataGeneratorDomainModel() { Size = DomainSizeModel.VerySmall });
             for(int i = 0; i < numberDomains; i++)
@@ -308,9 +308,9 @@ namespace PingCastle.Healthcheck
             return children;
         }
 
-        public HealthcheckData GenerateSingleReport(FakeHealthCheckDataGeneratorDomainModel model)
+        public HealthCheckData GenerateSingleReport(FakeHealthCheckDataGeneratorDomainModel model)
         {
-            var healthcheckData = new HealthcheckData();
+            var healthcheckData = new HealthCheckData();
 
             Trace.WriteLine("Gathering general data");
             GenerateGeneralData(model, healthcheckData);
@@ -334,11 +334,11 @@ namespace PingCastle.Healthcheck
             Trace.WriteLine("Gathering network data");
             GenerateNetworkData(model, healthcheckData);
             Trace.WriteLine("Computing risks");
-            var rules = new RuleSet<HealthcheckData>();
-            healthcheckData.RiskRules = new List<HealthcheckRiskRule>();
+            var rules = new RuleSet<HealthCheckData>();
+            healthcheckData.RiskRules = new List<HealthCheckRiskRule>();
             foreach (var rule in rules.ComputeRiskRules(healthcheckData))
             {
-                HealthcheckRiskRule risk = new HealthcheckRiskRule();
+                HealthCheckRiskRule risk = new HealthCheckRiskRule();
                 risk.Points = rule.Points;
                 risk.Category = rule.Category;
                 risk.Model = rule.Model;
@@ -351,36 +351,36 @@ namespace PingCastle.Healthcheck
             return healthcheckData;
         }
 
-        private void GenerateTrust(FakeHealthCheckDataGeneratorDomainModel model, HealthcheckData healthcheckData)
+        private void GenerateTrust(FakeHealthCheckDataGeneratorDomainModel model, HealthCheckData healthcheckData)
         {
             healthcheckData.Trusts = new List<HealthCheckTrustData>();
         }
 
-        private void GenerateNetworkData(FakeHealthCheckDataGeneratorDomainModel model, HealthcheckData healthcheckData)
+        private void GenerateNetworkData(FakeHealthCheckDataGeneratorDomainModel model, HealthCheckData healthcheckData)
         {
-            healthcheckData.Sites = new List<HealthcheckSite>();
+            healthcheckData.Sites = new List<HealthCheckSite>();
         }
 
-        private void GeneratePrivilegedData(FakeHealthCheckDataGeneratorDomainModel model, HealthcheckData healthcheckData)
+        private void GeneratePrivilegedData(FakeHealthCheckDataGeneratorDomainModel model, HealthCheckData healthcheckData)
         {
-            healthcheckData.Delegations = new List<HealthcheckDelegationData>();
+            healthcheckData.Delegations = new List<HealthCheckDelegationData>();
             healthcheckData.ControlPaths = new CompromiseGraphData();
             healthcheckData.ControlPaths.Data = new List<SingleCompromiseGraphData>();
             healthcheckData.PrivilegedGroups = new List<HealthCheckGroupData>();
             healthcheckData.AllPrivilegedMembers = new List<HealthCheckGroupMemberData>();
         }
 
-        private void GenerateDelegation(FakeHealthCheckDataGeneratorDomainModel model, HealthcheckData healthcheckData)
+        private void GenerateDelegation(FakeHealthCheckDataGeneratorDomainModel model, HealthCheckData healthcheckData)
         {
-            healthcheckData.Delegations = new List<HealthcheckDelegationData>();
+            healthcheckData.Delegations = new List<HealthCheckDelegationData>();
         }
 
-        private void GenerateAnomalyData(FakeHealthCheckDataGeneratorDomainModel model, HealthcheckData healthcheckData)
+        private void GenerateAnomalyData(FakeHealthCheckDataGeneratorDomainModel model, HealthCheckData healthcheckData)
         {
-            healthcheckData.SmartCardNotOK = new List<HealthcheckAccountDetailData>();
+            healthcheckData.SmartCardNotOK = new List<HealthCheckAccountDetailData>();
         }
 
-        private void GenerateGPOData(FakeHealthCheckDataGeneratorDomainModel model, HealthcheckData healthcheckData)
+        private void GenerateGPOData(FakeHealthCheckDataGeneratorDomainModel model, HealthCheckData healthcheckData)
         {
             healthcheckData.GPPPassword = new List<GPPPassword>();
             healthcheckData.GPPRightAssignment = new List<GPPRightAssignment>();
@@ -388,8 +388,8 @@ namespace PingCastle.Healthcheck
             healthcheckData.GPPPasswordPolicy = new List<GPPSecurityPolicy>();
             healthcheckData.GPOLsaPolicy = new List<GPPSecurityPolicy>();
             healthcheckData.GPOScreenSaverPolicy = new List<GPPSecurityPolicy>();
-            healthcheckData.TrustedCertificates = new List<HealthcheckCertificateData>();
-            healthcheckData.GPOLoginScript = new List<HealthcheckGPOLoginScriptData>();
+            healthcheckData.TrustedCertificates = new List<HealthCheckCertificateData>();
+            healthcheckData.GPOLoginScript = new List<HealthCheckGPOLoginScriptData>();
             healthcheckData.GPOLocalMembership = new List<GPOMembership>();
             healthcheckData.GPOEventForwarding = new List<GPOEventForwardingInfo>();
             healthcheckData.GPODelegation = new List<GPODelegationData>();
@@ -398,9 +398,9 @@ namespace PingCastle.Healthcheck
             healthcheckData.GPOAuditAdvanced = new List<GPOAuditAdvancedData>();
         }
 
-        private void GenerateUserData(FakeHealthCheckDataGeneratorDomainModel model, HealthcheckData healthcheckData)
+        private void GenerateUserData(FakeHealthCheckDataGeneratorDomainModel model, HealthCheckData healthcheckData)
         {
-            healthcheckData.UserAccountData = new HealthcheckAccountData();
+            healthcheckData.UserAccountData = new HealthCheckAccountData();
             healthcheckData.AdminLastLoginDate = DateBetween2Dates(healthcheckData.DomainCreation, DateTime.Now); ;
             healthcheckData.AdminAccountName = "Administrator";
             int size = GetCountFromSize(model);
@@ -421,16 +421,16 @@ namespace PingCastle.Healthcheck
                 // trusted to authenticate
                 x.UserAccountControl += BoolOnChance(2) * 0x80000;
                 x.PrimaryGroupID = 515 + BoolOnChance(1);
-                new HealthcheckAnalyzer().ProcessAccountData(healthcheckData.UserAccountData, x, false);
+                new HealthCheckAnalyzer().ProcessAccountData(healthcheckData.UserAccountData, x, false);
 
             }
-            healthcheckData.LoginScript = new List<HealthcheckLoginScriptData>();
+            healthcheckData.LoginScript = new List<HealthCheckLoginScriptData>();
         }
 
-        private void GenerateComputerData(FakeHealthCheckDataGeneratorDomainModel model, HealthcheckData healthcheckData)
+        private void GenerateComputerData(FakeHealthCheckDataGeneratorDomainModel model, HealthCheckData healthcheckData)
         {
-            healthcheckData.OperatingSystem = new List<HealthcheckOSData>();
-            healthcheckData.ComputerAccountData = new HealthcheckAccountData();
+            healthcheckData.OperatingSystem = new List<HealthCheckOSData>();
+            healthcheckData.ComputerAccountData = new HealthCheckAccountData();
             int size = GetCountFromSize(model);
             for (int i = 0; i < size; i++)
             {
@@ -449,17 +449,17 @@ namespace PingCastle.Healthcheck
                 // trusted to authenticate
                 x.UserAccountControl += BoolOnChance(2) * 0x80000;
                 x.PrimaryGroupID = 515 + BoolOnChance(1);
-                new HealthcheckAnalyzer().ProcessAccountData(healthcheckData.ComputerAccountData, x, true);
+                new HealthCheckAnalyzer().ProcessAccountData(healthcheckData.ComputerAccountData, x, true);
             }
-            healthcheckData.LoginScript = new List<HealthcheckLoginScriptData>();
+            healthcheckData.LoginScript = new List<HealthCheckLoginScriptData>();
 
-            healthcheckData.DomainControllers = new List<HealthcheckDomainController>();
+            healthcheckData.DomainControllers = new List<HealthCheckDomainController>();
             size = (int) Math.Exp(Math.Log10(size) / 2);
             if (size < 1)
                 size = 1;
             for (int i = 0; i < size; i++)
             {
-                HealthcheckDomainController dc = new HealthcheckDomainController();
+                HealthCheckDomainController dc = new HealthCheckDomainController();
                 dc.DCName = "DC" + i;
                 dc.CreationDate = DateBetween2Dates(healthcheckData.DomainCreation, DateTime.Now);
                 // last logon timestam can have a delta of 14 days
@@ -501,7 +501,7 @@ namespace PingCastle.Healthcheck
             return rnd.Next(lowerBound, upperBound);
         }
 
-        private static void GenerateGeneralData(FakeHealthCheckDataGeneratorDomainModel model, HealthcheckData healthcheckData)
+        private static void GenerateGeneralData(FakeHealthCheckDataGeneratorDomainModel model, HealthCheckData healthcheckData)
         {
             string fqdn;
             if (model.Forest == null)

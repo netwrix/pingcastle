@@ -1,5 +1,5 @@
 ﻿using PingCastle.Data;
-using PingCastle.Healthcheck;
+using PingCastle.HealthCheck;
 using PingCastle.Rules;
 using System;
 using System.Collections.Generic;
@@ -137,7 +137,7 @@ namespace PingCastle.Bot
         {
             try
             {
-                var analyze = new HealthcheckAnalyzer();
+                var analyze = new HealthCheckAnalyzer();
                 var parameters = new PingCastleAnalyzerParameters();
                 parameters.Server = GetItem(input, "Server");
                 var login = GetItem(input, "Login");
@@ -158,7 +158,7 @@ namespace PingCastle.Bot
                 foreach(var risk in healthcheck.RiskRules)
                 {
                     riskId++;
-                    var rule = RuleSet<HealthcheckData>.GetRuleFromID(risk.RiskId);
+                    var rule = RuleSet<HealthCheckData>.GetRuleFromID(risk.RiskId);
                     AddData(o, "Rationale_" + riskId, risk.Rationale);
                     AddData(o, "Title_" + riskId, rule.Title);
                     AddData(o, "Solution_" + riskId, rule.Solution);
@@ -172,7 +172,7 @@ namespace PingCastle.Bot
                 }
 
                 healthcheck.SetExportLevel(PingCastleReportDataExportLevel.Full);
-                var xmlreport = DataHelper<HealthcheckData>.SaveAsXml(healthcheck, null, false);
+                var xmlreport = DataHelper<HealthCheckData>.SaveAsXml(healthcheck, null, false);
                 AddData(o, "Report", xmlreport);
 
                 return o;
@@ -192,8 +192,8 @@ namespace PingCastle.Bot
                 var xml = GetItem(input, "Report");
                 using (var ms = new MemoryStream(UnicodeEncoding.UTF8.GetBytes(xml)))
                 {
-                    HealthcheckData healthcheckData = DataHelper<HealthcheckData>.LoadXml(ms, "bot", null);
-                    var endUserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<HealthcheckData>();
+                    HealthCheckData healthcheckData = DataHelper<HealthCheckData>.LoadXml(ms, "bot", null);
+                    var endUserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<HealthCheckData>();
                     var license = LicenseManager.Validate(typeof(Program), new Program()) as ADHealthCheckingLicense;
                     var report = endUserReportGenerator.GenerateReportFile(healthcheckData, license, healthcheckData.GetHumanReadableFileName());
 

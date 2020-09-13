@@ -12,20 +12,20 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using PingCastle.Rules;
-using PingCastle.Healthcheck;
+using PingCastle.HealthCheck;
 using PingCastle.Data;
 using PingCastle.Graph.Database;
 
 namespace PingCastle.Report
 {
-	public class ReportHealthCheckSingle : ReportRiskControls<HealthcheckData>, IPingCastleReportUser<HealthcheckData>
+	public class ReportHealthCheckSingle : ReportRiskControls<HealthCheckData>, IPingCastleReportUser<HealthCheckData>
 	{
 
-		protected HealthcheckData Report;
+		protected HealthCheckData Report;
 		public static int MaxNumberUsersInHtmlReport = 100;
 		protected ADHealthCheckingLicense _license;
 
-		public string GenerateReportFile(HealthcheckData report, ADHealthCheckingLicense license, string filename)
+		public string GenerateReportFile(HealthCheckData report, ADHealthCheckingLicense license, string filename)
 		{
 			Report = report;
 			_license = license;
@@ -41,7 +41,7 @@ namespace PingCastle.Report
             return GenerateUniqueID(report.Domain.DomainName, long.Parse(s[s.Length-1]));
         }
 
-		public string GenerateRawContent(HealthcheckData report, ADHealthCheckingLicense aDHealthCheckingLicense)
+		public string GenerateRawContent(HealthCheckData report, ADHealthCheckingLicense aDHealthCheckingLicense)
 		{
 			Report = report;
 			_license = aDHealthCheckingLicense;
@@ -51,7 +51,7 @@ namespace PingCastle.Report
 			return sb.ToString();
 		}
 
-		public string GenerateRawContent(HealthcheckData report)
+		public string GenerateRawContent(HealthCheckData report)
 		{
 			return GenerateRawContent(report, null);
 		}
@@ -135,7 +135,7 @@ $(document).ready(function(){
 	</noscript>
 <div class=""row""><div class=""col-lg-12""><h1>");
 			Add(Report.DomainFQDN);
-			Add(@" - Healthcheck analysis</h1>
+			Add(@" - HealthCheck analysis</h1>
 			<h3>Date: ");
 			Add(Report.GenerationDate.ToString("yyyy-MM-dd"));
 			Add(@" - Engine version: ");
@@ -313,13 +313,13 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 Add("</span> you need to fix the following rules:</p>");
                 GenerateAccordion("rulesmaturity", () =>
                 {
-                    Report.RiskRules.Sort((HealthcheckRiskRule a, HealthcheckRiskRule b)
+                    Report.RiskRules.Sort((HealthCheckRiskRule a, HealthCheckRiskRule b)
                         =>
                     {
                         return -a.Points.CompareTo(b.Points);
                     }
                     );
-                    foreach (HealthcheckRiskRule rule in Report.RiskRules)
+                    foreach (HealthCheckRiskRule rule in Report.RiskRules)
                     {
                         if (l.Contains(rule.RiskId))
                             GenerateIndicatorPanelDetail("maturity", rule);
@@ -334,7 +334,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             var output = new Dictionary<int, List<string>>();
             foreach (var rule in Report.RiskRules)
             {
-                var hcrule = RuleSet<HealthcheckData>.GetRuleFromID(rule.RiskId);
+                var hcrule = RuleSet<HealthCheckData>.GetRuleFromID(rule.RiskId);
                 if (hcrule == null)
                 {
                     continue;
@@ -467,7 +467,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			GenerateDomainSIDHistoryList(Report.UserAccountData);
 		}
 
-        private void AddPasswordDistributionChart(List<HealthcheckPwdDistributionData> input, string id, Dictionary<int, string> tooltips = null)
+        private void AddPasswordDistributionChart(List<HealthCheckPwdDistributionData> input, string id, Dictionary<int, string> tooltips = null)
         {
             NumberFormatInfo nfi = new NumberFormatInfo();
             nfi.NumberDecimalSeparator = ".";
@@ -583,7 +583,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             Add(@"</g></svg></div>");
         }
 
-        private void GenerateListAccount(HealthcheckAccountData data, string root, string accordion)
+        private void GenerateListAccount(HealthCheckAccountData data, string root, string accordion)
 		{
 			GenerateAccordion(accordion,
 				() =>
@@ -635,7 +635,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 				});
 		}
 
-		void SectionList(string accordion, string section, int value, List<HealthcheckAccountDetailData> list)
+		void SectionList(string accordion, string section, int value, List<HealthCheckAccountDetailData> list)
 		{
 			if (value > 0 && list != null && list.Count > 0)
 			{
@@ -653,7 +653,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			}
 		}
 
-		void GenerateListAccountDetail(string accordion, string id, string title, List<HealthcheckAccountDetailData> list)
+		void GenerateListAccountDetail(string accordion, string id, string title, List<HealthCheckAccountDetailData> list)
 		{
 			if (list == null)
 			{
@@ -682,13 +682,13 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 					AddBeginTableData();
 
 					int number = 0;
-					list.Sort((HealthcheckAccountDetailData a, HealthcheckAccountDetailData b)
+					list.Sort((HealthCheckAccountDetailData a, HealthCheckAccountDetailData b)
 						=>
 						{
 							return String.Compare(a.Name, b.Name);
 						}
 						);
-					foreach (HealthcheckAccountDetailData detail in list)
+					foreach (HealthCheckAccountDetailData detail in list)
 					{
 						AddBeginRow();
 						AddCellText(detail.Name);
@@ -727,7 +727,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 				});
 		}
 
-		private void GenerateDomainSIDHistoryList(HealthcheckAccountData data)
+		private void GenerateDomainSIDHistoryList(HealthCheckAccountData data)
 		{
 			if (data.ListDomainSidHistory == null || data.ListDomainSidHistory.Count == 0)
 				return;
@@ -745,12 +745,12 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			AddBeginTableData();
 
 			data.ListDomainSidHistory.Sort(
-				(HealthcheckSIDHistoryData x, HealthcheckSIDHistoryData y) =>
+				(HealthCheckSIDHistoryData x, HealthCheckSIDHistoryData y) =>
 				{
 					return String.Compare(x.FriendlyName, y.FriendlyName);
 				}
 				);
-			foreach (HealthcheckSIDHistoryData domainSidHistory in data.ListDomainSidHistory)
+			foreach (HealthCheckSIDHistoryData domainSidHistory in data.ListDomainSidHistory)
 			{
 				AddBeginRow();
 				AddCellText(domainSidHistory.FriendlyName);
@@ -807,13 +807,13 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 				AddHeaderText("Count");
 				AddBeginTableData();
 				Report.OperatingSystem.Sort(
-					(HealthcheckOSData x, HealthcheckOSData y) =>
+					(HealthCheckOSData x, HealthCheckOSData y) =>
 					{
 						return OrderOS(x.OperatingSystem, y.OperatingSystem);
 					}
 					);
 				{
-					foreach (HealthcheckOSData os in Report.OperatingSystem)
+					foreach (HealthCheckOSData os in Report.OperatingSystem)
 					{
 						AddBeginRow();
 						AddCellText(os.OperatingSystem);
@@ -832,13 +832,13 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 				AddBeginTableData();
 
 				Report.OperatingSystem.Sort(
-					(HealthcheckOSData x, HealthcheckOSData y) =>
+					(HealthCheckOSData x, HealthCheckOSData y) =>
 					{
 						return OrderOS(x.OperatingSystem, y.OperatingSystem);
 					}
 					);
 				{
-					foreach (HealthcheckOSData os in Report.OperatingSystem)
+					foreach (HealthCheckOSData os in Report.OperatingSystem)
 					{
 						AddBeginRow();
 						AddCellText(os.OperatingSystem);
@@ -1047,10 +1047,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			}
 			else
 			{
-				List<HealthcheckPwdDistributionData> lastLogon = new List<HealthcheckPwdDistributionData>();
+				List<HealthCheckPwdDistributionData> lastLogon = new List<HealthCheckPwdDistributionData>();
 				Dictionary<int, string> tooltips = new Dictionary<int, string>();
 				Dictionary<int, string> tooltips2 = new Dictionary<int, string>();
-				List<HealthcheckPwdDistributionData> pwdLastSet = new List<HealthcheckPwdDistributionData>();
+				List<HealthCheckPwdDistributionData> pwdLastSet = new List<HealthCheckPwdDistributionData>();
 
 				ComputePrivilegedDistribution(lastLogon, tooltips, pwdLastSet, tooltips2);
 
@@ -1088,7 +1088,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			}
 		}
 
-		private void ComputePrivilegedDistribution(List<HealthcheckPwdDistributionData> lastLogon, Dictionary<int, string> tooltips, List<HealthcheckPwdDistributionData> pwdLastSet, Dictionary<int, string> tooltips2)
+		private void ComputePrivilegedDistribution(List<HealthCheckPwdDistributionData> lastLogon, Dictionary<int, string> tooltips, List<HealthCheckPwdDistributionData> pwdLastSet, Dictionary<int, string> tooltips2)
 		{
 			if (Report.AllPrivilegedMembers != null && Report.AllPrivilegedMembers.Count > 0)
 			{
@@ -1101,7 +1101,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 						int i;
 						if (user.LastLogonTimestamp != DateTime.MinValue)
 						{
-							i = HealthcheckAnalyzer.ConvertDateToKey(user.LastLogonTimestamp);
+							i = HealthCheckAnalyzer.ConvertDateToKey(user.LastLogonTimestamp);
 						}
 						else
 						{
@@ -1119,11 +1119,11 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
 						if (user.PwdLastSet != DateTime.MinValue)
 						{
-							i = HealthcheckAnalyzer.ConvertDateToKey(user.PwdLastSet);
+							i = HealthCheckAnalyzer.ConvertDateToKey(user.PwdLastSet);
 						}
 						else
 						{
-							i = HealthcheckAnalyzer.ConvertDateToKey(user.Created);
+							i = HealthCheckAnalyzer.ConvertDateToKey(user.Created);
 						}
 						if (pwdDistribution.ContainsKey(i))
 							pwdDistribution[i]++;
@@ -1137,11 +1137,11 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 				}
 				foreach (var p in pwdDistribution)
 				{
-					pwdLastSet.Add(new HealthcheckPwdDistributionData() { HigherBound = p.Key, Value = p.Value });
+					pwdLastSet.Add(new HealthCheckPwdDistributionData() { HigherBound = p.Key, Value = p.Value });
 				}
 				foreach (var p in logonDistribution)
 				{
-					lastLogon.Add(new HealthcheckPwdDistributionData() { HigherBound = p.Key, Value = p.Value });
+					lastLogon.Add(new HealthCheckPwdDistributionData() { HigherBound = p.Key, Value = p.Value });
 				}
 			}
 		}
@@ -1161,7 +1161,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
 			Report.Delegations.Sort(OrderDelegationData);
 
-			foreach (HealthcheckDelegationData delegation in Report.Delegations)
+			foreach (HealthCheckDelegationData delegation in Report.Delegations)
 			{
 				int dcPathPos = delegation.DistinguishedName.IndexOf(",DC=");
 				string path = delegation.DistinguishedName;
@@ -1282,7 +1282,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
 		// revert an OU string order to get a string orderable
 		// ex: OU=myOU,DC=DC   => DC=DC,OU=myOU
-		private string GetDelegationSortKey(HealthcheckDelegationData a)
+		private string GetDelegationSortKey(HealthCheckDelegationData a)
 		{
 			string[] apart = a.DistinguishedName.Split(',');
 			string[] apart1 = new string[apart.Length];
@@ -1292,7 +1292,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			}
 			return String.Join(",", apart1);
 		}
-		private int OrderDelegationData(HealthcheckDelegationData a, HealthcheckDelegationData b)
+		private int OrderDelegationData(HealthCheckDelegationData a, HealthCheckDelegationData b)
 		{
 			if (a.DistinguishedName == b.DistinguishedName)
 				return String.Compare(a.Account, b.Account);
@@ -2356,7 +2356,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 				AddBeginTableData();
 				// descending sort
 				Report.LoginScript.Sort(
-					(HealthcheckLoginScriptData a, HealthcheckLoginScriptData b)
+					(HealthCheckLoginScriptData a, HealthCheckLoginScriptData b)
 						=>
 					{
 						return b.NumberOfOccurence.CompareTo(a.NumberOfOccurence);
@@ -2364,7 +2364,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 					);
 
 				int number = 0;
-				foreach (HealthcheckLoginScriptData script in Report.LoginScript)
+				foreach (HealthCheckLoginScriptData script in Report.LoginScript)
 				{
 					AddBeginRow();
 					AddCellText(String.IsNullOrEmpty(script.LoginScript.Trim()) ? "<spaces>" : script.LoginScript);
@@ -2417,7 +2417,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 								AddHeaderText("SC Logon");
 								AddBeginTableData();
 
-								foreach (HealthcheckCertificateData data in Report.TrustedCertificates)
+								foreach (HealthCheckCertificateData data in Report.TrustedCertificates)
 								{
 									X509Certificate2 cert = new X509Certificate2(data.Certificate);
 									bool SCLogonAllowed = false;
@@ -2731,7 +2731,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 				AddHeaderText("Parameters");
 				AddBeginTableData();
 
-				foreach (HealthcheckGPOLoginScriptData loginscript in Report.GPOLoginScript)
+				foreach (HealthCheckGPOLoginScriptData loginscript in Report.GPOLoginScript)
 				{
 					AddBeginRow();
 					AddGPOName(loginscript);

@@ -4,7 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using PingCastle.Healthcheck;
+using PingCastle.HealthCheck;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -79,20 +79,20 @@ namespace PingCastle.Data
 			return output;
 		}
 
-		public static PingCastleReportCollection<HealthcheckData> TransformReportsToDemo(PingCastleReportCollection<HealthcheckData> consolidation)
+		public static PingCastleReportCollection<HealthCheckData> TransformReportsToDemo(PingCastleReportCollection<HealthCheckData> consolidation)
 		{
 			string rotKey = GenerateRandomRotKey();
 
-			var output = new PingCastleReportCollection<HealthcheckData>();
-			foreach (HealthcheckData data in consolidation)
+			var output = new PingCastleReportCollection<HealthCheckData>();
+			foreach (HealthCheckData data in consolidation)
 			{
-				HealthcheckData demoreport = TransformReportToDemo(rotKey, data);
+				HealthCheckData demoreport = TransformReportToDemo(rotKey, data);
 				output.Add(demoreport);
 			}
 			return output;
 		}
 
-		public static HealthcheckData TransformReportToDemo(string rotKey, HealthcheckData healthcheckData)
+		public static HealthCheckData TransformReportToDemo(string rotKey, HealthCheckData healthcheckData)
 		{
 			healthcheckData.DomainFQDN = TransformFQDNToDemo(rotKey, healthcheckData.DomainFQDN);
 			healthcheckData.ForestFQDN = TransformFQDNToDemo(rotKey, healthcheckData.ForestFQDN);

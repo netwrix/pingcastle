@@ -1,5 +1,5 @@
 ﻿using PingCastle.Data;
-using PingCastle.Healthcheck;
+using PingCastle.HealthCheck;
 using PingCastle.misc;
 using PingCastle.template;
 using System;
@@ -15,13 +15,13 @@ namespace PingCastle.Report
 	{
 		private NetworkMapData data;
 
-		public string GenerateReportFile(PingCastleReportCollection<HealthcheckData> report, ADHealthCheckingLicense license, string filename)
+		public string GenerateReportFile(PingCastleReportCollection<HealthCheckData> report, ADHealthCheckingLicense license, string filename)
 		{
 			data = NetworkMapData.BuildFromConsolidation(report);
 			return GenerateReportFile(filename);
 		}
 
-		public string GenerateRawContent(PingCastleReportCollection<HealthcheckData> report)
+		public string GenerateRawContent(PingCastleReportCollection<HealthCheckData> report)
 		{
 			data = NetworkMapData.BuildFromConsolidation(report);
 			sb.Length = 0;
@@ -89,7 +89,7 @@ namespace PingCastle.Report
 			public Dictionary<string, List<NetworkMapDataItem>> networkrange { get; set; }
 			public List<NetworkMapDCItem> DomainControllers { get; set; }
 
-			public static NetworkMapData BuildFromConsolidation(PingCastleReportCollection<HealthcheckData> reports)
+			public static NetworkMapData BuildFromConsolidation(PingCastleReportCollection<HealthCheckData> reports)
 			{
 				var data = new NetworkMapData()
 				{
@@ -107,7 +107,7 @@ namespace PingCastle.Report
                 };
 				data.networkrange = new Dictionary<string, List<NetworkMapDataItem>>();
 				data.DomainControllers = new List<NetworkMapDCItem>();
-				var latestForestReports = new Dictionary<string, HealthcheckData>();
+				var latestForestReports = new Dictionary<string, HealthCheckData>();
 
 				foreach (var report in reports)
 				{

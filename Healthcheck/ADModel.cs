@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace PingCastle.Healthcheck
+namespace PingCastle.HealthCheck
 {
 
     public class GraphNodeCollection : ICollection<GraphNode>
@@ -83,7 +83,7 @@ namespace PingCastle.Healthcheck
             return data.Values.GetEnumerator();
         }
 
-        public GraphNode Locate(HealthcheckData data)
+        public GraphNode Locate(HealthCheckData data)
         {
             return Locate(data.Domain);
         }
@@ -107,11 +107,11 @@ namespace PingCastle.Healthcheck
         }
 
         // sometimes we have only the netbios name. Try to find if we know the FQDN
-        private static void EnrichDomainInfo(PingCastleReportCollection<HealthcheckData> consolidation, HealthCheckTrustDomainInfoData di)
+        private static void EnrichDomainInfo(PingCastleReportCollection<HealthCheckData> consolidation, HealthCheckTrustDomainInfoData di)
         {
             bool enriched = false;
             // search direct report
-            foreach (HealthcheckData data in consolidation)
+            foreach (HealthCheckData data in consolidation)
             {
                 if (data.NetBIOSName.Equals(di.NetbiosName, StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -155,7 +155,7 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        static public GraphNodeCollection BuildModel(PingCastleReportCollection<HealthcheckData> consolidation, OwnerInformationReferences EntityData)
+        static public GraphNodeCollection BuildModel(PingCastleReportCollection<HealthCheckData> consolidation, OwnerInformationReferences EntityData)
         {
             GraphNodeCollection nodes = new GraphNodeCollection();
             // build links based on the most to the less reliable information
@@ -163,7 +163,7 @@ namespace PingCastle.Healthcheck
             int nodeNumber = 0;
             Trace.WriteLine("domain reports");
             // enumerate official domains
-            foreach (HealthcheckData data in consolidation)
+            foreach (HealthCheckData data in consolidation)
             {
                 GraphNode node = nodes.CreateNodeIfNeeded(ref nodeNumber, data.Domain, data.GenerationDate);
                 node.HealthCheckData = data;
@@ -171,7 +171,7 @@ namespace PingCastle.Healthcheck
             }
             Trace.WriteLine("direct trust");
             // get trust map based on direct trusts data
-            foreach (HealthcheckData data in consolidation)
+            foreach (HealthCheckData data in consolidation)
             {
 				//Trace.WriteLine("Working on " + data.DomainFQDN);
                 GraphNode source = nodes.Locate(data);
@@ -182,7 +182,7 @@ namespace PingCastle.Healthcheck
                 }
             }
             Trace.WriteLine("forest trust");
-            foreach (HealthcheckData data in consolidation)
+            foreach (HealthCheckData data in consolidation)
             {
 				//Trace.WriteLine("Working on " + data.DomainFQDN);
                 foreach (var trust in data.Trusts)
@@ -207,7 +207,7 @@ namespace PingCastle.Healthcheck
             }
             Trace.WriteLine("Building reachable links");
             // make links based on reachable domains. Information is less reliable.
-            foreach (HealthcheckData data in consolidation)
+            foreach (HealthCheckData data in consolidation)
             {
                 // ignore report without reachable domains
                 if (data.ReachableDomains == null)
@@ -331,7 +331,7 @@ namespace PingCastle.Healthcheck
         public DomainKey Forest;
         public DateTime ReferenceDate;
 
-        public HealthcheckData HealthCheckData { get; set; }
+        public HealthCheckData HealthCheckData { get; set; }
         public OwnerInformation Entity { get; set; }
         public Dictionary<DomainKey, GraphEdge> Trusts { get; private set; }
 

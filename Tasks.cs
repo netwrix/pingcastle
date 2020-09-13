@@ -5,7 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 
-using PingCastle.Healthcheck;
+using PingCastle.HealthCheck;
 using PingCastle.Scanners;
 using PingCastle.misc;
 using System;
@@ -84,11 +84,11 @@ namespace PingCastle
 
 		public bool CartoTask(bool PerformHealthCheckGenerateDemoReports)
 		{
-			List<HealthcheckAnalyzer.ReachableDomainInfo> domains = null;
+			List<HealthCheckAnalyzer.ReachableDomainInfo> domains = null;
 			StartTask("Exploration",
 				() =>
 				{
-					HealthcheckAnalyzer hcroot = new HealthcheckAnalyzer();
+					HealthCheckAnalyzer hcroot = new HealthCheckAnalyzer();
 					domains = hcroot.GetAllReachableDomains(Port, Credential);
 					Console.ForegroundColor = ConsoleColor.Yellow;
 					Console.WriteLine("List of domains that will be queried");
@@ -98,7 +98,7 @@ namespace PingCastle
 						Console.WriteLine(domain.domain);
 					}
 				});
-			var consolidation = new PingCastleReportCollection<HealthcheckData>();
+			var consolidation = new PingCastleReportCollection<HealthCheckData>();
 			StartTask("Examining all domains in parallele (this can take a few minutes)",
 			() =>
 			{
@@ -116,7 +116,7 @@ namespace PingCastle
 							try
 							{
 								Console.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] " + "Starting the analysis of " + domain);
-								HealthcheckAnalyzer hc = new HealthcheckAnalyzer();
+								HealthCheckAnalyzer hc = new HealthCheckAnalyzer();
 								var data = hc.GenerateCartoReport(domain, Port, Credential, AnalyzeReachableDomains);
 								consolidation.Add(data);
 								Console.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] " + "Analysis of " + domain + " completed with success");
@@ -167,9 +167,9 @@ namespace PingCastle
 			{
 				Console.WriteLine("Performing demo report transformation");
 				Trace.WriteLine("Performing demo report transformation");
-				consolidation = PingCastleReportHelper<HealthcheckData>.TransformReportsToDemo(consolidation);
+				consolidation = PingCastleReportHelper<HealthCheckData>.TransformReportsToDemo(consolidation);
 			}
-			if (!StartTask("Healthcheck consolidation",
+			if (!StartTask("HealthCheck consolidation",
 				() =>
 				{
 					consolidation.EnrichInformation();
@@ -227,10 +227,10 @@ namespace PingCastle
 
 						foreach(var pingCastleReport in hcconso)
 						{
-							var enduserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<HealthcheckData>();
+							var enduserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<HealthCheckData>();
 							enduserReportGenerator.GenerateReportFile(pingCastleReport, License, pingCastleReport.GetHumanReadableFileName());
 							pingCastleReport.SetExportLevel(ExportLevel);
-							DataHelper<HealthcheckData>.SaveAsXml(pingCastleReport, pingCastleReport.GetMachineReadableFileName(), EncryptReport);
+							DataHelper<HealthCheckData>.SaveAsXml(pingCastleReport, pingCastleReport.GetMachineReadableFileName(), EncryptReport);
 
 						}
 
@@ -281,7 +281,7 @@ namespace PingCastle
 			else
 			{
 				var data = PerformTheAnalysis<T>(server);
-				var hcData = data as HealthcheckData;
+				var hcData = data as HealthCheckData;
 				// do additional exploration based on trust results ?
 				if (hcData != null && (ExploreTerminalDomains || ExploreForestTrust))
 				{
@@ -346,9 +346,9 @@ namespace PingCastle
 			StartTask("Exploration",
 				() =>
 				{
-					HealthcheckAnalyzer hcroot = new HealthcheckAnalyzer();
+					HealthCheckAnalyzer hcroot = new HealthCheckAnalyzer();
 					var reachableDomains = hcroot.GetAllReachableDomains(Port, Credential);
-					List<HealthcheckAnalyzer.ReachableDomainInfo> domainsfiltered = new List<HealthcheckAnalyzer.ReachableDomainInfo>();
+					List<HealthCheckAnalyzer.ReachableDomainInfo> domainsfiltered = new List<HealthCheckAnalyzer.ReachableDomainInfo>();
 					Console.ForegroundColor = ConsoleColor.Yellow;
 					Console.WriteLine("List of domains that will be queried");
 					Console.ResetColor();
@@ -435,9 +435,9 @@ namespace PingCastle
 							WriteInRed("No report has been found. Please generate one with PingCastle and try again. The task will stop.");
 							return;
 						}
-						if (typeof(T) == typeof(HealthcheckData))
+						if (typeof(T) == typeof(HealthCheckData))
 						{
-							var hcconso = consolidation as PingCastleReportCollection<HealthcheckData>;
+							var hcconso = consolidation as PingCastleReportCollection<HealthCheckData>;
 							var report = new ReportHealthCheckConsolidation();
 							report.GenerateReportFile(hcconso, License, "ad_hc_summary.html");
 							ReportHealthCheckMapBuilder nodeAnalyzer = new ReportHealthCheckMapBuilder(hcconso, License);
@@ -485,8 +485,8 @@ namespace PingCastle
 							return;
 						}
 						var fi = new FileInfo(FileOrDirectory);
-						var healthcheckData = DataHelper<HealthcheckData>.LoadXml(FileOrDirectory);
-						var endUserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<HealthcheckData>();
+						var healthcheckData = DataHelper<HealthCheckData>.LoadXml(FileOrDirectory);
+						var endUserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<HealthCheckData>();
 						endUserReportGenerator.GenerateReportFile(healthcheckData, License, healthcheckData.GetHumanReadableFileName());
 					}
 				);
@@ -508,11 +508,11 @@ namespace PingCastle
 						var fi = new FileInfo(FileOrDirectory);
 						if (fi.Name.StartsWith("ad_hc_"))
 						{
-							HealthcheckData healthcheckData = DataHelper<HealthcheckData>.LoadXml(FileOrDirectory);
+							HealthCheckData healthcheckData = DataHelper<HealthCheckData>.LoadXml(FileOrDirectory);
 							domainFQDN = healthcheckData.DomainFQDN;
 							DisplayAdvancement("Regenerating xml " + (EncryptReport ? " (encrypted)" : ""));
 							healthcheckData.Level = ExportLevel;
-							xml = DataHelper<HealthcheckData>.SaveAsXml(healthcheckData, newfile, EncryptReport);
+							xml = DataHelper<HealthCheckData>.SaveAsXml(healthcheckData, newfile, EncryptReport);
 						}
 						else
 						{
@@ -586,20 +586,20 @@ namespace PingCastle
 						{
 							Directory.CreateDirectory(path);
 						}
-						var consolidation = PingCastleReportHelper<HealthcheckData>.LoadXmls(FileOrDirectory, FilterReportDate);
+						var consolidation = PingCastleReportHelper<HealthCheckData>.LoadXmls(FileOrDirectory, FilterReportDate);
 						if (consolidation.Count == 0)
 						{
 							WriteInRed("No report has been found. Please generate one with PingCastle and the Healtch Check mode. The program will stop.");
 							return;
 						}
-						consolidation = PingCastleReportHelper<HealthcheckData>.TransformReportsToDemo(consolidation);
-						foreach (HealthcheckData data in consolidation)
+						consolidation = PingCastleReportHelper<HealthCheckData>.TransformReportsToDemo(consolidation);
+						foreach (HealthCheckData data in consolidation)
 						{
 							string domain = data.DomainFQDN;
-							var endUserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<HealthcheckData>();
+							var endUserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<HealthCheckData>();
 							string html = endUserReportGenerator.GenerateReportFile(data, License, Path.Combine(path, data.GetHumanReadableFileName()));
 							data.SetExportLevel(ExportLevel);
-							string xml = DataHelper<HealthcheckData>.SaveAsXml(data, Path.Combine(path, data.GetMachineReadableFileName()), EncryptReport);
+							string xml = DataHelper<HealthCheckData>.SaveAsXml(data, Path.Combine(path, data.GetMachineReadableFileName()), EncryptReport);
 						}
 
 					}

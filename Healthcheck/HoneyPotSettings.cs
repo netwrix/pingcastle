@@ -1,6 +1,6 @@
 ﻿using System.Configuration;
 
-namespace PingCastle.Healthcheck
+namespace PingCastle.HealthCheck
 {
 	internal class HoneyPotSettings : ConfigurationSection
 	{

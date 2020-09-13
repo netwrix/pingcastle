@@ -1,5 +1,5 @@
 ﻿using PingCastle.Data;
-using PingCastle.Healthcheck;
+using PingCastle.HealthCheck;
 using PingCastle.Report;
 using PingCastle.Scanners;
 using System;
@@ -33,7 +33,7 @@ namespace PingCastle
 
 		public static string GetFilePatternForLoad<T>() where T : IPingCastleReport
 		{
-			if (typeof(T) == typeof(HealthcheckData))
+			if (typeof(T) == typeof(HealthCheckData))
 			{
 				return "*ad_hc_*.xml";
 			}
@@ -42,7 +42,7 @@ namespace PingCastle
 
 		public static IPingCastleReportUser<T> GetEndUserReportGenerator<T>() where T : IPingCastleReport
 		{
-			if (typeof(T) == typeof(HealthcheckData))
+			if (typeof(T) == typeof(HealthCheckData))
 			{
 				return (IPingCastleReportUser<T>) new ReportHealthCheckSingle();
 			}
@@ -51,9 +51,9 @@ namespace PingCastle
 
 		public static IPingCastleAnalyzer<T> GetPingCastleAnalyzer<T>() where T : IPingCastleReport
 		{
-			if (typeof(T) == typeof(HealthcheckData))
+			if (typeof(T) == typeof(HealthCheckData))
 			{
-				return (IPingCastleAnalyzer<T>)new HealthcheckAnalyzer();
+				return (IPingCastleAnalyzer<T>)new HealthCheckAnalyzer();
 			}
 			return GetImplementation<IPingCastleAnalyzer<T>>();
 		}

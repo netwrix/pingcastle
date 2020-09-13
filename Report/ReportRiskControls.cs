@@ -1,4 +1,4 @@
-﻿using PingCastle.Healthcheck;
+﻿using PingCastle.HealthCheck;
 using PingCastle.Rules;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ namespace PingCastle.Report
 	public abstract class ReportRiskControls<T> : ReportBase where T : IRiskEvaluation
 	{
 
-		int GetRulesNumberForCategory(List<HealthcheckRiskRule> rules, RiskRuleCategory category)
+		int GetRulesNumberForCategory(List<HealthCheckRiskRule> rules, RiskRuleCategory category)
 		{
 			int count = 0;
 			foreach (var rule in rules)
@@ -98,7 +98,7 @@ namespace PingCastle.Report
 ");
 		}
 
-		protected void GenerateRiskModelPanel(List<HealthcheckRiskRule> rules, int numberOfDomain = 1)
+		protected void GenerateRiskModelPanel(List<HealthCheckRiskRule> rules, int numberOfDomain = 1)
 		{
 			Add(@"
 		<div class=""row d-print-none""><div class=""col-lg-12"">
@@ -150,8 +150,8 @@ namespace PingCastle.Report
 						RiskModelCategory model = riskmodel[category][i];
 						int score = 0;
 						int numrules = 0;
-						List<HealthcheckRiskRule> rulematched = new List<HealthcheckRiskRule>();
-						foreach (HealthcheckRiskRule rule in rules)
+						List<HealthCheckRiskRule> rulematched = new List<HealthCheckRiskRule>();
+						foreach (HealthCheckRiskRule rule in rules)
 						{
 							if (rule.Model == model)
 							{
@@ -184,7 +184,7 @@ namespace PingCastle.Report
 						string tooltip = "Rules: " + numrules + " Score: " + (numberOfDomain == 0? 100 : score / numberOfDomain);
 						string tooltipdetail = null;
 						string modelstring = ReportHelper.GetEnumDescription(model);
-						rulematched.Sort((HealthcheckRiskRule a, HealthcheckRiskRule b)
+						rulematched.Sort((HealthCheckRiskRule a, HealthCheckRiskRule b)
 							=>
 						{
 							return a.Points.CompareTo(b.Points);
@@ -225,7 +225,7 @@ namespace PingCastle.Report
 		</div>");
 		}
 
-		protected void GenerateIndicatorPanel(string id, string title, RiskRuleCategory category, List<HealthcheckRiskRule> rules, List<RuleBase<HealthcheckData>> applicableRules)
+		protected void GenerateIndicatorPanel(string id, string title, RiskRuleCategory category, List<HealthCheckRiskRule> rules, List<RuleBase<HealthCheckData>> applicableRules)
 		{
 			Add(@"
 		<div class=""row""><div class=""col-lg-12 mt-2"">
@@ -244,7 +244,7 @@ namespace PingCastle.Report
 			Add(@"""><div class=""col-lg-12"">
 ");
 			bool hasRule = false;
-			foreach (HealthcheckRiskRule rule in rules)
+			foreach (HealthCheckRiskRule rule in rules)
 			{
 				if (rule.Category == category)
 				{
@@ -256,13 +256,13 @@ namespace PingCastle.Report
 			{
 				GenerateAccordion("rules" + category.ToString(), () =>
 					{
-						rules.Sort((HealthcheckRiskRule a, HealthcheckRiskRule b)
+						rules.Sort((HealthCheckRiskRule a, HealthCheckRiskRule b)
 							=>
 						{
 							return -a.Points.CompareTo(b.Points);
 						}
 						);
-						foreach (HealthcheckRiskRule rule in rules)
+						foreach (HealthCheckRiskRule rule in rules)
 						{
 							if (rule.Category == category)
                                 GenerateIndicatorPanelDetail(category.ToString(), rule);
@@ -278,7 +278,7 @@ namespace PingCastle.Report
 		</div>");
 		}
 
-		private int GetApplicableRulesNumberForCategory(List<RuleBase<HealthcheckData>> applicableRules, RiskRuleCategory category)
+		private int GetApplicableRulesNumberForCategory(List<RuleBase<HealthCheckData>> applicableRules, RiskRuleCategory category)
 		{
 			int count = 0;
 			foreach (var rule in applicableRules)
@@ -319,7 +319,7 @@ namespace PingCastle.Report
 ");
 		}
 
-		protected void GenerateIndicatorPanelDetail(string category, HealthcheckRiskRule rule)
+		protected void GenerateIndicatorPanelDetail(string category, HealthCheckRiskRule rule)
 		{
 			string safeRuleId = rule.RiskId.Replace("$", "dollar");
 			var hcrule = RuleSet<T>.GetRuleFromID(rule.RiskId);

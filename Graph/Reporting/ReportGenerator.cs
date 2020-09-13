@@ -12,7 +12,7 @@ using System.Diagnostics;
 using System.Security.Principal;
 using PingCastle.ADWS;
 using PingCastle.Graph.Export;
-using PingCastle.Healthcheck;
+using PingCastle.HealthCheck;
 
 namespace PingCastle.Graph.Reporting
 {
@@ -30,7 +30,7 @@ namespace PingCastle.Graph.Reporting
 		private IDataStorage storage;
 		private List<string> stopNodes = new List<string>();
 
-		public void PerformAnalyze(HealthcheckData data, ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
+		public void PerformAnalyze(HealthCheckData data, ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
 		{
 			ExportDataFromActiveDirectoryLive export = new ExportDataFromActiveDirectoryLive(domainInfo, adws, parameters.Credential);
 			var ObjectReference = export.ExportData(parameters.AdditionalNamesForDelegationAnalysis);
@@ -53,7 +53,7 @@ namespace PingCastle.Graph.Reporting
             PrepareProtectedGroupAnalysis(domainInfo, data);
 		}
 
-		private void PrepareAllPrivilegedMembers(HealthcheckData healthcheckData)
+		private void PrepareAllPrivilegedMembers(HealthCheckData healthcheckData)
 		{
 			Dictionary<string, HealthCheckGroupMemberData> allMembers = new Dictionary<string, HealthCheckGroupMemberData>();
 			foreach (var group in healthcheckData.PrivilegedGroups)
@@ -72,7 +72,7 @@ namespace PingCastle.Graph.Reporting
 			}
 		}
 
-        private void PrepareDCAnalysis(ADDomainInfo domainInfo, HealthcheckData data)
+        private void PrepareDCAnalysis(ADDomainInfo domainInfo, HealthCheckData data)
         {
             int rootNodeId = storage.SearchItem(domainInfo.DomainSid.Value + "-516");
             if (rootNodeId < 0)
@@ -111,15 +111,15 @@ namespace PingCastle.Graph.Reporting
             }
         }
 
-        private void PrepareDCAnalysisSaveData(HealthcheckData data, Node DC, Node Delegate, string DelegationType)
+        private void PrepareDCAnalysisSaveData(HealthCheckData data, Node DC, Node Delegate, string DelegationType)
         {
             foreach (var dc in data.DomainControllers)
             {
                 if (dc.DistinguishedName == DC.Name)
                 {
                     if (dc.Delegations == null)
-                        dc.Delegations = new List<HealthcheckDomainControllerDelegation>();
-                    dc.Delegations.Add(new HealthcheckDomainControllerDelegation()
+                        dc.Delegations = new List<HealthCheckDomainControllerDelegation>();
+                    dc.Delegations.Add(new HealthCheckDomainControllerDelegation()
                     {
                         Delegate = Delegate.Shortname,
                         DelegateSid = Delegate.Sid,
@@ -131,7 +131,7 @@ namespace PingCastle.Graph.Reporting
             Trace.WriteLine("Delegation was not resolved to DC (" + DC.Name + "-" + Delegate.Shortname + ")");
         }
 
-        private void PrepareProtectedGroupAnalysis(ADDomainInfo domainInfo, HealthcheckData data)
+        private void PrepareProtectedGroupAnalysis(ADDomainInfo domainInfo, HealthCheckData data)
         {
             int rootNodeId = storage.SearchItem(domainInfo.DomainSid.Value + "-525");
             if (rootNodeId < 0)
@@ -187,7 +187,7 @@ namespace PingCastle.Graph.Reporting
 			}
 		}
 
-		void PrepareDetailedData(ADDomainInfo domainInfo, HealthcheckData data, GraphObjectReference ObjectReference)
+		void PrepareDetailedData(ADDomainInfo domainInfo, HealthCheckData data, GraphObjectReference ObjectReference)
 		{
 			foreach (var typology in ObjectReference.Objects.Keys)
 			{
@@ -308,7 +308,7 @@ namespace PingCastle.Graph.Reporting
 				});
 		}
 
-		private void ProduceReportFile(ADDomainInfo domainInfo, HealthcheckData hcdata, CompromiseGraphDataTypology typology, CompromiseGraphDataObjectRisk risk, string description, string name)
+		private void ProduceReportFile(ADDomainInfo domainInfo, HealthCheckData hcdata, CompromiseGraphDataTypology typology, CompromiseGraphDataObjectRisk risk, string description, string name)
 		{
 			try
 			{
@@ -490,7 +490,7 @@ namespace PingCastle.Graph.Reporting
 			singleCompromiseData.NumberOfDirectComputerMembers = singleCompromiseData.DirectComputerMembers.Count;
 		}
 
-		private void BuildPrivilegeData(ADDomainInfo domainInfo, HealthcheckData hcdata, SingleCompromiseGraphData singleCompromiseData, Node rootNode, List<int> directNodes1, List<int> directNodes2)
+		private void BuildPrivilegeData(ADDomainInfo domainInfo, HealthCheckData hcdata, SingleCompromiseGraphData singleCompromiseData, Node rootNode, List<int> directNodes1, List<int> directNodes2)
 		{
 			var items = new List<Node>();
 			foreach (var id in directNodes1)

@@ -8,7 +8,7 @@ using PingCastle.Data;
 using System;
 using System.Collections.Generic;
 
-namespace PingCastle.Healthcheck
+namespace PingCastle.HealthCheck
 {
     public class PingCastleReportHistoryCollection<T> : ICollection<T> where T : IPingCastleReport
 	{

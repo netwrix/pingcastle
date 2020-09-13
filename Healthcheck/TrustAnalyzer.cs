@@ -7,7 +7,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace PingCastle.Healthcheck
+namespace PingCastle.HealthCheck
 {
     public class TrustAnalyzer
     {

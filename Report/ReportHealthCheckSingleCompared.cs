@@ -1,12 +1,12 @@
-﻿using PingCastle.Healthcheck;
+﻿using PingCastle.HealthCheck;
 
 namespace PingCastle.Report
 {
 	public class ReportHealthCheckSingleCompared : ReportHealthCheckSingle
 	{
-		HealthcheckData[] Reports;
+		HealthCheckData[] Reports;
 
-		public string GenerateRawContent(HealthcheckData[] reports, ADHealthCheckingLicense aDHealthCheckingLicense)
+		public string GenerateRawContent(HealthCheckData[] reports, ADHealthCheckingLicense aDHealthCheckingLicense)
 		{
 			_license = aDHealthCheckingLicense;
 			Reports = reports;

@@ -5,7 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.ADWS;
-using PingCastle.Healthcheck;
+using PingCastle.HealthCheck;
 using PingCastle.Scanners;
 using PingCastle.Graph.Reporting;
 using System;
@@ -168,11 +168,11 @@ namespace PingCastle
 			}
 			if (PerformHealthCheckReport)
 			{
-				if (!tasks.AnalysisTask<HealthcheckData>()) return;
+				if (!tasks.AnalysisTask<HealthCheckData>()) return;
 			}
 			if (PerformHealthCheckConsolidation || (PerformHealthCheckReport && tasks.Server == "*" && tasks.InteractiveMode))
 			{
-				if (!tasks.ConsolidationTask<HealthcheckData>()) return;
+				if (!tasks.ConsolidationTask<HealthCheckData>()) return;
 			}
 			if (PerformHCRules)
 			{
@@ -402,7 +402,7 @@ namespace PingCastle
 							DisplayHelp();
 							return false;
 						case "--I-swear-I-paid-win7-support":
-							Healthcheck.Rules.HeatlcheckRuleStaledObsoleteWin7.IPaidSupport = true;
+							HealthCheck.Rules.HealthCheckRuleStaledObsoleteWin7.IPaidSupport = true;
 							break;
 						case "--interactive":
 							delayedInteractiveMode = true;
@@ -611,7 +611,7 @@ namespace PingCastle
 							tasks.Server = args[++i];
 							break;
 						case "--skip-null-session":
-							HealthcheckAnalyzer.SkipNullSession = true;
+							HealthCheckAnalyzer.SkipNullSession = true;
 							break;
 						case "--reload-report":
 						case "--slim-report":

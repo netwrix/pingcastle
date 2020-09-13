@@ -5,7 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.Data;
-using PingCastle.Healthcheck;
+using PingCastle.HealthCheck;
 using PingCastle.template;
 using System;
 using System.Collections.Generic;
@@ -16,16 +16,16 @@ namespace PingCastle.Report
 {
 	public class ReportHealthCheckMapBuilder : ReportBase
     {
-		protected PingCastleReportCollection<HealthcheckData> Report = null;
+		protected PingCastleReportCollection<HealthCheckData> Report = null;
 		protected OwnerInformationReferences EntityData = null;
 
-		public ReportHealthCheckMapBuilder(PingCastleReportCollection<HealthcheckData> consolidation, OwnerInformationReferences ownerInformationReferences)
+		public ReportHealthCheckMapBuilder(PingCastleReportCollection<HealthCheckData> consolidation, OwnerInformationReferences ownerInformationReferences)
         {
             this.Report = consolidation;
 			EntityData = ownerInformationReferences;
 			FullNodeMap = true;
         }
-		public ReportHealthCheckMapBuilder(PingCastleReportCollection<HealthcheckData> consolidation, ADHealthCheckingLicense license) : this(consolidation, (OwnerInformationReferences)null)
+		public ReportHealthCheckMapBuilder(PingCastleReportCollection<HealthCheckData> consolidation, ADHealthCheckingLicense license) : this(consolidation, (OwnerInformationReferences)null)
 		{
             Brand(license);
         }
@@ -185,7 +185,7 @@ namespace PingCastle.Report
                 {
                     sb.Append(entity.GetJasonOutput());
                 }
-                HealthcheckData data = node.HealthCheckData;
+                HealthCheckData data = node.HealthCheckData;
 				sb.Append("      ,\"name\": \"" + ReportHelper.EscapeJsonString(node.Domain.DomainName) + "\"");
                 if (data != null)
                 {
@@ -453,7 +453,7 @@ namespace PingCastle.Report
             {
                 sb.Append("      ,\"potentiallyremoved\": 1");
             }
-            HealthcheckData data = node.HealthCheckData;
+            HealthCheckData data = node.HealthCheckData;
             if (data != null)
             {
                 sb.Append("      ,\"score\": " + data.GlobalScore);
@@ -513,7 +513,7 @@ namespace PingCastle.Report
 				{
 					sb.Append(entity.GetJasonOutput());
 				}
-				HealthcheckData data = node.HealthCheckData;
+				HealthCheckData data = node.HealthCheckData;
 				if (data != null)
 				{
 					sb.Append("      ,\"score\": " + data.GlobalScore);

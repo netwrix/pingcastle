@@ -9,24 +9,24 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using PingCastle.Data;
-using PingCastle.Healthcheck;
+using PingCastle.HealthCheck;
 using PingCastle.Rules;
 using PingCastle.template;
 
 namespace PingCastle.Report
 {
-    public class ReportHealthCheckConsolidation : ReportRiskControls<HealthcheckData>
+    public class ReportHealthCheckConsolidation : ReportRiskControls<HealthCheckData>
     {
-        private PingCastleReportCollection<HealthcheckData> Report;
+        private PingCastleReportCollection<HealthCheckData> Report;
 
-		public string GenerateReportFile(PingCastleReportCollection<HealthcheckData> report, ADHealthCheckingLicense license, string filename)
+		public string GenerateReportFile(PingCastleReportCollection<HealthCheckData> report, ADHealthCheckingLicense license, string filename)
 		{
 			Report = report;
 			Brand(license);
 			return GenerateReportFile(filename);
 		}
 
-		public string GenerateRawContent(PingCastleReportCollection<HealthcheckData> report, string selectedTab = null)
+		public string GenerateRawContent(PingCastleReportCollection<HealthCheckData> report, string selectedTab = null)
 		{
 			Report = report;
 			sb.Length = 0;
@@ -151,16 +151,16 @@ $('table').not('.model_table').DataTable(
 			AddHeaderText("Description");
 			AddHeaderText("Rationale");
 			AddBeginTableData();
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
-                foreach (HealthcheckRiskRule rule in data.RiskRules)
+                foreach (HealthCheckRiskRule rule in data.RiskRules)
                 {
 					AddBeginRow();
                     AddPrintDomain(data.Domain);
 					AddCellText(ReportHelper.GetEnumDescription(rule.Category));
 					AddCellText(rule.RiskId);
 					AddCellNum(rule.Points);
-					AddCellText(RuleSet<HealthcheckData>.GetRuleDescription(rule.RiskId));
+					AddCellText(RuleSet<HealthCheckData>.GetRuleDescription(rule.RiskId));
 					AddCellText(rule.Rationale);
 					AddEndRow();
                 }
@@ -219,8 +219,8 @@ $('table').not('.model_table').DataTable(
 			</div>
 		</div>
 ");
-			var rules = new List<HealthcheckRiskRule>();
-			foreach (HealthcheckData data in Report)
+			var rules = new List<HealthCheckRiskRule>();
+			foreach (HealthCheckData data in Report)
 			{
 				rules.AddRange(data.RiskRules);
 			}
@@ -246,7 +246,7 @@ $('table').not('.model_table').DataTable(
 			AddHeaderText("Anomalies");
 			AddHeaderText("Generated");
 			AddBeginTableData();
-			foreach (HealthcheckData data in Report)
+			foreach (HealthCheckData data in Report)
             {
 				AddBeginRow();
                 AddPrintDomain(data.Domain);
@@ -278,7 +278,7 @@ $('table').not('.model_table').DataTable(
 			AddHeaderText("Schema version");
 			AddBeginTableData();
 
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
 				AddBeginRow();
 				AddPrintDomain(data.Domain);
@@ -314,7 +314,7 @@ $('table').not('.model_table').DataTable(
             AddHeaderText("IP");
             AddHeaderText("FSMO");
             AddBeginTableData();
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
                 foreach(var dc in data.DomainControllers)
                 {
@@ -353,8 +353,8 @@ $('table').not('.model_table').DataTable(
 			AddHeaderText("Nb Trusted delegation");
 			AddHeaderText("Nb Reversible password");
 			AddBeginTableData();
-            HealthcheckAccountData total = new HealthcheckAccountData();
-            foreach (HealthcheckData data in Report)
+            HealthCheckAccountData total = new HealthCheckAccountData();
+            foreach (HealthCheckData data in Report)
             {
                 if (data.UserAccountData == null)
                     continue;
@@ -410,8 +410,8 @@ $('table').not('.model_table').DataTable(
 			AddHeaderText("Nb Trusted delegation");
 			AddHeaderText("Nb Reversible password");
 			AddBeginTableData();
-            HealthcheckAccountData total = new HealthcheckAccountData();
-            foreach (HealthcheckData data in Report)
+            HealthCheckAccountData total = new HealthCheckAccountData();
+            foreach (HealthCheckData data in Report)
             {
                 if (data.ComputerAccountData == null)
                     continue;
@@ -450,11 +450,11 @@ $('table').not('.model_table').DataTable(
             string output = null;
             List<string> AllOS = new List<string>();
             Dictionary<string, int> SpecificOK = new Dictionary<string, int>();
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
                 if (data.OperatingSystem != null)
                 {
-                    foreach (HealthcheckOSData os in data.OperatingSystem)
+                    foreach (HealthCheckOSData os in data.OperatingSystem)
                     {
                         // keep only the "good" operating system (OsToInt>0)
                         if (OSToInt(os.OperatingSystem) > 0)
@@ -482,7 +482,7 @@ $('table').not('.model_table').DataTable(
             }
             AddBeginTableData();
             // maybe not the most perfomant algorithm (n^4) but there is only a few domains to consolidate
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
 				AddBeginRow();
                 AddPrintDomain(data.Domain);
@@ -517,7 +517,7 @@ $('table').not('.model_table').DataTable(
 				foreach (string os in AllOS)
 				{
 					int total = 0;
-					foreach (HealthcheckData data in Report)
+					foreach (HealthCheckData data in Report)
 					{
 						if (data.OperatingSystem != null)
 						{
@@ -568,7 +568,7 @@ $('table').not('.model_table').DataTable(
 			AddHeaderText("Nb external users");
             AddHeaderText("Nb protected users", "This is the number of users in the Protected Users group");
 			AddBeginTableData();
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
                 foreach (HealthCheckGroupData group in data.PrivilegedGroups)
                 {
@@ -739,7 +739,7 @@ $('table').not('.model_table').DataTable(
 			AddHeaderText("Creation");
 			AddHeaderText("Is Active ?");
 			AddBeginTableData();
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
 
                 if (!knowndomains.Contains(data.DomainFQDN))
@@ -778,7 +778,7 @@ $('table').not('.model_table').DataTable(
 			AddHeaderText("Netbios");
 			AddHeaderText("Creation date");
 			AddBeginTableData();
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
                 foreach (HealthCheckTrustData trust in data.Trusts)
                 {
@@ -805,7 +805,7 @@ $('table').not('.model_table').DataTable(
                     }
                 }
             }
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
                 if (data.ReachableDomains != null)
                 {
@@ -834,7 +834,7 @@ $('table').not('.model_table').DataTable(
 			AddHeaderText("Domain");
 			AddHeaderText("Domain SID");
 			AddBeginTableData();
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
                 if (!sidmap.ContainsKey(data.DomainFQDN) && !String.IsNullOrEmpty(data.DomainSid))
                 {
@@ -856,7 +856,7 @@ $('table').not('.model_table').DataTable(
                 }
 
             }
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
                 if (data.ReachableDomains != null)
                 {
@@ -891,7 +891,7 @@ $('table').not('.model_table').DataTable(
 			AddHeaderText("Smart card account not update");
 			AddHeaderText("Date LAPS Installed");
 			AddBeginTableData();
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
 				AddBeginRow();
 				AddPrintDomain(data.Domain);
@@ -923,7 +923,7 @@ $('table').not('.model_table').DataTable(
 			AddHeaderText("Lockout Duration");
 			AddHeaderText("Reset account counter locker after");
 			AddBeginTableData();
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
                 if (data.GPPPasswordPolicy != null)
                 {
@@ -955,7 +955,7 @@ $('table').not('.model_table').DataTable(
 			AddHeaderText("Start after (seconds)");
 			AddHeaderText("Grace Period (seconds)");
 			AddBeginTableData();
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
                 if (data.GPPPasswordPolicy != null)
                 {
@@ -980,7 +980,7 @@ $('table').not('.model_table').DataTable(
 			AddHeaderText("Setting");
 			AddHeaderText("Value");
 			AddBeginTableData();
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
                 if (data.GPOLsaPolicy != null)
                 {
@@ -1017,7 +1017,7 @@ $('table').not('.model_table').DataTable(
 			AddHeaderText("Changed");
 			AddHeaderText("Other");
 			AddBeginTableData();
-            foreach (HealthcheckData data in Report)
+            foreach (HealthCheckData data in Report)
             {
                 foreach (GPPPassword password in data.GPPPassword)
                 {

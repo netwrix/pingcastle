@@ -11,14 +11,14 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Xml;
 
-namespace ADSecurityHealthCheck.Healthcheck
+namespace ADSecurityHealthCheck.HealthCheck
 {
-	internal class EncryptionSettings : PingCastle.Healthcheck.EncryptionSettings
+	internal class EncryptionSettings : PingCastle.HealthCheck.EncryptionSettings
 	{
 	}
 }
 
-namespace PingCastle.Healthcheck
+namespace PingCastle.HealthCheck
 {
 	internal class EncryptionSettings : ConfigurationSection
 	{

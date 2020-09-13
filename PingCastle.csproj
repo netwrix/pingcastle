@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -333,43 +333,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="ADWS\wsdl\ActiveDirectory.wsdl" />
-    <None Include="ADWS\wsdl\ActiveDirectory1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="ADWS\wsdl\activedirectorydata.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="ADWS\wsdl\addressing.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="ADWS\wsdl\Arrays.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="ADWS\wsdl\DirectoryAccess.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="ADWS\wsdl\enumeration.wsdl" />
-    <None Include="ADWS\wsdl\enumeration.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="ADWS\wsdl\ldapquery.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="ADWS\wsdl\Message.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="ADWS\wsdl\regeneratewsdl.bat" />
-    <None Include="ADWS\wsdl\service.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="ADWS\wsdl\transfer.wsdl" />
-    <None Include="ADWS\wsdl\transfer.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="ADWS\wsdl\wsman.xsd">
       <SubType>Designer</SubType>
     </None>
     <EmbeddedResource Include="Healthcheck\Rules\RuleDescription.resx">

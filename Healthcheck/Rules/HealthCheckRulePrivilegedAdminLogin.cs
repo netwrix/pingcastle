@@ -9,18 +9,18 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("P-AdminLogin", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AdminControl)]
-	[RuleComputation(RuleComputationType.TriggerIfLessThan, 20, Threshold: 35)]
+    [RuleModel("P-AdminLogin", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AdminControl)]
+    [RuleComputation(RuleComputationType.TriggerIfLessThan, 20, Threshold: 35)]
     [RuleMaturityLevel(3)]
     public class HealthCheckRulePrivilegedAdminLogin : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             if (healthcheckData.DomainCreation.AddDays(35) < healthcheckData.GenerationDate)
             {
-				return 100;
+                return 100;
             }
-			return (int)(healthcheckData.GenerationDate - healthcheckData.AdminLastLoginDate).TotalDays;
+            return (int)(healthcheckData.GenerationDate - healthcheckData.AdminLastLoginDate).TotalDays;
         }
     }
 }

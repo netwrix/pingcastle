@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using System;
 using System.Collections.Generic;
 using System.Resources;
@@ -12,110 +13,112 @@ using PingCastle.Data;
 
 namespace PingCastle.Rules
 {
-	public abstract class RuleBase<T> : IRuleScore
-	{
-		public string RiskId { get; set; }
-		public string Title { get; private set; }
-		public string Description { get; private set; }
-		public string TechnicalExplanation { get; private set; }
-		public string Solution { get; private set; }
-		public string Documentation { get; private set; }
-		public RiskRuleCategory Category { get; set; }
-		public RiskModelCategory Model { get; set; }
-		public RiskModelObjective Objective { get; set; }
-		private string DetailRationale;
-		protected string DetailFormatString;
-		// used to provide a location of the data in the report (aka a link to the report)
-		public string ReportLocation { get; private set; }
+    public abstract class RuleBase<T> : IRuleScore
+    {
+        public string RiskId { get; set; }
+        public string Title { get; private set; }
+        public string Description { get; private set; }
+        public string TechnicalExplanation { get; private set; }
+        public string Solution { get; private set; }
+        public string Documentation { get; private set; }
+        public RiskRuleCategory Category { get; set; }
+        public RiskModelCategory Model { get; set; }
+        public RiskModelObjective Objective { get; set; }
+        private string DetailRationale;
+        protected string DetailFormatString;
+
+        // used to provide a location of the data in the report (aka a link to the report)
+        public string ReportLocation { get; private set; }
 
         public int Points { get; set; }
         public string Rationale { get; set; }
 
         public List<string> Details { get; set; }
 
-		public int MaturityLevel { get; private set; }
+        public int MaturityLevel { get; private set; }
 
-		// return count if not null or rely on details.count
-		protected virtual int? AnalyzeDataNew(T healthcheckData)
-		{
-			throw new NotImplementedException();
-		}
+        // return count if not null or rely on details.count
+        protected virtual int? AnalyzeDataNew(T healthcheckData)
+        {
+            throw new NotImplementedException();
+        }
 
-		protected virtual int? AnalyzeDataNew(T healthcheckData, ICollection<DomainKey> AllowedMigrationDomains)
-		{
-			if (AllowedMigrationDomains == null)
-				return AnalyzeDataNew(healthcheckData);
-			throw new NotImplementedException();
-		}
+        protected virtual int? AnalyzeDataNew(T healthcheckData, ICollection<DomainKey> AllowedMigrationDomains)
+        {
+            if (AllowedMigrationDomains == null)
+                return AnalyzeDataNew(healthcheckData);
+            throw new NotImplementedException();
+        }
 
-		public List<RuleComputationAttribute> RuleComputation { get; private set; }
+        public List<RuleComputationAttribute> RuleComputation { get; private set; }
 
         ResourceManager _resourceManager;
+
         protected ResourceManager ResourceManager
         {
             get
             {
                 if (_resourceManager == null)
                 {
-					_resourceManager = new ResourceManager(GetType().Namespace + ".RuleDescription", GetType().Assembly);
+                    _resourceManager = new ResourceManager(GetType().Namespace + ".RuleDescription", GetType().Assembly);
                 }
                 return _resourceManager;
             }
         }
 
-		protected RuleBase()
+        protected RuleBase()
         {
-			object[] models = GetType().GetCustomAttributes(typeof(RuleModelAttribute), true);
-			if (models != null && models.Length != 0)
-			{
-				RuleModelAttribute model = (RuleModelAttribute)models[0];
-				Category = model.Category;
-				Model = model.Model;
-				RiskId = model.Id;
-			}
-			else
-			{
-				models = GetType().GetCustomAttributes(typeof(RuleObjectiveAttribute), true);
-				if (models != null && models.Length != 0)
-				{
-					RuleObjectiveAttribute model = (RuleObjectiveAttribute)models[0];
-					Category = model.Category;
-					Objective = model.Objective;
-					RiskId = model.Id;
-				}
-				else
-				{
-					throw new NotImplementedException();
-				}
-			}
-			string resourceKey;
+            object[] models = GetType().GetCustomAttributes(typeof(RuleModelAttribute), true);
+            if (models != null && models.Length != 0)
+            {
+                RuleModelAttribute model = (RuleModelAttribute)models[0];
+                Category = model.Category;
+                Model = model.Model;
+                RiskId = model.Id;
+            }
+            else
+            {
+                models = GetType().GetCustomAttributes(typeof(RuleObjectiveAttribute), true);
+                if (models != null && models.Length != 0)
+                {
+                    RuleObjectiveAttribute model = (RuleObjectiveAttribute)models[0];
+                    Category = model.Category;
+                    Objective = model.Objective;
+                    RiskId = model.Id;
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+            }
+            string resourceKey;
             resourceKey = RiskId.Replace('-', '_').Replace('$', '_');
 
             Title = ResourceManager.GetString(resourceKey + "_Title");
-			Description = ResourceManager.GetString(resourceKey + "_Description");
-			TechnicalExplanation = ResourceManager.GetString(resourceKey + "_TechnicalExplanation");
-			Solution = ResourceManager.GetString(resourceKey + "_Solution");
-			Documentation = ResourceManager.GetString(resourceKey + "_Documentation");
-			DetailRationale = ResourceManager.GetString(resourceKey + "_Rationale");
+            Description = ResourceManager.GetString(resourceKey + "_Description");
+            TechnicalExplanation = ResourceManager.GetString(resourceKey + "_TechnicalExplanation");
+            Solution = ResourceManager.GetString(resourceKey + "_Solution");
+            Documentation = ResourceManager.GetString(resourceKey + "_Documentation");
+            DetailRationale = ResourceManager.GetString(resourceKey + "_Rationale");
 
-			DetailFormatString = ResourceManager.GetString(resourceKey + "_Detail");
-			ReportLocation = ResourceManager.GetString(resourceKey + "_ReportLocation");
+            DetailFormatString = ResourceManager.GetString(resourceKey + "_Detail");
+            ReportLocation = ResourceManager.GetString(resourceKey + "_ReportLocation");
 
-			RuleComputation = new List<RuleComputationAttribute>((RuleComputationAttribute[])GetType().GetCustomAttributes(typeof(RuleComputationAttribute), true));
-			if (RuleComputation.Count == 0)
-				throw new NotImplementedException();
-			RuleComputation.Sort((RuleComputationAttribute a, RuleComputationAttribute b)
-				=>
-			{
-				return a.Order.CompareTo(b.Order);
-			}
-			);
-			if (!String.IsNullOrEmpty(Documentation))
+            RuleComputation = new List<RuleComputationAttribute>((RuleComputationAttribute[])GetType().GetCustomAttributes(typeof(RuleComputationAttribute), true));
+            if (RuleComputation.Count == 0)
+                throw new NotImplementedException();
+            RuleComputation.Sort((RuleComputationAttribute a, RuleComputationAttribute b)
+                    =>
+                {
+                    return a.Order.CompareTo(b.Order);
+                }
+            );
+            if (!String.IsNullOrEmpty(Documentation))
             {
                 string[] lines = Documentation.Split(
-                        new[] { "\r\n", "\r", "\n" },
-                        StringSplitOptions.None
-                    );
+                    new[] { "\r\n", "\r", "\n" },
+                    StringSplitOptions.None
+                );
                 for (int i = 0; i < lines.Length; i++)
                 {
                     lines[i] = "<a href=\"" + lines[i] + "\">" + lines[i] + "</a>";
@@ -131,22 +134,22 @@ namespace PingCastle.Rules
                 {
                     if (i > 0)
                         Documentation += "<br>\r\n";
-                    Documentation += ((RuleFrameworkReference) frameworks[i]).GenerateLink();
+                    Documentation += ((RuleFrameworkReference)frameworks[i]).GenerateLink();
                 }
             }
 
-			var ruleMaturity = new List<IRuleMaturity>((IRuleMaturity[])GetType().GetCustomAttributes(typeof(IRuleMaturity), true));
-			if (ruleMaturity.Count == 0)
-			{
-				MaturityLevel = 0;
-			}
-			MaturityLevel = 5;
-			foreach (var m in ruleMaturity)
-			{
-				if (MaturityLevel > m.Level)
-					MaturityLevel = m.Level;
-			}
-		}
+            var ruleMaturity = new List<IRuleMaturity>((IRuleMaturity[])GetType().GetCustomAttributes(typeof(IRuleMaturity), true));
+            if (ruleMaturity.Count == 0)
+            {
+                MaturityLevel = 0;
+            }
+            MaturityLevel = 5;
+            foreach (var m in ruleMaturity)
+            {
+                if (MaturityLevel > m.Level)
+                    MaturityLevel = m.Level;
+            }
+        }
 
         public void Initialize()
         {
@@ -160,66 +163,67 @@ namespace PingCastle.Rules
 
         public void AddRawDetail(params object[] data)
         {
-			AddDetail(String.Format(DetailFormatString, data));
+            AddDetail(String.Format(DetailFormatString, data));
         }
 
-		public bool Analyze(T healthcheckData)
-		{
-			return Analyze(healthcheckData, null);
-		}
-
-		public bool Analyze(T data, ICollection<DomainKey> AllowedMigrationDomains)
+        public bool Analyze(T healthcheckData)
         {
-			bool hasTheRuleMatched = false;
-			// PingCastle 2.5
+            return Analyze(healthcheckData, null);
+        }
+
+        public bool Analyze(T data, ICollection<DomainKey> AllowedMigrationDomains)
+        {
+            bool hasTheRuleMatched = false;
+
+            // PingCastle 2.5
             Points = 0;
-			int? valueReturnedByAnalysis = AnalyzeDataNew(data, AllowedMigrationDomains);
-			if (valueReturnedByAnalysis == null)
-			{
-				valueReturnedByAnalysis = 0;
-				if (Details != null)
-					valueReturnedByAnalysis = Details.Count;
-			}
-			foreach (var computation in RuleComputation)
-			{
-				int points = 0;
-				if (computation.HasMatch((int) valueReturnedByAnalysis, ref points))
-				{
-					hasTheRuleMatched = true;
-					Points = points;
-					UpdateLabelsAfterMatch((int) valueReturnedByAnalysis, computation);
-					break;
-				}
-			}
+            int? valueReturnedByAnalysis = AnalyzeDataNew(data, AllowedMigrationDomains);
+            if (valueReturnedByAnalysis == null)
+            {
+                valueReturnedByAnalysis = 0;
+                if (Details != null)
+                    valueReturnedByAnalysis = Details.Count;
+            }
+            foreach (var computation in RuleComputation)
+            {
+                int points = 0;
+                if (computation.HasMatch((int)valueReturnedByAnalysis, ref points))
+                {
+                    hasTheRuleMatched = true;
+                    Points = points;
+                    UpdateLabelsAfterMatch((int)valueReturnedByAnalysis, computation);
+                    break;
+                }
+            }
             return hasTheRuleMatched;
         }
 
-		protected virtual void UpdateLabelsAfterMatch(int valueReturnedByAnalysis, RuleComputationAttribute computation)
-		{
-			if (DetailRationale != null)
-			{
-				Rationale = DetailRationale;
-				Rationale = Rationale.Replace("{count}", valueReturnedByAnalysis.ToString());
-				Rationale = Rationale.Replace("{threshold}", computation.Threshold.ToString());
-			}
-		}
+        protected virtual void UpdateLabelsAfterMatch(int valueReturnedByAnalysis, RuleComputationAttribute computation)
+        {
+            if (DetailRationale != null)
+            {
+                Rationale = DetailRationale;
+                Rationale = Rationale.Replace("{count}", valueReturnedByAnalysis.ToString());
+                Rationale = Rationale.Replace("{threshold}", computation.Threshold.ToString());
+            }
+        }
 
-		public string GetComputationModelString()
-		{
-			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < RuleComputation.Count; i++ )
-			{
-				if (i > 0)
-					sb.Append("\r\nthen ");
-				var rule = RuleComputation[i];
-				switch (rule.ComputationType)
-				{
-					case RuleComputationType.TriggerOnThreshold:
-						sb.Append(rule.Score);
-						sb.Append(" points if the occurence is greater or equals than ");
-						sb.Append(rule.Threshold);
-						break;
-					case RuleComputationType.TriggerOnPresence:
+        public string GetComputationModelString()
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < RuleComputation.Count; i++)
+            {
+                if (i > 0)
+                    sb.Append("\r\nthen ");
+                var rule = RuleComputation[i];
+                switch (rule.ComputationType)
+                {
+                    case RuleComputationType.TriggerOnThreshold:
+                        sb.Append(rule.Score);
+                        sb.Append(" points if the occurence is greater or equals than ");
+                        sb.Append(rule.Threshold);
+                        break;
+                    case RuleComputationType.TriggerOnPresence:
                         if (rule.Score > 0)
                         {
                             sb.Append(rule.Score);
@@ -229,25 +233,25 @@ namespace PingCastle.Rules
                         {
                             sb.Append("Informative rule (0 point)");
                         }
-						break;
-					case RuleComputationType.PerDiscover:
-						sb.Append(rule.Score);
-						sb.Append(" points per discovery");
-						break;
-					case RuleComputationType.PerDiscoverWithAMinimumOf:
-						sb.Append(rule.Score);
-						sb.Append(" points per discovery with a minimal of ");
-						sb.Append(rule.Threshold);
-						sb.Append(" points");
-						break;
-					case RuleComputationType.TriggerIfLessThan:
-						sb.Append(rule.Score);
-						sb.Append(" points if the occurence is strictly lower than ");
-						sb.Append(rule.Threshold);
-						break;
-				}
-			}
-			return sb.ToString();
-		}
-	}
+                        break;
+                    case RuleComputationType.PerDiscover:
+                        sb.Append(rule.Score);
+                        sb.Append(" points per discovery");
+                        break;
+                    case RuleComputationType.PerDiscoverWithAMinimumOf:
+                        sb.Append(rule.Score);
+                        sb.Append(" points per discovery with a minimal of ");
+                        sb.Append(rule.Threshold);
+                        sb.Append(" points");
+                        break;
+                    case RuleComputationType.TriggerIfLessThan:
+                        sb.Append(rule.Score);
+                        sb.Append(" points if the occurence is strictly lower than ");
+                        sb.Append(rule.Threshold);
+                        break;
+                }
+            }
+            return sb.ToString();
+        }
+    }
 }

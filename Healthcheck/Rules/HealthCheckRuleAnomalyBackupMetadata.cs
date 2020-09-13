@@ -4,28 +4,29 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using System;
 using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-BackupMetadata", RiskRuleCategory.Anomalies, RiskModelCategory.Backup)]
-	[RuleComputation(RuleComputationType.TriggerOnThreshold, 15, Threshold: 7)]
+    [RuleModel("A-BackupMetadata", RiskRuleCategory.Anomalies, RiskModelCategory.Backup)]
+    [RuleComputation(RuleComputationType.TriggerOnThreshold, 15, Threshold: 7)]
     [RuleSTIG("V-25385", "Active Directory data must be backed up daily for systems with a Risk Management Framework categorization for Availability of moderate or high. Systems with a categorization of low must be backed up weekly.")]
     [RuleMaturityLevel(3)]
     public class HealthCheckRuleAnomalyBackupMetadata : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
-			if (healthcheckData.LastADBackup < DateTime.MaxValue)
+            if (healthcheckData.LastADBackup < DateTime.MaxValue)
             {
-				return (int)(healthcheckData.GenerationDate - healthcheckData.LastADBackup).TotalDays;
+                return (int)(healthcheckData.GenerationDate - healthcheckData.LastADBackup).TotalDays;
             }
-			else if (healthcheckData.LastADBackup == DateTime.MaxValue)
-			{
-				return (int)(healthcheckData.GenerationDate - healthcheckData.DomainCreation).TotalDays;
-			}
-			return 0;
+            else if (healthcheckData.LastADBackup == DateTime.MaxValue)
+            {
+                return (int)(healthcheckData.GenerationDate - healthcheckData.DomainCreation).TotalDays;
+            }
+            return 0;
         }
     }
 }

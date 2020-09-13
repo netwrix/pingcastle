@@ -4,20 +4,21 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using System;
 using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-NoNetSessionHardening", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
-	[RuleIntroducedIn(2, 9)]
+    [RuleModel("A-NoNetSessionHardening", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
+    [RuleIntroducedIn(2, 9)]
     [RuleMaturityLevel(4)]
     public class HealthCheckRuleAnomalyNoNetSessionHardening : RuleBase<HealthCheckData>
-	{
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
-		{
-			bool found = false;
+    {
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        {
+            bool found = false;
             if (healthcheckData.GPOLsaPolicy != null)
             {
                 foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
@@ -44,9 +45,9 @@ namespace PingCastle.HealthCheck.Rules
                     }
                 }
             }
-			if (!found)
-				return 1;
-			return 0;
-		}
-	}
+            if (!found)
+                return 1;
+            return 0;
+        }
+    }
 }

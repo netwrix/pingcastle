@@ -9,16 +9,16 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("P-Inactive", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AdminControl)]
-	[RuleComputation(RuleComputationType.TriggerOnThreshold, 30, Threshold: 30, Order: 1)]
-	[RuleComputation(RuleComputationType.TriggerOnThreshold, 20, Threshold: 15, Order: 2)]
-	[RuleANSSI("R36", "subsection.3.6")]
+    [RuleModel("P-Inactive", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AdminControl)]
+    [RuleComputation(RuleComputationType.TriggerOnThreshold, 30, Threshold: 30, Order: 1)]
+    [RuleComputation(RuleComputationType.TriggerOnThreshold, 20, Threshold: 15, Order: 2)]
+    [RuleANSSI("R36", "subsection.3.6")]
     [RuleMaturityLevel(3)]
     public class HealthCheckRulePrivilegedAdminInactive : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
-            
+
             int adminEnabledAndInactive = 0;
             if (healthcheckData.AllPrivilegedMembers.Count > 20)
             {
@@ -27,7 +27,7 @@ namespace PingCastle.HealthCheck.Rules
                     if (member.IsEnabled && !member.IsActive)
                         adminEnabledAndInactive++;
                 }
-				return 100 * adminEnabledAndInactive / healthcheckData.AllPrivilegedMembers.Count;
+                return 100 * adminEnabledAndInactive / healthcheckData.AllPrivilegedMembers.Count;
             }
             return 0;
         }

@@ -9,14 +9,14 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("P-RecoveryModeUnprotected", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
-	[RuleSTIG("V-1159", "The Recovery Console option is set to permit automatic logon to the system.", STIGFramework.Windows7)]
-	[RuleIntroducedIn(2, 7)]
+    [RuleModel("P-RecoveryModeUnprotected", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
+    [RuleSTIG("V-1159", "The Recovery Console option is set to permit automatic logon to the system.", STIGFramework.Windows7)]
+    [RuleIntroducedIn(2, 7)]
     [RuleMaturityLevel(2)]
-	public class HealthCheckRulePrivilegedRecoveryModeUnprotected : RuleBase<HealthCheckData>
+    public class HealthCheckRulePrivilegedRecoveryModeUnprotected : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             if (healthcheckData.GPOLsaPolicy != null)
             {
@@ -48,7 +48,7 @@ namespace PingCastle.HealthCheck.Rules
                     }
                 }
             }
-			return null;
+            return null;
         }
     }
 }

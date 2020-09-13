@@ -11,18 +11,19 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("T-SIDFiltering", RiskRuleCategory.Trusts, RiskModelCategory.SIDFiltering)]
-	[RuleComputation(RuleComputationType.TriggerOnThreshold, 100, Threshold: 4, Order: 1)]
-	[RuleComputation(RuleComputationType.TriggerOnThreshold, 80, Threshold: 2, Order: 2)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 50, Order: 3)]
+    [RuleModel("T-SIDFiltering", RiskRuleCategory.Trusts, RiskModelCategory.SIDFiltering)]
+    [RuleComputation(RuleComputationType.TriggerOnThreshold, 100, Threshold: 4, Order: 1)]
+    [RuleComputation(RuleComputationType.TriggerOnThreshold, 80, Threshold: 2, Order: 2)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 50, Order: 3)]
     [RuleSTIG("V-8538", "Security identifiers (SIDs) must be configured to use only authentication data of directly trusted external or forest trust. ")]
-	[RuleANSSI("R16", "paragraph.3.3.1.6")]
-	//[RuleBSI("M 4.314")]
+    [RuleANSSI("R16", "paragraph.3.3.1.6")]
+
+    //[RuleBSI("M 4.314")]
     [RuleDurANSSI(1, "trusts_forest_sidhistory", "Outbound forest trust relationships with sID History enabled")]
     [RuleDurANSSI(1, "trusts_domain_notfiltered", "Unfiltered outbound domain trust relationship")]
     public class HealthCheckRuleTrustSIDFiltering : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData, ICollection<DomainKey> AllowedMigrationDomains)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData, ICollection<DomainKey> AllowedMigrationDomains)
         {
             foreach (HealthCheckTrustData trust in healthcheckData.Trusts)
             {
@@ -56,7 +57,7 @@ namespace PingCastle.HealthCheck.Rules
                     AddRawDetail(trust.TrustPartner);
                 }
             }
-			return null;
+            return null;
         }
     }
 }

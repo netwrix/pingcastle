@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using PingCastle.Data;
 using System;
 using System.Collections.Generic;
@@ -15,9 +16,7 @@ namespace PingCastle.HealthCheck
         bool IsMigrationTrust(DateTime evaluationDate, DomainKey source, DomainKey destination);
     }
 
-    public class OwnerInformationReferences : List<OwnerInformation>
-    {
-    }
+    public class OwnerInformationReferences : List<OwnerInformation> { }
 
     public interface OwnerInformation
     {

@@ -10,12 +10,12 @@ using PingCastle.Rules;
 namespace PingCastle.HealthCheck.Rules
 {
     [RuleModel("P-RODCSYSVOLWrite", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.RODC)]
-	[RuleComputation(RuleComputationType.PerDiscover, 5)]
-    [RuleIntroducedIn(2,9)]
+    [RuleComputation(RuleComputationType.PerDiscover, 5)]
+    [RuleIntroducedIn(2, 9)]
     [RuleMaturityLevel(2)]
     public class HealthCheckRulePrivilegedRODCSYSVOLWrite : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             if (healthcheckData.DomainFunctionalLevel < 3)
                 return 0;

@@ -9,22 +9,22 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-DC-Spooler", RiskRuleCategory.Anomalies, RiskModelCategory.PassTheCredential)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-	[RuleIntroducedIn(2, 6)]
+    [RuleModel("A-DC-Spooler", RiskRuleCategory.Anomalies, RiskModelCategory.PassTheCredential)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    [RuleIntroducedIn(2, 6)]
     [RuleMaturityLevel(2)]
-	public class HealthCheckRuleAnomalyDCSpooler : RuleBase<HealthCheckData>
+    public class HealthCheckRuleAnomalyDCSpooler : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
-			foreach (var DC in healthcheckData.DomainControllers)
-			{
-				if (DC.RemoteSpoolerDetected)
-				{
-					AddRawDetail(DC.DCName);
-				}
-			}
-			return null;
+            foreach (var DC in healthcheckData.DomainControllers)
+            {
+                if (DC.RemoteSpoolerDetected)
+                {
+                    AddRawDetail(DC.DCName);
+                }
+            }
+            return null;
         }
     }
 }

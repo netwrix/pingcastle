@@ -9,23 +9,24 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-NullSession", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-	//[RuleBSI("M 2.412")]
-	[RuleSTIG("V-14798", "Directory data (outside the root DSE) of a non-public directory must be configured to prevent anonymous access.", STIGFramework.ActiveDirectoryService2003)]
+    [RuleModel("A-NullSession", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+
+    //[RuleBSI("M 2.412")]
+    [RuleSTIG("V-14798", "Directory data (outside the root DSE) of a non-public directory must be configured to prevent anonymous access.", STIGFramework.ActiveDirectoryService2003)]
     [RuleMaturityLevel(2)]
     public class HealthCheckRuleAnomalyNullSession : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             if (healthcheckData.DomainControllers != null)
             {
                 foreach (var DC in healthcheckData.DomainControllers)
                 {
-					if (DC.HasNullSession)
-					{
-						AddRawDetail(DC.DCName);
-					}
+                    if (DC.HasNullSession)
+                    {
+                        AddRawDetail(DC.DCName);
+                    }
                 }
             }
             return null;

@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -56,7 +57,7 @@ namespace PingCastle.RPC
         private bool EnumerateAccountUsingLsa(TypeOfEnumeration method, int MaximumNumber)
         {
             Trace.WriteLine("EnumerateAccountUsingLsa");
-            int UserEnumerated = 0; 
+            int UserEnumerated = 0;
             Int32 returnCode;
             IntPtr PolicyHandle = IntPtr.Zero;
             lsa lsa = new lsa();
@@ -78,6 +79,7 @@ namespace PingCastle.RPC
                 }
                 uint currentRid = 500;
                 int iteration = 0;
+
                 // allows 10*1000 sid non resolved
                 int retrycount = 0;
                 while ((returnCode == 0 || returnCode == 0x00000107 || (retrycount < 10 && returnCode == -1073741709)) && UserEnumerated < MaximumNumber)
@@ -125,7 +127,7 @@ namespace PingCastle.RPC
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         private bool EnumerateAccountUsingSamr(TypeOfEnumeration method, int MaximumNumber)
         {
-            Trace.WriteLine("EnumerateAccountUsingSamr"); 
+            Trace.WriteLine("EnumerateAccountUsingSamr");
             int UserEnumerated = 0;
             IntPtr ServerHandle = IntPtr.Zero;
             samr sam = new samr();
@@ -200,7 +202,7 @@ namespace PingCastle.RPC
             {
                 sam.SamrCloseHandle(ref ServerHandle);
             }
-            Trace.WriteLine("EnumerateAccountUsingSamr done"); 
+            Trace.WriteLine("EnumerateAccountUsingSamr done");
             return UserEnumerated > 0;
         }
 
@@ -222,7 +224,5 @@ namespace PingCastle.RPC
             handle.Free();
             return output;
         }
-
-
     }
 }

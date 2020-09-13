@@ -4,19 +4,20 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using System;
 using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("S-DC-Inactive", RiskRuleCategory.StaleObjects, RiskModelCategory.InactiveUserOrComputer)]
-	[RuleComputation(RuleComputationType.PerDiscover, 5)]
-	[RuleANSSI("R45", "paragraph.3.6.6.2")]
+    [RuleModel("S-DC-Inactive", RiskRuleCategory.StaleObjects, RiskModelCategory.InactiveUserOrComputer)]
+    [RuleComputation(RuleComputationType.PerDiscover, 5)]
+    [RuleANSSI("R45", "paragraph.3.6.6.2")]
     [RuleDurANSSI(1, "password_change_inactive_dc", "Inactive domain controllers")]
-    [RuleIntroducedIn(2,9)]
+    [RuleIntroducedIn(2, 9)]
     public class HealthCheckRuleStaledInactiveDC : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             foreach (var dc in healthcheckData.DomainControllers)
             {

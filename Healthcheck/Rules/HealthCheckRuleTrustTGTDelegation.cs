@@ -11,13 +11,13 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("T-TGTDelegation", RiskRuleCategory.Trusts, RiskModelCategory.TrustImpermeability)]
-	[RuleComputation(RuleComputationType.PerDiscover, 10)]
-    [RuleIntroducedIn(2,7)]
+    [RuleModel("T-TGTDelegation", RiskRuleCategory.Trusts, RiskModelCategory.TrustImpermeability)]
+    [RuleComputation(RuleComputationType.PerDiscover, 10)]
+    [RuleIntroducedIn(2, 7)]
     [RuleDurANSSI(3, "trusts_tgt_deleg", "Inbound trust relationships with delegation")]
-	public class HealthCheckRuleTrustTGTDelegation : RuleBase<HealthCheckData>
+    public class HealthCheckRuleTrustTGTDelegation : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData, ICollection<DomainKey> AllowedMigrationDomains)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData, ICollection<DomainKey> AllowedMigrationDomains)
         {
             foreach (HealthCheckTrustData trust in healthcheckData.Trusts)
             {
@@ -51,7 +51,7 @@ namespace PingCastle.HealthCheck.Rules
                     AddRawDetail(trust.TrustPartner);
                 }
             }
-			return null;
+            return null;
         }
     }
 }

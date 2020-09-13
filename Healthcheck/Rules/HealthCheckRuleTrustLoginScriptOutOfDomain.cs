@@ -4,22 +4,23 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using System;
 using System.Diagnostics;
 using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("T-ScriptOutOfDomain", RiskRuleCategory.Trusts, RiskModelCategory.TrustImpermeability)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    [RuleModel("T-ScriptOutOfDomain", RiskRuleCategory.Trusts, RiskModelCategory.TrustImpermeability)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
     [RuleMaturityLevel(2)]
     public class HealthCheckRuleTrustLoginScriptOutOfDomain : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             foreach (HealthCheckLoginScriptData script in healthcheckData.LoginScript)
             {
-				if (IsForeignScript(script.LoginScript, healthcheckData) != null)
+                if (IsForeignScript(script.LoginScript, healthcheckData) != null)
                 {
                     Trace.WriteLine("Foreignscript:" + script.LoginScript);
                     AddRawDetail(script.LoginScript);
@@ -30,7 +31,7 @@ namespace PingCastle.HealthCheck.Rules
                 if (IsForeignScript(script.CommandLine, healthcheckData) != null)
                 {
                     Trace.WriteLine("Foreignscript:" + script.CommandLine);
-					AddRawDetail(script.CommandLine);
+                    AddRawDetail(script.CommandLine);
                 }
             }
             return null;
@@ -46,6 +47,7 @@ namespace PingCastle.HealthCheck.Rules
                     Trace.WriteLine("Unable to parse the url: " + uristring);
                     return null;
                 }
+
                 // important, to avoid an exception in uri.IsUnc
                 if (!uri.IsAbsoluteUri)
                 {
@@ -58,12 +60,12 @@ namespace PingCastle.HealthCheck.Rules
                     if (server.EndsWith(healthcheckData.DomainFQDN, StringComparison.InvariantCultureIgnoreCase)
                         || server.EndsWith(healthcheckData.ForestFQDN, StringComparison.InvariantCultureIgnoreCase))
                     {
-						return null;
+                        return null;
                     }
-					return server;
+                    return server;
                 }
             }
-			return null;
+            return null;
         }
     }
 }

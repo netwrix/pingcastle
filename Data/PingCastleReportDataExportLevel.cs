@@ -1,10 +1,10 @@
 ﻿namespace PingCastle.Data
 {
-	public enum PingCastleReportDataExportLevel
-	{
-		Full,
-		Normal,
-		Light,
-		Paranoid
+    public enum PingCastleReportDataExportLevel
+    {
+        Full,
+        Normal,
+        Light,
+        Paranoid
     }
 }

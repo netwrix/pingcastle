@@ -9,12 +9,12 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-LimitBlankPasswordUse", RiskRuleCategory.Anomalies, RiskModelCategory.WeakPassword)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleModel("A-LimitBlankPasswordUse", RiskRuleCategory.Anomalies, RiskModelCategory.WeakPassword)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleMaturityLevel(2)]
     public class HealthCheckRuleAnomalyRemoteBlankPasswordUse : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             foreach (GPPSecurityPolicy policy in healthcheckData.GPPPasswordPolicy)
             {
@@ -24,8 +24,8 @@ namespace PingCastle.HealthCheck.Rules
                     {
                         if (property.Value == 0)
                         {
-							AddRawDetail(policy.GPOName);
-							break;
+                            AddRawDetail(policy.GPOName);
+                            break;
                         }
                     }
                 }

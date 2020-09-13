@@ -9,37 +9,37 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("P-DelegationLoginScript", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
-	[RuleComputation(RuleComputationType.PerDiscover, 15)]
-	[RuleANSSI("R18", "subsubsection.3.3.2")]
-	[RuleSTIG("V-2370", "The access control permissions for the directory service site group policy must be configured to use the required access permissions.", STIGFramework.ActiveDirectoryService2003)]
-	[RuleIntroducedIn(2, 5)]
+    [RuleModel("P-DelegationLoginScript", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+    [RuleComputation(RuleComputationType.PerDiscover, 15)]
+    [RuleANSSI("R18", "subsubsection.3.3.2")]
+    [RuleSTIG("V-2370", "The access control permissions for the directory service site group policy must be configured to use the required access permissions.", STIGFramework.ActiveDirectoryService2003)]
+    [RuleIntroducedIn(2, 5)]
     [RuleMaturityLevel(2)]
-	public class HealthCheckRulePrivilegedDelegationLoginScript : RuleBase<HealthCheckData>
+    public class HealthCheckRulePrivilegedDelegationLoginScript : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
-			foreach (var script in healthcheckData.LoginScript)
-			{
-				if (script.Delegation != null)
-				{
-					foreach (var delegation in script.Delegation)
-					{
-						AddRawDetail(script.LoginScript, delegation.Account, delegation.Right);
-					}
-				}
-			}
-			foreach (var script in healthcheckData.GPOLoginScript)
-			{
-				if (script.Delegation != null)
-				{
-					foreach (var delegation in script.Delegation)
-					{
-						AddRawDetail(script.CommandLine, delegation.Account, delegation.Right);
-					}
-				}
-			}
-			return null;
+            foreach (var script in healthcheckData.LoginScript)
+            {
+                if (script.Delegation != null)
+                {
+                    foreach (var delegation in script.Delegation)
+                    {
+                        AddRawDetail(script.LoginScript, delegation.Account, delegation.Right);
+                    }
+                }
+            }
+            foreach (var script in healthcheckData.GPOLoginScript)
+            {
+                if (script.Delegation != null)
+                {
+                    foreach (var delegation in script.Delegation)
+                    {
+                        AddRawDetail(script.CommandLine, delegation.Account, delegation.Right);
+                    }
+                }
+            }
+            return null;
         }
     }
 }

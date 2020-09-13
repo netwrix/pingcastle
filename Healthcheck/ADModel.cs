@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using PingCastle.Data;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,6 @@ using System.Diagnostics;
 
 namespace PingCastle.HealthCheck
 {
-
     public class GraphNodeCollection : ICollection<GraphNode>
     {
         Dictionary<DomainKey, GraphNode> data;
@@ -110,6 +110,7 @@ namespace PingCastle.HealthCheck
         private static void EnrichDomainInfo(PingCastleReportCollection<HealthCheckData> consolidation, HealthCheckTrustDomainInfoData di)
         {
             bool enriched = false;
+
             // search direct report
             foreach (HealthCheckData data in consolidation)
             {
@@ -117,8 +118,8 @@ namespace PingCastle.HealthCheck
                 {
                     di.DnsName = data.DomainFQDN;
                     di.ForestName = data.ForestFQDN;
-					di.Forest = data.Forest;
-					di.Domain = data.Domain;
+                    di.Forest = data.Forest;
+                    di.Domain = data.Domain;
                     break;
                 }
                 foreach (var trust in data.Trusts)
@@ -131,6 +132,7 @@ namespace PingCastle.HealthCheck
                     if (netbios.Equals(di.NetbiosName, StringComparison.InvariantCultureIgnoreCase))
                     {
                         di.DnsName = trust.TrustPartner;
+
                         // unknown forest name
                         enriched = true;
                         break;
@@ -141,8 +143,8 @@ namespace PingCastle.HealthCheck
                         {
                             di.DnsName = forestinfo.DnsName;
                             di.ForestName = trust.TrustPartner;
-							di.Forest = trust.Domain;
-							di.Domain = forestinfo.Domain;
+                            di.Forest = trust.Domain;
+                            di.Domain = forestinfo.Domain;
                             enriched = true;
                             break;
                         }
@@ -158,10 +160,12 @@ namespace PingCastle.HealthCheck
         static public GraphNodeCollection BuildModel(PingCastleReportCollection<HealthCheckData> consolidation, OwnerInformationReferences EntityData)
         {
             GraphNodeCollection nodes = new GraphNodeCollection();
+
             // build links based on the most to the less reliable information
             Trace.WriteLine("Building model");
             int nodeNumber = 0;
             Trace.WriteLine("domain reports");
+
             // enumerate official domains
             foreach (HealthCheckData data in consolidation)
             {
@@ -170,10 +174,11 @@ namespace PingCastle.HealthCheck
                 node.SetForest(data.Forest);
             }
             Trace.WriteLine("direct trust");
+
             // get trust map based on direct trusts data
             foreach (HealthCheckData data in consolidation)
             {
-				//Trace.WriteLine("Working on " + data.DomainFQDN);
+                //Trace.WriteLine("Working on " + data.DomainFQDN);
                 GraphNode source = nodes.Locate(data);
                 foreach (var trust in data.Trusts)
                 {
@@ -184,7 +189,7 @@ namespace PingCastle.HealthCheck
             Trace.WriteLine("forest trust");
             foreach (HealthCheckData data in consolidation)
             {
-				//Trace.WriteLine("Working on " + data.DomainFQDN);
+                //Trace.WriteLine("Working on " + data.DomainFQDN);
                 foreach (var trust in data.Trusts)
                 {
                     // do not examine if we have more accurate information (aka the forest report)
@@ -197,27 +202,30 @@ namespace PingCastle.HealthCheck
                         {
                             GraphNode destination = nodes.CreateNodeIfNeeded(ref nodeNumber, domainInfo.Domain, data.GenerationDate);
                             source.LinkInsideAForest(destination, domainInfo.CreationDate);
-							if (domainInfo.Forest == null)
-								destination.SetForest(trust.Domain);
-							else
-								destination.SetForest(domainInfo.Forest);
+                            if (domainInfo.Forest == null)
+                                destination.SetForest(trust.Domain);
+                            else
+                                destination.SetForest(domainInfo.Forest);
                         }
                     }
                 }
             }
             Trace.WriteLine("Building reachable links");
+
             // make links based on reachable domains. Information is less reliable.
             foreach (HealthCheckData data in consolidation)
             {
                 // ignore report without reachable domains
                 if (data.ReachableDomains == null)
                     continue;
+
                 // ignore reachable links if we have the forest domain report
                 if (consolidation.GetDomain(data.Forest) != null)
                 {
                     continue;
                 }
-				//Trace.WriteLine("Working on " + data.DomainFQDN);
+
+                //Trace.WriteLine("Working on " + data.DomainFQDN);
                 foreach (HealthCheckTrustDomainInfoData di in data.ReachableDomains)
                 {
                     // domain info can contain only netbios name (not FQDN)
@@ -226,35 +234,37 @@ namespace PingCastle.HealthCheck
                     {
                         EnrichDomainInfo(consolidation, di);
                     }
+
                     // if no information was given (only Netbios name!) fallback to a forest trust
-					if (String.IsNullOrEmpty(di.ForestName) || di.ForestName == di.DnsName)
-					{
-						GraphNode childDomain = nodes.CreateNodeIfNeeded(ref nodeNumber, di.Domain, data.GenerationDate);
-						GraphNode myForestRoot = nodes.CreateNodeIfNeeded(ref nodeNumber, data.Forest, data.GenerationDate);
-						myForestRoot.LinkTwoForests(childDomain);
-						myForestRoot.SetForest(myForestRoot.Domain);
-					}
-					else
-					{
-						// ignore the domain if the forest trust is known (information should be already there)
-						if (consolidation.GetDomain(di.Forest) != null)
-							continue;
+                    if (String.IsNullOrEmpty(di.ForestName) || di.ForestName == di.DnsName)
+                    {
+                        GraphNode childDomain = nodes.CreateNodeIfNeeded(ref nodeNumber, di.Domain, data.GenerationDate);
+                        GraphNode myForestRoot = nodes.CreateNodeIfNeeded(ref nodeNumber, data.Forest, data.GenerationDate);
+                        myForestRoot.LinkTwoForests(childDomain);
+                        myForestRoot.SetForest(myForestRoot.Domain);
+                    }
+                    else
+                    {
+                        // ignore the domain if the forest trust is known (information should be already there)
+                        if (consolidation.GetDomain(di.Forest) != null)
+                            continue;
 
-						// add the forest trust if needed
-						GraphNode remoteForestRoot = nodes.CreateNodeIfNeeded(ref nodeNumber, di.Forest, data.GenerationDate);
-						remoteForestRoot.SetForest(remoteForestRoot.Domain);
+                        // add the forest trust if needed
+                        GraphNode remoteForestRoot = nodes.CreateNodeIfNeeded(ref nodeNumber, di.Forest, data.GenerationDate);
+                        remoteForestRoot.SetForest(remoteForestRoot.Domain);
 
-						// add the forest root if needed
-						GraphNode myForestRoot = nodes.CreateNodeIfNeeded(ref nodeNumber, data.Forest, data.GenerationDate);
-						myForestRoot.LinkTwoForests(remoteForestRoot);
-						myForestRoot.SetForest(myForestRoot.Domain);
-						// add the trust if the domain is a child of the forest)
-						// (ignore the trust if forest root = trust)
+                        // add the forest root if needed
+                        GraphNode myForestRoot = nodes.CreateNodeIfNeeded(ref nodeNumber, data.Forest, data.GenerationDate);
+                        myForestRoot.LinkTwoForests(remoteForestRoot);
+                        myForestRoot.SetForest(myForestRoot.Domain);
 
-						GraphNode childDomain = nodes.CreateNodeIfNeeded(ref nodeNumber, di.Domain, data.GenerationDate);
-						remoteForestRoot.LinkInsideAForest(childDomain);
-						childDomain.SetForest(remoteForestRoot.Domain);
-					}
+                        // add the trust if the domain is a child of the forest)
+                        // (ignore the trust if forest root = trust)
+
+                        GraphNode childDomain = nodes.CreateNodeIfNeeded(ref nodeNumber, di.Domain, data.GenerationDate);
+                        remoteForestRoot.LinkInsideAForest(childDomain);
+                        childDomain.SetForest(remoteForestRoot.Domain);
+                    }
                 }
             }
             Trace.WriteLine("enrich forest information");
@@ -277,10 +287,10 @@ namespace PingCastle.HealthCheck
                     nodesToBeDeleted.Add(node);
                 }
             }
-            foreach(var node in nodesToBeDeleted)
+            foreach (var node in nodesToBeDeleted)
             {
                 data.Remove(node.Domain);
-                foreach(var remoteDomain in node.Trusts.Keys)
+                foreach (var remoteDomain in node.Trusts.Keys)
                 {
                     if (data.ContainsKey(remoteDomain))
                     {
@@ -299,6 +309,7 @@ namespace PingCastle.HealthCheck
             {
                 node.EnrichForestInformation();
             }
+
             // 2: then to the root to the other childs
             foreach (var node in data.Values)
             {
@@ -310,7 +321,7 @@ namespace PingCastle.HealthCheck
         {
             if (EntityData == null)
                 return;
-            foreach(var entity in EntityData)
+            foreach (var entity in EntityData)
             {
                 foreach (GraphNode node in data.Values)
                 {
@@ -336,6 +347,7 @@ namespace PingCastle.HealthCheck
         public Dictionary<DomainKey, GraphEdge> Trusts { get; private set; }
 
         private bool CloneIsPotentiallyRemoved;
+
         public bool IsPotentiallyRemoved
         {
             get
@@ -346,7 +358,7 @@ namespace PingCastle.HealthCheck
                     return false;
                 if (Trusts.Count == 0)
                     return false;
-                foreach(var edge in Trusts.Values)
+                foreach (var edge in Trusts.Values)
                 {
                     if (edge.IsActive)
                         return false;
@@ -369,6 +381,7 @@ namespace PingCastle.HealthCheck
         {
             Link(destination, trust, true);
         }
+
         // authoritative data is considered as coming from the AD directly
         // non authoritative is deducted data
         private void Link(GraphNode destination, HealthCheckTrustData trust, bool isAuthoritative)
@@ -404,9 +417,9 @@ namespace PingCastle.HealthCheck
 
         public override string ToString()
         {
- 	        return Domain.ToString();
+            return Domain.ToString();
         }
-        
+
         HealthCheckTrustData GetReverseTrust(HealthCheckTrustData trust)
         {
             HealthCheckTrustData output = new HealthCheckTrustData();
@@ -434,6 +447,7 @@ namespace PingCastle.HealthCheck
         {
             LinkInsideAForest(destination, DateTime.MinValue);
         }
+
         public void LinkInsideAForest(GraphNode destination, DateTime CreationDate)
         {
             HealthCheckTrustData externalTrust = new HealthCheckTrustData();
@@ -468,6 +482,7 @@ namespace PingCastle.HealthCheck
         {
             CloneIsPotentiallyRemoved = true;
         }
+
         public static GraphNode CloneWithoutTrusts(GraphNode inputNode)
         {
             GraphNode output = new GraphNode(inputNode.Id, inputNode.Domain, inputNode.ReferenceDate);
@@ -569,6 +584,7 @@ namespace PingCastle.HealthCheck
         {
             if (TrustDirection != 3)
                 return false;
+
             // when there is a bidirectional trust, there are two GraphEdge
             // one starting from source and one starting from the other domain
             GraphEdge reverseEdge = Destination.Trusts[Source.Domain];
@@ -584,6 +600,5 @@ namespace PingCastle.HealthCheck
         {
             return TrustAnalyzer.GetTrustAttribute(TrustAttributes);
         }
-
     }
 }

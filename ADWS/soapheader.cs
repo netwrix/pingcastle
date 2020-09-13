@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using System;
 using System.Runtime.InteropServices;
 using System.ServiceModel;
@@ -14,7 +15,6 @@ using System.ServiceModel.Dispatcher;
 
 namespace PingCastle.ADWS
 {
-
     internal class SoapHeader
     {
         public string Name { get; set; }
@@ -29,16 +29,15 @@ namespace PingCastle.ADWS
         }
     }
 
-	internal class HeaderInspector : IClientMessageInspector
+    internal class HeaderInspector : IClientMessageInspector
     {
-
         SoapHeader[] Headers;
 
         public HeaderInspector(SoapHeader[] headers)
         {
             Headers = headers;
         }
-        
+
         public object BeforeSendRequest(ref Message request, IClientChannel channel)
         {
             foreach (SoapHeader soapHeader in Headers)
@@ -49,23 +48,20 @@ namespace PingCastle.ADWS
             return null;
         }
 
-        public void AfterReceiveReply(ref Message reply, object correlationState)
-        {
-        }
+        public void AfterReceiveReply(ref Message reply, object correlationState) { }
     }
 
     [ComVisible(false)]
-	internal class SoapHeaderBehavior : BehaviorExtensionElement, IEndpointBehavior
+    internal class SoapHeaderBehavior : BehaviorExtensionElement, IEndpointBehavior
     {
         SoapHeader[] Headers;
+
         public SoapHeaderBehavior(SoapHeader[] headers)
         {
             Headers = headers;
         }
-        
-        public void AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters)
-        {
-        }
+
+        public void AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters) { }
 
         public void ApplyClientBehavior(ServiceEndpoint endpoint, ClientRuntime clientRuntime)
         {
@@ -73,13 +69,9 @@ namespace PingCastle.ADWS
             clientRuntime.MessageInspectors.Add(inspector);
         }
 
-        public void ApplyDispatchBehavior(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher)
-        {
-        }
+        public void ApplyDispatchBehavior(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher) { }
 
-        public void Validate(ServiceEndpoint endpoint)
-        {
-        }
+        public void Validate(ServiceEndpoint endpoint) { }
 
         protected override object CreateBehavior()
         {

@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,10 +15,8 @@ using System.Security.Principal;
 
 namespace PingCastle.Scanners
 {
-
     public class localAdminsEnumerator
     {
-
         const int SAM_SERVER_CONNECT = 0x00000001;
         const int SAM_SERVER_LOOKUP_DOMAIN = 0x00000020;
         const int DOMAIN_LIST_ACCOUNTS = 0x00000100;
@@ -50,6 +49,7 @@ namespace PingCastle.Scanners
                             // The result was positiv
                             result = client.Connected;
                         }
+
                         // ensure the ending-call
                         client.EndConnect(asyncResult);
                     }
@@ -59,9 +59,7 @@ namespace PingCastle.Scanners
                         waitHandle.Close();
                     }
                 }
-                catch
-                {
-                }
+                catch { }
             }
             return result;
         }
@@ -73,7 +71,7 @@ namespace PingCastle.Scanners
             NativeMethods.UNICODE_STRING serverName = new NativeMethods.UNICODE_STRING();
             serverName.Initialize(ServerName);
             List<SecurityIdentifier> output = new List<SecurityIdentifier>();
-            
+
             IntPtr hServerHandle, hBuiltinHandle, hAliasHandle;
             IntPtr membersSid;
             int memberRetourned;
@@ -100,7 +98,7 @@ namespace PingCastle.Scanners
                             throw new Win32Exception(NativeMethods.LsaNtStatusToWinError(status));
                         for (int i = 0; i < memberRetourned; i++)
                         {
-                            SecurityIdentifier sid = new SecurityIdentifier(Marshal.ReadIntPtr(membersSid,Marshal.SizeOf(typeof(IntPtr))*i));
+                            SecurityIdentifier sid = new SecurityIdentifier(Marshal.ReadIntPtr(membersSid, Marshal.SizeOf(typeof(IntPtr)) * i));
                             output.Add(sid);
                         }
                         NativeMethods.SamFreeMemory(membersSid);

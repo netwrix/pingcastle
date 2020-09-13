@@ -9,73 +9,73 @@ using System.Reflection;
 
 namespace PingCastle
 {
-	public class PingCastleFactory
-	{
-		public static Dictionary<string, Type> GetAllScanners()
-		{
-			var output = new Dictionary<string, Type>();
-			foreach (Type type in Assembly.GetAssembly(typeof(PingCastleFactory)).GetExportedTypes())
-			{
-				if (!type.IsAbstract && typeof(IScanner).IsAssignableFrom(type))
-				{
-					PropertyInfo pi = type.GetProperty("Name");
-					IScanner scanner = (IScanner)Activator.CreateInstance(type);
-					output.Add(scanner.Name, type);
-				}
-			}
-			return output;
-		}
+    public class PingCastleFactory
+    {
+        public static Dictionary<string, Type> GetAllScanners()
+        {
+            var output = new Dictionary<string, Type>();
+            foreach (Type type in Assembly.GetAssembly(typeof(PingCastleFactory)).GetExportedTypes())
+            {
+                if (!type.IsAbstract && typeof(IScanner).IsAssignableFrom(type))
+                {
+                    PropertyInfo pi = type.GetProperty("Name");
+                    IScanner scanner = (IScanner)Activator.CreateInstance(type);
+                    output.Add(scanner.Name, type);
+                }
+            }
+            return output;
+        }
 
-		public static IScanner LoadScanner(Type scannerType)
-		{
-			return (IScanner)Activator.CreateInstance(scannerType);
-		}
+        public static IScanner LoadScanner(Type scannerType)
+        {
+            return (IScanner)Activator.CreateInstance(scannerType);
+        }
 
-		public static string GetFilePatternForLoad<T>() where T : IPingCastleReport
-		{
-			if (typeof(T) == typeof(HealthCheckData))
-			{
-				return "*ad_hc_*.xml";
-			}
-			throw new NotImplementedException("No file pattern known for type " + typeof(T));
-		}
+        public static string GetFilePatternForLoad<T>() where T : IPingCastleReport
+        {
+            if (typeof(T) == typeof(HealthCheckData))
+            {
+                return "*ad_hc_*.xml";
+            }
+            throw new NotImplementedException("No file pattern known for type " + typeof(T));
+        }
 
-		public static IPingCastleReportUser<T> GetEndUserReportGenerator<T>() where T : IPingCastleReport
-		{
-			if (typeof(T) == typeof(HealthCheckData))
-			{
-				return (IPingCastleReportUser<T>) new ReportHealthCheckSingle();
-			}
-			return GetImplementation<IPingCastleReportUser<T>>();
-		}
+        public static IPingCastleReportUser<T> GetEndUserReportGenerator<T>() where T : IPingCastleReport
+        {
+            if (typeof(T) == typeof(HealthCheckData))
+            {
+                return (IPingCastleReportUser<T>)new ReportHealthCheckSingle();
+            }
+            return GetImplementation<IPingCastleReportUser<T>>();
+        }
 
-		public static IPingCastleAnalyzer<T> GetPingCastleAnalyzer<T>() where T : IPingCastleReport
-		{
-			if (typeof(T) == typeof(HealthCheckData))
-			{
-				return (IPingCastleAnalyzer<T>)new HealthCheckAnalyzer();
-			}
-			return GetImplementation<IPingCastleAnalyzer<T>>();
-		}
+        public static IPingCastleAnalyzer<T> GetPingCastleAnalyzer<T>() where T : IPingCastleReport
+        {
+            if (typeof(T) == typeof(HealthCheckData))
+            {
+                return (IPingCastleAnalyzer<T>)new HealthCheckAnalyzer();
+            }
+            return GetImplementation<IPingCastleAnalyzer<T>>();
+        }
 
-		static T GetImplementation<T>()
-		{
-			foreach (Type type in Assembly.GetAssembly(typeof(PingCastleFactory)).GetExportedTypes())
-			{
-				if (typeof(T).IsAssignableFrom(type) && !type.IsAbstract)
-				{
-					try
-					{
-						return (T)Activator.CreateInstance(type);
-					}
-					catch (Exception)
-					{
-						Trace.WriteLine("Unable to instanciate the type " + type);
-						throw;
-					}
-				}
-			}
-			throw new NotImplementedException("No implementation found for type " + typeof(T).ToString());
-		}
-	}
+        static T GetImplementation<T>()
+        {
+            foreach (Type type in Assembly.GetAssembly(typeof(PingCastleFactory)).GetExportedTypes())
+            {
+                if (typeof(T).IsAssignableFrom(type) && !type.IsAbstract)
+                {
+                    try
+                    {
+                        return (T)Activator.CreateInstance(type);
+                    }
+                    catch (Exception)
+                    {
+                        Trace.WriteLine("Unable to instanciate the type " + type);
+                        throw;
+                    }
+                }
+            }
+            throw new NotImplementedException("No implementation found for type " + typeof(T).ToString());
+        }
+    }
 }

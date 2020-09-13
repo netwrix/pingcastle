@@ -4,19 +4,20 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using System;
 using System.Collections.Generic;
 using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("P-AdminPwdTooOld", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AccountTakeOver)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-    [RuleIntroducedIn(2,9)]
+    [RuleModel("P-AdminPwdTooOld", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AccountTakeOver)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(1, "password_change_priv", "Privileged account passwords age too old")]
     public class HealthCheckRulePrivilegedAdminPwdTooOld : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             var users = new Dictionary<string, HealthCheckGroupMemberData>();
             foreach (var group in healthcheckData.PrivilegedGroups)
@@ -32,9 +33,9 @@ namespace PingCastle.HealthCheck.Rules
                     }
                 }
             }
-            foreach(var user in users.Values)
+            foreach (var user in users.Values)
                 AddRawDetail(user.Name, user.Created.ToString("u"), user.PwdLastSet <= DateTime.Parse("1601-01-01 01:00:00Z") ? "Never" : user.PwdLastSet.ToString("u"));
-			return null;
+            return null;
         }
     }
 }

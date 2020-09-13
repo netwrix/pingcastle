@@ -16,60 +16,60 @@ using System.Net;
 
 namespace PingCastle.Scanners
 {
-	public class nullsessionTrustScanner : IScanner
-	{
+    public class nullsessionTrustScanner : IScanner
+    {
+        public string Name { get { return "nullsession-trust"; } }
+        public string Description { get { return "Dump the trusts of a domain via null session if possible"; } }
 
-		public string Name { get { return "nullsession-trust"; } }
-		public string Description { get { return "Dump the trusts of a domain via null session if possible"; } }
+        public string Server { get; private set; }
+        public int Port { get; private set; }
+        public NetworkCredential Credential { get; private set; }
 
-		public string Server { get; private set; }
-		public int Port { get; private set; }
-		public NetworkCredential Credential { get; private set; }
-
-		public void Initialize(string server, int port, NetworkCredential credential)
-		{
-			Server = server;
-			Port = port;
-			Credential = credential;
-		}
-
-		public bool QueryForAdditionalParameterInInteractiveMode()
-		{
-			return true;
-		}
-
-		public void Export(string filename)
+        public void Initialize(string server, int port, NetworkCredential credential)
         {
-			DisplayAdvancement("Starting");
-			nrpc session = new nrpc(); ;
-			DisplayAdvancement("Trusts obtained via null session");
-			List<TrustedDomain> domains;
-			int res = session.DsrEnumerateDomainTrusts(Server, 0x3F, out domains);
-			if (res != 0)
-			{
-				DisplayAdvancement("Error " + res + " (" + new Win32Exception(res).Message + ")");
-				return;
-			}
-			DisplayAdvancement("Success - " + domains.Count + " trusts found");
-			using (StreamWriter sw = File.CreateText(filename))
-			{
-				sw.WriteLine("Trust index,DnsDomainName,NetbiosDomainName,TrustAttributes,TrustType,Flags,DomainGuid,DomainSid,ParentIndex");
-				int i = 0;
-				foreach (var domain in domains)
-				{
-					sw.WriteLine(i++ + "\t" + domain.DnsDomainName + "\t" + domain.NetbiosDomainName + "\t" +
-						TrustAnalyzer.GetTrustAttribute(domain.TrustAttributes) + " (" + domain.TrustAttributes + ")" + "\t" +
-						TrustAnalyzer.GetTrustType(domain.TrustType) + " (" + domain.TrustType + ")" + "\t" + domain.Flags + "\t" +
-						domain.DomainGuid + "\t" + domain.DomainSid + "\t" + domain.ParentIndex);
-				}
-			}
-		}
-		
-		private static void DisplayAdvancement(string data)
-		{
-			string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-			Console.WriteLine(value);
-			Trace.WriteLine(value);
-		}
-	}
+            Server = server;
+            Port = port;
+            Credential = credential;
+        }
+
+        public bool QueryForAdditionalParameterInInteractiveMode()
+        {
+            return true;
+        }
+
+        public void Export(string filename)
+        {
+            DisplayAdvancement("Starting");
+            nrpc session = new nrpc();
+            ;
+            DisplayAdvancement("Trusts obtained via null session");
+            List<TrustedDomain> domains;
+            int res = session.DsrEnumerateDomainTrusts(Server, 0x3F, out domains);
+            if (res != 0)
+            {
+                DisplayAdvancement("Error " + res + " (" + new Win32Exception(res).Message + ")");
+                return;
+            }
+            DisplayAdvancement("Success - " + domains.Count + " trusts found");
+            using (StreamWriter sw = File.CreateText(filename))
+            {
+                sw.WriteLine("Trust index,DnsDomainName,NetbiosDomainName,TrustAttributes,TrustType,Flags,DomainGuid,DomainSid,ParentIndex");
+                int i = 0;
+                foreach (var domain in domains)
+                {
+                    sw.WriteLine(i++ + "\t" + domain.DnsDomainName + "\t" + domain.NetbiosDomainName + "\t" +
+                                 TrustAnalyzer.GetTrustAttribute(domain.TrustAttributes) + " (" + domain.TrustAttributes + ")" + "\t" +
+                                 TrustAnalyzer.GetTrustType(domain.TrustType) + " (" + domain.TrustType + ")" + "\t" + domain.Flags + "\t" +
+                                 domain.DomainGuid + "\t" + domain.DomainSid + "\t" + domain.ParentIndex);
+                }
+            }
+        }
+
+        private static void DisplayAdvancement(string data)
+        {
+            string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
+            Console.WriteLine(value);
+            Trace.WriteLine(value);
+        }
+    }
 }

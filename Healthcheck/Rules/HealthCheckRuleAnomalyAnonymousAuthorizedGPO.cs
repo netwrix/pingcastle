@@ -9,13 +9,13 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-AnonymousAuthorizedGPO", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-	[RuleSTIG("V-14798", "Directory data (outside the root DSE) of a non-public directory must be configured to prevent anonymous access.", STIGFramework.ActiveDirectoryService2003)]
+    [RuleModel("A-AnonymousAuthorizedGPO", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleSTIG("V-14798", "Directory data (outside the root DSE) of a non-public directory must be configured to prevent anonymous access.", STIGFramework.ActiveDirectoryService2003)]
     [RuleMaturityLevel(2)]
     public class HealthCheckRuleAnomalyAnonymousAuthorizedGPO : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             foreach (GPPSecurityPolicy policy in healthcheckData.GPPPasswordPolicy)
             {
@@ -25,8 +25,8 @@ namespace PingCastle.HealthCheck.Rules
                     {
                         if (property.Value == 0)
                         {
-							AddRawDetail(policy.GPOName);
-							break;
+                            AddRawDetail(policy.GPOName);
+                            break;
                         }
                     }
                 }

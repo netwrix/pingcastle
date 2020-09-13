@@ -10,19 +10,19 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("P-DCOwner", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    [RuleModel("P-DCOwner", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
     [RuleDurANSSI(3, "owner", "Incorrect object owners")]
     public class HealthCheckRulePrivilegedDCOwner : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             if (healthcheckData.DomainControllers != null)
             {
                 foreach (var DC in healthcheckData.DomainControllers)
                 {
-					if (string.IsNullOrEmpty(DC.OwnerSID))
-						continue;
+                    if (string.IsNullOrEmpty(DC.OwnerSID))
+                        continue;
                     SecurityIdentifier sid = new SecurityIdentifier(DC.OwnerSID);
                     if (!sid.IsWellKnown(WellKnownSidType.AccountDomainAdminsSid) && !sid.IsWellKnown(WellKnownSidType.AccountEnterpriseAdminsSid))
                     {

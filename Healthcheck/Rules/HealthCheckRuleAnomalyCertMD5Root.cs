@@ -11,13 +11,13 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-MD5RootCert", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
-	[RuleSTIG("V-14820", "PKI certificates (server and clients) must be issued by the DoD PKI or an approved External Certificate Authority (ECA).", STIGFramework.ActiveDirectoryService2003)]
+    [RuleModel("A-MD5RootCert", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
+    [RuleSTIG("V-14820", "PKI certificates (server and clients) must be issued by the DoD PKI or an approved External Certificate Authority (ECA).", STIGFramework.ActiveDirectoryService2003)]
     [RuleDurANSSI(3, "certificates_vuln", "Weak or vulnerable certificates")]
     public class HealthCheckRuleAnomalyCertMD5Root : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             foreach (HealthCheckCertificateData data in healthcheckData.TrustedCertificates)
             {
@@ -26,7 +26,7 @@ namespace PingCastle.HealthCheck.Rules
                 {
                     if (cert.SignatureAlgorithm.FriendlyName == "md5RSA")
                     {
-						AddRawDetail(data.Source, cert.Subject);
+                        AddRawDetail(data.Source, cert.Subject);
                     }
                 }
             }

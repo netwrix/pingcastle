@@ -9,14 +9,14 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-LDAPSigningDisabled", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-	[RuleIntroducedIn(2, 7)]
+    [RuleModel("A-LDAPSigningDisabled", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleIntroducedIn(2, 7)]
     [RuleMaturityLevel(3)]
-	public class HealthCheckRuleAnomalyLDAPSigningDisabled : RuleBase<HealthCheckData>
-	{
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
-		{
+    public class HealthCheckRuleAnomalyLDAPSigningDisabled : RuleBase<HealthCheckData>
+    {
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        {
             if (healthcheckData.GPOLsaPolicy != null)
             {
                 foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
@@ -47,7 +47,7 @@ namespace PingCastle.HealthCheck.Rules
                     }
                 }
             }
-			return null;
-		}
-	}
+            return null;
+        }
+    }
 }

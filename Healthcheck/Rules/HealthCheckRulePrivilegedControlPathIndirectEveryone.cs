@@ -24,7 +24,7 @@ namespace PingCastle.HealthCheck.Rules
                 if (analysis.Typology == Data.CompromiseGraphDataTypology.Infrastructure
                     || analysis.Typology == Data.CompromiseGraphDataTypology.PrivilegedAccount)
                 {
-				    if (analysis.CriticalObjectFound)
+                    if (analysis.CriticalObjectFound)
                     {
                         AddRawDetail(analysis.Description);
                     }

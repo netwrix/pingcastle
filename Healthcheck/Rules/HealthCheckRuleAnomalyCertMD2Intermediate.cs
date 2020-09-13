@@ -11,9 +11,9 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-MD2IntermediateCert", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-	[RuleSTIG("V-14820", "PKI certificates (server and clients) must be issued by the DoD PKI or an approved External Certificate Authority (ECA).", STIGFramework.ActiveDirectoryService2003)]
+    [RuleModel("A-MD2IntermediateCert", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    [RuleSTIG("V-14820", "PKI certificates (server and clients) must be issued by the DoD PKI or an approved External Certificate Authority (ECA).", STIGFramework.ActiveDirectoryService2003)]
     [RuleDurANSSI(3, "certificates_vuln", "Weak or vulnerable certificates")]
     public class HealthCheckRuleAnomalyCertMD2Intermediate : RuleBase<HealthCheckData>
     {
@@ -30,7 +30,7 @@ namespace PingCastle.HealthCheck.Rules
                     }
                 }
             }
-			return null;
+            return null;
         }
     }
 }

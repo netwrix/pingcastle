@@ -10,12 +10,12 @@ using PingCastle.Rules;
 namespace PingCastle.HealthCheck.Rules
 {
     [RuleModel("P-RODCAllowedGroup", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.RODC)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-    [RuleIntroducedIn(2,9)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(3, "rodc_allowed_group", "Dangerous configuration of replication groups for read-only domain controllers (RODCs) (allow)")]
     public class HealthCheckRulePrivilegedRODCAllowedGroup : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             if (healthcheckData.DomainFunctionalLevel < 3)
                 return 0;

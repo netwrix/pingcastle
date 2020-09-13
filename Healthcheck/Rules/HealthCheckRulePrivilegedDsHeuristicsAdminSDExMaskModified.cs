@@ -9,13 +9,13 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("P-DsHeuristicsAdminSDExMask", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-	[RuleIntroducedIn(2,7)]
+    [RuleModel("P-DsHeuristicsAdminSDExMask", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleIntroducedIn(2, 7)]
     [RuleDurANSSI(1, "dsheuristics_bad", "Dangerous dsHeuristics settings")]
-	public class HealthCheckRulePrivilegedDsHeuristicsAdminSDExMaskModified : RuleBase<HealthCheckData>
+    public class HealthCheckRulePrivilegedDsHeuristicsAdminSDExMaskModified : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             if (healthcheckData.DsHeuristicsAdminSDExMaskModified)
             {

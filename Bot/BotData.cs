@@ -5,14 +5,12 @@ namespace PingCastle.Bot
     public class BotInputOutput
     {
         public List<BotData> Data { get; set; }
-
     }
+
     public class BotData
     {
-        public BotData()
-        {
+        public BotData() { }
 
-        }
         public BotData(string Key, string Value) : this()
         {
             this.Key = Key;

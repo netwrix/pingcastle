@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using System;
 using System.Collections.Generic;
 using PingCastle.Data;
@@ -11,18 +12,18 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("S-SIDHistory", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
-	[RuleComputation(RuleComputationType.PerDiscoverWithAMinimumOf, 5, Threshold: 15)]
+    [RuleModel("S-SIDHistory", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
+    [RuleComputation(RuleComputationType.PerDiscoverWithAMinimumOf, 5, Threshold: 15)]
     [RuleANSSI("R15", "paragraph.3.3.1.5")]
     [RuleMaturityLevel(3)]
     public class HealthCheckRuleStaledSIDHistory : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData, ICollection<DomainKey> SourceDomains)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData, ICollection<DomainKey> SourceDomains)
         {
 
             Dictionary<string, int> domainList = new Dictionary<string, int>();
             if (healthcheckData.UserAccountData != null && healthcheckData.UserAccountData.ListDomainSidHistory != null
-                && healthcheckData.UserAccountData.ListDomainSidHistory.Count > 0)
+                                                        && healthcheckData.UserAccountData.ListDomainSidHistory.Count > 0)
             {
                 foreach (HealthCheckSIDHistoryData data in healthcheckData.UserAccountData.ListDomainSidHistory)
                 {
@@ -41,7 +42,7 @@ namespace PingCastle.HealthCheck.Rules
                 }
             }
             if (healthcheckData.ComputerAccountData != null && healthcheckData.ComputerAccountData.ListDomainSidHistory != null
-                && healthcheckData.ComputerAccountData.ListDomainSidHistory.Count > 0)
+                                                            && healthcheckData.ComputerAccountData.ListDomainSidHistory.Count > 0)
             {
                 foreach (HealthCheckSIDHistoryData data in healthcheckData.ComputerAccountData.ListDomainSidHistory)
                 {
@@ -60,9 +61,9 @@ namespace PingCastle.HealthCheck.Rules
             }
             if (domainList.Count > 0)
             {
-                foreach(string domain in domainList.Keys)
+                foreach (string domain in domainList.Keys)
                 {
-					AddRawDetail(domain, domainList[domain]); 
+                    AddRawDetail(domain, domainList[domain]);
                 }
             }
             return null;

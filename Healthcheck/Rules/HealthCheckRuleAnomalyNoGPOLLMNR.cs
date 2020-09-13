@@ -9,15 +9,15 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-NoGPOLLMNR", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
-	[RuleIntroducedIn(2, 7)]
+    [RuleModel("A-NoGPOLLMNR", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
+    [RuleIntroducedIn(2, 7)]
     [RuleMaturityLevel(3)]
-	public class HealthCheckRuleAnomalyNoGPOLLMNR : RuleBase<HealthCheckData>
-	{
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
-		{
-			bool found = false;
+    public class HealthCheckRuleAnomalyNoGPOLLMNR : RuleBase<HealthCheckData>
+    {
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        {
+            bool found = false;
             if (healthcheckData.GPOLsaPolicy != null)
             {
                 foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
@@ -48,9 +48,9 @@ namespace PingCastle.HealthCheck.Rules
                     }
                 }
             }
-			if (!found)
-				return 1;
-			return 0;
-		}
-	}
+            if (!found)
+                return 1;
+            return 0;
+        }
+    }
 }

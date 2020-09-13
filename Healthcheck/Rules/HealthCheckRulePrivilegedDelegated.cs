@@ -9,13 +9,13 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("P-Delegated", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AccountTakeOver)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
+    [RuleModel("P-Delegated", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AccountTakeOver)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
     [RuleSTIG("V-36435", "Delegation of privileged accounts must be prohibited.")]
     [RuleMaturityLevel(3)]
     public class HealthCheckRulePrivilegedDelegated : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             int adminCanBeDelegated = 0;
             foreach (var member in healthcheckData.AllPrivilegedMembers)
@@ -23,7 +23,7 @@ namespace PingCastle.HealthCheck.Rules
                 if (member.CanBeDelegated)
                     adminCanBeDelegated++;
             }
-			return adminCanBeDelegated;
+            return adminCanBeDelegated;
         }
     }
 }

@@ -13,7 +13,6 @@ namespace PingCastle.Scanners
 {
     public class Smb3QueryNetworkScanner : ScannerBase
     {
-
         public override string Name { get { return "smb3querynetwork"; } }
         public override string Description { get { return "List all IP of the computer and the interface speed using SMB3. Authentication required. Used to find other networks such as the one used for administration."; } }
 
@@ -60,5 +59,4 @@ namespace PingCastle.Scanners
             Trace.WriteLine(value);
         }
     }
-
 }

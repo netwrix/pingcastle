@@ -9,13 +9,13 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("P-DangerousExtendedRight", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
-	[RuleComputation(RuleComputationType.PerDiscover, 5)]
-	[RuleANSSI("R18", "subsubsection.3.3.2")]
+    [RuleModel("P-DangerousExtendedRight", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+    [RuleComputation(RuleComputationType.PerDiscover, 5)]
+    [RuleANSSI("R18", "subsubsection.3.3.2")]
     [RuleMaturityLevel(2)]
     public class HealthCheckRulePrivilegedDangerousDelegation : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             foreach (HealthCheckDelegationData delegation in healthcheckData.Delegations)
             {

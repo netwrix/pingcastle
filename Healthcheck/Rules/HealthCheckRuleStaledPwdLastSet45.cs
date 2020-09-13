@@ -9,15 +9,15 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("S-PwdLastSet-45", RiskRuleCategory.StaleObjects, RiskModelCategory.InactiveUserOrComputer)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleModel("S-PwdLastSet-45", RiskRuleCategory.StaleObjects, RiskModelCategory.InactiveUserOrComputer)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleDurANSSI(3, "password_change_server_no_change_45", "Servers with passwords unchanged for more than 45 days")]
     [RuleSTIG("V-63653", "The computer account password must not be prevented from being reset.", STIGFramework.Windows10)]
     [RuleSTIG("V-3373", "The maximum age for machine account passwords is not set to requirements.", STIGFramework.Windows7)]
-    [RuleIntroducedIn(2,9)]
+    [RuleIntroducedIn(2, 9)]
     public class HealthCheckRuleStaledPwdLastSet45 : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             if (healthcheckData.ListComputerPwdNotChanged != null)
             {

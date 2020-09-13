@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using System;
 using System.Security.Cryptography.X509Certificates;
 using PingCastle.Rules;
@@ -13,15 +14,13 @@ using PingCastle.Misc;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-CertROCA", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
-	[RuleDurANSSI(1, "certificates_vuln", "Weak or vulnerable certificates")]
-    [RuleIntroducedIn(2,9)]
+    [RuleModel("A-CertROCA", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
+    [RuleDurANSSI(1, "certificates_vuln", "Weak or vulnerable certificates")]
+    [RuleIntroducedIn(2, 9)]
     public class HealthCheckRuleAnomalyCertROCA : RuleBase<HealthCheckData>
     {
-        
-
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             foreach (HealthCheckCertificateData data in healthcheckData.TrustedCertificates)
             {
@@ -40,11 +39,11 @@ namespace PingCastle.HealthCheck.Rules
                     RSAParameters rsaparams = key.ExportParameters(false);
                     if (ROCAVulnerabilityTester.IsVulnerable(rsaparams))
                     {
-                            AddRawDetail(data.Source, cert.Subject, cert.NotAfter.ToString("u"));
+                        AddRawDetail(data.Source, cert.Subject, cert.NotAfter.ToString("u"));
                     }
                 }
             }
-			return null;
-		}
+            return null;
+        }
     }
 }

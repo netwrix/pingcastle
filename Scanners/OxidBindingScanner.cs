@@ -14,20 +14,19 @@ using System.Text;
 namespace PingCastle.Scanners
 {
     public class OxidBindingScanner : ScannerBase
-	{
+    {
+        public override string Name { get { return "oxidbindings"; } }
+        public override string Description { get { return "List all IP of the computer via the Oxid Resolver (part of DCOM). No authentication. Used to find other networks such as the one used for administration."; } }
 
-		public override string Name { get { return "oxidbindings"; } }
-		public override string Description { get { return "List all IP of the computer via the Oxid Resolver (part of DCOM). No authentication. Used to find other networks such as the one used for administration."; } }
+        override protected string GetCsvHeader()
+        {
+            return "Computer\tBinding";
+        }
 
-		override protected string GetCsvHeader()
-		{
-			return "Computer\tBinding";
-		}
-
-		override protected string GetCsvData(string computer)
-		{
-			StringBuilder sb = new StringBuilder();
-			DisplayAdvancement(computer, "Connecting to Oxid Resolver");
+        override protected string GetCsvData(string computer)
+        {
+            StringBuilder sb = new StringBuilder();
+            DisplayAdvancement(computer, "Connecting to Oxid Resolver");
             List<string> bindings;
             var oxid = new OxidBindings();
             int res = oxid.ServerAlive2(computer, out bindings);
@@ -48,16 +47,15 @@ namespace PingCastle.Scanners
                     sb.Append(binding);
                 }
             }
-			return sb.ToString();
-		}
-		
-		private static void DisplayAdvancement(string computer, string data)
-		{
-			string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-			if (ScanningMode == 1)
-				Console.WriteLine(value);
-			Trace.WriteLine(value);
-		}
-	}
+            return sb.ToString();
+        }
 
+        private static void DisplayAdvancement(string computer, string data)
+        {
+            string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
+            if (ScanningMode == 1)
+                Console.WriteLine(value);
+            Trace.WriteLine(value);
+        }
+    }
 }

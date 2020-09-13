@@ -9,14 +9,14 @@ using System.ComponentModel;
 
 namespace PingCastle.Rules
 {
-	public enum RiskRuleCategory
-	{
-		Unknown,
-		[Description("Stale Objects")]
-		StaleObjects,
-		[Description("Privileged Accounts")]
-		PrivilegedAccounts,
-		Trusts,
-		Anomalies
+    public enum RiskRuleCategory
+    {
+        Unknown,
+        [Description("Stale Objects")]
+        StaleObjects,
+        [Description("Privileged Accounts")]
+        PrivilegedAccounts,
+        Trusts,
+        Anomalies
     }
 }

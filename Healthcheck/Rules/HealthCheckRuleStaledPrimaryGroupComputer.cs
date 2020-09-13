@@ -9,14 +9,14 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("S-C-PrimaryGroup", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
+    [RuleModel("S-C-PrimaryGroup", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
     [RuleDurANSSI(3, "primary_group_id_nochange", "Accounts with modified PrimaryGroupID")]
     public class HealthCheckRuleStaledPrimaryGroupComputer : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
-			return healthcheckData.ComputerAccountData.NumberBadPrimaryGroup;
+            return healthcheckData.ComputerAccountData.NumberBadPrimaryGroup;
         }
     }
 }

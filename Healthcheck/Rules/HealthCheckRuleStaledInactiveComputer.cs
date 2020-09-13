@@ -9,21 +9,21 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("S-C-Inactive", RiskRuleCategory.StaleObjects, RiskModelCategory.InactiveUserOrComputer)]
-	[RuleComputation(RuleComputationType.TriggerOnThreshold, 30, Threshold: 30, Order: 1)]
-	[RuleComputation(RuleComputationType.TriggerOnThreshold, 10, Threshold: 20, Order: 2)]
-	[RuleComputation(RuleComputationType.TriggerOnThreshold, 5, Threshold: 15, Order: 3)]
-	[RuleANSSI("R45", "paragraph.3.6.6.2")]
+    [RuleModel("S-C-Inactive", RiskRuleCategory.StaleObjects, RiskModelCategory.InactiveUserOrComputer)]
+    [RuleComputation(RuleComputationType.TriggerOnThreshold, 30, Threshold: 30, Order: 1)]
+    [RuleComputation(RuleComputationType.TriggerOnThreshold, 10, Threshold: 20, Order: 2)]
+    [RuleComputation(RuleComputationType.TriggerOnThreshold, 5, Threshold: 15, Order: 3)]
+    [RuleANSSI("R45", "paragraph.3.6.6.2")]
     [RuleDurANSSI(3, "password_change_inactive_servers", "Inactive servers")]
     public class HealthCheckRuleStaledInactiveComputer : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
-			if (healthcheckData.ComputerAccountData.NumberActive <= 20)
-				return 0;
-			if (healthcheckData.ComputerAccountData.Number == 0)
-				return 0;
-			return 100 * healthcheckData.ComputerAccountData.NumberInactive / healthcheckData.ComputerAccountData.Number;
+            if (healthcheckData.ComputerAccountData.NumberActive <= 20)
+                return 0;
+            if (healthcheckData.ComputerAccountData.Number == 0)
+                return 0;
+            return 100 * healthcheckData.ComputerAccountData.NumberInactive / healthcheckData.ComputerAccountData.Number;
         }
     }
 }

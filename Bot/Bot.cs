@@ -11,15 +11,13 @@ using System.Xml.Serialization;
 
 namespace PingCastle.Bot
 {
-    
-
     public class Bot
     {
         public void Run(string pipeName)
         {
             BotInputOutput input;
             bool stop = false;
-            
+
             XmlSerializer xs = new XmlSerializer(typeof(BotInputOutput));
             Console.WriteLine("Bot: hello");
             using (var pipe = BotStream.OpenPipeStream(pipeName))
@@ -57,7 +55,6 @@ namespace PingCastle.Bot
                         Console.WriteLine("StackTrace:" + ex.StackTrace);
                         return;
                     }
-
 
                     BotInputOutput output;
                     string order = GetItem(input, "Command");
@@ -112,7 +109,7 @@ namespace PingCastle.Bot
 
         private string GetItem(BotInputOutput input, string key)
         {
-            foreach(var k in input.Data)
+            foreach (var k in input.Data)
             {
                 if (k.Key == key)
                     return k.Value;
@@ -155,7 +152,7 @@ namespace PingCastle.Bot
                 AddData(o, "Target", parameters.Server);
 
                 int riskId = 0;
-                foreach(var risk in healthcheck.RiskRules)
+                foreach (var risk in healthcheck.RiskRules)
                 {
                     riskId++;
                     var rule = RuleSet<HealthCheckData>.GetRuleFromID(risk.RiskId);
@@ -165,7 +162,7 @@ namespace PingCastle.Bot
                     AddData(o, "Points_" + riskId, risk.Points.ToString());
                     AddData(o, "Documentation_" + riskId, rule.Documentation);
                     AddData(o, "TechnicalExplanation_" + riskId, rule.TechnicalExplanation);
-                    foreach(var d in rule.Details)
+                    foreach (var d in rule.Details)
                     {
                         AddData(o, "Detail_" + riskId, d);
                     }

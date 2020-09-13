@@ -30,7 +30,6 @@ namespace PingCastle.RPC
         public int BufferType;
         public IntPtr pvBuffer;
 
-
         public SecBuffer(int bufferSize)
         {
             cbBuffer = bufferSize;
@@ -84,7 +83,6 @@ namespace PingCastle.RPC
     [StructLayout(LayoutKind.Sequential)]
     public struct SecBufferDesc : IDisposable
     {
-
         public int ulVersion;
         public int cBuffers;
         public IntPtr pBuffers; //Point to SecBuffer
@@ -225,12 +223,12 @@ namespace PingCastle.RPC
         }
     }
 
-
     [StructLayout(LayoutKind.Sequential)]
     public struct SECURITY_INTEGER
     {
         public uint LowPart;
         public int HighPart;
+
         public SECURITY_INTEGER(int dummy)
         {
             LowPart = 0;
@@ -243,6 +241,7 @@ namespace PingCastle.RPC
     {
         public IntPtr LowPart;
         public IntPtr HighPart;
+
         public SECURITY_HANDLE(int dummy)
         {
             LowPart = HighPart = IntPtr.Zero;
@@ -289,6 +288,7 @@ namespace PingCastle.RPC
         const int SECURITY_NATIVE_DREP = 0x10;
         const int SECPKG_CRED_INBOUND = 1;
         const int MAX_TOKEN_SIZE = 12288;
+
         //For AcquireCredentialsHandle in 3er Parameter "fCredentialUse"
 
         SECURITY_HANDLE _hCred = new SECURITY_HANDLE(0);
@@ -323,58 +323,58 @@ namespace PingCastle.RPC
         public const int STANDARD_CONTEXT_ATTRIBUTES = ISC_REQ_CONFIDENTIALITY | ISC_REQ_REPLAY_DETECT | ISC_REQ_SEQUENCE_DETECT | ISC_REQ_CONNECTION;
 
         bool _bGotCredentials = false;
-        
-        [DllImport("secur32", CharSet = CharSet.Auto)]
-        static extern int AcquireCredentialsHandle(
-        string pszPrincipal, //SEC_CHAR*
-        string pszPackage, //SEC_CHAR* //"Kerberos","NTLM","Negotiative"
-        int fCredentialUse,
-        IntPtr PAuthenticationID,//_LUID AuthenticationID,//pvLogonID, //PLUID
-        IntPtr pAuthData,//PVOID
-        int pGetKeyFn, //SEC_GET_KEY_FN
-        IntPtr pvGetKeyArgument, //PVOID
-        ref SECURITY_HANDLE phCredential, //SecHandle //PCtxtHandle ref
-        ref SECURITY_INTEGER ptsExpiry); //PTimeStamp //TimeStamp ref
 
         [DllImport("secur32", CharSet = CharSet.Auto)]
         static extern int AcquireCredentialsHandle(
-        string pszPrincipal, //SEC_CHAR*
-        string pszPackage, //SEC_CHAR* //"Kerberos","NTLM","Negotiative"
-        int fCredentialUse,
-        IntPtr PAuthenticationID,//_LUID AuthenticationID,//pvLogonID, //PLUID
-        ref SEC_WINNT_AUTH_IDENTITY pAuthData,//PVOID
-        int pGetKeyFn, //SEC_GET_KEY_FN
-        IntPtr pvGetKeyArgument, //PVOID
-        ref SECURITY_HANDLE phCredential, //SecHandle //PCtxtHandle ref
-        ref SECURITY_INTEGER ptsExpiry); //PTimeStamp //TimeStamp ref
+            string pszPrincipal, //SEC_CHAR*
+            string pszPackage, //SEC_CHAR* //"Kerberos","NTLM","Negotiative"
+            int fCredentialUse,
+            IntPtr PAuthenticationID, //_LUID AuthenticationID,//pvLogonID, //PLUID
+            IntPtr pAuthData, //PVOID
+            int pGetKeyFn, //SEC_GET_KEY_FN
+            IntPtr pvGetKeyArgument, //PVOID
+            ref SECURITY_HANDLE phCredential, //SecHandle //PCtxtHandle ref
+            ref SECURITY_INTEGER ptsExpiry); //PTimeStamp //TimeStamp ref
+
+        [DllImport("secur32", CharSet = CharSet.Auto)]
+        static extern int AcquireCredentialsHandle(
+            string pszPrincipal, //SEC_CHAR*
+            string pszPackage, //SEC_CHAR* //"Kerberos","NTLM","Negotiative"
+            int fCredentialUse,
+            IntPtr PAuthenticationID, //_LUID AuthenticationID,//pvLogonID, //PLUID
+            ref SEC_WINNT_AUTH_IDENTITY pAuthData, //PVOID
+            int pGetKeyFn, //SEC_GET_KEY_FN
+            IntPtr pvGetKeyArgument, //PVOID
+            ref SECURITY_HANDLE phCredential, //SecHandle //PCtxtHandle ref
+            ref SECURITY_INTEGER ptsExpiry); //PTimeStamp //TimeStamp ref
 
         [DllImport("secur32", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern int InitializeSecurityContext(ref SECURITY_HANDLE phCredential,//PCredHandle
-        IntPtr phContext, //PCtxtHandle
-        string pszTargetName,
-        int fContextReq,
-        int Reserved1,
-        int TargetDataRep,
-        IntPtr pInput, //PSecBufferDesc SecBufferDesc
-        int Reserved2,
-        out SECURITY_HANDLE phNewContext, //PCtxtHandle
-        out SecBufferDesc pOutput, //PSecBufferDesc SecBufferDesc
-        out uint pfContextAttr, //managed ulong == 64 bits!!!
-        out SECURITY_INTEGER ptsExpiry); //PTimeStamp
+        static extern int InitializeSecurityContext(ref SECURITY_HANDLE phCredential, //PCredHandle
+                                                    IntPtr phContext, //PCtxtHandle
+                                                    string pszTargetName,
+                                                    int fContextReq,
+                                                    int Reserved1,
+                                                    int TargetDataRep,
+                                                    IntPtr pInput, //PSecBufferDesc SecBufferDesc
+                                                    int Reserved2,
+                                                    out SECURITY_HANDLE phNewContext, //PCtxtHandle
+                                                    out SecBufferDesc pOutput, //PSecBufferDesc SecBufferDesc
+                                                    out uint pfContextAttr, //managed ulong == 64 bits!!!
+                                                    out SECURITY_INTEGER ptsExpiry); //PTimeStamp
 
         [DllImport("secur32", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern int InitializeSecurityContext(ref SECURITY_HANDLE phCredential,//PCredHandle
-            ref SECURITY_HANDLE phContext, //PCtxtHandle
-            string pszTargetName,
-            int fContextReq,
-            int Reserved1,
-            int TargetDataRep,
-            ref SecBufferDesc SecBufferDesc, //PSecBufferDesc SecBufferDesc
-            int Reserved2,
-            out SECURITY_HANDLE phNewContext, //PCtxtHandle
-            out SecBufferDesc pOutput, //PSecBufferDesc SecBufferDesc
-            out uint pfContextAttr, //managed ulong == 64 bits!!!
-            out SECURITY_INTEGER ptsExpiry); //PTimeStamp
+        static extern int InitializeSecurityContext(ref SECURITY_HANDLE phCredential, //PCredHandle
+                                                    ref SECURITY_HANDLE phContext, //PCtxtHandle
+                                                    string pszTargetName,
+                                                    int fContextReq,
+                                                    int Reserved1,
+                                                    int TargetDataRep,
+                                                    ref SecBufferDesc SecBufferDesc, //PSecBufferDesc SecBufferDesc
+                                                    int Reserved2,
+                                                    out SECURITY_HANDLE phNewContext, //PCtxtHandle
+                                                    out SecBufferDesc pOutput, //PSecBufferDesc SecBufferDesc
+                                                    out uint pfContextAttr, //managed ulong == 64 bits!!!
+                                                    out SECURITY_INTEGER ptsExpiry); //PTimeStamp
 
         [DllImport("secur32.Dll", CharSet = CharSet.Auto, SetLastError = false)]
         static extern int AcceptSecurityContext(ref SECURITY_HANDLE phCredential,
@@ -384,7 +384,7 @@ namespace PingCastle.RPC
                                                 uint TargetDataRep,
                                                 out SECURITY_HANDLE phNewContext,
                                                 out SecBufferDesc pOutput,
-                                                out uint pfContextAttr,    //managed ulong == 64 bits!!!
+                                                out uint pfContextAttr, //managed ulong == 64 bits!!!
                                                 out SECURITY_INTEGER ptsTimeStamp);
 
         [DllImport("secur32.Dll", CharSet = CharSet.Auto, SetLastError = false)]
@@ -395,7 +395,7 @@ namespace PingCastle.RPC
                                                 uint TargetDataRep,
                                                 out SECURITY_HANDLE phNewContext,
                                                 out SecBufferDesc pOutput,
-                                                out uint pfContextAttr,    //managed ulong == 64 bits!!!
+                                                out uint pfContextAttr, //managed ulong == 64 bits!!!
                                                 out SECURITY_INTEGER ptsTimeStamp);
 
         [DllImport("secur32.Dll", CharSet = CharSet.Auto, SetLastError = false)]
@@ -413,27 +413,27 @@ namespace PingCastle.RPC
 
         [DllImport("secur32.Dll", CharSet = CharSet.Auto, SetLastError = false)]
         public static extern int EncryptMessage(ref SECURITY_HANDLE phContext,
-                                                uint fQOP,        //managed ulong == 64 bits!!!
+                                                uint fQOP, //managed ulong == 64 bits!!!
                                                 ref SecBufferDesc pMessage,
-                                                uint MessageSeqNo);    //managed ulong == 64 bits!!!
+                                                uint MessageSeqNo); //managed ulong == 64 bits!!!
 
         [DllImport("secur32.Dll", CharSet = CharSet.Auto, SetLastError = false)]
         public static extern int DecryptMessage(ref SECURITY_HANDLE phContext,
-                                                    ref SecBufferDesc pMessage,
-                                                    uint MessageSeqNo,
-                                                    out uint pfQOP);
+                                                ref SecBufferDesc pMessage,
+                                                uint MessageSeqNo,
+                                                out uint pfQOP);
 
         [DllImport("secur32.Dll", CharSet = CharSet.Auto, SetLastError = false)]
-        public static extern int MakeSignature(ref SECURITY_HANDLE phContext,          // Context to use
-                                                uint fQOP,         // Quality of Protection
-                                                ref SecBufferDesc pMessage,        // Message to sign
-                                                uint MessageSeqNo);      // Message Sequence Num.
+        public static extern int MakeSignature(ref SECURITY_HANDLE phContext, // Context to use
+                                               uint fQOP, // Quality of Protection
+                                               ref SecBufferDesc pMessage, // Message to sign
+                                               uint MessageSeqNo); // Message Sequence Num.
 
         [DllImport("secur32.Dll", CharSet = CharSet.Auto, SetLastError = false)]
-        public static extern int VerifySignature(ref SECURITY_HANDLE phContext,          // Context to use
-                                                ref SecBufferDesc pMessage,        // Message to sign
-                                                uint MessageSeqNo,            // Message Sequence Num.
-                                                out uint pfQOP);      // Quality of Protection
+        public static extern int VerifySignature(ref SECURITY_HANDLE phContext, // Context to use
+                                                 ref SecBufferDesc pMessage, // Message to sign
+                                                 uint MessageSeqNo, // Message Sequence Num.
+                                                 out uint pfQOP); // Quality of Protection
 
         string _szTarget = WindowsIdentity.GetCurrent().Name;
         public string SecurityPackage { get; set; }
@@ -462,8 +462,8 @@ namespace PingCastle.RPC
             auth.Flags = 2; // unicode
 
             ss = AcquireCredentialsHandle(_szTarget, SecurityPackage, SECPKG_CRED_OUTBOUND,
-                                            IntPtr.Zero, ref auth, 0, IntPtr.Zero,
-                                            ref _hCred, ref ClientLifeTime);
+                IntPtr.Zero, ref auth, 0, IntPtr.Zero,
+                ref _hCred, ref ClientLifeTime);
             if (ss != SEC_E_OK)
             {
                 throw new Exception("Couldn't acquire client credentials", new Win32Exception(ss));
@@ -472,8 +472,9 @@ namespace PingCastle.RPC
             _bGotCredentials = true;
         }
 
-        public void InitializeClient(out byte[] clientToken, byte[] serverToken,
-                                        out bool bContinueProcessing)
+        public void InitializeClient(out byte[] clientToken,
+                                     byte[] serverToken,
+                                     out bool bContinueProcessing)
         {
             clientToken = null;
             bContinueProcessing = true;
@@ -484,8 +485,8 @@ namespace PingCastle.RPC
             if (!_bGotCredentials)
             {
                 ss = AcquireCredentialsHandle(_szTarget, SecurityPackage, SECPKG_CRED_OUTBOUND,
-                                            IntPtr.Zero, IntPtr.Zero, 0, IntPtr.Zero,
-                                            ref _hCred, ref ClientLifeTime);
+                    IntPtr.Zero, IntPtr.Zero, 0, IntPtr.Zero,
+                    ref _hCred, ref ClientLifeTime);
                 if (ss != SEC_E_OK)
                 {
                     throw new Exception("Couldn't acquire client credentials", new Win32Exception(ss));
@@ -493,8 +494,6 @@ namespace PingCastle.RPC
 
                 _bGotCredentials = true;
             }
-
-                
 
             SecBufferDesc ClientToken = new SecBufferDesc(MAX_TOKEN_SIZE);
 
@@ -506,15 +505,15 @@ namespace PingCastle.RPC
                 {
                     ss = InitializeSecurityContext(ref _hCred,
                         IntPtr.Zero,
-                        _szTarget,// null string pszTargetName,
+                        _szTarget, // null string pszTargetName,
                         STANDARD_CONTEXT_ATTRIBUTES,
-                        0,//int Reserved1,
-                        SECURITY_NATIVE_DREP,//int TargetDataRep
-                        IntPtr.Zero,    //Always zero first time around...
+                        0, //int Reserved1,
+                        SECURITY_NATIVE_DREP, //int TargetDataRep
+                        IntPtr.Zero, //Always zero first time around...
                         0, //int Reserved2,
                         out _hContext, //pHandle CtxtHandle = SecHandle
-                        out ClientToken,//ref SecBufferDesc pOutput, //PSecBufferDesc
-                        out ContextAttributes,//ref int pfContextAttr,
+                        out ClientToken, //ref SecBufferDesc pOutput, //PSecBufferDesc
+                        out ContextAttributes, //ref int pfContextAttr,
                         out ClientLifeTime); //ref IntPtr ptsExpiry ); //PTimeStamp
 
                 }
@@ -526,15 +525,15 @@ namespace PingCastle.RPC
                     {
                         ss = InitializeSecurityContext(ref _hCred,
                             ref _hContext,
-                            _szTarget,// null string pszTargetName,
+                            _szTarget, // null string pszTargetName,
                             STANDARD_CONTEXT_ATTRIBUTES,
-                            0,//int Reserved1,
-                            SECURITY_NATIVE_DREP,//int TargetDataRep
-                            ref ServerToken,    //Always zero first time around...
+                            0, //int Reserved1,
+                            SECURITY_NATIVE_DREP, //int TargetDataRep
+                            ref ServerToken, //Always zero first time around...
                             0, //int Reserved2,
                             out _hContext, //pHandle CtxtHandle = SecHandle
-                            out ClientToken,//ref SecBufferDesc pOutput, //PSecBufferDesc
-                            out ContextAttributes,//ref int pfContextAttr,
+                            out ClientToken, //ref SecBufferDesc pOutput, //PSecBufferDesc
+                            out ContextAttributes, //ref int pfContextAttr,
                             out ClientLifeTime); //ref IntPtr ptsExpiry ); //PTimeStamp
                     }
                     finally
@@ -558,8 +557,9 @@ namespace PingCastle.RPC
             bContinueProcessing = ss != SEC_E_OK;
         }
 
-        public void InitializeServer(byte[] clientToken, out byte[] serverToken,
-                                        out bool bContinueProcessing)
+        public void InitializeServer(byte[] clientToken,
+                                     out byte[] serverToken,
+                                     out bool bContinueProcessing)
         {
             serverToken = null;
             bContinueProcessing = true;
@@ -569,8 +569,8 @@ namespace PingCastle.RPC
             if (!_bGotCredentials)
             {
                 ss = AcquireCredentialsHandle(_szTarget, SecurityPackage, SECPKG_CRED_INBOUND,
-                                            IntPtr.Zero, IntPtr.Zero, 0, IntPtr.Zero,
-                                            ref _hCred, ref NewLifeTime);
+                    IntPtr.Zero, IntPtr.Zero, 0, IntPtr.Zero,
+                    ref _hCred, ref NewLifeTime);
                 if (ss != SEC_E_OK)
                 {
                     throw new Exception("Couldn't acquire server credentials", new Win32Exception(ss));
@@ -588,27 +588,27 @@ namespace PingCastle.RPC
 
                 if (_hContext.HighPart == _hContext.LowPart && _hContext.LowPart == IntPtr.Zero)
                 {
-                    ss = AcceptSecurityContext(ref _hCred,        // [in] handle to the credentials
-                        IntPtr.Zero,                // [in/out] handle of partially formed context.  Always NULL the first time through
-                        ref ClientToken,            // [in] pointer to the input buffers
-                        STANDARD_CONTEXT_ATTRIBUTES,                        // [in] required context attributes
-                        SECURITY_NATIVE_DREP,    // [in] data representation on the target
-                        out _hContext,    // [in/out] receives the new context handle    
-                        out ServerToken,        // [in/out] pointer to the output buffers
-                        out uNewContextAttr,    // [out] receives the context attributes        
-                        out NewLifeTime);        // [out] receives the life span of the security context
+                    ss = AcceptSecurityContext(ref _hCred, // [in] handle to the credentials
+                        IntPtr.Zero, // [in/out] handle of partially formed context.  Always NULL the first time through
+                        ref ClientToken, // [in] pointer to the input buffers
+                        STANDARD_CONTEXT_ATTRIBUTES, // [in] required context attributes
+                        SECURITY_NATIVE_DREP, // [in] data representation on the target
+                        out _hContext, // [in/out] receives the new context handle    
+                        out ServerToken, // [in/out] pointer to the output buffers
+                        out uNewContextAttr, // [out] receives the context attributes        
+                        out NewLifeTime); // [out] receives the life span of the security context
                 }
                 else
                 {
-                    ss = AcceptSecurityContext(ref _hCred,        // [in] handle to the credentials
-                        ref _hContext,                // [in/out] handle of partially formed context.  Always NULL the first time through
-                        ref ClientToken,            // [in] pointer to the input buffers
-                        STANDARD_CONTEXT_ATTRIBUTES,                        // [in] required context attributes
-                        SECURITY_NATIVE_DREP,    // [in] data representation on the target
-                        out _hContext,    // [in/out] receives the new context handle    
-                        out ServerToken,        // [in/out] pointer to the output buffers
-                        out uNewContextAttr,    // [out] receives the context attributes        
-                        out NewLifeTime);        // [out] receives the life span of the security context
+                    ss = AcceptSecurityContext(ref _hCred, // [in] handle to the credentials
+                        ref _hContext, // [in/out] handle of partially formed context.  Always NULL the first time through
+                        ref ClientToken, // [in] pointer to the input buffers
+                        STANDARD_CONTEXT_ATTRIBUTES, // [in] required context attributes
+                        SECURITY_NATIVE_DREP, // [in] data representation on the target
+                        out _hContext, // [in/out] receives the new context handle    
+                        out ServerToken, // [in/out] pointer to the output buffers
+                        out uNewContextAttr, // [out] receives the context attributes        
+                        out NewLifeTime); // [out] receives the life span of the security context
                 }
 
                 if (ss != SEC_E_OK && ss != SEC_I_CONTINUE_NEEDED)
@@ -659,8 +659,10 @@ namespace PingCastle.RPC
             }
         }
 
-        public void DecryptMessage(int messageLength, byte[] encryptedBuffer, bool bUseClientContext,
-                                    out byte[] decryptedBuffer)
+        public void DecryptMessage(int messageLength,
+                                   byte[] encryptedBuffer,
+                                   bool bUseClientContext,
+                                   out byte[] decryptedBuffer)
         {
             decryptedBuffer = null;
 
@@ -704,7 +706,6 @@ namespace PingCastle.RPC
         public void SignMessage(byte[] message, out byte[] signedBuffer)
         {
             signedBuffer = null;
-
 
             SecPkgContext_Sizes ContextSizes = new SecPkgContext_Sizes();
 

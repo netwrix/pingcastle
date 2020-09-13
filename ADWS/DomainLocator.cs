@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -13,8 +14,8 @@ namespace PingCastle.ADWS
 {
     public class DomainLocator
     {
-
         string Server;
+
         public DomainLocator(string server)
         {
             Server = server;
@@ -22,26 +23,26 @@ namespace PingCastle.ADWS
 
         public bool LocateDomainFromNetbios(string netbios, out string domain, out string forest)
         {
-			return LocateSomething(netbios, out domain, out forest, NativeMethods.DSGETDCNAME_FLAGS.DS_IS_FLAT_NAME |
-																	NativeMethods.DSGETDCNAME_FLAGS.DS_RETURN_DNS_NAME |
-																	NativeMethods.DSGETDCNAME_FLAGS.DS_ONLY_LDAP_NEEDED);
+            return LocateSomething(netbios, out domain, out forest, NativeMethods.DSGETDCNAME_FLAGS.DS_IS_FLAT_NAME |
+                                                                    NativeMethods.DSGETDCNAME_FLAGS.DS_RETURN_DNS_NAME |
+                                                                    NativeMethods.DSGETDCNAME_FLAGS.DS_ONLY_LDAP_NEEDED);
         }
 
         public bool LocateNetbiosFromFQDN(string fqdn, out string netbios, out string forest)
         {
-			return LocateSomething(fqdn, out netbios, out forest, NativeMethods.DSGETDCNAME_FLAGS.DS_IS_DNS_NAME |
-																	NativeMethods.DSGETDCNAME_FLAGS.DS_RETURN_FLAT_NAME | 
-																	NativeMethods.DSGETDCNAME_FLAGS.DS_ONLY_LDAP_NEEDED);
+            return LocateSomething(fqdn, out netbios, out forest, NativeMethods.DSGETDCNAME_FLAGS.DS_IS_DNS_NAME |
+                                                                  NativeMethods.DSGETDCNAME_FLAGS.DS_RETURN_FLAT_NAME |
+                                                                  NativeMethods.DSGETDCNAME_FLAGS.DS_ONLY_LDAP_NEEDED);
         }
 
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-		bool LocateSomething(string intput, out string domain, out string forest, NativeMethods.DSGETDCNAME_FLAGS flag)
+        bool LocateSomething(string intput, out string domain, out string forest, NativeMethods.DSGETDCNAME_FLAGS flag)
         {
             IntPtr DomainInfoResolution;
             domain = null;
             forest = null;
             Trace.WriteLine("Trying to solve " + intput + "(" + DateTime.Now.ToString("u") + ")");
-            
+
             int ret = NativeMethods.DsGetDcName(Server, intput, IntPtr.Zero, null, flag, out DomainInfoResolution);
             if (ret == 0)
             {
@@ -62,7 +63,6 @@ namespace PingCastle.ADWS
             }
             return false;
         }
-
 
         //// use the locator service of a DC via DsGetDcName
         //// do a parallele resolution because it can takes time
@@ -138,6 +138,5 @@ namespace PingCastle.ADWS
         //    }
         //    return ret;
         //}
-
     }
 }

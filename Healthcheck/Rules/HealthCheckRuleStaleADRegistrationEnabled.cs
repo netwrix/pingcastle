@@ -10,27 +10,27 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("S-ADRegistration", RiskRuleCategory.StaleObjects, RiskModelCategory.Provisioning)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    [RuleModel("S-ADRegistration", RiskRuleCategory.StaleObjects, RiskModelCategory.Provisioning)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
     [RuleMaturityLevel(3)]
     public class HealthCheckRuleStaleADRegistrationEnabled : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             if (healthcheckData.MachineAccountQuota > 0)
             {
-                foreach(GPPRightAssignment right in healthcheckData.GPPRightAssignment)
+                foreach (GPPRightAssignment right in healthcheckData.GPPRightAssignment)
                 {
                     if (right.Privilege == "SeMachineAccountPrivilege")
                     {
                         if (right.User == "Everyone"
                             || right.User == "Authenticated Users"
-							|| right.User == "Users"
-							|| right.User == "Anonymous"
-							)
+                            || right.User == "Users"
+                            || right.User == "Anonymous"
+                        )
                         {
                             Trace.WriteLine("SeMachineAccountPrivilege found in GPO " + right.GPOName);
-							return healthcheckData.MachineAccountQuota;
+                            return healthcheckData.MachineAccountQuota;
                         }
                     }
                 }

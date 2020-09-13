@@ -9,14 +9,14 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("P-DelegationKeyAdmin", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-	[RuleANSSI("R18", "subsubsection.3.3.2")]
-	[RuleIntroducedIn(2, 6)]
+    [RuleModel("P-DelegationKeyAdmin", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleANSSI("R18", "subsubsection.3.3.2")]
+    [RuleIntroducedIn(2, 6)]
     [RuleDurANSSI(2, "adupdate_bad", "Bad Active Directory versions")]
-	public class HealthCheckRulePrivilegedDelegationKeyAdmin : RuleBase<HealthCheckData>
+    public class HealthCheckRulePrivilegedDelegationKeyAdmin : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             foreach (HealthCheckDelegationData delegation in healthcheckData.Delegations)
             {

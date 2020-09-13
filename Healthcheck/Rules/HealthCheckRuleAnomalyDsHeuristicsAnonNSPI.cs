@@ -10,13 +10,13 @@ using PingCastle.Rules;
 namespace PingCastle.HealthCheck.Rules
 {
     [RuleModel("A-DsHeuristicsAllowAnonNSPI", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-	[RuleSTIG("V-8555", "Anonymous Access to AD forest data above the rootDSE level must be disabled. ", STIGFramework.Forest)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleSTIG("V-8555", "Anonymous Access to AD forest data above the rootDSE level must be disabled. ", STIGFramework.Forest)]
     [RuleDurANSSI(1, "dsheuristics_bad", "Dangerous dsHeuristics settings")]
-    [RuleIntroducedIn(2,9)]
+    [RuleIntroducedIn(2, 9)]
     public class HealthCheckRuleAnomalyDsHeuristicsAnonNSPI : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             if (healthcheckData.DsHeuristicsAllowAnonNSPI)
             {

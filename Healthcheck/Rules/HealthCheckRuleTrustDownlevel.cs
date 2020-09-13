@@ -9,12 +9,12 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("T-Downlevel", RiskRuleCategory.Trusts, RiskModelCategory.OldTrustProtocol)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
+    [RuleModel("T-Downlevel", RiskRuleCategory.Trusts, RiskModelCategory.OldTrustProtocol)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
     [RuleMaturityLevel(3)]
     public class HealthCheckRuleTrustDownlevel : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             // trust
             foreach (HealthCheckTrustData trust in healthcheckData.Trusts)

@@ -9,14 +9,14 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-DnsZoneUpdate1", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
-	[RuleIntroducedIn(2, 9)]
+    [RuleModel("A-DnsZoneUpdate1", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
+    [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(1, "dnszone_bad_prop", "Misconfigured DNS zones")]
     public class HealthCheckRuleAnomalyDnsZoneUnsecureUpdate1 : RuleBase<HealthCheckData>
-	{
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
-		{
+    {
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        {
             if (healthcheckData.DnsZones != null)
             {
                 foreach (var zone in healthcheckData.DnsZones)
@@ -29,7 +29,7 @@ namespace PingCastle.HealthCheck.Rules
                     }
                 }
             }
-			return null;
-		}
-	}
+            return null;
+        }
+    }
 }

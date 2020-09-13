@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,13 +17,13 @@ namespace PingCastle.ADWS
 {
     public class ADDomainInfo
     {
-
         public string ConfigurationNamingContext { get; set; }
         public DateTime CreationDate { get; set; }
         public string DefaultNamingContext { get; set; }
         public string DnsHostName { get; set; }
         public int DomainFunctionality { get; set; }
         private string _domainName = null;
+
         public string DomainName
         {
             get
@@ -34,7 +35,9 @@ namespace PingCastle.ADWS
                 return _domainName;
             }
         }
+
         private string _forestName = null;
+
         public string ForestName
         {
             get
@@ -46,14 +49,15 @@ namespace PingCastle.ADWS
                 return _forestName;
             }
         }
+
         public SecurityIdentifier DomainSid { get; set; }
         public int ForestFunctionality { get; set; }
         public string NetBIOSName { get; set; }
         public string RootDomainNamingContext { get; set; }
         public string SchemaNamingContext { get; set; }
-		public int SchemaVersion { get; set; }
-		public int SchemaInternalVersion { get; set; }
-		public DateTime SchemaLastChanged { get; set; }
+        public int SchemaVersion { get; set; }
+        public int SchemaInternalVersion { get; set; }
+        public DateTime SchemaLastChanged { get; set; }
         public List<string> NamingContexts { get; set; }
 
         private static string StripNamespace(string input)
@@ -102,15 +106,15 @@ namespace PingCastle.ADWS
         public static ADDomainInfo Create(DirectoryEntry rootDSE)
         {
             ADDomainInfo info = new ADDomainInfo();
-			info.DefaultNamingContext = rootDSE.Properties["defaultNamingContext"].Value as string;
-			info.ConfigurationNamingContext = rootDSE.Properties["configurationNamingContext"].Value as string;
-			info.DnsHostName = rootDSE.Properties["dnsHostName"].Value as string;
-			if (rootDSE.Properties.Contains("domainFunctionality"))
-				info.DomainFunctionality = int.Parse(rootDSE.Properties["domainFunctionality"].Value as string);
-			if (rootDSE.Properties.Contains("forestFunctionality"))
-				info.ForestFunctionality = int.Parse(rootDSE.Properties["forestFunctionality"].Value as string);
-			if (rootDSE.Properties.Contains("netBIOSName"))
-				info.NetBIOSName = rootDSE.Properties["netBIOSName"].Value as string;
+            info.DefaultNamingContext = rootDSE.Properties["defaultNamingContext"].Value as string;
+            info.ConfigurationNamingContext = rootDSE.Properties["configurationNamingContext"].Value as string;
+            info.DnsHostName = rootDSE.Properties["dnsHostName"].Value as string;
+            if (rootDSE.Properties.Contains("domainFunctionality"))
+                info.DomainFunctionality = int.Parse(rootDSE.Properties["domainFunctionality"].Value as string);
+            if (rootDSE.Properties.Contains("forestFunctionality"))
+                info.ForestFunctionality = int.Parse(rootDSE.Properties["forestFunctionality"].Value as string);
+            if (rootDSE.Properties.Contains("netBIOSName"))
+                info.NetBIOSName = rootDSE.Properties["netBIOSName"].Value as string;
             info.RootDomainNamingContext = rootDSE.Properties["rootDomainNamingContext"].Value as string;
             info.SchemaNamingContext = rootDSE.Properties["schemaNamingContext"].Value as string;
             Trace.WriteLine("supportedLDAPVersion: ");
@@ -176,11 +180,11 @@ namespace PingCastle.ADWS
                         Trace.WriteLine("supportedLDAPVersion: ");
                         if (item.ChildNodes != null)
                         {
-                            foreach(XmlNode child in item.ChildNodes)
-                            if (child != null)
-                            {
-                                Trace.WriteLine(child.InnerText);
-                            }
+                            foreach (XmlNode child in item.ChildNodes)
+                                if (child != null)
+                                {
+                                    Trace.WriteLine(child.InnerText);
+                                }
                         }
                         break;
                     case "supportedControl":
@@ -202,5 +206,5 @@ namespace PingCastle.ADWS
             }
             return info;
         }
-	}
+    }
 }

@@ -9,14 +9,14 @@ using System.Net;
 
 namespace PingCastle.Scanners
 {
-	public interface IScanner
-	{
-		void Initialize(string server, int port, NetworkCredential credential);
-		void Export(string filename);
-		string Name { get; }
-		string Description { get; }
-		
-		// return false if the user query has been cancelled
-		bool QueryForAdditionalParameterInInteractiveMode();
-	}
+    public interface IScanner
+    {
+        void Initialize(string server, int port, NetworkCredential credential);
+        void Export(string filename);
+        string Name { get; }
+        string Description { get; }
+
+        // return false if the user query has been cancelled
+        bool QueryForAdditionalParameterInInteractiveMode();
+    }
 }

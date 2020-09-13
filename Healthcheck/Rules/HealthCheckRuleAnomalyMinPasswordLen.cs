@@ -9,14 +9,15 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-MinPwdLen", RiskRuleCategory.Anomalies, RiskModelCategory.WeakPassword)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-	//[RuleBSI("M 4.314")]
+    [RuleModel("A-MinPwdLen", RiskRuleCategory.Anomalies, RiskModelCategory.WeakPassword)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+
+    //[RuleBSI("M 4.314")]
     [RuleDurANSSI(2, "privileged_members_password", "Privileged group members with weak password policy")]
     [RuleMaturityLevel(2)]
     public class HealthCheckRuleAnomalyMinPasswordLen : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             foreach (GPPSecurityPolicy policy in healthcheckData.GPPPasswordPolicy)
             {

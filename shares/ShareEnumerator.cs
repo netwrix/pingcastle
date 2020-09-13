@@ -18,7 +18,6 @@ namespace PingCastle.Shares
 {
     public class ShareEnumerator
     {
-
         private static bool IsEveryoneHere(FileSystemSecurity fss)
         {
             foreach (FileSystemAccessRule accessrule in fss.GetAccessRules(true, true, typeof(SecurityIdentifier)))
@@ -28,11 +27,11 @@ namespace PingCastle.Shares
                     continue;
                 if (((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.WorldSid)
                     || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AuthenticatedUserSid)
-					|| ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.BuiltinUsersSid)
-					|| ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AccountComputersSid)
-					|| ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AccountDomainUsersSid)
-					|| ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AnonymousSid)
-					)
+                    || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.BuiltinUsersSid)
+                    || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AccountComputersSid)
+                    || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AccountDomainUsersSid)
+                    || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AnonymousSid)
+                )
                 {
                     return true;
                 }
@@ -46,6 +45,7 @@ namespace PingCastle.Shares
             try
             {
                 DirectoryInfo di = new DirectoryInfo(path);
+
                 // special case for the Users default folder
                 if (share.Equals("Users", StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -89,6 +89,7 @@ namespace PingCastle.Shares
                     {
                         return true;
                     }
+
                     // backup files
                     if (fi.Extension.Equals("bak", StringComparison.InvariantCultureIgnoreCase))
                     {

@@ -9,12 +9,12 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-ReversiblePwd", RiskRuleCategory.Anomalies, RiskModelCategory.PasswordRetrieval)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    [RuleModel("A-ReversiblePwd", RiskRuleCategory.Anomalies, RiskModelCategory.PasswordRetrieval)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
     [RuleDurANSSI(3, "reversible_password", "Accounts with passwords stored using reversible encryption")]
     public class HealthCheckRuleAnomalyReversiblePassword : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             foreach (GPPSecurityPolicy policy in healthcheckData.GPPPasswordPolicy)
             {
@@ -24,8 +24,8 @@ namespace PingCastle.HealthCheck.Rules
                     {
                         if (property.Value > 0)
                         {
-							AddRawDetail(policy.GPOName);
-							break;
+                            AddRawDetail(policy.GPOName);
+                            break;
                         }
                     }
                 }

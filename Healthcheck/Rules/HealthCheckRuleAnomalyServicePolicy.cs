@@ -9,12 +9,12 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-NoServicePolicy", RiskRuleCategory.Anomalies, RiskModelCategory.WeakPassword)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
+    [RuleModel("A-NoServicePolicy", RiskRuleCategory.Anomalies, RiskModelCategory.WeakPassword)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
     [RuleMaturityLevel(4)]
     public class HealthCheckRuleAnomalyServicePolicy : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             bool servicePolicy = false;
             foreach (GPPSecurityPolicy policy in healthcheckData.GPPPasswordPolicy)
@@ -25,8 +25,8 @@ namespace PingCastle.HealthCheck.Rules
                     {
                         if (property.Value >= 20)
                         {
-							servicePolicy = true;
-							break;
+                            servicePolicy = true;
+                            break;
                         }
                     }
                 }

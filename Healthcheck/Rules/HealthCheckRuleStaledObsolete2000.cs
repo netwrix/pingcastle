@@ -9,13 +9,13 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("S-OS-2000", RiskRuleCategory.StaleObjects, RiskModelCategory.ObsoleteOS)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 40)]
-	[RuleCERTFR("CERTFR-2005-INF-003", "SECTION00032400000000000000")]
+    [RuleModel("S-OS-2000", RiskRuleCategory.StaleObjects, RiskModelCategory.ObsoleteOS)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 40)]
+    [RuleCERTFR("CERTFR-2005-INF-003", "SECTION00032400000000000000")]
     [RuleMaturityLevel(2)]
     public class HealthCheckRuleStaledObsolete2000 : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             foreach (HealthCheckOSData os in healthcheckData.OperatingSystem)
             {

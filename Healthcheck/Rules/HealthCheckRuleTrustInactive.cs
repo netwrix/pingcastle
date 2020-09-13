@@ -9,12 +9,12 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("T-Inactive", RiskRuleCategory.Trusts, RiskModelCategory.TrustInactive)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
+    [RuleModel("T-Inactive", RiskRuleCategory.Trusts, RiskModelCategory.TrustInactive)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
     [RuleDurANSSI(2, "trusts_accounts", "Trust account passwords unchanged for more than a year")]
     public class HealthCheckRuleTrustInactive : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             foreach (HealthCheckTrustData trust in healthcheckData.Trusts)
             {

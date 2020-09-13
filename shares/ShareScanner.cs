@@ -11,33 +11,34 @@ using PingCastle.Scanners;
 
 namespace PingCastle.Shares
 {
-	public class ShareScanner : ScannerBase
+    public class ShareScanner : ScannerBase
     {
-		public override string Name { get { return "share"; } }
-		public override string Description { get { return "List all shares published on a computer and determine if the share can be accessed by anyone"; } }
+        public override string Name { get { return "share"; } }
+        public override string Description { get { return "List all shares published on a computer and determine if the share can be accessed by anyone"; } }
 
-		override protected string GetCsvHeader()
-		{
-			return "Computer\tShare\tIsEveryoneAllowed";
-		}
+        override protected string GetCsvHeader()
+        {
+            return "Computer\tShare\tIsEveryoneAllowed";
+        }
 
-		override protected string GetCsvData(string computer)
-		{
-			string output = null;
-			if (IsServerAvailable(computer))
-			{
-				foreach (string path in ShareEnumerator.EnumShare(computer))
-				{
-					bool everyone = ShareEnumerator.IsEveryoneAllowed(computer, path);
-					if (!String.IsNullOrEmpty(output))
-						output += "\r\n";
-					output += computer + "\t" + path + "\t" + everyone;
-				}
-			}
-			return output;
+        override protected string GetCsvData(string computer)
+        {
+            string output = null;
+            if (IsServerAvailable(computer))
+            {
+                foreach (string path in ShareEnumerator.EnumShare(computer))
+                {
+                    bool everyone = ShareEnumerator.IsEveryoneAllowed(computer, path);
+                    if (!String.IsNullOrEmpty(output))
+                        output += "\r\n";
+                    output += computer + "\t" + path + "\t" + everyone;
+                }
+            }
+            return output;
         }
 
         const int timeout = 2;
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Ne pas supprimer d'objets plusieurs fois")]
         public static bool IsServerAvailable(string ServerName)
         {
@@ -62,6 +63,7 @@ namespace PingCastle.Shares
                             // The result was positiv
                             result = client.Connected;
                         }
+
                         // ensure the ending-call
                         client.EndConnect(asyncResult);
                     }
@@ -71,11 +73,9 @@ namespace PingCastle.Shares
                         waitHandle.Close();
                     }
                 }
-                catch
-                {
-                }
+                catch { }
             }
             return result;
-        } 
+        }
     }
 }

@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using System;
 using System.Collections.Generic;
 
@@ -11,7 +12,6 @@ namespace PingCastle.HealthCheck
 {
     public class TrustAnalyzer
     {
-
         static bool IsFlagSet(int value, int flag)
         {
             return (value & flag) != 0;
@@ -29,23 +29,26 @@ namespace PingCastle.HealthCheck
             {
                 return "Not applicable";
             }
+
             // forest trust ?
             if (IsFlagSet(TrustAttributes, 8))
             {
                 // quarantined ?
                 if (IsFlagSet(TrustAttributes, 4))
                     return "Yes";
+
                 // forest trust migration ?
                 else if (IsFlagSet(TrustAttributes, 64))
                     return "No";
                 return "Yes";
             }
-			// tree root which is obsolete
-			else if (IsFlagSet(TrustAttributes, 0x00800000))
-			{
-				return "Not applicable";
-			}
-			else
+
+            // tree root which is obsolete
+            else if (IsFlagSet(TrustAttributes, 0x00800000))
+            {
+                return "Not applicable";
+            }
+            else
             {
                 // quarantined ?
                 if (IsFlagSet(TrustAttributes, 4))
@@ -54,29 +57,29 @@ namespace PingCastle.HealthCheck
             }
         }
 
-		static public string GetTGTDelegation(HealthCheckTrustData trust)
-		{
-			return GetTGTDelegation(trust.TrustDirection, trust.TrustAttributes);
-		}
+        static public string GetTGTDelegation(HealthCheckTrustData trust)
+        {
+            return GetTGTDelegation(trust.TrustDirection, trust.TrustAttributes);
+        }
 
-		static public string GetTGTDelegation(int TrustDirection, int TrustAttributes)
-		{
-			if (TrustDirection == 0 || TrustDirection == 2)
-			{
-				return "Not applicable";
-			}
-			if (IsFlagSet(TrustAttributes, 8))
-			{
-				// quarantined ?
-				if (!IsFlagSet(TrustAttributes, 0x200))
-				{
-					if (IsFlagSet(TrustAttributes, 0x800))
-						return "Yes";
-				}
-				return "No";
-			}
-			return "Not applicable";
-		}
+        static public string GetTGTDelegation(int TrustDirection, int TrustAttributes)
+        {
+            if (TrustDirection == 0 || TrustDirection == 2)
+            {
+                return "Not applicable";
+            }
+            if (IsFlagSet(TrustAttributes, 8))
+            {
+                // quarantined ?
+                if (!IsFlagSet(TrustAttributes, 0x200))
+                {
+                    if (IsFlagSet(TrustAttributes, 0x800))
+                        return "Yes";
+                }
+                return "No";
+            }
+            return "Not applicable";
+        }
 
         static public string GetTrustAttribute(int trustAttributes)
         {

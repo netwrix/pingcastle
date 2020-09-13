@@ -9,16 +9,16 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("S-DC-2008", RiskRuleCategory.StaleObjects, RiskModelCategory.ObsoleteOS)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleModel("S-DC-2008", RiskRuleCategory.StaleObjects, RiskModelCategory.ObsoleteOS)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleSTIG("V-8551", "The domain functional level must be at a Windows Server version still supported by Microsoft.")]
-	[RuleANSSI("R12", "subsection.3.1")]
+    [RuleANSSI("R12", "subsection.3.1")]
     [RuleMaturityLevel(1)]
     public class HealthCheckRuleStaledObsoleteDC2008 : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
-			int w2008 = 0;
+            int w2008 = 0;
             foreach (var dc in healthcheckData.DomainControllers)
             {
                 if (dc.OperatingSystem == "Windows 2008")
@@ -26,7 +26,7 @@ namespace PingCastle.HealthCheck.Rules
                     w2008++;
                 }
             }
-			return w2008;
+            return w2008;
         }
     }
 }

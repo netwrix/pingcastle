@@ -9,24 +9,24 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("S-DC-2000", RiskRuleCategory.StaleObjects, RiskModelCategory.ObsoleteOS)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 40)]
+    [RuleModel("S-DC-2000", RiskRuleCategory.StaleObjects, RiskModelCategory.ObsoleteOS)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 40)]
     [RuleSTIG("V-8551", "The domain functional level must be at a Windows Server version still supported by Microsoft.")]
-	[RuleANSSI("R12", "subsection.3.1")]
+    [RuleANSSI("R12", "subsection.3.1")]
     [RuleMaturityLevel(1)]
     public class HealthCheckRuleStaledObsoleteDC2000 : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
-			int w2000 = 0;
-			foreach (var dc in healthcheckData.DomainControllers)
-			{
-				if (dc.OperatingSystem == "Windows 2000")
-				{
-					w2000++;
-				}
-			}
-			return w2000;
+            int w2000 = 0;
+            foreach (var dc in healthcheckData.DomainControllers)
+            {
+                if (dc.OperatingSystem == "Windows 2000")
+                {
+                    w2000++;
+                }
+            }
+            return w2000;
         }
     }
 }

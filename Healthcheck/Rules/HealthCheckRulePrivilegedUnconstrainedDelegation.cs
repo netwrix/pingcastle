@@ -9,40 +9,40 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("P-UnconstrainedDelegation", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.DelegationCheck)]
-	[RuleComputation(RuleComputationType.PerDiscover, 5)]
-	[RuleANSSI("R18", "subsubsection.3.3.2")]
-	[RuleIntroducedIn(2, 6)]
+    [RuleModel("P-UnconstrainedDelegation", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.DelegationCheck)]
+    [RuleComputation(RuleComputationType.PerDiscover, 5)]
+    [RuleANSSI("R18", "subsubsection.3.3.2")]
+    [RuleIntroducedIn(2, 6)]
     [RuleDurANSSI(2, "delegation_t4d", "Unconstrained authentication delegation")]
-	public class HealthCheckRulePrivilegedUnconstrainedDelegation : RuleBase<HealthCheckData>
+    public class HealthCheckRulePrivilegedUnconstrainedDelegation : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
-			if (healthcheckData.UserAccountData.ListTrustedToAuthenticateForDelegation != null)
-			{
-				foreach (var delegation in healthcheckData.UserAccountData.ListTrustedToAuthenticateForDelegation)
-				{
-					AddRawDetail(delegation.DistinguishedName, delegation.Name);
-				}
-			}
-			if (healthcheckData.ComputerAccountData.ListTrustedToAuthenticateForDelegation != null)
-			{
-				foreach (var delegation in healthcheckData.ComputerAccountData.ListTrustedToAuthenticateForDelegation)
-				{
-					bool found = false;
-					foreach (var dc in healthcheckData.DomainControllers)
-					{
-						if (dc.DistinguishedName == delegation.DistinguishedName)
-						{
-							found = true;
-							break;
-						}
-					}
-					if (!found)
-						AddRawDetail(delegation.DistinguishedName, delegation.Name);
-				}
-			}
-			return null;
+            if (healthcheckData.UserAccountData.ListTrustedToAuthenticateForDelegation != null)
+            {
+                foreach (var delegation in healthcheckData.UserAccountData.ListTrustedToAuthenticateForDelegation)
+                {
+                    AddRawDetail(delegation.DistinguishedName, delegation.Name);
+                }
+            }
+            if (healthcheckData.ComputerAccountData.ListTrustedToAuthenticateForDelegation != null)
+            {
+                foreach (var delegation in healthcheckData.ComputerAccountData.ListTrustedToAuthenticateForDelegation)
+                {
+                    bool found = false;
+                    foreach (var dc in healthcheckData.DomainControllers)
+                    {
+                        if (dc.DistinguishedName == delegation.DistinguishedName)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                        AddRawDetail(delegation.DistinguishedName, delegation.Name);
+                }
+            }
+            return null;
         }
     }
 }

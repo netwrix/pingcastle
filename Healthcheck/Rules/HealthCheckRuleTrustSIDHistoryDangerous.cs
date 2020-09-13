@@ -9,18 +9,18 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("T-SIDHistoryDangerous", RiskRuleCategory.Trusts, RiskModelCategory.SIDHistory)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-	[RuleANSSI("R15", "paragraph.3.3.1.5")]
-    [RuleIntroducedIn(2,9)]
+    [RuleModel("T-SIDHistoryDangerous", RiskRuleCategory.Trusts, RiskModelCategory.SIDHistory)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    [RuleANSSI("R15", "paragraph.3.3.1.5")]
+    [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(2, "sidhistory_dangerous", "Accounts or groups with unexpected SID history")]
     public class HealthCheckRuleTrustSIDHistoryDangerous : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             int count = 0;
             if (healthcheckData.UserAccountData != null && healthcheckData.UserAccountData.ListDomainSidHistory != null
-                && healthcheckData.UserAccountData.ListDomainSidHistory.Count > 0)
+                                                        && healthcheckData.UserAccountData.ListDomainSidHistory.Count > 0)
             {
                 foreach (HealthCheckSIDHistoryData data in healthcheckData.UserAccountData.ListDomainSidHistory)
                 {
@@ -31,7 +31,7 @@ namespace PingCastle.HealthCheck.Rules
                 }
             }
             if (healthcheckData.ComputerAccountData != null && healthcheckData.ComputerAccountData.ListDomainSidHistory != null
-                && healthcheckData.ComputerAccountData.ListDomainSidHistory.Count > 0)
+                                                            && healthcheckData.ComputerAccountData.ListDomainSidHistory.Count > 0)
             {
                 foreach (HealthCheckSIDHistoryData data in healthcheckData.ComputerAccountData.ListDomainSidHistory)
                 {
@@ -41,7 +41,7 @@ namespace PingCastle.HealthCheck.Rules
                     }
                 }
             }
-			return count;
+            return count;
         }
     }
 }

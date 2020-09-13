@@ -9,13 +9,13 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("S-DCRegistration", RiskRuleCategory.StaleObjects, RiskModelCategory.Provisioning)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-    [RuleIntroducedIn(2,9)]
+    [RuleModel("S-DCRegistration", RiskRuleCategory.StaleObjects, RiskModelCategory.Provisioning)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(1, "dc_inconsistent_uac", "Domain controllers in inconsistent state")]
     public class HealthCheckRuleStaleDCRegistrationEnabled : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             foreach (var dc in healthcheckData.DomainControllers)
             {

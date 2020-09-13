@@ -8,7 +8,6 @@ using System.Reflection;
 
 namespace PingCastle.HealthCheck
 {
-
     public class FakeHealthCheckDataGeneratorModel
     {
         public int NumberOfDomains;
@@ -22,6 +21,7 @@ namespace PingCastle.HealthCheck
         Small,
         VerySmall
     }
+
     public class FakeHealthCheckDataGeneratorDomainModel
     {
         public HealthCheckData Forest;
@@ -38,7 +38,8 @@ namespace PingCastle.HealthCheck
             "net"
         };
 
-        static List<string> TopNouns = new List<string>() {
+        static List<string> TopNouns = new List<string>()
+        {
             "time",
             "person",
             "year",
@@ -73,7 +74,8 @@ namespace PingCastle.HealthCheck
             "military"
         };
 
-        static List<string> TopAdjectives = new List<string>() {
+        static List<string> TopAdjectives = new List<string>()
+        {
             "good",
             "new",
             "first",
@@ -136,6 +138,7 @@ namespace PingCastle.HealthCheck
         };
 
         static Random rnd = new Random();
+
         static string FQDNGenerator()
         {
             return TopAdjectives[rnd.Next(TopAdjectives.Count)] + TopNouns[rnd.Next(TopNouns.Count)] + "." + TopEnd[rnd.Next(TopEnd.Count)];
@@ -154,6 +157,7 @@ namespace PingCastle.HealthCheck
                 TrustRatioInPercent = 40
             });
         }
+
         public PingCastleReportCollection<HealthCheckData> GenerateData(FakeHealthCheckDataGeneratorModel model)
         {
             var output = new PingCastleReportCollection<HealthCheckData>();
@@ -184,10 +188,10 @@ namespace PingCastle.HealthCheck
                 {
                     output.Add(GenerateSingleReport(new FakeHealthCheckDataGeneratorDomainModel() { Size = DomainSizeModel.Large }));
                     num++;
-                } 
+                }
             }
             int numberOfTrust = model.NumberOfDomains * model.TrustRatioInPercent / 100;
-            for(int i = 0; i < numberOfTrust; i++)
+            for (int i = 0; i < numberOfTrust; i++)
             {
                 //take 2 random domains
                 int a = rnd.Next(output.Count);
@@ -251,9 +255,10 @@ namespace PingCastle.HealthCheck
         {
             int numberDomains = rnd.Next(5, maxDomain > 15 ? 15 : maxDomain);
             var children = new PingCastleReportCollection<HealthCheckData>();
+
             // head of forest
             var root = GenerateSingleReport(new FakeHealthCheckDataGeneratorDomainModel() { Size = DomainSizeModel.VerySmall });
-            for(int i = 0; i < numberDomains; i++)
+            for (int i = 0; i < numberDomains; i++)
             {
                 var child = GenerateSingleReport(new FakeHealthCheckDataGeneratorDomainModel() { Size = DomainSizeModel.Medium, Forest = root });
                 children.Add(child);
@@ -288,7 +293,7 @@ namespace PingCastle.HealthCheck
                 trust.KnownDomains = new List<HealthCheckTrustDomainInfoData>();
                 child.Trusts.Add(trust);
 
-                foreach(var child2 in children)
+                foreach (var child2 in children)
                 {
                     if (child2.DomainSid == child.DomainSid)
                         continue;
@@ -303,6 +308,7 @@ namespace PingCastle.HealthCheck
                     trust.KnownDomains.Add(kdomain);
                 }
             }
+
             // output all domains
             children.Add(root);
             return children;
@@ -401,23 +407,30 @@ namespace PingCastle.HealthCheck
         private void GenerateUserData(FakeHealthCheckDataGeneratorDomainModel model, HealthCheckData healthcheckData)
         {
             healthcheckData.UserAccountData = new HealthCheckAccountData();
-            healthcheckData.AdminLastLoginDate = DateBetween2Dates(healthcheckData.DomainCreation, DateTime.Now); ;
+            healthcheckData.AdminLastLoginDate = DateBetween2Dates(healthcheckData.DomainCreation, DateTime.Now);
+            ;
             healthcheckData.AdminAccountName = "Administrator";
             int size = GetCountFromSize(model);
-            for(int i = 0; i< size; i++)
+            for (int i = 0; i < size; i++)
             {
                 ADItem x = new ADItem();
                 x.DistinguishedName = "CN=123";
+
                 // disabled
                 x.UserAccountControl += BoolOnChance(15) * 0x00000002;
+
                 //preauth
                 x.UserAccountControl += BoolOnChance(1) * 0x400000;
+
                 // locked
                 x.UserAccountControl += BoolOnChance(4) * 0x00000010;
+
                 // pwd never expires
                 x.UserAccountControl += BoolOnChance(10) * 0x00010000;
+
                 // pwd not required
                 x.UserAccountControl += BoolOnChance(2) * 0x00000020;
+
                 // trusted to authenticate
                 x.UserAccountControl += BoolOnChance(2) * 0x80000;
                 x.PrimaryGroupID = 515 + BoolOnChance(1);
@@ -436,16 +449,22 @@ namespace PingCastle.HealthCheck
             {
                 ADItem x = new ADItem();
                 x.DistinguishedName = "CN=123";
+
                 // disabled
                 x.UserAccountControl += BoolOnChance(15) * 0x00000002;
+
                 //preauth
                 x.UserAccountControl += BoolOnChance(1) * 0x400000;
+
                 // locked
                 x.UserAccountControl += BoolOnChance(4) * 0x00000010;
+
                 // pwd never expires
                 x.UserAccountControl += BoolOnChance(10) * 0x00010000;
+
                 // pwd not required
                 x.UserAccountControl += BoolOnChance(2) * 0x00000020;
+
                 // trusted to authenticate
                 x.UserAccountControl += BoolOnChance(2) * 0x80000;
                 x.PrimaryGroupID = 515 + BoolOnChance(1);
@@ -454,7 +473,7 @@ namespace PingCastle.HealthCheck
             healthcheckData.LoginScript = new List<HealthCheckLoginScriptData>();
 
             healthcheckData.DomainControllers = new List<HealthCheckDomainController>();
-            size = (int) Math.Exp(Math.Log10(size) / 2);
+            size = (int)Math.Exp(Math.Log10(size) / 2);
             if (size < 1)
                 size = 1;
             for (int i = 0; i < size; i++)
@@ -462,6 +481,7 @@ namespace PingCastle.HealthCheck
                 HealthCheckDomainController dc = new HealthCheckDomainController();
                 dc.DCName = "DC" + i;
                 dc.CreationDate = DateBetween2Dates(healthcheckData.DomainCreation, DateTime.Now);
+
                 // last logon timestam can have a delta of 14 days
                 dc.LastComputerLogonDate = DateTime.Now.AddDays(-1 * rnd.Next(180));
                 dc.DistinguishedName = "DC=DC";
@@ -532,7 +552,6 @@ namespace PingCastle.HealthCheck
 
             // adding the domain Netbios name
             healthcheckData.NetBIOSName = healthcheckData.DomainFQDN.Split('.')[0];
-
 
             healthcheckData.DomainFunctionalLevel = rnd.Next(healthcheckData.ForestFunctionalLevel, 8);
             healthcheckData.SchemaVersion = SchemaVersion(healthcheckData.ForestFunctionalLevel);

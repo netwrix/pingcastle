@@ -9,13 +9,13 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("P-DNSAdmin", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-	[RuleIntroducedIn(2, 9)]
+    [RuleModel("P-DNSAdmin", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(1, "dnsadmins", "DnsAdmins group members")]
-	public class HealthCheckRulePrivilegedDNSAdmin : RuleBase<HealthCheckData>
+    public class HealthCheckRulePrivilegedDNSAdmin : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             foreach (var group in healthcheckData.PrivilegedGroups)
             {

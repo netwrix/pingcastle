@@ -10,36 +10,37 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("P-LogonDenied", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AccountTakeOver)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 1)]
-	[RuleIntroducedIn(2, 8)]
+    [RuleModel("P-LogonDenied", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AccountTakeOver)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 1)]
+    [RuleIntroducedIn(2, 8)]
     [RuleMaturityLevel(4)]
-	public class HealthCheckRulePrivilegedLogonDenied : RuleBase<HealthCheckData>
-	{
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
-		{
-			if (healthcheckData.UserAccountData.NumberActive > 200 && healthcheckData.ComputerAccountData.NumberActive > 200)
-			{
-				var dangerousGroups = new List<string>() {
-					"Domain Admins",
-					"Administrators"
+    public class HealthCheckRulePrivilegedLogonDenied : RuleBase<HealthCheckData>
+    {
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        {
+            if (healthcheckData.UserAccountData.NumberActive > 200 && healthcheckData.ComputerAccountData.NumberActive > 200)
+            {
+                var dangerousGroups = new List<string>()
+                {
+                    "Domain Admins",
+                    "Administrators"
                 };
-				bool restrictionFound = false;
-				foreach (var policy in healthcheckData.GPPLoginAllowedOrDeny)
-				{
-					if (policy.Privilege == "SeDenyRemoteInteractiveLogonRight" || policy.Privilege == "SeDenyInteractiveLogonRight")
-					{
-						if (policy.User == "Administrators" || policy.User == "Domain Admins")
-						{
-							restrictionFound = true;
-							break;
-						}
-					}
-				}
-				if (!restrictionFound)
-					return 1;
-			}
-			return 0;
-		}
-	}
+                bool restrictionFound = false;
+                foreach (var policy in healthcheckData.GPPLoginAllowedOrDeny)
+                {
+                    if (policy.Privilege == "SeDenyRemoteInteractiveLogonRight" || policy.Privilege == "SeDenyInteractiveLogonRight")
+                    {
+                        if (policy.User == "Administrators" || policy.User == "Domain Admins")
+                        {
+                            restrictionFound = true;
+                            break;
+                        }
+                    }
+                }
+                if (!restrictionFound)
+                    return 1;
+            }
+            return 0;
+        }
+    }
 }

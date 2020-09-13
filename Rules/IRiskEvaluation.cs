@@ -9,18 +9,16 @@ using System.Collections.Generic;
 
 namespace PingCastle.Rules
 {
-	public interface IRiskEvaluation
-	{
-		int GlobalScore { get; set; }
-		int StaleObjectsScore { get; set; }
-		int PrivilegiedGroupScore { get; set; }
-		int TrustScore { get; set; }
-		int AnomalyScore { get; set; }
-		int MaturityLevel { get; set; }
-		IList<IRuleScore> AllRiskRules { get;}
-	}
+    public interface IRiskEvaluation
+    {
+        int GlobalScore { get; set; }
+        int StaleObjectsScore { get; set; }
+        int PrivilegiedGroupScore { get; set; }
+        int TrustScore { get; set; }
+        int AnomalyScore { get; set; }
+        int MaturityLevel { get; set; }
+        IList<IRuleScore> AllRiskRules { get; }
+    }
 
-	public interface IRiskEvaluationOnObjective : IRiskEvaluation
-	{
-	}
+    public interface IRiskEvaluationOnObjective : IRiskEvaluation { }
 }

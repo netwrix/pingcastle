@@ -18,21 +18,20 @@ namespace PingCastle.ADWS
 
     public enum ADConnectionType
     {
-        ADWSThenLDAP = 0, 
+        ADWSThenLDAP = 0,
         ADWSOnly = 1,
         LDAPOnly = 2,
         LDAPThenADWS = 3
     }
 
-	public class ADWebService : IDisposable, IADConnection
+    public class ADWebService : IDisposable, IADConnection
     {
-
         public ADWebService(string server, int port, NetworkCredential credential)
         {
             Server = server;
             Port = port;
             Credential = credential;
-			Trace.WriteLine("Before establishing connection");
+            Trace.WriteLine("Before establishing connection");
             EstablishConnection();
         }
 
@@ -44,65 +43,66 @@ namespace PingCastle.ADWS
 
         public NetworkCredential Credential { get; set; }
 
-		private IADConnection connection { get; set; }
-		private IADConnection fallBackConnection { get; set; }
+        private IADConnection connection { get; set; }
+        private IADConnection fallBackConnection { get; set; }
 
         #region connection establishment
+
         private void EstablishConnection()
         {
-			ADWSConnection adwsConnection = null;
-			LDAPConnection ldapConnection = new LDAPConnection(Server, Port, Credential);
-			try
-			{
-				adwsConnection = new ADWSConnection(Server, Port, Credential);
-			}
-			catch (Exception ex)
-			{
-				Trace.WriteLine("Unable to load ADWS - .Net 2 only ? (" + ex.Message + ")"); 
-			}
+            ADWSConnection adwsConnection = null;
+            LDAPConnection ldapConnection = new LDAPConnection(Server, Port, Credential);
+            try
+            {
+                adwsConnection = new ADWSConnection(Server, Port, Credential);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("Unable to load ADWS - .Net 2 only ? (" + ex.Message + ")");
+            }
             switch (ConnectionType)
             {
                 case ADConnectionType.ADWSOnly:
                     Trace.WriteLine("Trying ADWS connection");
-					adwsConnection.EstablishConnection();
+                    adwsConnection.EstablishConnection();
                     Trace.WriteLine("ADWS connection successful");
-					connection = adwsConnection;
+                    connection = adwsConnection;
                     break;
                 case ADConnectionType.LDAPOnly:
                     Trace.WriteLine("Trying LDAP connection");
                     ldapConnection.EstablishConnection();
                     Trace.WriteLine("LDAP connection successful");
-					connection = ldapConnection;
+                    connection = ldapConnection;
                     break;
                 case ADConnectionType.ADWSThenLDAP:
                     try
                     {
                         Trace.WriteLine("Trying ADWS connection");
-						adwsConnection.EstablishConnection();
+                        adwsConnection.EstablishConnection();
                         Trace.WriteLine("ADWS connection successful");
-						connection = adwsConnection;
-						fallBackConnection = new LDAPConnection(adwsConnection.Server, adwsConnection.Port, Credential);
+                        connection = adwsConnection;
+                        fallBackConnection = new LDAPConnection(adwsConnection.Server, adwsConnection.Port, Credential);
                     }
                     catch (Exception ex)
                     {
                         Trace.WriteLine("Unable to connect to ADWS - trying LDAP");
                         try
                         {
-							ldapConnection.EstablishConnection();
+                            ldapConnection.EstablishConnection();
                             Trace.WriteLine("Connected with LDAP");
-							connection = ldapConnection;
+                            connection = ldapConnection;
                         }
-                        catch(Exception ex2)
+                        catch (Exception ex2)
                         {
                             Trace.WriteLine("LDAP exception: " + ex2.Message + "(" + ex2.GetType() + ")");
-							if (ex2 as COMException != null)
-							{
-								COMException ex3 = (COMException)ex2;
-								Trace.WriteLine("COMException: " + ex3.ErrorCode);
-							}
+                            if (ex2 as COMException != null)
+                            {
+                                COMException ex3 = (COMException)ex2;
+                                Trace.WriteLine("COMException: " + ex3.ErrorCode);
+                            }
                             Trace.WriteLine(ex2.StackTrace);
                             Trace.WriteLine("Throwing ADWS Exception again");
-							throw new ActiveDirectoryServerDownException(ex.Message);
+                            throw new ActiveDirectoryServerDownException(ex.Message);
                         }
                     }
                     break;
@@ -110,70 +110,72 @@ namespace PingCastle.ADWS
                     try
                     {
                         Trace.WriteLine("Trying LDAP connection");
-						ldapConnection.EstablishConnection();
+                        ldapConnection.EstablishConnection();
                         Trace.WriteLine("LDAP connection successful");
-						connection = ldapConnection;
-						fallBackConnection = new ADWSConnection(adwsConnection.Server, adwsConnection.Port, Credential);
+                        connection = ldapConnection;
+                        fallBackConnection = new ADWSConnection(adwsConnection.Server, adwsConnection.Port, Credential);
                     }
                     catch (Exception ex)
                     {
                         Trace.WriteLine("Unable to connect to LDAP - trying ADWS");
                         try
                         {
-							adwsConnection.EstablishConnection();
+                            adwsConnection.EstablishConnection();
                             Trace.WriteLine("Connected with ADWS");
-							connection = adwsConnection;
+                            connection = adwsConnection;
                         }
                         catch (Exception ex2)
                         {
-							Trace.WriteLine("ADWS exception: " + ex2.Message + "(" + ex2.GetType() + ")");
+                            Trace.WriteLine("ADWS exception: " + ex2.Message + "(" + ex2.GetType() + ")");
                             Trace.WriteLine(ex2.StackTrace);
                             Trace.WriteLine("Throwing LDAP Exception again");
-							throw new ActiveDirectoryServerDownException(ex.Message);
+                            throw new ActiveDirectoryServerDownException(ex.Message);
                         }
                     }
                     break;
             }
         }
 
-		public bool useLdap 
-		{ 
-			get 
-			{ 
-				return connection != null && connection is LDAPConnection;
-			}
-		}
+        public bool useLdap
+        {
+            get
+            {
+                return connection != null && connection is LDAPConnection;
+            }
+        }
 
         #endregion connection establishment
 
         // this function is used to test the connection
         // cache the result to avoid 2 calls
         public ADDomainInfo DomainInfo
-		{
-			get
-			{
-				if (connection != null)
-					return connection.GetDomainInfo();
-				return null;
-			}
-		}
+        {
+            get
+            {
+                if (connection != null)
+                    return connection.GetDomainInfo();
+                return null;
+            }
+        }
 
-		public ADDomainInfo GetDomainInfo()
-		{
-			return DomainInfo;
-		}
+        public ADDomainInfo GetDomainInfo()
+        {
+            return DomainInfo;
+        }
 
-        public class OUExploration: IComparable<OUExploration>
+        public class OUExploration : IComparable<OUExploration>
         {
             public string OU { get; set; }
             public string Scope { get; set; }
             public int Level { get; set; }
+
             public OUExploration(string ou, string scope, int level)
             {
                 OU = ou;
                 Scope = scope;
                 Level = level;
             }
+
             // revert an OU string order to get a string orderable
             // ex: OU=myOU,DC=DC   => DC=DC,OU=myOU
             private string GetSortKey(string ou)
@@ -186,6 +188,7 @@ namespace PingCastle.ADWS
                 }
                 return String.Join(",", apart1);
             }
+
             public int CompareTo(OUExploration other)
             {
                 return String.Compare(GetSortKey(OU), GetSortKey(other.OU));
@@ -202,8 +205,9 @@ namespace PingCastle.ADWS
             }
             List<string> OUToExplore = new List<string>();
             OUToExplore.Add(OU);
-            string[] properties = new string[] {
-                        "distinguishedName"
+            string[] properties = new string[]
+            {
+                "distinguishedName"
             };
             List<string> futureOuToExplore = null;
             for (int i = 0; i < NumberOfDepthForSplit; i++)
@@ -214,12 +218,12 @@ namespace PingCastle.ADWS
                     output.Add(new OUExploration(ou, "OneLevel", i));
                     Enumerate(ou, "(|(objectCategory=organizationalUnit)(objectCategory=container)(objectCategory=buitinDomain))", properties,
                         (ADItem x)
-                        =>
+                            =>
                         {
                             futureOuToExplore.Add(x.DistinguishedName);
                         }
                         , "OneLevel"
-                        );
+                    );
 
                 }
                 OUToExplore = futureOuToExplore;
@@ -237,37 +241,38 @@ namespace PingCastle.ADWS
             Enumerate(null, distinguishedName, filter, properties, callback, "Subtree");
         }
 
-		public void Enumerate(string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope)
-		{
-			Enumerate(null, distinguishedName, filter, properties, callback, scope);
-		}
+        public void Enumerate(string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope)
+        {
+            Enumerate(null, distinguishedName, filter, properties, callback, scope);
+        }
 
-		public delegate void Action();
+        public delegate void Action();
 
-		public void Enumerate(Action preambleWithReentry, string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope)
-		{
-			if (preambleWithReentry != null)
-				preambleWithReentry();
-			try
-			{
-				connection.Enumerate(distinguishedName, filter, properties, callback, scope);
-			}
-			catch (Exception ex)
-			{
-				Trace.WriteLine("Exception: " + ex.Message);
-				Trace.WriteLine("StackTrace: " + ex.StackTrace);
-				if (fallBackConnection == null)
-					throw;
-				Console.ForegroundColor = ConsoleColor.Yellow;
-				Console.WriteLine("The AD query failed. Using the alternative protocol (" + fallBackConnection.GetType().Name + ")");
-				Console.ResetColor();
-				if (preambleWithReentry != null)
-					preambleWithReentry();
-				fallBackConnection.Enumerate(distinguishedName, filter, properties, callback, scope);
-			}
-		}
+        public void Enumerate(Action preambleWithReentry, string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope)
+        {
+            if (preambleWithReentry != null)
+                preambleWithReentry();
+            try
+            {
+                connection.Enumerate(distinguishedName, filter, properties, callback, scope);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("Exception: " + ex.Message);
+                Trace.WriteLine("StackTrace: " + ex.StackTrace);
+                if (fallBackConnection == null)
+                    throw;
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("The AD query failed. Using the alternative protocol (" + fallBackConnection.GetType().Name + ")");
+                Console.ResetColor();
+                if (preambleWithReentry != null)
+                    preambleWithReentry();
+                fallBackConnection.Enumerate(distinguishedName, filter, properties, callback, scope);
+            }
+        }
 
-		#region IDispose
+        #region IDispose
+
         public void Dispose()
         {
             // If this function is being called the user wants to release the
@@ -297,8 +302,7 @@ namespace PingCastle.ADWS
             // released by GC
         }
 
-
-		~ADWebService()
+        ~ADWebService()
         {
             // The object went out of scope and finalized is called
             // Lets call dispose in to release unmanaged resources 
@@ -306,6 +310,7 @@ namespace PingCastle.ADWS
             // runs the next time.
             Dispose(false);
         }
+
         #endregion IDispose
     }
 }

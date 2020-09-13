@@ -7,12 +7,12 @@
 
 namespace PingCastle.Graph.Database
 {
-	public enum MappingType
-	{
-		Shortname,
-		DistinguishedName,
-		Sid,
-		FileName,
-		GPODirectory
+    public enum MappingType
+    {
+        Shortname,
+        DistinguishedName,
+        Sid,
+        FileName,
+        GPODirectory
     }
 }

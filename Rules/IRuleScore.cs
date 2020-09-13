@@ -7,10 +7,10 @@
 
 namespace PingCastle.Rules
 {
-	public interface IRuleScore
-	{
-		RiskRuleCategory Category { get; }
-		string RiskId { get; }
-		int Points { get; }
-	}
+    public interface IRuleScore
+    {
+        RiskRuleCategory Category { get; }
+        string RiskId { get; }
+        int Points { get; }
+    }
 }

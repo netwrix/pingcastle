@@ -13,28 +13,27 @@ namespace PingCastle.Scanners
 {
     public class localAdminsScanner : ScannerBase
     {
-
-		public override string Name { get { return "localadmin"; } }
-		public override string Description { get { return "Enumerate the local administrators of a computer."; } }
+        public override string Name { get { return "localadmin"; } }
+        public override string Description { get { return "Enumerate the local administrators of a computer."; } }
 
         override protected string GetCsvHeader()
-		{
-			return "Computer\tSID\tAccount";
-		}
+        {
+            return "Computer\tSID\tAccount";
+        }
 
-		override protected string GetCsvData(string computer)
-		{
-			string output = null;
+        override protected string GetCsvData(string computer)
+        {
+            string output = null;
             List<SecurityIdentifier> users = localAdminsEnumerator.Export(computer);
-                                    
+
             foreach (SecurityIdentifier user in users)
             {
                 string account = NativeMethods.ConvertSIDToName(user.Value, computer);
-                if (!String.IsNullOrEmpty( output))
-					output += "\r\n";
-				output += computer + "\t" + user.Value + "\t" + account;
+                if (!String.IsNullOrEmpty(output))
+                    output += "\r\n";
+                output += computer + "\t" + user.Value + "\t" + account;
             }
-			return output;
-		}
+            return output;
+        }
     }
 }

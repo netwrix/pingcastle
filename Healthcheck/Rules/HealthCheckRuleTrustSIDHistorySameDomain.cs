@@ -9,17 +9,17 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("T-SIDHistorySameDomain", RiskRuleCategory.Trusts, RiskModelCategory.SIDHistory)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 50)]
-	[RuleANSSI("R15", "paragraph.3.3.1.5")]
+    [RuleModel("T-SIDHistorySameDomain", RiskRuleCategory.Trusts, RiskModelCategory.SIDHistory)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 50)]
+    [RuleANSSI("R15", "paragraph.3.3.1.5")]
     [RuleDurANSSI(3, "sidhistory_present", "Accounts or groups with SID history set")]
     public class HealthCheckRuleTrustSIDHistorySameDomain : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             int count = 0;
             if (healthcheckData.UserAccountData != null && healthcheckData.UserAccountData.ListDomainSidHistory != null
-                && healthcheckData.UserAccountData.ListDomainSidHistory.Count > 0)
+                                                        && healthcheckData.UserAccountData.ListDomainSidHistory.Count > 0)
             {
                 foreach (HealthCheckSIDHistoryData data in healthcheckData.UserAccountData.ListDomainSidHistory)
                 {
@@ -30,7 +30,7 @@ namespace PingCastle.HealthCheck.Rules
                 }
             }
             if (healthcheckData.ComputerAccountData != null && healthcheckData.ComputerAccountData.ListDomainSidHistory != null
-                && healthcheckData.ComputerAccountData.ListDomainSidHistory.Count > 0)
+                                                            && healthcheckData.ComputerAccountData.ListDomainSidHistory.Count > 0)
             {
                 foreach (HealthCheckSIDHistoryData data in healthcheckData.ComputerAccountData.ListDomainSidHistory)
                 {
@@ -40,7 +40,7 @@ namespace PingCastle.HealthCheck.Rules
                     }
                 }
             }
-			return count;
+            return count;
         }
     }
 }

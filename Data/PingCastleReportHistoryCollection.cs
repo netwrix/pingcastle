@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using PingCastle.Data;
 using System;
 using System.Collections.Generic;
@@ -11,8 +12,7 @@ using System.Collections.Generic;
 namespace PingCastle.HealthCheck
 {
     public class PingCastleReportHistoryCollection<T> : ICollection<T> where T : IPingCastleReport
-	{
-
+    {
         Dictionary<string, Dictionary<DateTime, T>> data { get; set; }
 
         public PingCastleReportHistoryCollection()
@@ -91,22 +91,22 @@ namespace PingCastle.HealthCheck
             return this.GetEnumerator();
         }
 
-		public PingCastleReportCollection<T> ToLatestReportCollection()
-		{
-			var output = new PingCastleReportCollection<T>();
-			foreach (var sid in data.Keys)
-			{
-				DateTime maxDate = DateTime.MinValue;
-				foreach (var date in data[sid].Keys)
-				{
-					if (maxDate < date)
-						maxDate = date;
-				}
-				output.Add(data[sid][maxDate]);
-			}
-			output.EnrichInformation();
-			return output;
-		}
+        public PingCastleReportCollection<T> ToLatestReportCollection()
+        {
+            var output = new PingCastleReportCollection<T>();
+            foreach (var sid in data.Keys)
+            {
+                DateTime maxDate = DateTime.MinValue;
+                foreach (var date in data[sid].Keys)
+                {
+                    if (maxDate < date)
+                        maxDate = date;
+                }
+                output.Add(data[sid][maxDate]);
+            }
+            output.EnrichInformation();
+            return output;
+        }
 
         public IEnumerable<KeyValuePair<string, DateTime>> GetKeyPoints()
         {
@@ -140,7 +140,7 @@ namespace PingCastle.HealthCheck
                 if (min != DateTime.MinValue)
                     output.Add(data[sid][min]);
             }
-			output.EnrichInformation();
+            output.EnrichInformation();
             return output;
         }
 

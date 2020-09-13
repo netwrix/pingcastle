@@ -9,14 +9,14 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("S-C-Reversible", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleModel("S-C-Reversible", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleDurANSSI(3, "reversible_password", "Accounts with passwords stored using reversible encryption")]
     public class HealthCheckRuleStaledReversibleEncryptionComputer : RuleBase<HealthCheckData>
     {
         protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
-			return healthcheckData.ComputerAccountData.NumberReversibleEncryption;
+            return healthcheckData.ComputerAccountData.NumberReversibleEncryption;
         }
     }
 }

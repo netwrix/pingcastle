@@ -9,15 +9,16 @@ using PingCastle.Rules;
 
 namespace PingCastle.HealthCheck.Rules
 {
-	[RuleModel("A-LMHashAuthorized", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-	[RuleANSSI("R37", "paragraph.3.6.2.1")]
-	//[RuleBSI("M 2.412")]
-	[RuleSTIG("V-3379", "The system is configured to store the LAN Manager hash of the password in the SAM.", STIGFramework.Windows2008)]
+    [RuleModel("A-LMHashAuthorized", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleANSSI("R37", "paragraph.3.6.2.1")]
+
+    //[RuleBSI("M 2.412")]
+    [RuleSTIG("V-3379", "The system is configured to store the LAN Manager hash of the password in the SAM.", STIGFramework.Windows2008)]
     [RuleMaturityLevel(1)]
     public class HealthCheckRuleAnomalyLMHash : RuleBase<HealthCheckData>
     {
-		protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthCheckData healthcheckData)
         {
             if (healthcheckData.GPOLsaPolicy != null)
             {
@@ -49,7 +50,7 @@ namespace PingCastle.HealthCheck.Rules
                     }
                 }
             }
-			return null;
+            return null;
         }
     }
 }

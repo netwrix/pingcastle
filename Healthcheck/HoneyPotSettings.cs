@@ -2,97 +2,94 @@
 
 namespace PingCastle.HealthCheck
 {
-	internal class HoneyPotSettings : ConfigurationSection
-	{
-		static HoneyPotSettings cachedSettings = null;
-		public static HoneyPotSettings GetEncryptionSettings()
-		{
-			if (cachedSettings == null)
-				cachedSettings = ConfigurationManager.GetSection("honeyPotSettings") as HoneyPotSettings;
-			return cachedSettings;
-		}
+    internal class HoneyPotSettings : ConfigurationSection
+    {
+        static HoneyPotSettings cachedSettings = null;
 
-		[ConfigurationProperty("HoneyPots", IsRequired = false)]
-		public HoneyPotsCollection HoneyPots
-		{
-			get
-			{
-				return base["HoneyPots"] as HoneyPotsCollection;
-			}
-		}
-	}
+        public static HoneyPotSettings GetEncryptionSettings()
+        {
+            if (cachedSettings == null)
+                cachedSettings = ConfigurationManager.GetSection("honeyPotSettings") as HoneyPotSettings;
+            return cachedSettings;
+        }
 
-	[ConfigurationCollection(typeof(SingleHoneyPotSettings), AddItemName = "HoneyPot")]
-	internal class HoneyPotsCollection : ConfigurationElementCollection
-	{
-		public HoneyPotsCollection()
-		{
+        [ConfigurationProperty("HoneyPots", IsRequired = false)]
+        public HoneyPotsCollection HoneyPots
+        {
+            get
+            {
+                return base["HoneyPots"] as HoneyPotsCollection;
+            }
+        }
+    }
 
-		}
+    [ConfigurationCollection(typeof(SingleHoneyPotSettings), AddItemName = "HoneyPot")]
+    internal class HoneyPotsCollection : ConfigurationElementCollection
+    {
+        public HoneyPotsCollection() { }
 
-		public SingleHoneyPotSettings this[int index]
-		{
-			get { return (SingleHoneyPotSettings)BaseGet(index); }
-			set
-			{
-				if (BaseGet(index) != null)
-				{
-					BaseRemoveAt(index);
-				}
-				BaseAdd(index, value);
-			}
-		}
+        public SingleHoneyPotSettings this[int index]
+        {
+            get { return (SingleHoneyPotSettings)BaseGet(index); }
+            set
+            {
+                if (BaseGet(index) != null)
+                {
+                    BaseRemoveAt(index);
+                }
+                BaseAdd(index, value);
+            }
+        }
 
-		public void Add(SingleHoneyPotSettings pluginConfig)
-		{
-			BaseAdd(pluginConfig);
-		}
+        public void Add(SingleHoneyPotSettings pluginConfig)
+        {
+            BaseAdd(pluginConfig);
+        }
 
-		public void Clear()
-		{
-			BaseClear();
-		}
+        public void Clear()
+        {
+            BaseClear();
+        }
 
-		protected override ConfigurationElement CreateNewElement()
-		{
-			return new SingleHoneyPotSettings();
-		}
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new SingleHoneyPotSettings();
+        }
 
-		protected override object GetElementKey(ConfigurationElement element)
-		{
-			return ((SingleHoneyPotSettings)element).samAccountName;
-		}
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return ((SingleHoneyPotSettings)element).samAccountName;
+        }
 
-		public void Remove(SingleHoneyPotSettings pluginConfig)
-		{
-			BaseRemove(pluginConfig.samAccountName);
-		}
+        public void Remove(SingleHoneyPotSettings pluginConfig)
+        {
+            BaseRemove(pluginConfig.samAccountName);
+        }
 
-		public void RemoveAt(int index)
-		{
-			BaseRemoveAt(index);
-		}
+        public void RemoveAt(int index)
+        {
+            BaseRemoveAt(index);
+        }
 
-		public void Remove(string name)
-		{
-			BaseRemove(name);
-		}
+        public void Remove(string name)
+        {
+            BaseRemove(name);
+        }
+    }
 
-	}
-
-	public class SingleHoneyPotSettings : ConfigurationElement
-	{
-		[ConfigurationProperty("samAccountName", IsKey = true, IsRequired = true)]
-		public string samAccountName
-		{
-			get
-			{
-				return base["samAccountName"] as string;
-			}
-			set
-			{
-				base["samAccountName"] = value;
-			}
-		}
-	}
+    public class SingleHoneyPotSettings : ConfigurationElement
+    {
+        [ConfigurationProperty("samAccountName", IsKey = true, IsRequired = true)]
+        public string samAccountName
+        {
+            get
+            {
+                return base["samAccountName"] as string;
+            }
+            set
+            {
+                base["samAccountName"] = value;
+            }
+        }
+    }
 }

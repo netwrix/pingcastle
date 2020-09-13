@@ -4,15 +4,16 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using Microsoft.Win32;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Microsoft.Win32;
 
-namespace PingCastle.misc
+namespace PingCastle.Misc
 {
 	[DebuggerDisplay("{Key}: {Value}")]
     public class RegistryPolRecord

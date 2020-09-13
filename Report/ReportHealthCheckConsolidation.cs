@@ -11,7 +11,7 @@ using System.Text;
 using PingCastle.Data;
 using PingCastle.HealthCheck;
 using PingCastle.Rules;
-using PingCastle.template;
+using PingCastle.Template;
 
 namespace PingCastle.Report
 {

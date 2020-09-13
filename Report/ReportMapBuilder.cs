@@ -6,11 +6,11 @@
 //
 using PingCastle.Data;
 using PingCastle.HealthCheck;
-using PingCastle.template;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using PingCastle.Template;
 
 namespace PingCastle.Report
 {

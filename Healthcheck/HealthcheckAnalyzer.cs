@@ -20,7 +20,6 @@ using System.DirectoryServices;
 using System.Security.Principal;
 using System.Security.AccessControl;
 using System.Net.NetworkInformation;
-using PingCastle.misc;
 using System.Security.Cryptography.X509Certificates;
 using PingCastle.RPC;
 using PingCastle.Scanners;
@@ -31,6 +30,7 @@ using PingCastle.Graph.Reporting;
 using System.Net.Sockets;
 using System.Net.Security;
 using System.Security.Authentication;
+using PingCastle.Misc;
 
 namespace PingCastle.HealthCheck
 {

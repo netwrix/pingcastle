@@ -8,8 +8,8 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using PingCastle.Rules;
 using System.Security.Cryptography;
-using PingCastle.misc;
 using System.Diagnostics;
+using PingCastle.Misc;
 
 namespace PingCastle.HealthCheck.Rules
 {

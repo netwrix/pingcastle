@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,7 +14,7 @@ using System.Security.AccessControl;
 using System.Security.Permissions;
 using System.Security.Principal;
 
-namespace PingCastle.shares
+namespace PingCastle.Shares
 {
     public class ShareEnumerator
     {

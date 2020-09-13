@@ -8,7 +8,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace PingCastle.misc
+namespace PingCastle.Misc
 {
     public class BlockingQueue<T>
     {

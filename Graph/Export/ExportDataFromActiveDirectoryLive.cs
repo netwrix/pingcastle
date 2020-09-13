@@ -8,7 +8,6 @@ using PingCastle.ADWS;
 using PingCastle.Data;
 using PingCastle.Graph.Database;
 using PingCastle.Graph.Reporting;
-using PingCastle.misc;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,6 +15,7 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Threading;
+using PingCastle.Misc;
 
 namespace PingCastle.Graph.Export
 {

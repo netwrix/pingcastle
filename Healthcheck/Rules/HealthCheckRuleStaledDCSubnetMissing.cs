@@ -7,8 +7,8 @@
 
 using System.Collections.Generic;
 using System.Net;
+using PingCastle.Misc;
 using PingCastle.Rules;
-using PingCastle.misc;
 
 namespace PingCastle.HealthCheck.Rules
 {

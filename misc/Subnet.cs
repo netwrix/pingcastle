@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace PingCastle.misc
+namespace PingCastle.Misc
 {
 	public class Subnet
 	{

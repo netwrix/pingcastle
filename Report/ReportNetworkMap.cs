@@ -1,13 +1,13 @@
 ﻿using PingCastle.Data;
 using PingCastle.HealthCheck;
-using PingCastle.misc;
-using PingCastle.template;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Reflection;
+using PingCastle.Misc;
+using PingCastle.Template;
 
 namespace PingCastle.Report
 {

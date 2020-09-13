@@ -184,8 +184,8 @@
     <Compile Include="HealthCheck\Rules\HealthCheckRulePrivilegedDelegationKeyAdmin.cs" />
     <Compile Include="HealthCheck\Rules\HealthCheckRulePrivilegedExchangeAdminSDHolder.cs" />
     <Compile Include="HealthCheck\Rules\HealthCheckRulePrivilegedUnconstrainedDelegation.cs" />
-    <Compile Include="misc\ROCAVulnerabilityTester.cs" />
-    <Compile Include="misc\Subnet.cs" />
+    <Compile Include="Misc\ROCAVulnerabilityTester.cs" />
+    <Compile Include="Misc\Subnet.cs" />
     <Compile Include="PingCastleException.cs" />
     <Compile Include="PingCastleFactory.cs" />
     <Compile Include="Report\IPingCastleReportUser.cs" />
@@ -303,7 +303,7 @@
     <Compile Include="Scanners\startupScanner.cs" />
     <Compile Include="Scanners\localAdminsEnumerator.cs" />
     <Compile Include="Scanners\localAdminsScanner.cs" />
-    <Compile Include="misc\BlockingQueue.cs" />
+    <Compile Include="Misc\BlockingQueue.cs" />
     <Compile Include="HealthCheck\HealthcheckAnalyzer.cs" />
     <Compile Include="Data\HealthCheckData.cs" />
     <Compile Include="Report\ReportMapBuilder.cs" />
@@ -316,7 +316,7 @@
     <Compile Include="Graph\Reporting\ReportGenerator.cs" />
     <Compile Include="ADWS\soapheader.cs" />
     <Compile Include="ADWS\wse.cs" />
-    <Compile Include="misc\RegistryPolReader.cs" />
+    <Compile Include="Misc\RegistryPolReader.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="RPC\lsa.cs" />
     <Compile Include="RPC\nativemethods.cs" />
@@ -326,10 +326,10 @@
     <Compile Include="RPC\samr.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="shares\ShareEnumerator.cs" />
-    <Compile Include="shares\ShareScanner.cs" />
+    <Compile Include="Shares\ShareEnumerator.cs" />
+    <Compile Include="Shares\ShareScanner.cs" />
     <Compile Include="Tasks.cs" />
-    <Compile Include="template\TemplateManager.cs" />
+    <Compile Include="Template\TemplateManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">
@@ -338,42 +338,42 @@
     <EmbeddedResource Include="HealthCheck\Rules\RuleDescription.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="template\responsivetemplate.html.gz" />
-    <EmbeddedResource Include="template\vis.min.css.gz" />
-    <EmbeddedResource Include="template\vis.min.js.gz" />
-    <EmbeddedResource Include="template\dataTables.bootstrap4.min.css.gz" />
-    <EmbeddedResource Include="template\dataTables.bootstrap4.min.js.gz" />
-    <EmbeddedResource Include="template\jquery.dataTables.min.js.gz" />
-    <EmbeddedResource Include="template\bootstrap.min.css.gz" />
-    <EmbeddedResource Include="template\bootstrap.min.js.gz" />
-    <EmbeddedResource Include="template\jquery.min.js.gz" />
-    <EmbeddedResource Include="template\popper.min.js.gz" />
-    <Content Include="template\ProcessTemplate.ps1" />
-    <EmbeddedResource Include="template\ReportBase.css.gz" />
-    <EmbeddedResource Include="template\ReportCompromiseGraph.css.gz" />
-    <EmbeddedResource Include="template\ReportHealthCheckConsolidation.css.gz" />
-    <EmbeddedResource Include="template\ReportHealthCheckRules.css.gz" />
-    <EmbeddedResource Include="template\ReportMapBuilder.css.gz" />
-    <EmbeddedResource Include="template\ReportNetworkMap.css.gz" />
-    <EmbeddedResource Include="template\ReportRiskControls.css.gz" />
-    <EmbeddedResource Include="template\ReportCompromiseGraph.js.gz" />
-    <EmbeddedResource Include="template\ReportMapBuilder.js.gz" />
-    <EmbeddedResource Include="template\ReportNetworkMap.js.gz" />
+    <EmbeddedResource Include="Template\responsivetemplate.html.gz" />
+    <EmbeddedResource Include="Template\vis.min.css.gz" />
+    <EmbeddedResource Include="Template\vis.min.js.gz" />
+    <EmbeddedResource Include="Template\dataTables.bootstrap4.min.css.gz" />
+    <EmbeddedResource Include="Template\dataTables.bootstrap4.min.js.gz" />
+    <EmbeddedResource Include="Template\jquery.dataTables.min.js.gz" />
+    <EmbeddedResource Include="Template\bootstrap.min.css.gz" />
+    <EmbeddedResource Include="Template\bootstrap.min.js.gz" />
+    <EmbeddedResource Include="Template\jquery.min.js.gz" />
+    <EmbeddedResource Include="Template\popper.min.js.gz" />
+    <Content Include="Template\ProcessTemplate.ps1" />
+    <EmbeddedResource Include="Template\ReportBase.css.gz" />
+    <EmbeddedResource Include="Template\ReportCompromiseGraph.css.gz" />
+    <EmbeddedResource Include="Template\ReportHealthCheckConsolidation.css.gz" />
+    <EmbeddedResource Include="Template\ReportHealthCheckRules.css.gz" />
+    <EmbeddedResource Include="Template\ReportMapBuilder.css.gz" />
+    <EmbeddedResource Include="Template\ReportNetworkMap.css.gz" />
+    <EmbeddedResource Include="Template\ReportRiskControls.css.gz" />
+    <EmbeddedResource Include="Template\ReportCompromiseGraph.js.gz" />
+    <EmbeddedResource Include="Template\ReportMapBuilder.js.gz" />
+    <EmbeddedResource Include="Template\ReportNetworkMap.js.gz" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="changelog.txt" />
     <Content Include="pingcastle.ico" />
-    <Content Include="template\ReportBase.css" />
-    <Content Include="template\ReportCompromiseGraph.css" />
-    <Content Include="template\ReportCompromiseGraph.js" />
-    <Content Include="template\ReportHealthCheckConsolidation.css" />
-    <Content Include="template\ReportHealthCheckRules.css" />
-    <Content Include="template\ReportMapBuilder.css" />
-    <Content Include="template\ReportMapBuilder.js" />
-    <Content Include="template\ReportNetworkMap.css" />
-    <Content Include="template\ReportNetworkMap.js" />
-    <Content Include="template\ReportRiskControls.css" />
-    <Content Include="template\responsivetemplate.html" />
+    <Content Include="Template\ReportBase.css" />
+    <Content Include="Template\ReportCompromiseGraph.css" />
+    <Content Include="Template\ReportCompromiseGraph.js" />
+    <Content Include="Template\ReportHealthCheckConsolidation.css" />
+    <Content Include="Template\ReportHealthCheckRules.css" />
+    <Content Include="Template\ReportMapBuilder.css" />
+    <Content Include="Template\ReportMapBuilder.js" />
+    <Content Include="Template\ReportNetworkMap.css" />
+    <Content Include="Template\ReportNetworkMap.js" />
+    <Content Include="Template\ReportRiskControls.css" />
+    <Content Include="Template\responsivetemplate.html" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

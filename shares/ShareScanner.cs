@@ -5,11 +5,11 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 
-using PingCastle.Scanners;
 using System;
 using System.Net.Sockets;
+using PingCastle.Scanners;
 
-namespace PingCastle.shares
+namespace PingCastle.Shares
 {
 	public class ShareScanner : ScannerBase
     {

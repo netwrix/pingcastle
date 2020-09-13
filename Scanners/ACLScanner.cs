@@ -1,7 +1,6 @@
 ﻿using PingCastle.ADWS;
 using PingCastle.Graph.Export;
 using PingCastle.Graph.Database;
-using PingCastle.misc;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,6 +10,7 @@ using System.Net;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Threading;
+using PingCastle.Misc;
 
 namespace PingCastle.Scanners
 {

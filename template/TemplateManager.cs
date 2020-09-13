@@ -9,7 +9,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 
-namespace PingCastle.template
+namespace PingCastle.Template
 {
     public class TemplateManager
     {

@@ -1,10 +1,10 @@
 ﻿using PingCastle.HealthCheck;
 using PingCastle.Rules;
-using PingCastle.template;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Resources;
+using PingCastle.Template;
 
 namespace PingCastle.Report
 {

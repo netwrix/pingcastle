@@ -7,7 +7,6 @@
 
 using PingCastle.HealthCheck;
 using PingCastle.Scanners;
-using PingCastle.misc;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,6 +18,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using PingCastle.Data;
+using PingCastle.Misc;
 using PingCastle.Report;
 
 namespace PingCastle

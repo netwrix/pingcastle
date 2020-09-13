@@ -186,7 +186,7 @@ namespace PingCastle.Rules
                     return rule.Title;
                 }
             }
-            return String.Empty;
+            return string.Empty;
         }
 
         public static RuleBase<T> GetRuleFromID(string ruleid)

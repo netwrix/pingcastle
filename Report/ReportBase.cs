@@ -76,7 +76,7 @@ namespace PingCastle.Report
             reportSB = reportSB.Replace("<%=Footer%>", sb.ToString());
 
             var html = reportSB.ToString();
-            if (!String.IsNullOrEmpty(filename))
+            if (!string.IsNullOrEmpty(filename))
             {
                 File.WriteAllText(filename, html);
             }
@@ -518,7 +518,7 @@ namespace PingCastle.Report
 				<li class=""nav-item active"">
 					<a class=""nav-link p-3"" href=""#"" role=""button"">
 ");
-            if (String.IsNullOrEmpty(domain))
+            if (string.IsNullOrEmpty(domain))
                 Add(title);
             else
                 Add(domain);
@@ -777,7 +777,7 @@ namespace PingCastle.Report
         protected void GenerateTabHeader(string title, string selectedTab, bool defaultIfTabEmpty = false)
         {
             string id = GenerateId(title);
-            bool isActive = (String.IsNullOrEmpty(selectedTab) ? defaultIfTabEmpty : selectedTab == id);
+            bool isActive = (string.IsNullOrEmpty(selectedTab) ? defaultIfTabEmpty : selectedTab == id);
             Add(@"<li class=""nav-item""><a href=""#");
             Add(id);
             Add(@""" class=""nav-link ");
@@ -795,7 +795,7 @@ namespace PingCastle.Report
         protected void GenerateSectionFluid(string title, GenerateContentDelegate generateContent, string selectedTab, bool defaultIfTabEmpty = false)
         {
             string id = GenerateId(title);
-            bool isActive = (String.IsNullOrEmpty(selectedTab) ? defaultIfTabEmpty : selectedTab == id);
+            bool isActive = (string.IsNullOrEmpty(selectedTab) ? defaultIfTabEmpty : selectedTab == id);
             Add(@"
 <!-- Section ");
             Add(title);
@@ -840,7 +840,7 @@ namespace PingCastle.Report
                 return -1;
             else if (ios2 > 0)
                 return 1;
-            return String.Compare(os1, os2);
+            return string.Compare(os1, os2);
         }
 
         // this function is used to sort operating system based not on name but on its order
@@ -1115,9 +1115,9 @@ namespace PingCastle.Report
         protected string PrintDomain(DomainKey key)
         {
             string label = key.DomainName;
-            if (String.IsNullOrEmpty(label))
+            if (string.IsNullOrEmpty(label))
             {
-                if (!String.IsNullOrEmpty(key.DomainNetBIOS))
+                if (!string.IsNullOrEmpty(key.DomainNetBIOS))
                     label = key.DomainNetBIOS;
                 else
                     label = key.DomainSID;
@@ -1125,14 +1125,14 @@ namespace PingCastle.Report
             if (GetUrlCallback == null)
                 return label;
             string htmlData = GetUrlCallback(key, label);
-            if (String.IsNullOrEmpty(htmlData))
+            if (string.IsNullOrEmpty(htmlData))
                 return label;
             return htmlData;
         }
 
         protected string NewLineToBR(string data)
         {
-            if (String.IsNullOrEmpty(data))
+            if (string.IsNullOrEmpty(data))
                 return data;
             return data.Replace("\r\n", "<br>\r\n");
         }

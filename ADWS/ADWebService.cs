@@ -186,12 +186,12 @@ namespace PingCastle.ADWS
                 {
                     apart1[i] = apart[apart.Length - 1 - i];
                 }
-                return String.Join(",", apart1);
+                return string.Join(",", apart1);
             }
 
             public int CompareTo(OUExploration other)
             {
-                return String.Compare(GetSortKey(OU), GetSortKey(other.OU));
+                return string.Compare(GetSortKey(OU), GetSortKey(other.OU));
             }
         }
 

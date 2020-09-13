@@ -91,7 +91,7 @@ namespace PingCastle.Data
         public static bool operator ==(DomainKey a, DomainKey b)
         {
             // If both are null, or both are same instance, return true.
-            if (Object.ReferenceEquals(a, b))
+            if (object.ReferenceEquals(a, b))
             {
                 return true;
             }
@@ -118,9 +118,9 @@ namespace PingCastle.Data
 
         public int CompareTo(DomainKey other)
         {
-            int res = String.Compare(DomainName, other.DomainName, true);
-            if (res == 0 && !String.IsNullOrEmpty(DomainSID) && !String.IsNullOrEmpty(other.DomainSID))
-                res = String.Compare(DomainSID, other.DomainSID, true);
+            int res = string.Compare(DomainName, other.DomainName, true);
+            if (res == 0 && !string.IsNullOrEmpty(DomainSID) && !string.IsNullOrEmpty(other.DomainSID))
+                res = string.Compare(DomainSID, other.DomainSID, true);
             else
             {
                 // if a SID is being associated to one domain, propagate this information
@@ -141,7 +141,7 @@ namespace PingCastle.Data
 
         public static bool IsDuplicateNameButNotDuplicateDomain(DomainKey a, DomainKey b)
         {
-            return (a != null && b != null && String.Compare(a.DomainName, b.DomainName, StringComparison.InvariantCultureIgnoreCase) == 0
+            return (a != null && b != null && string.Compare(a.DomainName, b.DomainName, StringComparison.InvariantCultureIgnoreCase) == 0
                     && a.DomainSID != null && b.DomainSID != null
                     && a.DomainSID != b.DomainSID);
         }

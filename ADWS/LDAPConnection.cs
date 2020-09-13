@@ -72,7 +72,7 @@ namespace PingCastle.ADWS
                         clsDS.PropertiesToLoad.Add(property);
 
                         // prepare the flag for the ntsecuritydescriptor
-                        if (String.Compare("nTSecurityDescriptor", property, true) == 0)
+                        if (string.Compare("nTSecurityDescriptor", property, true) == 0)
                         {
                             nTSecurityDescriptor = true;
                         }

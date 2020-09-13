@@ -145,8 +145,8 @@ namespace PingCastle.Report
 
         public static string EscapeJsonString(string src)
         {
-            if (String.IsNullOrEmpty(src))
-                return String.Empty;
+            if (string.IsNullOrEmpty(src))
+                return string.Empty;
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
             int start = 0;

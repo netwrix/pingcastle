@@ -254,7 +254,7 @@ $(document).ready(function(){
                         }
                         line += "<td class=\"model_cell " + tdclass + "\"><div class=\"div_model\" placement=\"auto\" data-toggle=\"popover\" title=\"" +
                                 tooltip + "\" data-html=\"true\" data-content=\"" +
-                                "<p>" + _resourceManager.GetString(model.ToString() + "_Detail") + "</p>" + (String.IsNullOrEmpty(tooltipdetail) ? "No rule matched" : "<p><ul>" + tooltipdetail + "</ul></p>") + "\"><span class=\"small\">" + modelstring + "</span></div></td>";
+                                "<p>" + _resourceManager.GetString(model.ToString() + "_Detail") + "</p>" + (string.IsNullOrEmpty(tooltipdetail) ? "No rule matched" : "<p><ul>" + tooltipdetail + "</ul></p>") + "\"><span class=\"small\">" + modelstring + "</span></div></td>";
                     }
                     else
                         line += "<td class=\"model_empty_cell\"></td>";
@@ -301,7 +301,7 @@ $(document).ready(function(){
                     Add("<strong>Points:</strong><p>");
                     Add(NewLineToBR(hcrule.GetComputationModelString()));
                     Add("</p>\r\n");
-                    if (!String.IsNullOrEmpty(hcrule.Documentation))
+                    if (!string.IsNullOrEmpty(hcrule.Documentation))
                     {
                         Add("<strong>Documentation:</strong><p>");
                         Add(hcrule.Documentation);

@@ -34,7 +34,7 @@ namespace PingCastle.RPC
         public bool UseNullSession { get; set; }
 
         // 5 seconds
-        public UInt32 RPCTimeOut = 5000;
+        public uint RPCTimeOut = 5000;
 
         [StructLayout(LayoutKind.Sequential)]
         private struct COMM_FAULT_OFFSETS
@@ -249,7 +249,7 @@ namespace PingCastle.RPC
             string server = Marshal.PtrToStringUni(IntPtrserver);
             IntPtr bindingstring = IntPtr.Zero;
             IntPtr binding = IntPtr.Zero;
-            Int32 status;
+            int status;
 
             Trace.WriteLine("Binding to " + server + " " + PipeName);
             status = NativeMethods.RpcStringBindingCompose(null, "ncacn_np", server, PipeName, null, out bindingstring);
@@ -301,11 +301,11 @@ namespace PingCastle.RPC
             return binding;
         }
 
-        protected Int32 Bind(string server, out IntPtr binding)
+        protected int Bind(string server, out IntPtr binding)
         {
             IntPtr bindingstring = IntPtr.Zero;
             binding = IntPtr.Zero;
-            Int32 status;
+            int status;
 
             status = NativeMethods.RpcStringBindingCompose(null, "ncacn_ip_tcp", server, "135", null, out bindingstring);
             if (status != 0)

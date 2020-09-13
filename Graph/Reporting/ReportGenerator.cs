@@ -400,7 +400,7 @@ namespace PingCastle.Graph.Reporting
                         data.Sid = domainSid.Value;
                         foreach (var domain in domains)
                         {
-                            if (String.Equals(domain.DomainSid.Value, data.Sid, StringComparison.InvariantCultureIgnoreCase))
+                            if (string.Equals(domain.DomainSid.Value, data.Sid, StringComparison.InvariantCultureIgnoreCase))
                             {
                                 data.FQDN = domain.DnsDomainName;
                                 data.Netbios = domain.NetbiosDomainName;
@@ -415,7 +415,7 @@ namespace PingCastle.Graph.Reporting
                     }
                     if (node.Shortname.Contains("\\"))
                     {
-                        if (String.IsNullOrEmpty(data.Netbios))
+                        if (string.IsNullOrEmpty(data.Netbios))
                         {
                             data.Netbios = node.Shortname.Split('\\')[0];
                         }
@@ -438,7 +438,7 @@ namespace PingCastle.Graph.Reporting
                 (SingleCompromiseGraphDependancyData a, SingleCompromiseGraphDependancyData b)
                     =>
                 {
-                    return String.Compare(a.Netbios, b.Netbios);
+                    return string.Compare(a.Netbios, b.Netbios);
                 }
             );
         }
@@ -448,7 +448,7 @@ namespace PingCastle.Graph.Reporting
             singleCompromiseData.DeletedObjects = new List<SingleCompromiseGraphDeletedData>();
             foreach (var node in chartNodes.Values)
             {
-                if (String.Equals(node.Type, "foreignsecurityprincipal", StringComparison.InvariantCultureIgnoreCase))
+                if (string.Equals(node.Type, "foreignsecurityprincipal", StringComparison.InvariantCultureIgnoreCase))
                 {
                     // ignore everything but deleted accounts
                     if (node.Sid.StartsWith(domainInfo.DomainSid.Value + "-"))
@@ -1008,8 +1008,8 @@ namespace PingCastle.Graph.Reporting
 
         private bool IsStopNode(Node node)
         {
-            if ((!String.IsNullOrEmpty(node.Sid) && stopNodes.Contains(node.Sid))
-                || (node.ADItem != null && !String.IsNullOrEmpty(node.ADItem.DistinguishedName) && stopNodes.Contains(node.ADItem.DistinguishedName)))
+            if ((!string.IsNullOrEmpty(node.Sid) && stopNodes.Contains(node.Sid))
+                || (node.ADItem != null && !string.IsNullOrEmpty(node.ADItem.DistinguishedName) && stopNodes.Contains(node.ADItem.DistinguishedName)))
             {
                 return true;
             }

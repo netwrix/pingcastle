@@ -130,7 +130,7 @@ You can enter additional service to check. Enter them one by one and complete wi
 Use the name provided in the service list. Example: Enter 'SepMasterService' for the service 'Symantec Endpoint Protection'.
 Or just press enter to use the default.";
                 input = ConsoleMenu.AskForString();
-                if (!String.IsNullOrEmpty(input))
+                if (!string.IsNullOrEmpty(input))
                 {
                     if (!customService.Contains(input))
                     {

@@ -33,177 +33,177 @@ namespace PingCastle.Scanners
         public struct SMB2_Header
         {
             [FieldOffset(0)]
-            public UInt32 ProtocolId;
+            public uint ProtocolId;
             [FieldOffset(4)]
-            public UInt16 StructureSize;
+            public ushort StructureSize;
             [FieldOffset(6)]
-            public UInt16 CreditCharge;
+            public ushort CreditCharge;
             [FieldOffset(8)]
-            public UInt32 Status; // to do SMB3
+            public uint Status; // to do SMB3
             [FieldOffset(12)]
-            public UInt16 Command;
+            public ushort Command;
             [FieldOffset(14)]
-            public UInt16 CreditRequest_Response;
+            public ushort CreditRequest_Response;
             [FieldOffset(16)]
-            public UInt32 Flags;
+            public uint Flags;
             [FieldOffset(20)]
-            public UInt32 NextCommand;
+            public uint NextCommand;
             [FieldOffset(24)]
-            public UInt64 MessageId;
+            public ulong MessageId;
             [FieldOffset(32)]
-            public UInt32 Reserved;
+            public uint Reserved;
             [FieldOffset(36)]
-            public UInt32 TreeId;
+            public uint TreeId;
             [FieldOffset(40)]
-            public UInt64 SessionId;
+            public ulong SessionId;
             [FieldOffset(48)]
-            public UInt64 Signature1;
+            public ulong Signature1;
             [FieldOffset(56)]
-            public UInt64 Signature2;
+            public ulong Signature2;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
         public struct SMB2_NegotiateRequest
         {
             [FieldOffset(0)]
-            public UInt16 StructureSize;
+            public ushort StructureSize;
             [FieldOffset(2)]
-            public UInt16 DialectCount;
+            public ushort DialectCount;
             [FieldOffset(4)]
-            public UInt16 SecurityMode;
+            public ushort SecurityMode;
             [FieldOffset(6)]
-            public UInt16 Reserved;
+            public ushort Reserved;
             [FieldOffset(8)]
-            public UInt32 Capabilities;
+            public uint Capabilities;
             [FieldOffset(12)]
             public Guid ClientGuid;
             [FieldOffset(28)]
-            public UInt64 ClientStartTime;
+            public ulong ClientStartTime;
             [FieldOffset(36)]
-            public UInt16 DialectToTest;
+            public ushort DialectToTest;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
         public struct SMB2_NegotiateResponse
         {
             [FieldOffset(0)]
-            public UInt16 StructureSize;
+            public ushort StructureSize;
             [FieldOffset(2)]
             public byte SecurityMode;
             [FieldOffset(3)]
-            public UInt16 Dialect;
+            public ushort Dialect;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
         public struct SMB2_SessionSetupResponse
         {
             [FieldOffset(0)]
-            public UInt16 StructureSize;
+            public ushort StructureSize;
             [FieldOffset(2)]
-            public UInt16 SessionFlags;
+            public ushort SessionFlags;
             [FieldOffset(4)]
-            public UInt16 SecurityBufferOffset;
+            public ushort SecurityBufferOffset;
             [FieldOffset(6)]
-            public UInt16 SecurityBufferLength;
+            public ushort SecurityBufferLength;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
         public struct SMB2_SessionSetup
         {
             [FieldOffset(0)]
-            public UInt16 StructureSize;
+            public ushort StructureSize;
             [FieldOffset(2)]
             public byte Flags;
             [FieldOffset(3)]
             public byte SecurityMode;
             [FieldOffset(4)]
-            public UInt32 Capabilities;
+            public uint Capabilities;
             [FieldOffset(8)]
-            public UInt32 Channel;
+            public uint Channel;
             [FieldOffset(12)]
-            public UInt16 SecurityBufferOffset;
+            public ushort SecurityBufferOffset;
             [FieldOffset(14)]
-            public UInt16 SecurityBufferLength;
+            public ushort SecurityBufferLength;
             [FieldOffset(16)]
-            public UInt64 PreviousSessionId;
+            public ulong PreviousSessionId;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
         public struct SMB2_TreeConnect
         {
             [FieldOffset(0)]
-            public UInt16 StructureSize;
+            public ushort StructureSize;
             [FieldOffset(2)]
-            public UInt16 Flags;
+            public ushort Flags;
             [FieldOffset(4)]
-            public UInt16 PathOffset;
+            public ushort PathOffset;
             [FieldOffset(6)]
-            public UInt16 PathLength;
+            public ushort PathLength;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
         public struct SMB2_TreeConnectResponse
         {
             [FieldOffset(0)]
-            public UInt16 StructureSize;
+            public ushort StructureSize;
             [FieldOffset(2)]
             public byte ShareType;
             [FieldOffset(4)]
-            public UInt32 ShareFlags;
+            public uint ShareFlags;
             [FieldOffset(8)]
-            public UInt32 Capabilities;
+            public uint Capabilities;
             [FieldOffset(12)]
-            public UInt32 MaximalAccess;
+            public uint MaximalAccess;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
         public struct SMB2_IOCTLRequest
         {
             [FieldOffset(0)]
-            public UInt16 StructureSize;
+            public ushort StructureSize;
             [FieldOffset(4)]
-            public UInt32 CtlCode;
+            public uint CtlCode;
             [FieldOffset(8)]
             public Guid FileId;
             [FieldOffset(24)]
-            public UInt32 InputOffset;
+            public uint InputOffset;
             [FieldOffset(28)]
-            public UInt32 InputCount;
+            public uint InputCount;
             [FieldOffset(32)]
-            public UInt32 MaxInputResponse;
+            public uint MaxInputResponse;
             [FieldOffset(36)]
-            public UInt32 OutputOffset;
+            public uint OutputOffset;
             [FieldOffset(40)]
-            public UInt32 OutputCount;
+            public uint OutputCount;
             [FieldOffset(44)]
-            public UInt32 MaxOutputResponse;
+            public uint MaxOutputResponse;
             [FieldOffset(48)]
-            public UInt32 Flags;
+            public uint Flags;
             [FieldOffset(52)]
-            public UInt32 Reserved2;
+            public uint Reserved2;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
         public struct SMB2_IOCTLResponse
         {
             [FieldOffset(0)]
-            public UInt16 StructureSize;
+            public ushort StructureSize;
             [FieldOffset(4)]
-            public UInt32 CtlCode;
+            public uint CtlCode;
             [FieldOffset(8)]
             public Guid FileId;
             [FieldOffset(24)]
-            public UInt32 InputOffset;
+            public uint InputOffset;
             [FieldOffset(28)]
-            public UInt32 InputCount;
+            public uint InputCount;
             [FieldOffset(32)]
-            public UInt32 OutputOffset;
+            public uint OutputOffset;
             [FieldOffset(36)]
-            public UInt32 OutputCount;
+            public uint OutputCount;
             [FieldOffset(40)]
-            public UInt32 Flags;
+            public uint Flags;
             [FieldOffset(44)]
-            public UInt32 Reserved2;
+            public uint Reserved2;
         }
 
         [Flags]
@@ -217,11 +217,11 @@ namespace PingCastle.Scanners
         public struct SMB2_NETWORK_INTERFACE_INFO
         {
             public int Next;
-            public UInt32 IfIndex;
+            public uint IfIndex;
             public SMB2_NETWORK_INTERFACE_INFO_Capability Capability;
-            public UInt32 Reserved;
-            public UInt64 LinkSpeed;
-            public UInt16 SockAddr_Storage_Family;
+            public uint Reserved;
+            public ulong LinkSpeed;
+            public ushort SockAddr_Storage_Family;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 14)]
             public byte[] SockAddr_Storage_Buffer;
         }
@@ -270,7 +270,7 @@ namespace PingCastle.Scanners
             request.DialectCount = 1;
             request.SecurityMode = 1; // signing enabled
             request.ClientGuid = Guid.NewGuid();
-            request.DialectToTest = (UInt16)DialectToTest;
+            request.DialectToTest = (ushort)DialectToTest;
             request.Capabilities = 1; //DFS
             return getBytes(request);
         }

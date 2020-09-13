@@ -199,7 +199,7 @@ namespace PingCastle.Report
                         }
                         line += "<td class=\"model_cell " + tdclass + "\"><div class=\"div_model\" placement=\"auto right\" data-toggle=\"popover\" title=\"" +
                                 tooltip + "\" data-html=\"true\" data-content=\"" +
-                                (String.IsNullOrEmpty(tooltipdetail) ? "No rule matched" : "<p>" + tooltipdetail + "</p>") + "\"><span class=\"small\">" + modelstring + "</span></div></td>";
+                                (string.IsNullOrEmpty(tooltipdetail) ? "No rule matched" : "<p>" + tooltipdetail + "</p>") + "\"><span class=\"small\">" + modelstring + "</span></div></td>";
                     }
                     else
                         line += "<td class=\"model_empty_cell\"></td>";
@@ -341,17 +341,17 @@ namespace PingCastle.Report
                         Add("</p>\r\n<strong>Points:</strong><p>");
                         Add(NewLineToBR(hcrule.GetComputationModelString()));
                         Add("</p>\r\n");
-                        if (!String.IsNullOrEmpty(hcrule.Documentation))
+                        if (!string.IsNullOrEmpty(hcrule.Documentation))
                         {
                             Add("<strong>Documentation:</strong><p>");
                             Add(hcrule.Documentation);
                             Add("</p>");
                         }
                     }
-                    if ((rule.Details != null && rule.Details.Count > 0) || (hcrule != null && !String.IsNullOrEmpty(hcrule.ReportLocation)))
+                    if ((rule.Details != null && rule.Details.Count > 0) || (hcrule != null && !string.IsNullOrEmpty(hcrule.ReportLocation)))
                     {
                         Add("<strong>Details:</strong>");
-                        if (!String.IsNullOrEmpty(hcrule.ReportLocation))
+                        if (!string.IsNullOrEmpty(hcrule.ReportLocation))
                         {
                             Add("<p>");
                             Add(hcrule.ReportLocation);
@@ -411,7 +411,7 @@ namespace PingCastle.Report
                             else
                             {
                                 Add("<p>");
-                                Add(String.Join("<br>\r\n", rule.Details.ToArray()));
+                                Add(string.Join("<br>\r\n", rule.Details.ToArray()));
                                 Add("</p>");
                             }
                         }

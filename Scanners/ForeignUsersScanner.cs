@@ -50,7 +50,7 @@ Example of FQDN: bastion.local";
 
                 // error message in case the query is not complete
                 ConsoleMenu.Notice = "The SID of FQDN cannot be empty";
-            } while (String.IsNullOrEmpty(EnumInboundSid));
+            } while (string.IsNullOrEmpty(EnumInboundSid));
             ConsoleMenu.Notice = null;
             return true;
         }
@@ -93,7 +93,7 @@ Example of FQDN: bastion.local";
             string fDir = Path.GetDirectoryName(filename);
             string fName = Path.GetFileNameWithoutExtension(filename);
             string fExt = Path.GetExtension(filename);
-            return Path.Combine(fDir, String.Concat(fName, suffix, fExt));
+            return Path.Combine(fDir, string.Concat(fName, suffix, fExt));
         }
 
         private static void DisplayAdvancement(string data)
@@ -169,7 +169,7 @@ Example of FQDN: bastion.local";
                                 if (lsaNames[i].Use > 0 && lsaNames[i].Use != NativeMethods.SID_NAME_USE.SidTypeUnknown)
                                 {
                                     string account = lsaNames[i].Name.ToString();
-                                    if (!String.IsNullOrEmpty(account))
+                                    if (!string.IsNullOrEmpty(account))
                                     {
                                         NativeMethods.LSA_TRUST_INFORMATION trustInfo = (NativeMethods.LSA_TRUST_INFORMATION)Marshal.PtrToStructure
                                             (new IntPtr(domainList.Domains.ToInt64() + lsaNames[i].DomainIndex * Marshal.SizeOf(typeof(NativeMethods.LSA_TRUST_INFORMATION))), typeof(NativeMethods.LSA_TRUST_INFORMATION));

@@ -111,7 +111,7 @@ namespace PingCastle.Data
                         {
                             di.DnsName = TransformFQDNToDemo(rotKey, di.DnsName);
                             di.ForestName = TransformFQDNToDemo(rotKey, di.ForestName);
-                            if (!String.IsNullOrEmpty(di.NetbiosName))
+                            if (!string.IsNullOrEmpty(di.NetbiosName))
                                 di.NetbiosName = TransformFQDNToDemo(rotKey, di.NetbiosName.ToLowerInvariant());
                         }
                     }
@@ -139,7 +139,7 @@ namespace PingCastle.Data
 
         public static string TransformFQDNToDemo(string rotKey, string source)
         {
-            if (String.IsNullOrEmpty(source))
+            if (string.IsNullOrEmpty(source))
                 return null;
             StringBuilder sb = new StringBuilder(source.Length);
             source = source.ToLowerInvariant();
@@ -162,7 +162,7 @@ namespace PingCastle.Data
 
         public static string TransformNameToDemo(string rotKey, string source)
         {
-            if (String.IsNullOrEmpty(source))
+            if (string.IsNullOrEmpty(source))
                 return null;
             StringBuilder sb = new StringBuilder(source.Length);
             source = source.ToLowerInvariant();

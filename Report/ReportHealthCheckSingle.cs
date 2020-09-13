@@ -143,7 +143,7 @@ $(document).ready(function(){
 ");
             Add(@"<div class=""alert alert-info"">
 This report has been generated with the ");
-            Add(String.IsNullOrEmpty(_license.Edition) ? "Basic" : _license.Edition);
+            Add(string.IsNullOrEmpty(_license.Edition) ? "Basic" : _license.Edition);
             Add(@" Edition of PingCastle");
             if (!string.IsNullOrEmpty(_license.CustomerNotice))
             {
@@ -152,7 +152,7 @@ This report has been generated with the ");
                 AddEncoded(_license.CustomerNotice);
                 Add(@""">?</i>.");
             }
-            if (String.IsNullOrEmpty(_license.Edition))
+            if (string.IsNullOrEmpty(_license.Edition))
             {
                 Add(@"
 <br><strong class='auditor'>Being part of a commercial package is forbidden</strong> (selling the information contained in the report).<br>
@@ -684,7 +684,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 list.Sort((HealthCheckAccountDetailData a, HealthCheckAccountDetailData b)
                         =>
                     {
-                        return String.Compare(a.Name, b.Name);
+                        return string.Compare(a.Name, b.Name);
                     }
                 );
                 foreach (HealthCheckAccountDetailData detail in list)
@@ -746,7 +746,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             data.ListDomainSidHistory.Sort(
                 (HealthCheckSIDHistoryData x, HealthCheckSIDHistoryData y) =>
                 {
-                    return String.Compare(x.FriendlyName, y.FriendlyName);
+                    return string.Compare(x.FriendlyName, y.FriendlyName);
                 }
             );
             foreach (HealthCheckSIDHistoryData domainSidHistory in data.ListDomainSidHistory)
@@ -901,7 +901,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                                 AddCellText((dc.CreationDate == DateTime.MinValue ? "Unknown" : dc.CreationDate.ToString("u")));
                                 AddCellText((dc.StartupTime == DateTime.MinValue ? (dc.LastComputerLogonDate.AddDays(60) < DateTime.Now ? "Inactive?" : "Unknown") : (dc.StartupTime.AddMonths(6) < DateTime.Now ? "<span class='unticked'>" + dc.StartupTime.ToString("u") + "</span>" : dc.StartupTime.ToString("u"))));
                                 AddCellText((dc.StartupTime == DateTime.MinValue ? "" : (DateTime.Now.Subtract(dc.StartupTime)).Days + " days"));
-                                AddCellText((String.IsNullOrEmpty(dc.OwnerName) ? dc.OwnerSID : dc.OwnerName));
+                                AddCellText((string.IsNullOrEmpty(dc.OwnerName) ? dc.OwnerSID : dc.OwnerName));
                                 AddCellText((dc.HasNullSession ? "YES" : "NO"), true, !dc.HasNullSession);
                                 AddCellText((dc.SupportSMB1 ? "YES" : "NO"), true, !dc.SupportSMB1);
 
@@ -964,7 +964,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 Report.PrivilegedGroups.Sort((HealthCheckGroupData a, HealthCheckGroupData b)
                         =>
                     {
-                        return String.Compare(a.GroupName, b.GroupName);
+                        return string.Compare(a.GroupName, b.GroupName);
                     }
                 );
                 foreach (HealthCheckGroupData group in Report.PrivilegedGroups)
@@ -1211,7 +1211,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 members.Sort((HealthCheckGroupMemberData a, HealthCheckGroupMemberData b)
                         =>
                     {
-                        return String.Compare(a.Name, b.Name);
+                        return string.Compare(a.Name, b.Name);
                     }
                 );
                 foreach (HealthCheckGroupMemberData member in members)
@@ -1291,14 +1291,14 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 apart1[i] = apart[apart.Length - 1 - i];
             }
-            return String.Join(",", apart1);
+            return string.Join(",", apart1);
         }
 
         private int OrderDelegationData(HealthCheckDelegationData a, HealthCheckDelegationData b)
         {
             if (a.DistinguishedName == b.DistinguishedName)
-                return String.Compare(a.Account, b.Account);
-            return String.Compare(GetDelegationSortKey(a), GetDelegationSortKey(b));
+                return string.Compare(a.Account, b.Account);
+            return string.Compare(GetDelegationSortKey(a), GetDelegationSortKey(b));
         }
 
         #endregion admin groups
@@ -1567,7 +1567,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     Add(@"<a href = ""#mod-dependancy-");
                     Add(index);
                     Add(@""" data-toggle=""modal"">");
-                    if (!String.IsNullOrEmpty(d.Netbios))
+                    if (!string.IsNullOrEmpty(d.Netbios))
                     {
                         AddEncoded(d.Netbios);
                     }
@@ -1608,7 +1608,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             foreach (var dependancy in Report.ControlPaths.Data[i].Dependancies)
             {
                 Add(@"<h4>");
-                if (!String.IsNullOrEmpty(dependancy.FQDN))
+                if (!string.IsNullOrEmpty(dependancy.FQDN))
                 {
                     AddEncoded(dependancy.FQDN);
                 }
@@ -1923,7 +1923,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 var hints = relation.Hints.Split(' ');
                 for (int j = 0; j < hints.Length; j++)
                 {
-                    output.Append("         \"" + hints[j] + "\"" + (j == hints.Length - 1 ? String.Empty : ","));
+                    output.Append("         \"" + hints[j] + "\"" + (j == hints.Length - 1 ? string.Empty : ","));
                 }
 
                 output.Append("       ]");
@@ -2039,7 +2039,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 trust.KnownDomains.Sort((HealthCheckTrustDomainInfoData a, HealthCheckTrustDomainInfoData b)
                         =>
                     {
-                        return String.Compare(a.DnsName, b.DnsName);
+                        return string.Compare(a.DnsName, b.DnsName);
                     }
                 );
                 foreach (HealthCheckTrustDomainInfoData di in trust.KnownDomains)
@@ -2219,7 +2219,7 @@ Here is the list of servers configured for WEF found in GPO</p>
                             (GPOEventForwardingInfo a, GPOEventForwardingInfo b)
                                 =>
                             {
-                                int comp = String.Compare(a.GPOName, b.GPOName);
+                                int comp = string.Compare(a.GPOName, b.GPOName);
                                 if (comp == 0)
                                     comp = (a.Order > b.Order ? 1 : (a.Order == b.Order ? 0 : -1));
                                 return comp;
@@ -2379,7 +2379,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                 foreach (HealthCheckLoginScriptData script in Report.LoginScript)
                 {
                     AddBeginRow();
-                    AddCellText(String.IsNullOrEmpty(script.LoginScript.Trim()) ? "<spaces>" : script.LoginScript);
+                    AddCellText(string.IsNullOrEmpty(script.LoginScript.Trim()) ? "<spaces>" : script.LoginScript);
                     AddCellNum(script.NumberOfOccurence);
                     AddEndRow();
                     number++;
@@ -2594,11 +2594,11 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             {
                 Report.GPOLocalMembership.Sort((GPOMembership a, GPOMembership b) =>
                     {
-                        int sort = String.Compare(a.GPOName, b.GPOName);
+                        int sort = string.Compare(a.GPOName, b.GPOName);
                         if (sort == 0)
-                            sort = String.Compare(a.User, b.User);
+                            sort = string.Compare(a.User, b.User);
                         if (sort == 0)
-                            sort = String.Compare(a.MemberOf, b.MemberOf);
+                            sort = string.Compare(a.MemberOf, b.MemberOf);
                         return sort;
                     }
                 );

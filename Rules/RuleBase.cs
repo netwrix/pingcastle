@@ -113,7 +113,7 @@ namespace PingCastle.Rules
                     return a.Order.CompareTo(b.Order);
                 }
             );
-            if (!String.IsNullOrEmpty(Documentation))
+            if (!string.IsNullOrEmpty(Documentation))
             {
                 string[] lines = Documentation.Split(
                     new[] { "\r\n", "\r", "\n" },
@@ -128,7 +128,7 @@ namespace PingCastle.Rules
             object[] frameworks = GetType().GetCustomAttributes(typeof(RuleFrameworkReference), true);
             if (frameworks != null && frameworks.Length != 0)
             {
-                if (!String.IsNullOrEmpty(Documentation))
+                if (!string.IsNullOrEmpty(Documentation))
                     Documentation += "<br>\r\n";
                 for (int i = 0; i < frameworks.Length; i++)
                 {
@@ -163,7 +163,7 @@ namespace PingCastle.Rules
 
         public void AddRawDetail(params object[] data)
         {
-            AddDetail(String.Format(DetailFormatString, data));
+            AddDetail(string.Format(DetailFormatString, data));
         }
 
         public bool Analyze(T healthcheckData)

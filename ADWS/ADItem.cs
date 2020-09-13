@@ -299,7 +299,7 @@ namespace PingCastle.ADWS
             {
                 return child.InnerText;
             }
-            return String.Empty;
+            return string.Empty;
         }
 
         private static int ExtractIntValue(XmlNode item)
@@ -481,7 +481,7 @@ namespace PingCastle.ADWS
                             break;
                     }
                 }
-                if (!String.IsNullOrEmpty(metaData.AttrName))
+                if (!string.IsNullOrEmpty(metaData.AttrName))
                 {
                     output[metaData.AttrName] = metaData;
                 }

@@ -157,7 +157,7 @@ namespace PingCastle.Scanners
 You can enter many users or groups. Enter them one by one and complete with an empty line. SAMAccountName or SID are accepted.
 Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Authenticated Users and Domain Users groups).";
                 input = ConsoleMenu.AskForString();
-                if (!String.IsNullOrEmpty(input))
+                if (!string.IsNullOrEmpty(input))
                 {
                     UserList.Add(input);
                 }

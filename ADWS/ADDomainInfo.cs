@@ -77,7 +77,7 @@ namespace PingCastle.ADWS
             {
                 return child.InnerText;
             }
-            return String.Empty;
+            return string.Empty;
         }
 
         private static int ExtractIntValue(XmlNode item)

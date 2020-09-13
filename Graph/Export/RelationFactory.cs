@@ -103,7 +103,7 @@ namespace PingCastle.Graph.Export
             }
             Trace.WriteLine("Working on " + aditem.DistinguishedName);
             Storage.InsertNode(aditem);
-            if (String.Equals(aditem.Class, "foreignsecurityprincipal", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(aditem.Class, "foreignsecurityprincipal", StringComparison.OrdinalIgnoreCase))
                 return;
 
             // membership, security descriptor, ...
@@ -127,12 +127,12 @@ namespace PingCastle.Graph.Export
 
         private void AddFileRelation(ADItem aditem)
         {
-            if (!String.IsNullOrEmpty(aditem.ScriptPath))
+            if (!string.IsNullOrEmpty(aditem.ScriptPath))
             {
                 string file = SanitizeFileName(aditem.ScriptPath, "scripts");
                 Storage.InsertRelation(file, MappingType.FileName, aditem.DistinguishedName, MappingType.DistinguishedName, RelationType.scriptPath);
             }
-            if (!String.IsNullOrEmpty(aditem.GPCFileSysPath))
+            if (!string.IsNullOrEmpty(aditem.GPCFileSysPath))
             {
                 string file = SanitizeFileName(aditem.GPCFileSysPath, "Policies");
                 Storage.InsertRelation(file, MappingType.GPODirectory, aditem.DistinguishedName, MappingType.DistinguishedName, RelationType.gPCFileSysPath);
@@ -200,7 +200,7 @@ namespace PingCastle.Graph.Export
             {
                 InsertDelegationRelation(aditem);
             }
-            if (!String.IsNullOrEmpty(aditem.GPLink))
+            if (!string.IsNullOrEmpty(aditem.GPLink))
             {
                 InsertGPORelation(aditem);
             }
@@ -420,7 +420,7 @@ namespace PingCastle.Graph.Export
         {
             Match m = re.Match(dn);
             if (!m.Success)
-                return String.Empty;
+                return string.Empty;
             return m.Groups[2].Value;
         }
 
@@ -717,7 +717,7 @@ namespace PingCastle.Graph.Export
                                     foreach (string user in values)
                                     {
                                         // ignore empty privilege assignment
-                                        if (String.IsNullOrEmpty(user))
+                                        if (string.IsNullOrEmpty(user))
                                             continue;
 
                                         // ignore well known sid

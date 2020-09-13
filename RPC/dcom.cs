@@ -62,15 +62,15 @@ namespace PingCastle.RPC
         [StructLayout(LayoutKind.Sequential)]
         internal struct COMVERSION
         {
-            public UInt16 MajorVersion;
-            public UInt16 MinorVersion;
+            public ushort MajorVersion;
+            public ushort MinorVersion;
         }
 
-        public Int32 ServerAlive2(string server, out List<string> stringBindings)
+        public int ServerAlive2(string server, out List<string> stringBindings)
         {
             IntPtr hBind;
             stringBindings = new List<string>();
-            Int32 status = Bind(server, out hBind);
+            int status = Bind(server, out hBind);
             if (status != 0)
                 return status;
             try
@@ -80,7 +80,7 @@ namespace PingCastle.RPC
                     return status;
 
                 var conversion = new COMVERSION() { MajorVersion = 5, MinorVersion = 1 };
-                UInt32 reserved = 0;
+                uint reserved = 0;
                 IntPtr DualStringArray = IntPtr.Zero;
                 try
                 {
@@ -115,7 +115,7 @@ namespace PingCastle.RPC
                             h4.Free();
                         }
                     }
-                    Int16 wSecurityOffest = Marshal.ReadInt16(new IntPtr(DualStringArray.ToInt64() + 2));
+                    short wSecurityOffest = Marshal.ReadInt16(new IntPtr(DualStringArray.ToInt64() + 2));
                     int offset = 4;
                     while (offset < wSecurityOffest * 2)
                     {

@@ -79,7 +79,7 @@ namespace PingCastle
 
         public ADHealthCheckingLicense(string license, bool DoAKeyCheck)
         {
-            if (String.IsNullOrEmpty(license))
+            if (string.IsNullOrEmpty(license))
                 throw new PingCastleException("No license has been provided");
             _licKey = license;
             Trace.WriteLine("License: " + _licKey);

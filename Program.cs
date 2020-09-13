@@ -142,12 +142,12 @@ namespace PingCastle
             Trace.WriteLine("[New run]" + DateTime.Now.ToString("u"));
             Trace.WriteLine("PingCastle version " + version.ToString(4));
             Trace.WriteLine("Running on dotnet:" + Environment.Version);
-            if (!String.IsNullOrEmpty(license.DomainLimitation) && !Tasks.compareStringWithWildcard(license.DomainLimitation, tasks.Server))
+            if (!string.IsNullOrEmpty(license.DomainLimitation) && !Tasks.compareStringWithWildcard(license.DomainLimitation, tasks.Server))
             {
                 WriteInRed("Limitations applies to the --server argument (" + license.DomainLimitation + ")");
                 return;
             }
-            if (!String.IsNullOrEmpty(license.CustomerNotice))
+            if (!string.IsNullOrEmpty(license.CustomerNotice))
             {
                 Console.WriteLine(license.CustomerNotice);
             }
@@ -207,7 +207,7 @@ namespace PingCastle
 
         public string GetSerialNumber()
         {
-            if (String.IsNullOrEmpty(_serialNumber))
+            if (string.IsNullOrEmpty(_serialNumber))
             {
                 // try to load it from the configuration file
                 try
@@ -226,7 +226,7 @@ namespace PingCastle
                     }
 
                 }
-                if (!String.IsNullOrEmpty(_serialNumber))
+                if (!string.IsNullOrEmpty(_serialNumber))
                 {
                     try
                     {
@@ -422,7 +422,7 @@ namespace PingCastle
                             }
                             catch (Exception)
                             {
-                                WriteInRed("Unable to parse the level [" + args[i] + "] to one of the predefined value (" + String.Join(",", Enum.GetNames(typeof(PingCastleReportDataExportLevel))) + ")");
+                                WriteInRed("Unable to parse the level [" + args[i] + "] to one of the predefined value (" + string.Join(",", Enum.GetNames(typeof(PingCastleReportDataExportLevel))) + ")");
                                 return false;
                             }
                             break;
@@ -539,7 +539,7 @@ namespace PingCastle
                             catch (Exception ex)
                             {
                                 Trace.WriteLine(ex.Message);
-                                WriteInRed("Unable to parse the protocol [" + args[i] + "] to one of the predefined value (" + String.Join(",", Enum.GetNames(typeof(ADConnectionType))) + ")");
+                                WriteInRed("Unable to parse the protocol [" + args[i] + "] to one of the predefined value (" + string.Join(",", Enum.GetNames(typeof(ADConnectionType))) + ")");
                                 return false;
                             }
                             break;
@@ -726,10 +726,10 @@ namespace PingCastle
             }
             if (PerformHealthCheckReport || PerformScanner)
             {
-                if (String.IsNullOrEmpty(tasks.Server))
+                if (string.IsNullOrEmpty(tasks.Server))
                 {
                     tasks.Server = GetCurrentDomain();
-                    if (String.IsNullOrEmpty(tasks.Server))
+                    if (string.IsNullOrEmpty(tasks.Server))
                     {
                         WriteInRed("This computer is not connected to a domain. The program couldn't guess the domain or server to connect.");
                         WriteInRed("Please run again this program with the flag --server <my.domain.com> or --server <mydomaincontroller.my.domain.com>");
@@ -741,7 +741,7 @@ namespace PingCastle
                 {
                     if (password == null)
                         password = AskCredential();
-                    if (String.IsNullOrEmpty(userdomain))
+                    if (string.IsNullOrEmpty(userdomain))
                     {
                         tasks.Credential = new NetworkCredential(user, password);
                     }
@@ -753,7 +753,7 @@ namespace PingCastle
             }
             if (PerformHealthCheckConsolidation)
             {
-                if (String.IsNullOrEmpty(tasks.FileOrDirectory))
+                if (string.IsNullOrEmpty(tasks.FileOrDirectory))
                 {
                     tasks.FileOrDirectory = Directory.GetCurrentDirectory();
                 }
@@ -886,7 +886,7 @@ namespace PingCastle
             choices.Sort((ConsoleMenuItem a, ConsoleMenuItem b)
                     =>
                 {
-                    return String.Compare(a.Choice, b.Choice);
+                    return string.Compare(a.Choice, b.Choice);
                 }
             );
             ConsoleMenu.Notice = "WARNING: Checking a lot of workstations may raise security alerts.";
@@ -910,11 +910,11 @@ namespace PingCastle
         DisplayState DisplayAskServer()
         {
             string defaultDomain = tasks.Server;
-            if (String.IsNullOrEmpty(defaultDomain))
+            if (string.IsNullOrEmpty(defaultDomain))
                 defaultDomain = GetCurrentDomain();
             while (true)
             {
-                if (!String.IsNullOrEmpty(defaultDomain))
+                if (!string.IsNullOrEmpty(defaultDomain))
                 {
                     ConsoleMenu.Information = "Please specify the domain or server to investigate (default:" + defaultDomain + ")";
                 }
@@ -924,11 +924,11 @@ namespace PingCastle
                 }
                 ConsoleMenu.Title = "Select a domain or server";
                 tasks.Server = ConsoleMenu.AskForString();
-                if (String.IsNullOrEmpty(tasks.Server))
+                if (string.IsNullOrEmpty(tasks.Server))
                 {
                     tasks.Server = defaultDomain;
                 }
-                if (!String.IsNullOrEmpty(tasks.Server))
+                if (!string.IsNullOrEmpty(tasks.Server))
                 {
                     break;
                 }
@@ -1018,7 +1018,7 @@ namespace PingCastle
         DisplayState DisplayAskForFile()
         {
             string file = null;
-            while (String.IsNullOrEmpty(file) || !File.Exists(file))
+            while (string.IsNullOrEmpty(file) || !File.Exists(file))
             {
                 ConsoleMenu.Title = "Select an existing report";
                 ConsoleMenu.Information = "Please specify the report to open.";

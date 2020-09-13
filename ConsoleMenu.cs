@@ -38,7 +38,7 @@ namespace PingCastle
             int maxDescription = 0;
             for (int i = 0; i < items.Count; i++)
             {
-                if (!String.IsNullOrEmpty(items[i].ShortDescription))
+                if (!string.IsNullOrEmpty(items[i].ShortDescription))
                     hasDescription = true;
                 int l = items[i].Choice.Length;
                 if (l > largerChoice)
@@ -53,15 +53,15 @@ namespace PingCastle
                     Console.ForegroundColor = ConsoleColor.Black;
                     description = items[i].LongDescription;
                 }
-                if (!String.IsNullOrEmpty(items[i].LongDescription) && maxDescription < items[i].LongDescription.Length)
+                if (!string.IsNullOrEmpty(items[i].LongDescription) && maxDescription < items[i].LongDescription.Length)
                     maxDescription = items[i].LongDescription.Length;
                 Console.Write("  " + (char)(i < 9 ? i + '1' : i - 9 + 'a') + "-" + items[i].Choice);
                 if (hasDescription)
                 {
                     int diff = largerChoice - items[i].Choice.Length;
                     if (diff > 0)
-                        Console.Write(new String(' ', diff));
-                    if (!String.IsNullOrEmpty(items[i].ShortDescription))
+                        Console.Write(new string(' ', diff));
+                    if (!string.IsNullOrEmpty(items[i].ShortDescription))
                         Console.Write("-" + items[i].ShortDescription);
                 }
                 Console.WriteLine();
@@ -74,7 +74,7 @@ namespace PingCastle
             }
             Console.WriteLine("  0-Exit");
             Console.ResetColor();
-            if (!String.IsNullOrEmpty(description))
+            if (!string.IsNullOrEmpty(description))
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("==============================");
@@ -105,7 +105,7 @@ namespace PingCastle
                     Console.ForegroundColor = ConsoleColor.Black;
                     description = items[i].ShortDescription;
                 }
-                if (!String.IsNullOrEmpty(items[i].ShortDescription) && maxDescription < items[i].ShortDescription.Length)
+                if (!string.IsNullOrEmpty(items[i].ShortDescription) && maxDescription < items[i].ShortDescription.Length)
                     maxDescription = items[i].ShortDescription.Length;
 
                 item = "  " + (char)(i < 9 ? i + '1' : i - 9 + 'a') + "-" + items[i].Choice;
@@ -122,7 +122,7 @@ namespace PingCastle
             item = "  0-Exit";
             Console.WriteLine(item + new string(' ', Console.WindowWidth / 2 - item.Length - 1));
             Console.ResetColor();
-            if (!String.IsNullOrEmpty(description))
+            if (!string.IsNullOrEmpty(description))
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("==============================");
@@ -138,22 +138,22 @@ namespace PingCastle
         protected static void DisplayHeader()
         {
             Console.Clear();
-            if (!String.IsNullOrEmpty(Header))
+            if (!string.IsNullOrEmpty(Header))
             {
                 Console.WriteLine(Header);
             }
-            if (!String.IsNullOrEmpty(Title))
+            if (!string.IsNullOrEmpty(Title))
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine(Title);
                 Console.WriteLine(new string('=', Title.Length));
                 Console.ResetColor();
             }
-            if (!String.IsNullOrEmpty(Information))
+            if (!string.IsNullOrEmpty(Information))
             {
                 Console.WriteLine(Information);
             }
-            if (!String.IsNullOrEmpty(Notice))
+            if (!string.IsNullOrEmpty(Notice))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(Notice);
@@ -181,7 +181,7 @@ namespace PingCastle
             ClearTopic();
             var list = new List<string>();
             var line = Console.ReadLine();
-            while (!String.IsNullOrEmpty(line))
+            while (!string.IsNullOrEmpty(line))
             {
                 list.Add(line);
                 line = Console.ReadLine();
@@ -288,7 +288,7 @@ namespace PingCastle
                 {
                     int number;
                     char key = ckey.KeyChar;
-                    if (Int32.TryParse(key.ToString(), out number) && number >= 0 && number <= 9 && (number <= items.Count))
+                    if (int.TryParse(key.ToString(), out number) && number >= 0 && number <= 9 && (number <= items.Count))
                     {
                         Console.CursorVisible = true;
                         Console.ResetColor();

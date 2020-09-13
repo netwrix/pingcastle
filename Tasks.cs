@@ -200,20 +200,20 @@ namespace PingCastle
         {
             if (xmlreports.Count == 0 && htmlreports.Count == 0)
                 return true;
-            if (!String.IsNullOrEmpty(sendXmlTo))
+            if (!string.IsNullOrEmpty(sendXmlTo))
                 SendEmail(sendXmlTo, true, false);
-            if (!String.IsNullOrEmpty(sendHtmlTo))
+            if (!string.IsNullOrEmpty(sendHtmlTo))
                 SendEmail(sendHtmlTo, false, true);
-            if (!String.IsNullOrEmpty(sendAllTo))
+            if (!string.IsNullOrEmpty(sendAllTo))
                 SendEmail(sendAllTo, true, true);
-            if (!String.IsNullOrEmpty(sharepointdirectory))
+            if (!string.IsNullOrEmpty(sharepointdirectory))
             {
                 foreach (string domain in xmlreports.Keys)
                 {
                     UploadToWebsite("ad_hc_" + domain + ".xml", xmlreports[domain]);
                 }
             }
-            if (!String.IsNullOrEmpty(apiKey) && !String.IsNullOrEmpty(apiEndpoint))
+            if (!string.IsNullOrEmpty(apiKey) && !string.IsNullOrEmpty(apiEndpoint))
                 SendViaAPI(xmlreports);
             return true;
         }
@@ -273,7 +273,7 @@ namespace PingCastle
                     Console.WriteLine("");
                     string display = "Starting the report for " + domain + " (" + i++ + "/" + domains.Count + ")";
                     Console.WriteLine(display);
-                    Console.WriteLine(new String('=', display.Length));
+                    Console.WriteLine(new string('=', display.Length));
                     Console.ResetColor();
                     PerformTheAnalysis<T>(domain);
                 }
@@ -423,7 +423,7 @@ namespace PingCastle
             return StartTask("PingCastle report consolidation (" + typeof(T).Name + ")",
                 () =>
                 {
-                    if (String.IsNullOrEmpty(FileOrDirectory))
+                    if (string.IsNullOrEmpty(FileOrDirectory))
                     {
                         FileOrDirectory = Directory.GetCurrentDirectory();
                     }
@@ -461,7 +461,7 @@ namespace PingCastle
             return StartTask("PingCastle Health Check rules",
                 () =>
                 {
-                    if (String.IsNullOrEmpty(FileOrDirectory))
+                    if (string.IsNullOrEmpty(FileOrDirectory))
                     {
                         FileOrDirectory = Directory.GetCurrentDirectory();
                     }
@@ -520,16 +520,16 @@ namespace PingCastle
                     {
                         DisplayAdvancement("file ignored because it does not start with ad_hc_");
                     }
-                    if (!String.IsNullOrEmpty(apiKey) && !String.IsNullOrEmpty(apiEndpoint))
+                    if (!string.IsNullOrEmpty(apiKey) && !string.IsNullOrEmpty(apiEndpoint))
                         SendViaAPI(new Dictionary<string, string>() { { fi.Name, xml } });
-                    if (!String.IsNullOrEmpty(sharepointdirectory))
+                    if (!string.IsNullOrEmpty(sharepointdirectory))
                         UploadToWebsite(newfile, xml);
-                    if (!String.IsNullOrEmpty(sendXmlTo))
+                    if (!string.IsNullOrEmpty(sendXmlTo))
                         SendEmail(sendXmlTo, new List<string> { domainFQDN },
                             new List<Attachment> { Attachment.CreateAttachmentFromString(xml, newfile) });
-                    if (!String.IsNullOrEmpty(sendHtmlTo))
+                    if (!string.IsNullOrEmpty(sendHtmlTo))
                         WriteInRed("Html report ignored when xml file used as input");
-                    if (!String.IsNullOrEmpty(sendAllTo))
+                    if (!string.IsNullOrEmpty(sendAllTo))
                     {
                         WriteInRed("Html report ignored when xml file used as input");
                         SendEmail(sendAllTo, new List<string> { domainFQDN },
@@ -544,7 +544,7 @@ namespace PingCastle
             return StartTask("Upload report",
                 () =>
                 {
-                    if (String.IsNullOrEmpty(apiKey) || String.IsNullOrEmpty(apiEndpoint))
+                    if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(apiEndpoint))
                         throw new PingCastleException("API end point not available");
                     var files = new List<string>(Directory.GetFiles(Directory.GetCurrentDirectory(), "*ad_*.xml", SearchOption.AllDirectories));
                     files.Sort();
@@ -574,7 +574,7 @@ namespace PingCastle
             return StartTask("Generating demo reports",
                 () =>
                 {
-                    if (String.IsNullOrEmpty(FileOrDirectory))
+                    if (string.IsNullOrEmpty(FileOrDirectory))
                     {
                         FileOrDirectory = Directory.GetCurrentDirectory();
                     }
@@ -702,7 +702,7 @@ namespace PingCastle
                             try
                             {
                                 string answer = SendViaAPIUploadOneReport(client, report.Key, report.Value);
-                                DisplayAdvancement(report.Key + "-" + (String.IsNullOrEmpty(answer) ? "OK" : answer));
+                                DisplayAdvancement(report.Key + "-" + (string.IsNullOrEmpty(answer) ? "OK" : answer));
                             }
                             catch (Exception ex)
                             {
@@ -723,8 +723,8 @@ namespace PingCastle
             string body = @"Hello,
 
 This is the PingCastle program sending reports for:
-- " + String.Join("\r\n- ", domains.ToArray());
-            SendEmail(email, "[PingCastle][" + versionString + "] Reports for " + String.Join(",", domains.ToArray()), body, Files);
+- " + string.Join("\r\n- ", domains.ToArray());
+            SendEmail(email, "[PingCastle][" + versionString + "] Reports for " + string.Join(",", domains.ToArray()), body, Files);
         }
 
         void SendEmail(string email, bool xml, bool html)
@@ -765,7 +765,7 @@ This is the PingCastle program sending reports for:
                     message.Subject = subject;
                     message.Body = body;
                     message.To.Add(recipient);
-                    if (!String.IsNullOrEmpty(mailNotification))
+                    if (!string.IsNullOrEmpty(mailNotification))
                     {
                         message.Headers.Add("Disposition-Notification-To", mailNotification);
                         message.Headers.Add("Return-Receipt-To", mailNotification);
@@ -775,7 +775,7 @@ This is the PingCastle program sending reports for:
                         client.EnableSsl = true;
                     else
                         client.EnableSsl = (client.Port == 587 || client.Port == 465);
-                    if (!String.IsNullOrEmpty(smtpLogin) || !String.IsNullOrEmpty(smtpPassword))
+                    if (!string.IsNullOrEmpty(smtpLogin) || !string.IsNullOrEmpty(smtpPassword))
                         client.Credentials = new NetworkCredential(smtpLogin, smtpPassword);
                     client.Send(message);
                 }
@@ -788,7 +788,7 @@ This is the PingCastle program sending reports for:
                 () =>
                 {
                     WebClient client = new WebClient();
-                    if (!String.IsNullOrEmpty(sharepointuser))
+                    if (!string.IsNullOrEmpty(sharepointuser))
                         client.Credentials = new NetworkCredential(sharepointuser, sharepointpassword);
                     else
                         client.UseDefaultCredentials = true;
@@ -922,7 +922,7 @@ This is the PingCastle program sending reports for:
 
         public static void DisplayException(string taskname, Exception ex)
         {
-            if (!String.IsNullOrEmpty(taskname))
+            if (!string.IsNullOrEmpty(taskname))
             {
                 WriteInRed("[" + DateTime.Now.ToLongTimeString() + "] An exception occured when doing the task: " + taskname);
                 WriteInRed("Note: you can run the program with the switch --log to get more detail");

@@ -70,7 +70,7 @@ namespace PingCastle.Graph.Reporting
                 Objects[typology].Sort((GraphSingleObject a, GraphSingleObject b)
                     =>
                 {
-                    return String.Compare(a.Description, b.Description);
+                    return string.Compare(a.Description, b.Description);
                 });
             }
             TechnicalObjects = new List<string>();

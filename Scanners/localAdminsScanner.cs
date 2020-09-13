@@ -29,7 +29,7 @@ namespace PingCastle.Scanners
             foreach (SecurityIdentifier user in users)
             {
                 string account = NativeMethods.ConvertSIDToName(user.Value, computer);
-                if (!String.IsNullOrEmpty(output))
+                if (!string.IsNullOrEmpty(output))
                     output += "\r\n";
                 output += computer + "\t" + user.Value + "\t" + account;
             }

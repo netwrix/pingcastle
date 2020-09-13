@@ -127,7 +127,7 @@ namespace PingCastle.HealthCheck
                     // for old report: no netbios name defined in domain object !
                     string[] values = trust.TrustPartner.Split('.');
                     string netbios = values[0];
-                    if (!String.IsNullOrEmpty(trust.NetBiosName))
+                    if (!string.IsNullOrEmpty(trust.NetBiosName))
                         netbios = trust.NetBiosName;
                     if (netbios.Equals(di.NetbiosName, StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -139,7 +139,7 @@ namespace PingCastle.HealthCheck
                     }
                     foreach (var forestinfo in trust.KnownDomains)
                     {
-                        if (!String.IsNullOrEmpty(forestinfo.NetbiosName) && forestinfo.NetbiosName.Equals(di.NetbiosName, StringComparison.InvariantCultureIgnoreCase))
+                        if (!string.IsNullOrEmpty(forestinfo.NetbiosName) && forestinfo.NetbiosName.Equals(di.NetbiosName, StringComparison.InvariantCultureIgnoreCase))
                         {
                             di.DnsName = forestinfo.DnsName;
                             di.ForestName = trust.TrustPartner;
@@ -236,7 +236,7 @@ namespace PingCastle.HealthCheck
                     }
 
                     // if no information was given (only Netbios name!) fallback to a forest trust
-                    if (String.IsNullOrEmpty(di.ForestName) || di.ForestName == di.DnsName)
+                    if (string.IsNullOrEmpty(di.ForestName) || di.ForestName == di.DnsName)
                     {
                         GraphNode childDomain = nodes.CreateNodeIfNeeded(ref nodeNumber, di.Domain, data.GenerationDate);
                         GraphNode myForestRoot = nodes.CreateNodeIfNeeded(ref nodeNumber, data.Forest, data.GenerationDate);
@@ -438,7 +438,7 @@ namespace PingCastle.HealthCheck
                     break;
             }
             output.TrustPartner = Domain.DomainName;
-            output.SID = (!String.IsNullOrEmpty(Domain.DomainSID) ? Domain.DomainSID : null);
+            output.SID = (!string.IsNullOrEmpty(Domain.DomainSID) ? Domain.DomainSID : null);
             output.TrustAttributes = trust.TrustAttributes;
             return output;
         }

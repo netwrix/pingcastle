@@ -44,7 +44,7 @@ namespace PingCastle
         {
             IntPtr token = IntPtr.Zero;
             string domain = credential.Domain;
-            if (String.IsNullOrEmpty(domain))
+            if (string.IsNullOrEmpty(domain))
                 domain = remoteserver;
             Trace.WriteLine("Preparing to login with login = " + credential.UserName + " domain = " + domain);
             bool isSuccess = LogonUser(credential.UserName, domain, credential.Password, LOGON32_LOGON_NEW_CREDENTIALS, LOGON32_PROVIDER_DEFAULT, ref token);
@@ -170,7 +170,7 @@ namespace PingCastle
             if (err == 0)
             {
                 referencedDomain = referencedDomainName.ToString();
-                if (String.IsNullOrEmpty(referencedDomain))
+                if (string.IsNullOrEmpty(referencedDomain))
                     return name.ToString();
                 else
                     return referencedDomainName + "\\" + name;
@@ -205,7 +205,7 @@ namespace PingCastle
             public override string ToString()
             {
                 if (Length == 0)
-                    return String.Empty;
+                    return string.Empty;
                 return Marshal.PtrToStringUni(buffer, Length / 2);
             }
         }
@@ -302,10 +302,10 @@ namespace PingCastle
 
         internal struct LSA_OBJECT_ATTRIBUTES
         {
-            public UInt32 Length;
+            public uint Length;
             public IntPtr RootDirectory;
             public UNICODE_STRING ObjectName;
-            public UInt32 Attributes;
+            public uint Attributes;
             public IntPtr SecurityDescriptor;
             public IntPtr SecurityQualityOfService;
         }
@@ -333,8 +333,8 @@ namespace PingCastle
             IntPtr PolicyHandle,
             ref IntPtr EnumerationContext,
             out IntPtr Buffer,
-            UInt32 PreferedMaximumLength,
-            out UInt32 CountReturned
+            uint PreferedMaximumLength,
+            out uint CountReturned
         );
 
         #endregion
@@ -352,7 +352,7 @@ namespace PingCastle
         [StructLayout(LayoutKind.Sequential)]
         internal struct LSA_FOREST_TRUST_INFORMATION
         {
-            public UInt32 RecordCount;
+            public uint RecordCount;
             public IntPtr Entries;
         }
 
@@ -367,7 +367,7 @@ namespace PingCastle
         [StructLayout(LayoutKind.Sequential)]
         internal struct LSA_FOREST_TRUST_BINARY_DATA
         {
-            public UInt32 Length;
+            public uint Length;
             public IntPtr Buffer;
         }
 
@@ -375,11 +375,11 @@ namespace PingCastle
         internal struct LSA_FOREST_TRUST_RECORD
         {
             [FieldOffset(0)]
-            public UInt32 Flags;
+            public uint Flags;
             [FieldOffset(4)]
-            public UInt32 ForestTrustType;
+            public uint ForestTrustType;
             [FieldOffset(8)]
-            public Int64 Time;
+            public long Time;
             [FieldOffset(16)]
             public UNICODE_STRING TopLevelName;
             [FieldOffset(16)]

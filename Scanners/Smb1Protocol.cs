@@ -14,7 +14,7 @@ namespace PingCastle.Scanners
         struct SMB_Header
         {
             [FieldOffset(0)]
-            public UInt32 Protocol;
+            public uint Protocol;
             [FieldOffset(4)]
             public byte Command;
             [FieldOffset(5)]
@@ -22,21 +22,21 @@ namespace PingCastle.Scanners
             [FieldOffset(9)]
             public byte Flags;
             [FieldOffset(10)]
-            public UInt16 Flags2;
+            public ushort Flags2;
             [FieldOffset(12)]
-            public UInt16 PIDHigh;
+            public ushort PIDHigh;
             [FieldOffset(14)]
-            public UInt64 SecurityFeatures;
+            public ulong SecurityFeatures;
             [FieldOffset(22)]
-            public UInt16 Reserved;
+            public ushort Reserved;
             [FieldOffset(24)]
-            public UInt16 TID;
+            public ushort TID;
             [FieldOffset(26)]
-            public UInt16 PIDLow;
+            public ushort PIDLow;
             [FieldOffset(28)]
-            public UInt16 UID;
+            public ushort UID;
             [FieldOffset(30)]
-            public UInt16 MID;
+            public ushort MID;
         };
 
         const int SMB_COM_NEGOTIATE = 0x72;

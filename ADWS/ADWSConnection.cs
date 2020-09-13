@@ -321,12 +321,12 @@ namespace PingCastle.ADWS
             }
             Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "]Enumeration successful");
             Trace.WriteLine("Enumeration expires at " + enumerateResponse.Expires);
-            Trace.WriteLine("Enumeration context is " + String.Join(",", enumerateResponse.EnumerationContext.Text));
+            Trace.WriteLine("Enumeration context is " + string.Join(",", enumerateResponse.EnumerationContext.Text));
 
             // prepare the flag for the ntsecuritydescriptor
             foreach (string property in listproperties)
             {
-                if (String.Compare("nTSecurityDescriptor", property, true) == 0)
+                if (string.Compare("nTSecurityDescriptor", property, true) == 0)
                 {
                     nTSecurityDescriptor = true;
                 }
@@ -349,7 +349,7 @@ namespace PingCastle.ADWS
                     RenewResponse renewresponse = Search.Renew(renew);
                     Trace.WriteLine("New expiration at " + renewresponse.Expires);
                     DateTime.TryParse(renewresponse.Expires, out expiration);
-                    Trace.WriteLine("New enumeration context " + String.Join(",", renewresponse.EnumerationContext.Text));
+                    Trace.WriteLine("New enumeration context " + string.Join(",", renewresponse.EnumerationContext.Text));
                     enumerateResponse.EnumerationContext = renewresponse.EnumerationContext;
 
                 }

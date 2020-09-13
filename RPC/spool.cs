@@ -219,33 +219,33 @@ namespace PingCastle.RPC
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct DEVMODE_CONTAINER
         {
-            Int32 cbBuf;
+            int cbBuf;
             IntPtr pDevMode;
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct RPC_V2_NOTIFY_OPTIONS_TYPE
         {
-            UInt16 Type;
-            UInt16 Reserved0;
-            UInt32 Reserved1;
-            UInt32 Reserved2;
-            UInt32 Count;
+            ushort Type;
+            ushort Reserved0;
+            uint Reserved1;
+            uint Reserved2;
+            uint Count;
             IntPtr pFields;
         };
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct RPC_V2_NOTIFY_OPTIONS
         {
-            UInt32 Version;
-            UInt32 Reserved;
-            UInt32 Count;
+            uint Version;
+            uint Reserved;
+            uint Count;
             /* [unique][size_is] */
             RPC_V2_NOTIFY_OPTIONS_TYPE pTypes;
         };
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public Int32 RpcOpenPrinter(string pPrinterName, out IntPtr pHandle, string pDatatype, ref DEVMODE_CONTAINER pDevModeContainer, Int32 AccessRequired)
+        public int RpcOpenPrinter(string pPrinterName, out IntPtr pHandle, string pDatatype, ref DEVMODE_CONTAINER pDevModeContainer, int AccessRequired)
         {
             IntPtr result = IntPtr.Zero;
             IntPtr intptrPrinterName = Marshal.StringToHGlobalUni(pPrinterName);
@@ -295,7 +295,7 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public Int32 RpcClosePrinter(ref IntPtr ServerHandle)
+        public int RpcClosePrinter(ref IntPtr ServerHandle)
         {
             IntPtr result = IntPtr.Zero;
             try
@@ -332,16 +332,16 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public Int32 RpcRemoteFindFirstPrinterChangeNotificationEx(
+        public int RpcRemoteFindFirstPrinterChangeNotificationEx(
             /* [in] */ IntPtr hPrinter,
                        /* [in] */
-                       UInt32 fdwFlags,
+                       uint fdwFlags,
                        /* [in] */
-                       UInt32 fdwOptions,
+                       uint fdwOptions,
                        /* [unique][string][in] */
                        string pszLocalMachine,
                        /* [in] */
-                       UInt32 dwPrinterLocal)
+                       uint dwPrinterLocal)
         {
             IntPtr result = IntPtr.Zero;
             IntPtr intptrLocalMachine = Marshal.StringToHGlobalUni(pszLocalMachine);

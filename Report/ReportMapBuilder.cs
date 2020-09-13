@@ -339,7 +339,7 @@ namespace PingCastle.Report
         {
             GraphNode center = null;
             StringBuilder sb = new StringBuilder();
-            if (String.IsNullOrEmpty(domainToCenter))
+            if (string.IsNullOrEmpty(domainToCenter))
             {
                 Trace.WriteLine("finding the center domain");
 

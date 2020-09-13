@@ -8,17 +8,17 @@ namespace PingCastle.Bot
     internal class BotStream
     {
         [DllImport("kernel32.dll", EntryPoint = "CreateFile", SetLastError = true)]
-        private static extern IntPtr CreateFile(String lpFileName,
-                                                UInt32 dwDesiredAccess,
-                                                UInt32 dwShareMode,
+        private static extern IntPtr CreateFile(string lpFileName,
+                                                uint dwDesiredAccess,
+                                                uint dwShareMode,
                                                 IntPtr lpSecurityAttributes,
-                                                UInt32 dwCreationDisposition,
-                                                UInt32 dwFlagsAndAttributes,
+                                                uint dwCreationDisposition,
+                                                uint dwFlagsAndAttributes,
                                                 IntPtr hTemplateFile);
 
-        private const UInt32 GENERIC_READ = 0x80000000;
-        private const UInt32 GENERIC_WRITE = 0x40000000;
-        private const UInt32 OPEN_EXISTING = 3;
+        private const uint GENERIC_READ = 0x80000000;
+        private const uint GENERIC_WRITE = 0x40000000;
+        private const uint OPEN_EXISTING = 3;
 
         public static FileStream OpenPipeStream(string pipeName)
         {

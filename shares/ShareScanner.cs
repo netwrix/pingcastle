@@ -29,7 +29,7 @@ namespace PingCastle.Shares
                 foreach (string path in ShareEnumerator.EnumShare(computer))
                 {
                     bool everyone = ShareEnumerator.IsEveryoneAllowed(computer, path);
-                    if (!String.IsNullOrEmpty(output))
+                    if (!string.IsNullOrEmpty(output))
                         output += "\r\n";
                     output += computer + "\t" + path + "\t" + everyone;
                 }

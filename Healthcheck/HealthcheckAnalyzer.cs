@@ -193,7 +193,7 @@ namespace PingCastle.HealthCheck
         {
             List<ReachableDomainInfo> domains = new List<ReachableDomainInfo>();
             string root = IPGlobalProperties.GetIPGlobalProperties().DomainName.ToLowerInvariant();
-            if (String.IsNullOrEmpty(root))
+            if (string.IsNullOrEmpty(root))
                 return domains;
             ExploreReachableDomain(root, "current domain", port, credential, domains);
 
@@ -266,7 +266,7 @@ namespace PingCastle.HealthCheck
                 if (adws != null)
                     adws.Dispose();
             }
-            if (!String.IsNullOrEmpty(forestToExplore))
+            if (!string.IsNullOrEmpty(forestToExplore))
             {
                 ExploreReachableDomain(forestToExplore, domainToExplore, port, credential, domainlist);
             }
@@ -402,7 +402,7 @@ namespace PingCastle.HealthCheck
                         {
                             // login script
                             string scriptName = "None";
-                            if (!String.IsNullOrEmpty(x.ScriptPath))
+                            if (!string.IsNullOrEmpty(x.ScriptPath))
                             {
                                 scriptName = x.ScriptPath.ToLowerInvariant();
                             }
@@ -537,7 +537,7 @@ namespace PingCastle.HealthCheck
                     data.ListDuplicate = new List<HealthCheckAccountDetailData>();
                 data.ListDuplicate.Add(GetAccountDetail(x));
             }
-            else if (!String.IsNullOrEmpty(x.SAMAccountName) && x.SAMAccountName.StartsWith("$duplicate-", StringComparison.InvariantCultureIgnoreCase))
+            else if (!string.IsNullOrEmpty(x.SAMAccountName) && x.SAMAccountName.StartsWith("$duplicate-", StringComparison.InvariantCultureIgnoreCase))
             {
                 data.NumberDuplicate++;
                 if (data.ListDuplicate == null)
@@ -862,7 +862,7 @@ namespace PingCastle.HealthCheck
 
         private string GetOperatingSystem(string os)
         {
-            if (String.IsNullOrEmpty(os))
+            if (string.IsNullOrEmpty(os))
             {
                 return "OperatingSystem not set";
             }
@@ -1142,7 +1142,7 @@ namespace PingCastle.HealthCheck
                     data.FriendlyName = healthcheckData.DomainFQDN;
                     data.NetBIOSName = healthcheckData.NetBIOSName;
                 }
-                if (String.IsNullOrEmpty(data.FriendlyName))
+                if (string.IsNullOrEmpty(data.FriendlyName))
                     data.FriendlyName = data.DomainSid;
             }
         }
@@ -1289,7 +1289,7 @@ namespace PingCastle.HealthCheck
                 bool found = false;
                 foreach (HealthCheckTrustData trust in healthcheckData.Trusts)
                 {
-                    if (!String.IsNullOrEmpty(trust.SID) && new SecurityIdentifier(trust.SID) == domainSid)
+                    if (!string.IsNullOrEmpty(trust.SID) && new SecurityIdentifier(trust.SID) == domainSid)
                     {
                         found = true;
                         break;
@@ -1298,7 +1298,7 @@ namespace PingCastle.HealthCheck
                     {
                         foreach (HealthCheckTrustDomainInfoData di in trust.KnownDomains)
                         {
-                            if (!String.IsNullOrEmpty(di.Sid) && new SecurityIdentifier(di.Sid) == domainSid)
+                            if (!string.IsNullOrEmpty(di.Sid) && new SecurityIdentifier(di.Sid) == domainSid)
                             {
                                 found = true;
                                 break;
@@ -2114,7 +2114,7 @@ namespace PingCastle.HealthCheck
                     continue;
 
                 // password has been manually changed
-                if (String.IsNullOrEmpty(password.Value))
+                if (string.IsNullOrEmpty(password.Value))
                     continue;
                 GPPPassword PasswordData = new GPPPassword();
                 PasswordData.GPOName = (GPO == null ? alternateNameIfGPODoesNotExists : GPO.DisplayName);
@@ -2764,7 +2764,7 @@ namespace PingCastle.HealthCheck
                         continue;
 
                     // password has been manually changed
-                    if (String.IsNullOrEmpty(password.Value))
+                    if (string.IsNullOrEmpty(password.Value))
                         continue;
                     GPPPassword PasswordData = new GPPPassword();
                     PasswordData.GPOName = (GPO == null ? alternateNameIfGPODoesNotExists : GPO.DisplayName);
@@ -2787,13 +2787,13 @@ namespace PingCastle.HealthCheck
                     if (xpathNewName != null)
                     {
                         XmlNode newNameNode = node.SelectSingleNode(xpathNewName);
-                        if (newNameNode != null && !String.IsNullOrEmpty(newNameNode.Value))
+                        if (newNameNode != null && !string.IsNullOrEmpty(newNameNode.Value))
                         {
                             PasswordData.Other = "NewName:" + newNameNode.Value;
                         }
                     }
                     XmlNode pathNode = node.SelectSingleNode("Properties/@path");
-                    if (pathNode != null && !String.IsNullOrEmpty(pathNode.Value))
+                    if (pathNode != null && !string.IsNullOrEmpty(pathNode.Value))
                     {
                         PasswordData.Other = "Path:" + pathNode.Value;
                     }
@@ -2894,7 +2894,7 @@ namespace PingCastle.HealthCheck
                 if (index < 0)
                     return;
                 string rights = line.Substring(index + 1).TrimStart();
-                if (String.IsNullOrEmpty(rights))
+                if (string.IsNullOrEmpty(rights))
                     return;
                 string left = line.Substring(0, line.IndexOf("__"));
 
@@ -3232,7 +3232,7 @@ namespace PingCastle.HealthCheck
                             var user2 = ConvertGPOUserToUserFriendlyUser(user, domainInfo);
 
                             // ignore empty privilege assignment
-                            if (String.IsNullOrEmpty(user2))
+                            if (string.IsNullOrEmpty(user2))
                                 continue;
 
                             GPPRightAssignment right = new GPPRightAssignment();
@@ -3280,7 +3280,7 @@ namespace PingCastle.HealthCheck
                             var user2 = ConvertGPOUserToUserFriendlyUser(user, domainInfo);
 
                             // ignore empty privilege assignment
-                            if (String.IsNullOrEmpty(user2))
+                            if (string.IsNullOrEmpty(user2))
                                 continue;
 
                             GPPRightAssignment right = new GPPRightAssignment();
@@ -3616,7 +3616,7 @@ namespace PingCastle.HealthCheck
             WorkOnReturnedObjectByADWS callbackdSHeuristics =
                 (ADItem x) =>
                 {
-                    if (!String.IsNullOrEmpty(x.DSHeuristics))
+                    if (!string.IsNullOrEmpty(x.DSHeuristics))
                     {
                         if (x.DSHeuristics.Length >= 7 && x.DSHeuristics.Substring(6, 1) == "2")
                         {
@@ -3665,7 +3665,7 @@ namespace PingCastle.HealthCheck
                 {
                     foreach (var DC in healthcheckData.DomainControllers)
                     {
-                        if (String.Equals(DC.DistinguishedName, x.DistinguishedName, StringComparison.InvariantCultureIgnoreCase))
+                        if (string.Equals(DC.DistinguishedName, x.DistinguishedName, StringComparison.InvariantCultureIgnoreCase))
                         {
                             DC.OwnerSID = x.NTSecurityDescriptor.GetOwner(typeof(SecurityIdentifier)).Value;
                             DC.OwnerName = NativeMethods.ConvertSIDToName(DC.OwnerSID, domainInfo.DnsHostName);

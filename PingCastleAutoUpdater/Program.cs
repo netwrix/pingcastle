@@ -177,7 +177,7 @@ namespace PingCastleAutoUpdater
                     using (Stream responseStream = errorResponse.GetResponseStream())
                     {
                         StreamReader reader = new StreamReader(responseStream, System.Text.Encoding.GetEncoding("utf-8"));
-                        String errorText = reader.ReadToEnd();
+                        string errorText = reader.ReadToEnd();
                         Console.WriteLine(errorText);
 
                         // log errorText
@@ -222,7 +222,7 @@ namespace PingCastleAutoUpdater
                 using (Stream responseStream = errorResponse.GetResponseStream())
                 {
                     StreamReader reader = new StreamReader(responseStream, System.Text.Encoding.GetEncoding("utf-8"));
-                    String errorText = reader.ReadToEnd();
+                    string errorText = reader.ReadToEnd();
                     Console.WriteLine(errorText);
 
                     // log errorText

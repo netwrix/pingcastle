@@ -162,10 +162,10 @@ namespace PingCastle.RPC
         [StructLayout(LayoutKind.Sequential)]
         internal struct LSAPR_OBJECT_ATTRIBUTES
         {
-            public UInt32 Length;
+            public uint Length;
             public IntPtr RootDirectory;
             public IntPtr ObjectName;
-            public UInt32 Attributes;
+            public uint Attributes;
             public IntPtr SecurityDescriptor;
             public IntPtr SecurityQualityOfService;
         }
@@ -173,8 +173,8 @@ namespace PingCastle.RPC
         [StructLayout(LayoutKind.Sequential)]
         private struct LSAPR_POLICY_ACCOUNT_DOM_INFO
         {
-            public UInt16 Length;
-            public UInt16 MaximumLength;
+            public ushort Length;
+            public ushort MaximumLength;
             public IntPtr buffer;
             public IntPtr DomainSid;
         }
@@ -182,23 +182,23 @@ namespace PingCastle.RPC
         [StructLayout(LayoutKind.Sequential)]
         internal struct LSAPR_SID_ENUM_BUFFER
         {
-            public UInt32 Entries;
+            public uint Entries;
             public IntPtr SidInfo;
         }
 
         [StructLayout(LayoutKind.Sequential)]
         private struct LSAPR_REFERENCED_DOMAIN_LIST
         {
-            public UInt32 Entries;
+            public uint Entries;
             public IntPtr Domains;
-            public UInt32 MaxEntries;
+            public uint MaxEntries;
         }
 
         [StructLayout(LayoutKind.Sequential)]
         private struct LSAPR_TRUST_INFORMATION
         {
-            public UInt16 Length;
-            public UInt16 MaximumLength;
+            public ushort Length;
+            public ushort MaximumLength;
             public IntPtr buffer;
             public IntPtr Sid;
         };
@@ -206,7 +206,7 @@ namespace PingCastle.RPC
         [StructLayout(LayoutKind.Sequential)]
         private struct LSAPR_TRANSLATED_NAMES
         {
-            public UInt32 Entries;
+            public uint Entries;
             public IntPtr Names;
         }
 
@@ -214,10 +214,10 @@ namespace PingCastle.RPC
         private struct LSAPR_TRANSLATED_NAME
         {
             public IntPtr Use;
-            public UInt16 Length;
-            public UInt16 MaximumLength;
+            public ushort Length;
+            public ushort MaximumLength;
             public IntPtr buffer;
-            public UInt32 DomainIndex;
+            public uint DomainIndex;
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -242,7 +242,7 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public Int32 LsarOpenPolicy(string SystemName, UInt32 DesiredAccess, out IntPtr PolicyHandle)
+        public int LsarOpenPolicy(string SystemName, uint DesiredAccess, out IntPtr PolicyHandle)
         {
             IntPtr intptrSystemName = Marshal.StringToHGlobalUni(SystemName);
             LSAPR_OBJECT_ATTRIBUTES objectAttributes = new LSAPR_OBJECT_ATTRIBUTES();
@@ -291,7 +291,7 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public Int32 LsarClose(ref IntPtr ServerHandle)
+        public int LsarClose(ref IntPtr ServerHandle)
         {
             IntPtr result = IntPtr.Zero;
             try
@@ -328,7 +328,7 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public Int32 LsarQueryInformationPolicy(IntPtr PolicyHandle, UInt32 InformationClass, out LSA_DOMAIN_INFORMATION PolicyInformation)
+        public int LsarQueryInformationPolicy(IntPtr PolicyHandle, uint InformationClass, out LSA_DOMAIN_INFORMATION PolicyInformation)
         {
             IntPtr result = IntPtr.Zero;
             try
@@ -386,7 +386,7 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public Int32 LsarLookupSids(IntPtr PolicyHandle, SecurityIdentifier[] SidEnumBuffer, out LSA_LOOKUP_RESULT[] LookupResult, UInt32 LookupLevel, out UInt32 MappedCount)
+        public int LsarLookupSids(IntPtr PolicyHandle, SecurityIdentifier[] SidEnumBuffer, out LSA_LOOKUP_RESULT[] LookupResult, uint LookupLevel, out uint MappedCount)
         {
             List<GCHandle> HandleToFree = new List<GCHandle>();
             IntPtr result = IntPtr.Zero;
@@ -425,7 +425,7 @@ namespace PingCastle.RPC
                         // each pinvoke work on a copy of the arguments (without an out specifier)
                         // get back the data
                         IntPtrReferencedDomains = Marshal.ReadIntPtr(tempValuePointer2);
-                        MappedCount = (UInt32)Marshal.ReadInt32(tempValuePointer4);
+                        MappedCount = (uint)Marshal.ReadInt32(tempValuePointer4);
                     }
                     finally
                     {
@@ -458,7 +458,7 @@ namespace PingCastle.RPC
         private LSAPR_SID_ENUM_BUFFER Marshal_LSAPR_SID_ENUM_BUFFER(SecurityIdentifier[] SidEnumBuffer, List<GCHandle> HandleToFree)
         {
             LSAPR_SID_ENUM_BUFFER output = new LSAPR_SID_ENUM_BUFFER();
-            output.Entries = (UInt32)SidEnumBuffer.Length;
+            output.Entries = (uint)SidEnumBuffer.Length;
             IntPtr[] sidPtr = new IntPtr[SidEnumBuffer.Length];
             for (int i = 0; i < SidEnumBuffer.Length; i++)
             {
@@ -487,7 +487,7 @@ namespace PingCastle.RPC
 
             string[] referencedDomainsString = new string[ReferencedDomains.Entries];
             SecurityIdentifier[] referencedDomainsSid = new SecurityIdentifier[ReferencedDomains.Entries];
-            for (UInt32 i = 0; i < ReferencedDomains.Entries; i++)
+            for (uint i = 0; i < ReferencedDomains.Entries; i++)
             {
                 LSAPR_TRUST_INFORMATION trustInformation = (LSAPR_TRUST_INFORMATION)Marshal.PtrToStructure(new IntPtr(ReferencedDomains.Domains.ToInt64() + SizeTrustInformation * i), typeof(LSAPR_TRUST_INFORMATION));
 
@@ -503,7 +503,7 @@ namespace PingCastle.RPC
             }
 
             LSA_LOOKUP_RESULT[] output = new LSA_LOOKUP_RESULT[TranslatedNames.Entries];
-            for (UInt32 i = 0; i < TranslatedNames.Entries; i++)
+            for (uint i = 0; i < TranslatedNames.Entries; i++)
             {
                 LSAPR_TRANSLATED_NAME translatedName = (LSAPR_TRANSLATED_NAME)Marshal.PtrToStructure(new IntPtr(TranslatedNames.Names.ToInt64() + SizeTranslatedName * i), typeof(LSAPR_TRANSLATED_NAME));
                 output[i] = new LSA_LOOKUP_RESULT();

@@ -761,7 +761,7 @@ $('table').not('.model_table').DataTable(
                     (HealthCheckTrustData a, HealthCheckTrustData b)
                         =>
                     {
-                        return String.Compare(a.TrustPartner, b.TrustPartner);
+                        return string.Compare(a.TrustPartner, b.TrustPartner);
                     }
                 );
 
@@ -800,7 +800,7 @@ $('table').not('.model_table').DataTable(
                     trust.KnownDomains.Sort((HealthCheckTrustDomainInfoData a, HealthCheckTrustDomainInfoData b)
                             =>
                         {
-                            return String.Compare(a.DnsName, b.DnsName);
+                            return string.Compare(a.DnsName, b.DnsName);
                         }
                     );
                     foreach (HealthCheckTrustDomainInfoData di in trust.KnownDomains)
@@ -849,19 +849,19 @@ $('table').not('.model_table').DataTable(
             AddBeginTableData();
             foreach (HealthCheckData data in Report)
             {
-                if (!sidmap.ContainsKey(data.DomainFQDN) && !String.IsNullOrEmpty(data.DomainSid))
+                if (!sidmap.ContainsKey(data.DomainFQDN) && !string.IsNullOrEmpty(data.DomainSid))
                 {
                     sidmap.Add(data.DomainFQDN, data.DomainSid);
                 }
                 foreach (HealthCheckTrustData trust in data.Trusts)
                 {
-                    if (!sidmap.ContainsKey(trust.TrustPartner) && !String.IsNullOrEmpty(trust.SID))
+                    if (!sidmap.ContainsKey(trust.TrustPartner) && !string.IsNullOrEmpty(trust.SID))
                     {
                         sidmap.Add(trust.TrustPartner, trust.SID);
                     }
                     foreach (HealthCheckTrustDomainInfoData di in trust.KnownDomains)
                     {
-                        if (!sidmap.ContainsKey(di.DnsName) && !String.IsNullOrEmpty(di.Sid))
+                        if (!sidmap.ContainsKey(di.DnsName) && !string.IsNullOrEmpty(di.Sid))
                         {
                             sidmap.Add(di.DnsName, di.Sid);
                         }
@@ -875,7 +875,7 @@ $('table').not('.model_table').DataTable(
                 {
                     foreach (HealthCheckTrustDomainInfoData di in data.ReachableDomains)
                     {
-                        if (!sidmap.ContainsKey(di.DnsName) && !String.IsNullOrEmpty(di.Sid))
+                        if (!sidmap.ContainsKey(di.DnsName) && !string.IsNullOrEmpty(di.Sid))
                         {
                             sidmap.Add(di.DnsName, di.Sid);
                         }
@@ -1069,7 +1069,7 @@ $('table').not('.model_table').DataTable(
             if (GetUrlCallback == null)
                 return label;
             string htmlData = GetUrlCallback(key, label);
-            if (String.IsNullOrEmpty(htmlData))
+            if (string.IsNullOrEmpty(htmlData))
                 return label;
             return htmlData;
         }

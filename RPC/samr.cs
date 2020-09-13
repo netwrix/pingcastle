@@ -98,7 +98,7 @@ namespace PingCastle.RPC
         [StructLayout(LayoutKind.Sequential)]
         private struct SAMPR_ENUMERATION_BUFFER
         {
-            public UInt32 EntriesRead;
+            public uint EntriesRead;
             public IntPtr Buffer;
         };
 
@@ -106,8 +106,8 @@ namespace PingCastle.RPC
         private struct SAMPR_RID_ENUMERATION
         {
             public IntPtr RelativeId;
-            public UInt16 Length;
-            public UInt16 MaximumLength;
+            public ushort Length;
+            public ushort MaximumLength;
             public IntPtr buffer;
         };
 
@@ -133,7 +133,7 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public Int32 SamrConnect(string server, out IntPtr ServerHandle, UInt32 DesiredAccess)
+        public int SamrConnect(string server, out IntPtr ServerHandle, uint DesiredAccess)
         {
             IntPtr intptrServer = Marshal.StringToHGlobalUni(server);
 
@@ -179,7 +179,7 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public Int32 SamrCloseHandle(ref IntPtr ServerHandle)
+        public int SamrCloseHandle(ref IntPtr ServerHandle)
         {
             IntPtr result = IntPtr.Zero;
             try
@@ -216,11 +216,11 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public Int32 SamrEnumerateDomainsInSamServer(IntPtr ServerHandle,
+        public int SamrEnumerateDomainsInSamServer(IntPtr ServerHandle,
                                                      ref IntPtr EnumerationContext,
                                                      out SAMR_ENUMERATION_ENTRY[] Buffer,
-                                                     UInt32 PreferedMaximumLength,
-                                                     out UInt32 CountReturned)
+                                                     uint PreferedMaximumLength,
+                                                     out uint CountReturned)
         {
             IntPtr result = IntPtr.Zero;
             CountReturned = 0;
@@ -250,7 +250,7 @@ namespace PingCastle.RPC
                         // get back the data
                         EnumerationContext = Marshal.ReadIntPtr(tempValuePointer1);
                         IntptrBuffer = Marshal.ReadIntPtr(tempValuePointer2);
-                        CountReturned = (UInt32)Marshal.ReadInt32(tempValuePointer3);
+                        CountReturned = (uint)Marshal.ReadInt32(tempValuePointer3);
                     }
                     finally
                     {
@@ -295,7 +295,7 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public Int32 SamrLookupDomainInSamServer(IntPtr ServerHandle, string Name, out SecurityIdentifier DomainId)
+        public int SamrLookupDomainInSamServer(IntPtr ServerHandle, string Name, out SecurityIdentifier DomainId)
         {
             IntPtr result = IntPtr.Zero;
             DomainId = null;
@@ -343,7 +343,7 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public Int32 SamrOpenDomain(IntPtr ServerHandle, Int32 DesiredAccess, SecurityIdentifier DomainId, out IntPtr DomainHandle)
+        public int SamrOpenDomain(IntPtr ServerHandle, int DesiredAccess, SecurityIdentifier DomainId, out IntPtr DomainHandle)
         {
             IntPtr result = IntPtr.Zero;
             DomainHandle = IntPtr.Zero;
@@ -386,12 +386,12 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public Int32 SamrEnumerateUsersInDomain(IntPtr DomainHandle,
+        public int SamrEnumerateUsersInDomain(IntPtr DomainHandle,
                                                 ref IntPtr EnumerationContext,
-                                                Int32 UserAccountControl,
+                                                int UserAccountControl,
                                                 out SAMR_ENUMERATION_ENTRY[] Buffer,
-                                                Int32 PreferedMaximumLength,
-                                                out UInt32 CountReturned)
+                                                int PreferedMaximumLength,
+                                                out uint CountReturned)
         {
             IntPtr result = IntPtr.Zero;
             CountReturned = 0;
@@ -421,7 +421,7 @@ namespace PingCastle.RPC
                         // get back the data
                         EnumerationContext = Marshal.ReadIntPtr(tempValuePointer1);
                         IntptrBuffer = Marshal.ReadIntPtr(tempValuePointer2);
-                        CountReturned = (UInt32)Marshal.ReadInt32(tempValuePointer3);
+                        CountReturned = (uint)Marshal.ReadInt32(tempValuePointer3);
                     }
                     finally
                     {

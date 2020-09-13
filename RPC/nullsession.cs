@@ -58,7 +58,7 @@ namespace PingCastle.RPC
         {
             Trace.WriteLine("EnumerateAccountUsingLsa");
             int UserEnumerated = 0;
-            Int32 returnCode;
+            int returnCode;
             IntPtr PolicyHandle = IntPtr.Zero;
             lsa lsa = new lsa();
             lsa.RPCTimeOut = this.RPCTimeOut;
@@ -90,7 +90,7 @@ namespace PingCastle.RPC
                     {
                         enumBuffer[i] = BuildSIDFromDomainSidAndRid(PolicyInformation.DomainSid, currentRid++);
                     }
-                    UInt32 MappedCount;
+                    uint MappedCount;
                     LSA_LOOKUP_RESULT[] LookupResult;
                     returnCode = lsa.LsarLookupSids(PolicyHandle, enumBuffer, out LookupResult, 2, out MappedCount);
                     if (returnCode == 0 || returnCode == 0x00000107)
@@ -98,7 +98,7 @@ namespace PingCastle.RPC
                         retrycount = 0;
                         for (int i = 0; i < enumBuffer.Length && UserEnumerated < MaximumNumber; i++)
                         {
-                            if (LookupResult[i].Use == SID_NAME_USE.SidTypeUser && !String.IsNullOrEmpty(LookupResult[i].TranslatedName))
+                            if (LookupResult[i].Use == SID_NAME_USE.SidTypeUser && !string.IsNullOrEmpty(LookupResult[i].TranslatedName))
                             {
                                 UserEnumerated++;
                                 Trace.WriteLine("User:" + LookupResult[i].TranslatedName);
@@ -132,7 +132,7 @@ namespace PingCastle.RPC
             IntPtr ServerHandle = IntPtr.Zero;
             samr sam = new samr();
             sam.RPCTimeOut = this.RPCTimeOut;
-            Int32 returnCode;
+            int returnCode;
             returnCode = sam.SamrConnect(Server, out ServerHandle, 0x20030);
             if (returnCode != 0)
             {
@@ -143,7 +143,7 @@ namespace PingCastle.RPC
             {
                 IntPtr enumerationContext = IntPtr.Zero;
                 SAMR_ENUMERATION_ENTRY[] Buffer = null;
-                UInt32 CountReturned = 0;
+                uint CountReturned = 0;
                 returnCode = sam.SamrEnumerateDomainsInSamServer(ServerHandle, ref enumerationContext, out Buffer, 10000, out CountReturned);
                 if (returnCode != 0)
                 {
@@ -157,7 +157,7 @@ namespace PingCastle.RPC
                     IntPtr DomainHandle = IntPtr.Zero;
                     IntPtr enumerationContextUser = IntPtr.Zero;
                     SAMR_ENUMERATION_ENTRY[] EnumerationBuffer = null;
-                    UInt32 UserCount = 0;
+                    uint UserCount = 0;
                     returnCode = sam.SamrLookupDomainInSamServer(ServerHandle, Buffer[i].Name, out DomainId);
                     if (returnCode < 0)
                     {
@@ -207,7 +207,7 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public static SecurityIdentifier BuildSIDFromDomainSidAndRid(SecurityIdentifier DomainSid, UInt32 Rid)
+        public static SecurityIdentifier BuildSIDFromDomainSidAndRid(SecurityIdentifier DomainSid, uint Rid)
         {
             byte[] sidByteForm = new byte[SecurityIdentifier.MaxBinaryLength];
             DomainSid.GetBinaryForm(sidByteForm, 0);

@@ -174,12 +174,12 @@ namespace PingCastle.Rules
 
         public virtual int CompareTo(RuleFrameworkReference other)
         {
-            return String.CompareOrdinal(Label, other.Label);
+            return string.CompareOrdinal(Label, other.Label);
         }
 
         public virtual bool Equals(RuleFrameworkReference other)
         {
-            return String.Equals(Label, other.Label) && String.Equals(URL, other.URL);
+            return string.Equals(Label, other.Label) && string.Equals(URL, other.URL);
         }
 
         public virtual string GenerateLink()
@@ -250,7 +250,7 @@ namespace PingCastle.Rules
             }
         }
 
-        public override string Label { get { return "STIG " + ID + (!String.IsNullOrEmpty(Title) ? " - " + Title : null); } }
+        public override string Label { get { return "STIG " + ID + (!string.IsNullOrEmpty(Title) ? " - " + Title : null); } }
     }
 
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
@@ -270,11 +270,11 @@ namespace PingCastle.Rules
         {
             get
             {
-                return "https://www.ssi.gouv.fr/uploads/IMG/pdf/NP_ActiveDirectory_NoteTech.pdf" + (!String.IsNullOrEmpty(Location) ? "#" + Location : null);
+                return "https://www.ssi.gouv.fr/uploads/IMG/pdf/NP_ActiveDirectory_NoteTech.pdf" + (!string.IsNullOrEmpty(Location) ? "#" + Location : null);
             }
         }
 
-        public override string Label { get { return "ANSSI - Recommandations de sécurité relatives à Active Directory - " + ID + (!String.IsNullOrEmpty(Location) ? " [" + Location + "]" : null); } }
+        public override string Label { get { return "ANSSI - Recommandations de sécurité relatives à Active Directory - " + ID + (!string.IsNullOrEmpty(Location) ? " [" + Location + "]" : null); } }
     }
 
     /*[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
@@ -329,7 +329,7 @@ namespace PingCastle.Rules
                     path = "https://www.cert.ssi.gouv.fr/alerte/";
                 if (ID.Contains("-INF-"))
                     path = "https://www.cert.ssi.gouv.fr/information/";
-                return path + ID + (!String.IsNullOrEmpty(Section) ? "/#" + Section : null);
+                return path + ID + (!string.IsNullOrEmpty(Section) ? "/#" + Section : null);
             }
         }
 
@@ -366,7 +366,7 @@ namespace PingCastle.Rules
         {
             if (other is RuleDurANSSIAttribute)
             {
-                return String.Equals(Label, other.Label) && String.Equals(URL, other.URL) && Level == ((RuleDurANSSIAttribute)other).Level;
+                return string.Equals(Label, other.Label) && string.Equals(URL, other.URL) && Level == ((RuleDurANSSIAttribute)other).Level;
             }
             else
             {

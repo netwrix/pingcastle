@@ -156,7 +156,7 @@ namespace PingCastle.HealthCheck
             {
                 attributes.Add("Unknown: 0x" + value.ToString("X"));
             }
-            return String.Join(", ", attributes.ToArray());
+            return string.Join(", ", attributes.ToArray());
         }
 
         static public string GetTrustType(int trustType)

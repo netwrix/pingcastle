@@ -522,19 +522,19 @@ Each square represent a network. It can be used to detect non occupied space or 
                     Add(@" ""network"": """);
                     AddJsonEncoded(subnet.Network.ToString());
                     AddLine(@""",");
-                    if (!String.IsNullOrEmpty(subnet.Description))
+                    if (!string.IsNullOrEmpty(subnet.Description))
                     {
                         Add(@" ""description"": """);
                         AddJsonEncoded(subnet.Description);
                         AddLine(@""",");
                     }
-                    if (!String.IsNullOrEmpty(subnet.Location))
+                    if (!string.IsNullOrEmpty(subnet.Location))
                     {
                         Add(@" ""location"": """);
                         AddJsonEncoded(subnet.Location);
                         AddLine(@""",");
                     }
-                    if (!String.IsNullOrEmpty(subnet.DomainFQDN))
+                    if (!string.IsNullOrEmpty(subnet.DomainFQDN))
                     {
                         Add(@" ""domainFQDN"": """);
                         AddJsonEncoded(subnet.DomainFQDN);

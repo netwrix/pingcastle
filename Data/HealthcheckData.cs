@@ -143,7 +143,7 @@ namespace PingCastle.HealthCheck
                 if (!_forestSet)
                 {
                     _forestSet = true;
-                    if (String.Equals(DnsName, ForestName, StringComparison.InvariantCultureIgnoreCase))
+                    if (string.Equals(DnsName, ForestName, StringComparison.InvariantCultureIgnoreCase))
                         _forest = Domain;
                     else
                     {
@@ -1168,7 +1168,7 @@ namespace PingCastle.HealthCheck
             {
                 if (_forest == null)
                 {
-                    if (String.Equals(ForestFQDN, DomainFQDN, StringComparison.InvariantCultureIgnoreCase))
+                    if (string.Equals(ForestFQDN, DomainFQDN, StringComparison.InvariantCultureIgnoreCase))
                     {
                         _forest = Domain;
                     }
@@ -1180,9 +1180,9 @@ namespace PingCastle.HealthCheck
                         {
                             foreach (var trust in Trusts)
                             {
-                                if (String.Equals(trust.TrustPartner, ForestFQDN, StringComparison.InvariantCultureIgnoreCase))
+                                if (string.Equals(trust.TrustPartner, ForestFQDN, StringComparison.InvariantCultureIgnoreCase))
                                 {
-                                    if (!String.IsNullOrEmpty(trust.SID))
+                                    if (!string.IsNullOrEmpty(trust.SID))
                                     {
                                         sid = trust.SID;
                                         netbiosname = trust.NetBiosName;

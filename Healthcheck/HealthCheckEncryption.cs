@@ -157,17 +157,17 @@ namespace PingCastle.HealthCheck
         {
             EncryptionSettings settings = EncryptionSettings.GetEncryptionSettings();
             string EncryptionKey = settings.EncryptionKey;
-            if (String.IsNullOrEmpty(EncryptionKey))
+            if (string.IsNullOrEmpty(EncryptionKey))
             {
                 foreach (KeySettings keyinfo in settings.RSAKeys)
                 {
-                    if (!String.IsNullOrEmpty(keyinfo.PublicKey))
+                    if (!string.IsNullOrEmpty(keyinfo.PublicKey))
                     {
                         RSACryptoServiceProvider RSA = new RSACryptoServiceProvider();
                         RSAKeyExtensions.FromXmlStringDotNetCore2(RSA, keyinfo.PublicKey);
                         return RSA;
                     }
-                    if (!String.IsNullOrEmpty(keyinfo.PrivateKey))
+                    if (!string.IsNullOrEmpty(keyinfo.PrivateKey))
                     {
                         RSACryptoServiceProvider RSA = new RSACryptoServiceProvider();
                         RSAKeyExtensions.FromXmlStringDotNetCore2(RSA, keyinfo.PrivateKey);
@@ -183,9 +183,9 @@ namespace PingCastle.HealthCheck
                     if (keyinfo.Name == EncryptionKey)
                     {
                         RSACryptoServiceProvider RSA = new RSACryptoServiceProvider();
-                        if (!String.IsNullOrEmpty(keyinfo.PublicKey))
+                        if (!string.IsNullOrEmpty(keyinfo.PublicKey))
                             RSAKeyExtensions.FromXmlStringDotNetCore2(RSA, keyinfo.PublicKey);
-                        else if (!String.IsNullOrEmpty(keyinfo.PrivateKey))
+                        else if (!string.IsNullOrEmpty(keyinfo.PrivateKey))
                             RSAKeyExtensions.FromXmlStringDotNetCore2(RSA, keyinfo.PrivateKey);
                         else
                             throw new PingCastleException(@"The container """ + EncryptionKey + @""" does not contain a public or a private key");
@@ -238,7 +238,7 @@ namespace PingCastle.HealthCheck
             }
             foreach (KeySettings keyinfo in settings.RSAKeys)
             {
-                if (!String.IsNullOrEmpty(keyinfo.PrivateKey))
+                if (!string.IsNullOrEmpty(keyinfo.PrivateKey))
                 {
                     Trace.WriteLine("Loading key " + keyinfo.Name);
                     RSACryptoServiceProvider RSA = new RSACryptoServiceProvider();

@@ -89,7 +89,7 @@ namespace PingCastle.Data
                     }
 
                     // try to complete based on sid
-                    if (!String.IsNullOrEmpty(domainKey.DomainSID) && sidreference.ContainsKey(domainKey.DomainSID))
+                    if (!string.IsNullOrEmpty(domainKey.DomainSID) && sidreference.ContainsKey(domainKey.DomainSID))
                     {
                         var reference = sidreference[domainKey.DomainSID];
                         if (string.IsNullOrEmpty(domainKey.DomainNetBIOS))
@@ -97,7 +97,7 @@ namespace PingCastle.Data
                         if (string.IsNullOrEmpty(domainKey.DomainName))
                             domainKey.DomainName = reference.DomainName;
                     }
-                    else if (!String.IsNullOrEmpty(domainKey.DomainName))
+                    else if (!string.IsNullOrEmpty(domainKey.DomainName))
                     {
                         foreach (var reference in sidreference.Values)
                         {
@@ -109,7 +109,7 @@ namespace PingCastle.Data
                             }
                         }
                     }
-                    else if (!String.IsNullOrEmpty(domainKey.DomainNetBIOS))
+                    else if (!string.IsNullOrEmpty(domainKey.DomainNetBIOS))
                     {
                         foreach (var reference in sidreference.Values)
                         {

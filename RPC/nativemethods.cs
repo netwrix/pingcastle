@@ -15,7 +15,7 @@ namespace PingCastle.RPC
         [DllImport("Rpcrt4.dll", EntryPoint = "RpcBindingFromStringBindingW",
             CallingConvention = CallingConvention.StdCall,
             CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern Int32 RpcBindingFromStringBinding(String bindingString, out IntPtr lpBinding);
+        internal static extern int RpcBindingFromStringBinding(string bindingString, out IntPtr lpBinding);
 
         [DllImport("Rpcrt4.dll", EntryPoint = "NdrClientCall2", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode, SetLastError = false)]
@@ -27,23 +27,23 @@ namespace PingCastle.RPC
 
         [DllImport("Rpcrt4.dll", EntryPoint = "NdrClientCall2", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr intptrSystemName, ref PingCastle.RPC.lsa.LSAPR_OBJECT_ATTRIBUTES objectAttributes, UInt32 DesiredAccess, out IntPtr PolicyHandle);
+        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr intptrSystemName, ref PingCastle.RPC.lsa.LSAPR_OBJECT_ATTRIBUTES objectAttributes, uint DesiredAccess, out IntPtr PolicyHandle);
 
         [DllImport("Rpcrt4.dll", EntryPoint = "NdrClientCall2", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr PolicyHandle, UInt32 InformationClass, out IntPtr IntPtrPolicyInformation);
+        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr PolicyHandle, uint InformationClass, out IntPtr IntPtrPolicyInformation);
 
         [DllImport("Rpcrt4.dll", EntryPoint = "NdrClientCall2", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr PolicyHandle, PingCastle.RPC.lsa.LSAPR_SID_ENUM_BUFFER enumBuffer, out IntPtr IntPtrReferencedDomains, IntPtr IntPtrTranslatedNames, UInt32 LookupLevel, out UInt32 MappedCount);
+        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr PolicyHandle, PingCastle.RPC.lsa.LSAPR_SID_ENUM_BUFFER enumBuffer, out IntPtr IntPtrReferencedDomains, IntPtr IntPtrTranslatedNames, uint LookupLevel, out uint MappedCount);
 
         [DllImport("Rpcrt4.dll", EntryPoint = "NdrClientCall2", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr intptrServer, out IntPtr ServerHandle, UInt32 DesiredAccess);
+        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr intptrServer, out IntPtr ServerHandle, uint DesiredAccess);
 
         [DllImport("Rpcrt4.dll", EntryPoint = "NdrClientCall2", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr ServerHandle, ref IntPtr EnumerationContext, out IntPtr IntptrBuffer, UInt32 PreferedMaximumLength, out UInt32 CountReturned);
+        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr ServerHandle, ref IntPtr EnumerationContext, out IntPtr IntptrBuffer, uint PreferedMaximumLength, out uint CountReturned);
 
         [DllImport("Rpcrt4.dll", EntryPoint = "NdrClientCall2", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode, SetLastError = false)]
@@ -51,11 +51,11 @@ namespace PingCastle.RPC
 
         [DllImport("Rpcrt4.dll", EntryPoint = "NdrClientCall2", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr ServerHandle, Int32 DesiredAccess, byte[] sid, out IntPtr DomainHandle);
+        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr ServerHandle, int DesiredAccess, byte[] sid, out IntPtr DomainHandle);
 
         [DllImport("Rpcrt4.dll", EntryPoint = "NdrClientCall2", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr DomainHandle, ref IntPtr EnumerationContext, Int32 UserAccountControl, out IntPtr IntptrBuffer, Int32 PreferedMaximumLength, ref UInt32 CountReturned);
+        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr DomainHandle, ref IntPtr EnumerationContext, int UserAccountControl, out IntPtr IntptrBuffer, int PreferedMaximumLength, ref uint CountReturned);
 
         [DllImport("Rpcrt4.dll", EntryPoint = "NdrClientCall2", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode, SetLastError = false)]
@@ -75,18 +75,18 @@ namespace PingCastle.RPC
 
         [DllImport("Rpcrt4.dll", EntryPoint = "RpcBindingFree", CallingConvention = CallingConvention.StdCall,
             CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern Int32 RpcBindingFree(ref IntPtr lpString);
+        internal static extern int RpcBindingFree(ref IntPtr lpString);
 
         //#region RpcStringBindingCompose
 
         [DllImport("Rpcrt4.dll", EntryPoint = "RpcStringBindingComposeW", CallingConvention = CallingConvention.StdCall,
             CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern Int32 RpcStringBindingCompose(
-            String ObjUuid,
-            String ProtSeq,
-            String NetworkAddr,
-            String Endpoint,
-            String Options,
+        internal static extern int RpcStringBindingCompose(
+            string ObjUuid,
+            string ProtSeq,
+            string NetworkAddr,
+            string Endpoint,
+            string Options,
             out IntPtr lpBindingString
         );
 
@@ -108,57 +108,57 @@ namespace PingCastle.RPC
         [StructLayout(LayoutKind.Sequential)]
         public struct RPC_SECURITY_QOS
         {
-            public Int32 Version;
-            public Int32 Capabilities;
-            public Int32 IdentityTracking;
-            public Int32 ImpersonationType;
+            public int Version;
+            public int Capabilities;
+            public int IdentityTracking;
+            public int ImpersonationType;
         };
 
         [DllImport("Rpcrt4.dll", EntryPoint = "RpcBindingSetAuthInfoW", CallingConvention = CallingConvention.StdCall,
             CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern Int32 RpcBindingSetAuthInfo(IntPtr Binding,
-                                                           String ServerPrincName,
-                                                           UInt32 AuthnLevel,
-                                                           UInt32 AuthnSvc,
+        internal static extern int RpcBindingSetAuthInfo(IntPtr Binding,
+                                                           string ServerPrincName,
+                                                           uint AuthnLevel,
+                                                           uint AuthnSvc,
                                                            IntPtr identity,
                                                            uint AuthzSvc);
 
         [DllImport("Rpcrt4.dll", EntryPoint = "RpcBindingSetAuthInfoExW", CallingConvention = CallingConvention.StdCall,
             CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern Int32 RpcBindingSetAuthInfoEx(IntPtr lpBinding,
+        internal static extern int RpcBindingSetAuthInfoEx(IntPtr lpBinding,
                                                              string ServerPrincName,
-                                                             UInt32 AuthnLevel,
-                                                             UInt32 AuthnSvc,
+                                                             uint AuthnLevel,
+                                                             uint AuthnSvc,
                                                              ref SEC_WINNT_AUTH_IDENTITY AuthIdentity,
-                                                             UInt32 AuthzSvc,
+                                                             uint AuthzSvc,
                                                              ref RPC_SECURITY_QOS SecurityQOS);
 
         [DllImport("Rpcrt4.dll", EntryPoint = "RpcBindingSetAuthInfoW", CallingConvention = CallingConvention.StdCall,
             CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern Int32 RpcBindingSetAuthInfo(IntPtr lpBinding,
+        internal static extern int RpcBindingSetAuthInfo(IntPtr lpBinding,
                                                            string ServerPrincName,
-                                                           UInt32 AuthnLevel,
-                                                           UInt32 AuthnSvc,
+                                                           uint AuthnLevel,
+                                                           uint AuthnSvc,
                                                            ref SEC_WINNT_AUTH_IDENTITY AuthIdentity,
-                                                           UInt32 AuthzSvc);
+                                                           uint AuthzSvc);
 
         [DllImport("Rpcrt4.dll", EntryPoint = "RpcBindingSetAuthInfoW", CallingConvention = CallingConvention.StdCall,
             CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern Int32 RpcBindingSetAuthInfo(IntPtr lpBinding,
+        internal static extern int RpcBindingSetAuthInfo(IntPtr lpBinding,
                                                            string ServerPrincName,
-                                                           UInt32 AuthnLevel,
-                                                           UInt32 AuthnSvc,
+                                                           uint AuthnLevel,
+                                                           uint AuthnSvc,
                                                            UIntPtr pointer,
-                                                           UInt32 AuthzSvc);
+                                                           uint AuthzSvc);
 
         [DllImport("Rpcrt4.dll", EntryPoint = "RpcBindingSetOption", CallingConvention = CallingConvention.StdCall, SetLastError = false)]
-        internal static extern Int32 RpcBindingSetOption(IntPtr Binding, UInt32 Option, UInt32 OptionValue);
+        internal static extern int RpcBindingSetOption(IntPtr Binding, uint Option, uint OptionValue);
 
         [DllImport("Rpcrt4.dll", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern Int32 RpcEpResolveBinding(IntPtr Binding, IntPtr RpcClientInterface);
+        internal static extern int RpcEpResolveBinding(IntPtr Binding, IntPtr RpcClientInterface);
 
         [DllImport("advapi32.dll", SetLastError = true)]
-        internal static extern IntPtr GetSidSubAuthority(IntPtr sid, UInt32 subAuthorityIndex);
+        internal static extern IntPtr GetSidSubAuthority(IntPtr sid, uint subAuthorityIndex);
 
         [DllImport("advapi32.dll", SetLastError = true)]
         internal static extern IntPtr GetSidSubAuthorityCount(IntPtr psid);

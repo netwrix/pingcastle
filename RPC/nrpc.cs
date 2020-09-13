@@ -114,7 +114,7 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public Int32 DsrEnumerateDomainTrusts(string server, int flag, out List<TrustedDomain> domains)
+        public int DsrEnumerateDomainTrusts(string server, int flag, out List<TrustedDomain> domains)
         {
             IntPtr result = IntPtr.Zero;
             domains = null;

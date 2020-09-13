@@ -4,17 +4,14 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using PingCastle.misc;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.DirectoryServices.ActiveDirectory;
 using System.IO;
 using System.Net;
 using System.Security.Permissions;
 using System.ServiceModel;
-using System.Text;
-using System.Threading;
 using System.Xml;
 
 namespace PingCastle.ADWS

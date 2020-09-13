@@ -4,9 +4,8 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using PingCastle.Healthcheck;
+
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Net;

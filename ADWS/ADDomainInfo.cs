@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.DirectoryServices;
 using System.Security.Permissions;
 using System.Security.Principal;
-using System.Text;
 using System.Xml;
 
 namespace PingCastle.ADWS

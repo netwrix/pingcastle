@@ -15,7 +15,6 @@ using System.Security.Permissions;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
-using PingCastle.Data;
 using PingCastle.Healthcheck;
 using PingCastle.Rules;
 

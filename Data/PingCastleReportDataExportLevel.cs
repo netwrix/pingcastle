@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PingCastle.Data
+﻿namespace PingCastle.Data
 {
 	public enum PingCastleReportDataExportLevel
 	{

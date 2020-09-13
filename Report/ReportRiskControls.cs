@@ -1,10 +1,7 @@
 ﻿using PingCastle.Healthcheck;
 using PingCastle.Rules;
-using PingCastle.template;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace PingCastle.Report
 {

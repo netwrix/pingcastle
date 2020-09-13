@@ -1,8 +1,4 @@
 ﻿using PingCastle.Healthcheck;
-using PingCastle.Rules;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace PingCastle.Report
 {

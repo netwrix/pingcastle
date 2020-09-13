@@ -11,8 +11,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Reflection;
-using System.Text;
 using System.Threading;
 
 namespace PingCastle.Scanners

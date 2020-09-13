@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Security.Principal;
-using System.Text;
 
 namespace PingCastle.RPC
 {

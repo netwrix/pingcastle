@@ -5,14 +5,12 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Configuration;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
-using System.Text;
 
 namespace PingCastle.ADWS
 {

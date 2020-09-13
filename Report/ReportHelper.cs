@@ -1,9 +1,6 @@
-﻿using PingCastle.Rules;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel;
 using System.Reflection;
-using System.Text;
 
 namespace PingCastle.Report
 {

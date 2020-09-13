@@ -9,8 +9,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
-using System.Security.Principal;
-using System.Text;
 using System.Xml.Serialization;
 using PingCastle.Data;
 using PingCastle.Rules;

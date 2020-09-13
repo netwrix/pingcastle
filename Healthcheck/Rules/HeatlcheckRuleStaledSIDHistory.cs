@@ -6,7 +6,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Text;
 using PingCastle.Data;
 using PingCastle.Rules;
 

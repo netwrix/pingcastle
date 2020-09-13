@@ -4,12 +4,10 @@ using PingCastle.misc;
 using PingCastle.template;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Reflection;
-using System.Text;
 
 namespace PingCastle.Report
 {

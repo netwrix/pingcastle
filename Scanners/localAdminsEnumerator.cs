@@ -11,7 +11,6 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Security.Principal;
-using System.Text;
 
 namespace PingCastle.Scanners
 {

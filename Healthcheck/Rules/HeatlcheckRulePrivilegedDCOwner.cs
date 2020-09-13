@@ -4,10 +4,8 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
+
 using System.Security.Principal;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules

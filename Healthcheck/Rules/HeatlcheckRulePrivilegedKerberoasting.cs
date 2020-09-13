@@ -6,7 +6,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules

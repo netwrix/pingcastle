@@ -285,6 +285,8 @@ namespace PingCastle.Graph.Database
 					{
 						EveryoneLikeGroup = true;
 					}
+                    if (Sid.Contains("\0"))
+                        Sid = Sid.Split('\0')[0];
 					ntaccount = NativeMethods.ConvertSIDToName(Sid, serverForSIDResolution, out referencedDomain);
 					if (ntaccount == Sid)
 					{
@@ -341,6 +343,8 @@ namespace PingCastle.Graph.Database
 				{
 					node.Type = "foreignsecurityprincipal";
 					node.Sid = node.Dn.Substring(3, node.Dn.IndexOf(',') - 3);
+                    if (node.Sid.Contains("\0"))
+                        node.Sid = node.Sid.Split('\0')[0];
 				}
 			}
 			return CreateNode(node);

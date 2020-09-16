@@ -629,10 +629,10 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>Presence of service accounts in the domain admin group (at least {threshold} accounts have a password which never expire): {count}</value>
   </data>
   <data name="P_Delegated_Description" xml:space="preserve">
-    <value>The purpose is to ensure that all Administrator Accounts have the configuration flag "this account is sensitive and cannot be delegated"</value>
+    <value>The purpose is to ensure that all Administrator Accounts have the configuration flag "this account is sensitive and cannot be delegated" (and are not member of the built-in group "Protected Users" when your domain functional level is at least Windows Server 2012 R2).</value>
   </data>
   <data name="P_Delegated_Solution" xml:space="preserve">
-    <value>To correct the situation, you should make sure that all your Administrator Accounts has the check-box "This account is sensitive and cannot be delegated" active. Please not that there is a section bellow in this report named "Admin Groups" which give more information.</value>
+    <value>To correct the situation, you should make sure that all your Administrator Accounts has the check-box "This account is sensitive and cannot be delegated" active or add your Administrator Accounts to the built-in group "Protected Users" if your domain functional level is at least Windows Server 2012 R2 (some functionalities may not work properly afterwards, you should check the <a href="https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/how-to-configure-protected-accounts">official documentation</a>). Please note that there is a section bellow in this report named "Admin Groups" which give more information.</value>
   </data>
   <data name="P_Delegated_Rationale" xml:space="preserve">
     <value>Presence of Admin accounts which have not the flag "this account is sensitive and cannot be delegated": {count}</value>
@@ -733,7 +733,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 2003 for the workstations within the domain</value>
   </data>
   <data name="S_OS_2003_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap –Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2003_Rationale" xml:space="preserve">
     <value>Presence of Windows 2003 = {count}</value>
@@ -742,7 +742,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 2000 for the workstations within the domain</value>
   </data>
   <data name="S_OS_2000_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap –Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2000_Rationale" xml:space="preserve">
     <value>Presence of Windows 2000 = {count}</value>
@@ -751,7 +751,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows XP for the workstations within the domain</value>
   </data>
   <data name="S_OS_XP_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap –Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_XP_Rationale" xml:space="preserve">
     <value>Presence of Windows XP = {count}</value>
@@ -760,7 +760,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows NT for the workstations within the domain</value>
   </data>
   <data name="S_OS_NT_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap –Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_NT_Rationale" xml:space="preserve">
     <value>Presence of Windows NT = {count}</value>
@@ -1738,7 +1738,8 @@ https://secureidentity.se/adprep-bug-in-windows-server-2016/</value>
   <data name="P_PrivilegeEveryone_Documentation" xml:space="preserve">
     <value>https://www.romhack.io/slides/RomHack%202018%20-%20Andrea%20Pierini%20-%20whoami%20priv%20-%20show%20me%20your%20Windows%20privileges%20and%20I%20will%20lead%20you%20to%20SYSTEM.pdf
 https://www.tarlogic.com/en/blog/abusing-seloaddriverprivilege-for-privilege-escalation/
-https://github.com/decoder-it/psgetsystem</value>
+https://github.com/decoder-it/psgetsystem
+https://twitter.com/0gtweet/status/1303427935647531018?s=20</value>
   </data>
   <data name="P_PrivilegeEveryone_Rationale" xml:space="preserve">
     <value>Number of privileges granted by GPO to any user: {count}</value>
@@ -1759,7 +1760,8 @@ SeBackupPrivilege can be used to backup Windows registry and use third party too
 SeTakeOwnershipPrivilege can be used to take ownership of any secureable object in the system including a service registry key. Then to change its ACL to define its own service running as LocalSystem.
 SeCreateTokenPrivilege can be used to create a custom token with all privileges and thus be abused like SeTcbPrivilege 
 SeImpersonatePrivilege and SeAssignPrimaryTokenPrivilege can be abused to impersonate privileged tokens. These tokens can be retrieved by establishing security context such as Local DCOM DCE/RPC reflexion.
-SeSecurityPrivilege can be use to clear the security event log and shrink it to make events flushed soon. Also read security log and view events where the user inverted the login and its password.</value>
+SeSecurityPrivilege can be use to clear the security event log and shrink it to make events flushed soon. Also read security log and view events where the user inverted the login and its password.
+SeManageVolumePrivilege can be use to reset the security descriptor on the C volume and thus, change the inherited permissions to critical files</value>
   </data>
   <data name="P_PrivilegeEveryone_Title" xml:space="preserve">
     <value>Ensure that dangerous privileges are not granted to everyone by GPO</value>
@@ -2719,7 +2721,7 @@ https://docs.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-loggi
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows Vista for the workstations within the domain</value>
   </data>
   <data name="S_OS_Vista_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap –Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_Vista_Rationale" xml:space="preserve">
     <value>Presence of Windows Vista = {count}</value>
@@ -2770,7 +2772,7 @@ https://docs.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-loggi
     <value>The detail can be found in &lt;a href="#operatingsystems"&gt;Operating Systems&lt;/a&gt;</value>
   </data>
   <data name="S_OS_2008_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the servers to a more recent version of Windows, starting from Windows 2012. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap –Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the servers to a more recent version of Windows, starting from Windows 2012. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2008_TechnicalExplanation" xml:space="preserve">
     <value>The Windows 2008 OS is not supported any longer, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
@@ -3333,7 +3335,10 @@ PARTIAL_SECRETS_ACCOUNT (0x04000000) | TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION (0
     <value>User: {0}</value>
   </data>
   <data name="P_ProtectedUsers_Documentation" xml:space="preserve">
-    <value>https://docs.microsoft.com/en-us/windows-server/security/credentials-protection-and-management/protected-users-security-group</value>
+    <value>https://docs.microsoft.com/en-us/windows-server/security/credentials-protection-and-management/protected-users-security-group
+https://blog.netwrix.com/2015/02/20/add-sensitive-user-accounts-to-active-directory-protected-users-group/
+https://dirteam.com/sander/2014/11/25/ten-things-you-need-to-be-aware-of-before-using-the-protected-users-group/
+https://blog.andreas-schreiner.de/2018/09/07/active-directory-sicherheit-teil-1-privilegierte-benutzer/</value>
   </data>
   <data name="P_ProtectedUsers_Rationale" xml:space="preserve">
     <value>Number of admins not in Protected Users: {count}</value>
@@ -3351,7 +3356,10 @@ PARTIAL_SECRETS_ACCOUNT (0x04000000) | TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION (0
 - reduce Kerberos ticket lifetime
 - enforce usage of strong encryption algorthms such as AES
 - prevent caching of passwords on workstations
-- prevent any type of Kerberos delegation</value>
+- prevent any type of Kerberos delegation
+
+Please also note that a few links (see below) recommends that at least one account is kept outside of the group Protected Users in case there is a permission problem.
+That's why this rule is not triggered if only one account is not protected.</value>
   </data>
   <data name="P_ProtectedUsers_Title" xml:space="preserve">
     <value>Check if all privileged accounts are in the special group Protected Users.</value>
@@ -3741,7 +3749,7 @@ That means that an extraction of its password (using DCSync for example) can lea
     <value>Check if password roation is in place with AzureAD SSO</value>
   </data>
   <data name="S_OS_Win7_Description" xml:space="preserve">
-    <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows Vista for the workstations within the domain</value>
+    <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 7 for the workstations within the domain</value>
   </data>
   <data name="S_OS_Win7_Documentation" xml:space="preserve">
     <value>https://techcommunity.microsoft.com/t5/windows-it-pro-blog/activate-windows-7-esus-on-multiple-devices-with-a-mak/ba-p/1167196</value>
@@ -3753,7 +3761,7 @@ That means that an extraction of its password (using DCSync for example) can lea
     <value>The detail can be found in &lt;a href="#operatingsystems"&gt;Operating Systems&lt;/a&gt;</value>
   </data>
   <data name="S_OS_Win7_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap –Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_Win7_TechnicalExplanation" xml:space="preserve">
     <value>The Windows 7 OS is not supported any longer, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.

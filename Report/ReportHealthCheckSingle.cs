@@ -1391,7 +1391,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 		protected void GenerateCompromissionGraphIndirectLinksInformation()
 		{
 			GenerateSubSection("Indirect links", "cgindirectlinks");
-			AddParagraph("This part tries to summarize in a single table if major issues have been found.<br>Focus on finding critical objects such as the Everyone group then try to decrease the number of objects having indirect access.<br>The detail is displayed below.");
+            AddParagraph("This part tries to summarize in a single table if major issues have been found.<br>Focus on finding critical objects such as the Everyone group then try to decrease the number of objects having indirect access.<br>The detail is displayed below.");
 			if (Report.ControlPaths.AnomalyAnalysis == null || Report.ControlPaths.AnomalyAnalysis.Count == 0)
 			{
 				AddParagraph("No data has been found.");

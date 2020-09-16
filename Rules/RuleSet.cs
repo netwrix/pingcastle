@@ -67,13 +67,31 @@ namespace PingCastle.Rules
 			Trace.WriteLine("Begining to run risk rule");
 			foreach (var rule in Rules)
 			{
-				Trace.WriteLine("Rule: " + rule.GetType().ToString());
-				ReInitRule(rule);
-				if (rule.Analyze(data))
-				{
-					Trace.WriteLine("  matched");
-					output.Add(rule);
-				}
+				string ruleName = rule.GetType().ToString();
+                Trace.WriteLine("Rule: " + ruleName);
+                try
+                {
+                    ReInitRule(rule);
+                    if (rule.Analyze(data))
+                    {
+                        Trace.WriteLine("  matched");
+                        output.Add(rule);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("An exception occured when running the rule : " + ruleName);
+                    Console.WriteLine("Please contact support@pingcastle.com with the following details so the problem can be fixed");
+                    Console.ResetColor();
+                    Console.WriteLine("Message: " + ex.Message);
+                    Console.WriteLine("StackTrace: " + ex.StackTrace);
+                    if (ex.InnerException != null)
+                    {
+                        Console.WriteLine("Inner StackTrace: " + ex.InnerException.StackTrace);
+                    }
+                }
+
 			}
 			Trace.WriteLine("Risk rule run stopped");
 			ReComputeTotals(data, output.ConvertAll( x => (IRuleScore) x));

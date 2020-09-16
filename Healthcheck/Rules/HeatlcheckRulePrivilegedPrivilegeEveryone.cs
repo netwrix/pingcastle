@@ -32,6 +32,7 @@ namespace PingCastle.Healthcheck.Rules
 				"SeImpersonatePrivilege",
 				"SeAssignPrimaryTokenPrivilege",
 				"SeSecurityPrivilege",
+                "SeManageVolumePrivilege",
 			};
 			foreach (var privilege in healthcheckData.GPPRightAssignment)
             {

@@ -11,9 +11,9 @@ using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-    [RuleModel("A-AuditDC", RiskRuleCategory.Anomalies, RiskModelCategory.Audit)]
+	[RuleModel("A-AuditDC", RiskRuleCategory.Anomalies, RiskModelCategory.Audit)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-    [RuleIntroducedIn(2, 8)]
+    [RuleIntroducedIn(2,8)]
     [RuleMaturityLevel(3)]
     public class HeatlcheckRuleAnomalyAuditDC : RuleBase<HealthcheckData>
     {
@@ -46,11 +46,11 @@ namespace PingCastle.Healthcheck.Rules
                     CheckSuccess = true;
                 if (value == 2 || value == 3)
                     CheckFailure = true;
-                if (value == 4)
-                {
-                    CheckExcludeFailure = true;
-                    CheckExcludeSuccess = true;
-                }
+				if (value == 4)
+				{
+					CheckExcludeFailure = true;
+					CheckExcludeSuccess = true;
+				}
             }
 
             public string IsObjectiveAchived()
@@ -73,12 +73,12 @@ namespace PingCastle.Healthcheck.Rules
             }
         }
 
-        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             var auditToHavePerDC = new Dictionary<string, Dictionary<string, RequiredSimple>>(StringComparer.OrdinalIgnoreCase);
             foreach (var dc in healthcheckData.DomainControllers)
             {
-                auditToHavePerDC.Add(dc.DistinguishedName,
+                auditToHavePerDC.Add(dc.DistinguishedName, 
                     new Dictionary<string, RequiredSimple>(StringComparer.OrdinalIgnoreCase)
                     {
                         {"AuditPolicyChange", new RequiredSimple("Audit Policy Change", "Collect event 4908, to track special groups such as \"administrators\"", true)},
@@ -150,13 +150,13 @@ namespace PingCastle.Healthcheck.Rules
         static bool IsGPOAppliedToDC(HealthcheckData healthcheckData, string DCdn, IGPOReference g)
         {
             if (healthcheckData.GPOInfoDic.ContainsKey(g.GPOId))
-            {
-                var gpo = healthcheckData.GPOInfoDic[g.GPOId];
+			{
+				var gpo = healthcheckData.GPOInfoDic[g.GPOId];
                 foreach (var ou in gpo.AppliedTo)
                 {
                     if (DCdn.EndsWith(ou))
                     {
-                        return true;
+						return true;
                     }
                 }
             }

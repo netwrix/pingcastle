@@ -38,7 +38,7 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     foreach (var member in dc.msDSNeverRevealGroup)
                     {
-                        if (mandatoryDN.ContainsKey(member))
+                        if (!string.IsNullOrEmpty(member) && mandatoryDN.ContainsKey(member))
                             mandatoryDN.Remove(member);
                     }
                 }

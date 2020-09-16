@@ -679,6 +679,16 @@ namespace PingCastle.Healthcheck
                     // process only not disabled computers
                     if ((x.UserAccountControl & 0x00000002) == 0)
                     {
+                        // ignore honey pot accounts
+                        if (healthcheckData.ListHoneyPot != null)
+                        {
+                            foreach (var u in healthcheckData.ListHoneyPot)
+                            {
+                                if (u.DistinguishedName == x.DistinguishedName)
+                                    return;
+                            }
+                        }
+
                         // we consider DC as a computer in the special OU or having the primary group ID of DC or Enterprise DC
                         // known problem: if the DC is a member (not primary group) & not located in the DC OU
                         if (x.DistinguishedName.Contains("OU=Domain Controllers,DC=") || x.PrimaryGroupID == 516 || x.PrimaryGroupID == 521)
@@ -821,6 +831,7 @@ namespace PingCastle.Healthcheck
             string[] properties = new string[] {
                         "distinguishedName",
                         "sIDHistory",
+                        "WhenCreated",
             };
             Trace.WriteLine("checking sid history for groups");
             int count = 0;
@@ -3129,6 +3140,7 @@ namespace PingCastle.Healthcheck
 				"SeImpersonatePrivilege",
 				"SeAssignPrimaryTokenPrivilege",
 				"SeSecurityPrivilege",
+                "SeManageVolumePrivilege",
 			};
 			foreach (string privilege in privileges)
 			{
@@ -3932,13 +3944,13 @@ namespace PingCastle.Healthcheck
                 foreach (var w in v)
                 {
                     if (!sidResolution.ContainsKey(w))
-                        sidResolution[w] = null;
+                        sidResolution[w] = w;
                 }
             foreach (var v in msDSNeverRevealGroup.Values)
                 foreach (var w in v)
                 {
                     if (!sidResolution.ContainsKey(w))
-                        sidResolution[w] = null;
+                        sidResolution[w] = w;
                 }
             foreach (var dn in new List<string>(sidResolution.Keys))
             {

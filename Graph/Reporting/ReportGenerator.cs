@@ -391,6 +391,8 @@ namespace PingCastle.Graph.Reporting
 					// ignore deleted accounts
 					if (node.Sid.StartsWith(domainInfo.DomainSid.Value + "-"))
 						continue;
+                    if (node.Sid.Contains("\0"))
+                        continue;
 					SingleCompromiseGraphDependancyData data;
 					var sid = new SecurityIdentifier(node.Sid);
 					var domainSid = sid.AccountDomainSid;

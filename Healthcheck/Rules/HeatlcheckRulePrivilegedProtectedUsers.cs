@@ -12,7 +12,7 @@ using PingCastle.Rules;
 namespace PingCastle.Healthcheck.Rules
 {
 	[RuleModel("P-ProtectedUsers", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AccountTakeOver)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+	[RuleComputation(RuleComputationType.TriggerOnThreshold, 10, 1)]
     [RuleSTIG("V-78131", "Accounts with domain level administrative privileges must be members of the Protected Users group in domains with a domain functional level of Windows 2012 R2 or higher.")]
 	[RuleCERTFR("CERTFR-2017-ALE-012")]
     [RuleIntroducedIn(2,9)]
@@ -37,9 +37,9 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
-            foreach(var user in users)
+            foreach (var user in users)
                 AddRawDetail(user);
-			return null;
+        	return null;
         }
     }
 }

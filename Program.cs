@@ -581,6 +581,15 @@ namespace PingCastle
 						case "--scmode-single":
 							ScannerBase.ScanningMode = 2;
 							break;
+                        case "--scmode-workstation":
+                            ScannerBase.ScanningMode = 3;
+                            break;
+                        case "--scmode-server":
+                            ScannerBase.ScanningMode = 4;
+                            break;
+                        case "--scmode-dc":
+                            ScannerBase.ScanningMode = 5;
+                            break;
 						case "--sendxmlTo":
 						case "--sendXmlTo":
 							if (i + 1 >= args.Length)
@@ -1172,6 +1181,9 @@ namespace PingCastle
 			}
 			Console.WriteLine("  options for scanners:");
 			Console.WriteLine("    --scmode-single   : force scanner to check one single computer");
+            Console.WriteLine("    --scmode-workstation : force scanner to check workstations");
+            Console.WriteLine("    --scmode-server   : force scanner to check servers");
+            Console.WriteLine("    --scmode-dc       : force scanner to check dc");
 			Console.WriteLine("    --nslimit <number>: Limit the number of users to enumerate (default: unlimited)");
 			Console.WriteLine("    --foreigndomain <sid> : foreign domain targeted using its FQDN or sids");
 			Console.WriteLine("                        Example of SID: S-1-5-21-4005144719-3948538632-2546531719");

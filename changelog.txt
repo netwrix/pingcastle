@@ -1,3 +1,15 @@
+2.9.1.0
+* added options for the scanner to select only dc, servers, workstations
+* added the privilege SeManageVolumePrivilege to the list of dangerous privileges
+* when a rule crashes, continue the execution but with a message asking the user to call the support
+* fix a problem when RODC Denied Users are from a domain PingCastle can't access
+* group SID History data was not analyzed regarding its creation date
+* added a zerologon scanner (not in healthcheck because it will trigger IDS & AV in the future
+* fix a bug when a SID being duplicated is used as member of a group
+* Do not raise an alert when the account sensitive checkbox is not checked but the user is in protected users. Thanks Fanaw.
+* Do not raise an alert if there is only one user not in protected users as this is a regular admin practice. Thanks Oliver-André
+* Add the possibility to have DC in the honeyPot account. Typically used for riverbed devices for example
+
 2.9.0.0
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 Information: the 3.0 version of PingCastle will run by default on .net 4 instead of .net 2 (this may break the compatibiliy with Windows 2000)

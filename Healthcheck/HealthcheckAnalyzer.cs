@@ -684,7 +684,7 @@ namespace PingCastle.Healthcheck
                         {
                             foreach (var u in healthcheckData.ListHoneyPot)
                             {
-                                if (u.DistinguishedName == x.DistinguishedName)
+                                if (string.Equals(u.Name, x.SAMAccountName, StringComparison.InvariantCultureIgnoreCase))
                                     return;
                             }
                         }
@@ -3452,7 +3452,7 @@ namespace PingCastle.Healthcheck
 						{
 							foreach (var u in healthcheckData.ListHoneyPot)
 							{
-								if (u.DistinguishedName == x.DistinguishedName)
+                                if (string.Equals(u.Name, x.SAMAccountName, StringComparison.InvariantCultureIgnoreCase))
 									return;
 							}
 						}

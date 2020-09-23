@@ -861,7 +861,7 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
     <value>The purpose is to ensure that there are as few inactive computers as possible within the domain</value>
   </data>
   <data name="S_C_Inactive_Solution" xml:space="preserve">
-    <value>To mitigate the risk, you should monitor the number of inactive accounts and reduce it as much as possible. A list of all inactive accounts is obtainable through the command: &lt;i&gt;Search-ADaccount -ComputersOnly -AccountInactive -Timespan 180&lt;/i&gt;.</value>
+    <value>To mitigate the risk, you should monitor the number of inactive accounts and reduce it as much as possible. A list of all inactive accounts is obtainable through the command: &lt;i&gt;Search-ADaccount -ComputersOnly -AccountInactive -Timespan (New-TimeSpan -Days 180)&lt;/i&gt;.</value>
   </data>
   <data name="S_C_Inactive_Rationale" xml:space="preserve">
     <value>Relatively high number of inactive computer accounts: {count}% (more than {threshold}% of all computers)</value>
@@ -870,7 +870,7 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
     <value>The purpose is to ensure that there are as few inactive accounts as possible within the domain</value>
   </data>
   <data name="S_Inactive_Solution" xml:space="preserve">
-    <value>To mitigate the risk, you should monitor the number of inactive accounts and reduce it as much as possible. A list of all inactive accounts is obtainable through the command: &lt;i&gt;Search-ADaccount -UsersOnly -AccountInactive -Timespan 180&lt;/i&gt;.</value>
+    <value>To mitigate the risk, you should monitor the number of inactive accounts and reduce it as much as possible. A list of all inactive accounts is obtainable through the command: &lt;i&gt;Search-ADaccount -UsersOnly -AccountInactive -Timespan (New-TimeSpan -Days 180)&lt;/i&gt;.</value>
   </data>
   <data name="S_Inactive_Rationale" xml:space="preserve">
     <value>Relatively high number of inactive user accounts: {count}% (more than {threshold}% of all users)</value>

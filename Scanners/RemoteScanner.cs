@@ -39,6 +39,15 @@ namespace PingCastle.Scanners
 			{"sshd" , "OpenSSH SSH Server"},
 			{"DNTUS26" , "DameWare Remote Support 2.6"},
 			{"WebexService" , "Cisco WebEx"},
+			{"Client32" , "NetSupport Client"},
+			{"Remote Desktop Service" , "CloudBerry - MSP360"},
+			{"AeroadminService" , "Aero Admin"},
+			{"SupremoService" , "SupRemo"},
+			{"SoftrosSpellChecker" , "Softros LAN Messenger"},
+			{"SoftrosTSEngine" , "Softros LAN Messenger"},
+			{"SplashtopRemoteService" , "Splashtop Remote Access"},
+			{"chromoting" , "Chrome Remote Desktop"},
+			{"Zoho Assist-Unattended Support" , "Zoho Assist"},
 			
 		};
 

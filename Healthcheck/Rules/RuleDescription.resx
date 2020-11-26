@@ -1451,7 +1451,7 @@ http://blog.backslasher.net/preventing-users-from-adding-computers-to-a-domain.h
     <value />
   </data>
   <data name="S_PwdNotRequired_Documentation" xml:space="preserve">
-    <value>https://support.microsoft.com/en-us/kb/305144</value>
+    <value>https://docs.microsoft.com/troubleshoot/windows-server/identity/useraccountcontrol-manipulate-account-properties</value>
   </data>
   <data name="S_Reversible_Documentation" xml:space="preserve">
     <value />
@@ -1462,7 +1462,7 @@ http://blog.backslasher.net/preventing-users-from-adding-computers-to-a-domain.h
   <data name="S_SMB_v1_Documentation" xml:space="preserve">
     <value>https://github.com/lgandx/Responder-Windows
 https://blogs.technet.microsoft.com/josebda/2015/04/21/the-deprecation-of-smb1-you-should-be-planning-to-get-rid-of-this-old-smb-dialect
-https://support.microsoft.com/en-us/help/2696547/how-to-enable-and-disable-smbv1,-smbv2,-and-smbv3-in-windows-vista,-windows-server-2008,-windows-7,-windows-server-2008-r2,-windows-8,-and-windows-server-2012</value>
+https://docs.microsoft.com/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3</value>
   </data>
   <data name="S_Vuln_MS14_068_Documentation" xml:space="preserve">
     <value>https://technet.microsoft.com/en-us/library/security/ms14-068.aspx </value>

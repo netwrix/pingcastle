@@ -1398,7 +1398,7 @@ https://support.microsoft.com/en-us/help/326690/anonymous-ldap-operations-to-act
     <value />
   </data>
   <data name="S_ADRegistration_Documentation" xml:space="preserve">
-    <value>http://support.microsoft.com/?id=243327
+    <value>https://docs.microsoft.com/troubleshoot/windows-server/identity/default-workstation-numbers-join-domain
 http://prajwaldesai.com/allow-domain-user-to-add-computer-to-domain/
 http://blog.backslasher.net/preventing-users-from-adding-computers-to-a-domain.html</value>
   </data>

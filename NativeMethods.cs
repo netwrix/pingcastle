@@ -643,7 +643,45 @@ namespace PingCastle
 			}
 		}
 
-		[DllImport("winspool.drv", CharSet = CharSet.Unicode, EntryPoint = "OpenPrinterW", SetLastError = true)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct WKSTA_INFO_100
+        {
+            public int platform_id;
+            public string computer_name;
+            public string lan_group;
+            public int ver_major;
+            public int ver_minor;
+        }
+
+        [DllImport("netapi32.dll", CharSet = CharSet.Unicode)]
+        internal static extern uint NetWkstaGetInfo(
+                string servername, 
+                int level, 
+                out IntPtr bufptr);
+
+        [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+        public static string GetComputerVersion(string server)
+        {
+            IntPtr buffer = IntPtr.Zero;
+            uint ret = NetWkstaGetInfo(server,100, out buffer);
+            if (ret != 0)
+            {
+                Trace.WriteLine("GetComputerVersion " + server + " returned " + ret);
+                return "not found";
+            }
+            try
+            {
+                WKSTA_INFO_100 data = (WKSTA_INFO_100)Marshal.PtrToStructure(buffer, typeof(WKSTA_INFO_100));
+                string version = data.ver_major.ToString() + "." + data.ver_minor.ToString();
+                return version;
+            }
+            finally
+            {
+                NetApiBufferFree(buffer);
+            }
+        }
+
+        [DllImport("winspool.drv", CharSet = CharSet.Unicode, EntryPoint = "OpenPrinterW", SetLastError = true)]
 		internal static extern bool OpenPrinter(string pPrinterName, out IntPtr phPrinter, IntPtr pDefault);
 
 		[DllImport("winspool.drv", CharSet = CharSet.Unicode, EntryPoint = "ClosePrinter", SetLastError = true)]

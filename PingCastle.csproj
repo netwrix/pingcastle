@@ -283,6 +283,7 @@
     <Compile Include="Rules\RuleSet.cs" />
     <Compile Include="Scanners\AntivirusScanner.cs" />
     <Compile Include="Scanners\bluekeepscanner.cs" />
+    <Compile Include="Scanners\ComputerVersion.cs" />
     <Compile Include="Scanners\ZeroLogonScanner.cs" />
     <Compile Include="Scanners\ExportUsersScanner.cs" />
     <Compile Include="Scanners\RemoteScanner.cs" />

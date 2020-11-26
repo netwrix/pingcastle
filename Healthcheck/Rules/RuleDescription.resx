@@ -2039,7 +2039,7 @@ As an alternative, the file GptTmpl.inf can be manually edited.</value>
     <value>The purpose is to ensure that the Recycle Bin feature is enabled</value>
   </data>
   <data name="P_RecycleBin_Documentation" xml:space="preserve">
-    <value />
+    <value>https://enterinit.com/powershell-enable-active-directory-recycle-bin/<value />
   </data>
   <data name="P_RecycleBin_Rationale" xml:space="preserve">
     <value>The Recycle Bin is not enabled</value>

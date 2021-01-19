@@ -632,7 +632,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that all Administrator Accounts have the configuration flag "this account is sensitive and cannot be delegated" (and are not member of the built-in group "Protected Users" when your domain functional level is at least Windows Server 2012 R2).</value>
   </data>
   <data name="P_Delegated_Solution" xml:space="preserve">
-    <value>To correct the situation, you should make sure that all your Administrator Accounts has the check-box "This account is sensitive and cannot be delegated" active or add your Administrator Accounts to the built-in group "Protected Users" if your domain functional level is at least Windows Server 2012 R2 (some functionalities may not work properly afterwards, you should check the <a href="https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/how-to-configure-protected-accounts">official documentation</a>). Please note that there is a section bellow in this report named "Admin Groups" which give more information.</value>
+    <value>To correct the situation, you should make sure that all your Administrator Accounts has the check-box "This account is sensitive and cannot be delegated" active or add your Administrator Accounts to the built-in group "Protected Users" if your domain functional level is at least Windows Server 2012 R2 (some functionalities may not work properly afterwards, you should check the official documentation at https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/how-to-configure-protected-accounts). Please note that there is a section bellow in this report named "Admin Groups" which give more information.</value>
   </data>
   <data name="P_Delegated_Rationale" xml:space="preserve">
     <value>Presence of Admin accounts which have not the flag "this account is sensitive and cannot be delegated": {count}</value>
@@ -2039,7 +2039,7 @@ As an alternative, the file GptTmpl.inf can be manually edited.</value>
     <value>The purpose is to ensure that the Recycle Bin feature is enabled</value>
   </data>
   <data name="P_RecycleBin_Documentation" xml:space="preserve">
-    <value>https://enterinit.com/powershell-enable-active-directory-recycle-bin/<value />
+    <value>https://enterinit.com/powershell-enable-active-directory-recycle-bin/</value>
   </data>
   <data name="P_RecycleBin_Rationale" xml:space="preserve">
     <value>The Recycle Bin is not enabled</value>

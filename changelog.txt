@@ -1,3 +1,25 @@
+2.9.2.0
+* modify P-UnkownDelegation to not be triggered with SID having their RID < 1000 (RID is the last number)
+* modify A-AuditDC to not request simple audit policies anymore and removing the need for Other Account Logon Events reserved for future use
+* modify S-PwdNeverExpires description to take in account linux servers which do not change their machine password
+* modify P-ProtectedUsers to change the limit from 1 to 2
+* added exception for AzureADKerberos in S-DCRegistration and AzureADKerberos
+* Fix user scanner which where filtering only admincount users
+* Fix authentication by user/password when the user was submitted as UPN
+* Fix the program was resilient for control characters when serializing to xml, but not to non existing character
+* Fix a problem when duplicated SID (\0CNF:) were used in permissions
+* Add gpo applied order property (aka gpo precedence)
+* rewrote the way subnets are collect to avoid the 1500 items limit (MS-ADTS 3.1.1.3.4.6 aka MaxValRange)
+* Add in the report lDAPIPDenyList (IP denied for LDAP communication) if any found
+* Fix: the GPO full info was not displayed in the report in the section Obfuscated Passwords
+* Add linked GPO to site when browsing GPO info
+* Added the new service for the remote scanner based on github PR
+* Be more resilient if the security of DC objects cannot be examined
+* Fix documentation links
+* Add scanner computer version
+* Added a comment in PingCastle.exe.config about uploading reports using the API with TLS 1.2 and next vs testing old protocols
+* Fix some gallery.technet.microsoft.com link (other need to be fixed)
+
 2.9.1.0
 * added options for the scanner to select only dc, servers, workstations
 * added the privilege SeManageVolumePrivilege to the list of dangerous privileges
@@ -67,6 +89,7 @@ Information: the 3.0 version of PingCastle will run by default on .net 4 instead
 * Removed BSI reference as the document is not online anymore
 * Added ms-mcs-admpwd read check in delegations
 * Fix members of admin groups outside the AD were not visible in the report
+* Add some VPAT / RGAA V4 compability
 
 2.8.0.0
 * reworked the way third party components are included in reports for better html auditing (aka Content Security Policy)

@@ -7,10 +7,6 @@
 using PingCastle.Data;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Security.Principal;
-using System.Text;
 
 namespace PingCastle.Healthcheck
 {
@@ -28,5 +24,7 @@ namespace PingCastle.Healthcheck
         DomainKey Domain { get; }
         bool ShouldDomainBeHidden { get; }
         string GetJasonOutput();
+
+        List<KeyValuePair<string, object>> GetData();
     }
 }

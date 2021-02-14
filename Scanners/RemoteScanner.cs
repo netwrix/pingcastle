@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) Ping Castle. All rights reserved.
 // https://www.pingcastle.com
 //
@@ -20,36 +20,35 @@ namespace PingCastle.Scanners
         public override string Description { get { return "Check if a remote desktop solution is installed on the computer."; } }
 
         static Dictionary<string, string> RemoteReference = new Dictionary<string, string>{
-			
-			{"TermService" , "Windows Remote Desktop Service"},
-			{"Remote Administrator Service" , "Remote Administrator Service"},
-			{"TeamViewer5" , "Team Viewer V5"},
-			{"TeamViewer" , "Team Viewer"},
-			{"uvnc_service" , "Ultra VNC"},
-			{"vncserver" , "Real VNC"},
-			{"tvnserver" , "Tight VNC"},
-			{"TigerVNC" , "Tiger VNC"},
-			{"AmmyyAdmin" , "Ammyy Admin"},
-			{"LMIGuardianSvc" , "LogMeIn Rescue"},
-			{"LogMeIn" , "LogMeIn"},
-			{"icas" , "iTALC"},
-			{"AnyDesk" , "AnyDesk"},
-			{"BASupportExpressStandaloneService_Dameware" , "Dameware Remote Everywhere"},
-			{"dwmrcs" , "DameWare Mini Remote Control"},
-			{"sshd" , "OpenSSH SSH Server"},
-			{"DNTUS26" , "DameWare Remote Support 2.6"},
-			{"WebexService" , "Cisco WebEx"},
-			{"Client32" , "NetSupport Client"},
-			{"Remote Desktop Service" , "CloudBerry - MSP360"},
-			{"AeroadminService" , "Aero Admin"},
-			{"SupremoService" , "SupRemo"},
-			{"SoftrosSpellChecker" , "Softros LAN Messenger"},
-			{"SoftrosTSEngine" , "Softros LAN Messenger"},
-			{"SplashtopRemoteService" , "Splashtop Remote Access"},
-			{"chromoting" , "Chrome Remote Desktop"},
-			{"Zoho Assist-Unattended Support" , "Zoho Assist"},
-			
-		};
+
+            {"TermService" , "Windows Remote Desktop Service"},
+            {"Remote Administrator Service" , "Remote Administrator Service"},
+            {"TeamViewer5" , "Team Viewer V5"},
+            {"TeamViewer" , "Team Viewer"},
+            {"uvnc_service" , "Ultra VNC"},
+            {"vncserver" , "Real VNC"},
+            {"tvnserver" , "Tight VNC"},
+            {"TigerVNC" , "Tiger VNC"},
+            {"AmmyyAdmin" , "Ammyy Admin"},
+            {"LMIGuardianSvc" , "LogMeIn Rescue"},
+            {"LogMeIn" , "LogMeIn"},
+            {"icas" , "iTALC"},
+            {"AnyDesk" , "AnyDesk"},
+            {"BASupportExpressStandaloneService_Dameware" , "Dameware Remote Everywhere"},
+            {"dwmrcs" , "DameWare Mini Remote Control"},
+            {"sshd" , "OpenSSH SSH Server"},
+            {"DNTUS26" , "DameWare Remote Support 2.6"},
+            {"WebexService" , "Cisco WebEx"},
+            {"Client32" , "NetSupport Client"},
+            {"Remote Desktop Service" , "CloudBerry - MSP360"},
+            {"AeroadminService" , "Aero Admin"},
+            {"SupremoService" , "SupRemo"},
+            {"SoftrosSpellChecker" , "Softros LAN Messenger"},
+            {"SoftrosTSEngine" , "Softros LAN Messenger"},
+            {"SplashtopRemoteService" , "Splashtop Remote Access"},
+            {"chromoting" , "Chrome Remote Desktop"},
+            {"Zoho Assist-Unattended Support" , "Zoho Assist"},
+        };
 
         static List<string> customService = new List<string>();
 

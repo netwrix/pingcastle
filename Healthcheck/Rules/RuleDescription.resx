@@ -632,7 +632,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that all Administrator Accounts have the configuration flag "this account is sensitive and cannot be delegated" (and are not member of the built-in group "Protected Users" when your domain functional level is at least Windows Server 2012 R2).</value>
   </data>
   <data name="P_Delegated_Solution" xml:space="preserve">
-    <value>To correct the situation, you should make sure that all your Administrator Accounts has the check-box "This account is sensitive and cannot be delegated" active or add your Administrator Accounts to the built-in group "Protected Users" if your domain functional level is at least Windows Server 2012 R2 (some functionalities may not work properly afterwards, you should check the <a href="https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/how-to-configure-protected-accounts">official documentation</a>). Please note that there is a section bellow in this report named "Admin Groups" which give more information.</value>
+    <value>To correct the situation, you should make sure that all your Administrator Accounts has the check-box "This account is sensitive and cannot be delegated" active or add your Administrator Accounts to the built-in group "Protected Users" if your domain functional level is at least Windows Server 2012 R2 (some functionalities may not work properly afterwards, you should check the &lt;a href="https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/how-to-configure-protected-accounts"&gt;official documentation&lt;/a&gt;). Please note that there is a section bellow in this report named "Admin Groups" which give more information.</value>
   </data>
   <data name="P_Delegated_Rationale" xml:space="preserve">
     <value>Presence of Admin accounts which have not the flag "this account is sensitive and cannot be delegated": {count}</value>
@@ -1295,7 +1295,8 @@ You can use the PowerShell command to get its status:
 https://support.microsoft.com/en-us/help/326690/anonymous-ldap-operations-to-active-directory-are-disabled-on-windows</value>
   </data>
   <data name="A_Krbtgt_Documentation" xml:space="preserve">
-    <value>https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51</value>
+    <value>https://github.com/microsoft/New-KrbtgtKeys.ps1
+https://github.com/PSSecTools/Krbtgt</value>
   </data>
   <data name="A_LAPS_Not_Installed_Documentation" xml:space="preserve">
     <value>https://www.microsoft.com/en-us/download/details.aspx?id=46899</value>
@@ -1687,7 +1688,7 @@ Note: The SID will only be resolvable after the PDC emulator role is transferred
     <value>DN: {0} Account: {1} Right: {2}</value>
   </data>
   <data name="P_DelegationKeyAdmin_Documentation" xml:space="preserve">
-    <value>https://gallery.technet.microsoft.com/scriptcenter/Enterprise-Key-Admins-720eb270
+    <value>https://itpro-tips.com/wp-content/uploads/files/TechnetGallery/Enterprise-Key-Admins-720eb270.zip
 https://secureidentity.se/adprep-bug-in-windows-server-2016/</value>
   </data>
   <data name="P_OperatorsEmpty_Description" xml:space="preserve">
@@ -2039,7 +2040,7 @@ As an alternative, the file GptTmpl.inf can be manually edited.</value>
     <value>The purpose is to ensure that the Recycle Bin feature is enabled</value>
   </data>
   <data name="P_RecycleBin_Documentation" xml:space="preserve">
-    <value>https://enterinit.com/powershell-enable-active-directory-recycle-bin/<value />
+    <value>https://enterinit.com/powershell-enable-active-directory-recycle-bin</value>
   </data>
   <data name="P_RecycleBin_Rationale" xml:space="preserve">
     <value>The Recycle Bin is not enabled</value>
@@ -2617,8 +2618,8 @@ https://github.com/ANSSI-FR/AD-control-paths</value>
     <value>The purpose is to ensure that the audit policy on domain controllers collect the right set of events.</value>
   </data>
   <data name="A_AuditDC_Solution" xml:space="preserve">
-    <value>Identitfy the Audit settings to apply and fix them.
-    Beware that there is two places for audit settings.
+    <value>Identify the Audit settings to apply and fix them.
+    Be aware that there are two places for audit settings.
     For "Simple" audit configuration:
     in Computer Configuration -&gt; Policies -&gt; Windows Settings -&gt; Security Settings -&gt; Local Policies -&gt; Audit Policies
     For "Advanced" audit configuration:
@@ -3158,7 +3159,8 @@ If there is any entry found, the program consider that NTFRS is in use for SYSVO
     <value>The purpose is to ensure that every account has a password which is compliant with password expiration policies</value>
   </data>
   <data name="S_PwdNeverExpires_Documentation" xml:space="preserve">
-    <value>https://adsecurity.org/?p=4115</value>
+    <value>https://adsecurity.org/?p=4115
+https://access.redhat.com/discussions/1283873</value>
   </data>
   <data name="S_PwdNeverExpires_Rationale" xml:space="preserve">
     <value>Number of accounts which has never-expiring passwords: {count}</value>
@@ -3169,10 +3171,15 @@ If there is any entry found, the program consider that NTFRS is in use for SYSVO
   <data name="S_PwdNeverExpires_Solution" xml:space="preserve">
     <value>In order to make Active Directory enforce periodic password change, accounts must not have the "Password never expires" flag set in the "Account" tab of the user properties. Their passwords should then be rolled immediately.
 For services accounts, Windows provide the "managed service accounts" and "group managed service accounts" features to facilite the automatic change of passwords.
-Please note that there is a document in the section below which references solutions for service accounts of well known products.</value>
+Please note that there is a document in the section below which references solutions for service accounts of well known products.
+Also Linux servers should be configured with automatic machine account change.</value>
   </data>
   <data name="S_PwdNeverExpires_TechnicalExplanation" xml:space="preserve">
-    <value>Some accounts have passwords which never expire. Should an attacker compromise one of these accounts, he would be able to maintain long-term access to the Active Directory domain.</value>
+    <value>Some accounts have passwords which never expire. Should an attacker compromise one of these accounts, he would be able to maintain long-term access to the Active Directory domain.
+    
+We have noted that some Linux servers, domain joined, are configured with a password which never expires.
+This is a misconfiguration because a password change can be configured. It was however not the default on some plateform.
+See one of the link below for more information.</value>
   </data>
   <data name="S_PwdNeverExpires_Title" xml:space="preserve">
     <value>Check that there is no account with never-expiring passwords</value>
@@ -3653,7 +3660,7 @@ And thus enable an attacker to take control of the domain by modifying GPO appli
     <value />
   </data>
   <data name="A_NoNetSessionHardening_Documentation" xml:space="preserve">
-    <value>https://gallery.technet.microsoft.com/Net-Cease-Blocking-Net-1e8dcb5b
+    <value>https://github.com/p0w3rsh3ll/NetCease
 https://adsecurity.org/?p=3299</value>
   </data>
   <data name="A_NoNetSessionHardening_Rationale" xml:space="preserve">
@@ -3727,7 +3734,7 @@ A misconfigured application can change the user password using this old mechanis
   </data>
   <data name="T_AzureADSSO_Documentation" xml:space="preserve">
     <value>https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-sso-faq#how-can-i-roll-over-the-kerberos-decryption-key-of-the-azureadssoacc-computer-account
-https://gallery.technet.microsoft.com/Azure-AD-SSO-Key-Rollover-d2f1604a
+https://itpro-tips.com/wp-content/uploads/files/TechnetGallery/Azure-AD-SSO-Key-Rollover-d2f1604a.zip
 https://www.dsinternals.com/en/impersonating-office-365-users-mimikatz/</value>
   </data>
   <data name="T_AzureADSSO_Rationale" xml:space="preserve">

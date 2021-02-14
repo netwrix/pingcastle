@@ -5,14 +5,12 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Configuration;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
-using System.Text;
 
 namespace PingCastle.ADWS
 {
@@ -31,7 +29,7 @@ namespace PingCastle.ADWS
         }
     }
 
-	internal class HeaderInspector : IClientMessageInspector
+    internal class HeaderInspector : IClientMessageInspector
     {
 
         SoapHeader[] Headers;
@@ -40,7 +38,7 @@ namespace PingCastle.ADWS
         {
             Headers = headers;
         }
-        
+
         public object BeforeSendRequest(ref Message request, IClientChannel channel)
         {
             foreach (SoapHeader soapHeader in Headers)
@@ -57,14 +55,14 @@ namespace PingCastle.ADWS
     }
 
     [ComVisible(false)]
-	internal class SoapHeaderBehavior : BehaviorExtensionElement, IEndpointBehavior
+    internal class SoapHeaderBehavior : BehaviorExtensionElement, IEndpointBehavior
     {
         SoapHeader[] Headers;
         public SoapHeaderBehavior(SoapHeader[] headers)
         {
             Headers = headers;
         }
-        
+
         public void AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters)
         {
         }

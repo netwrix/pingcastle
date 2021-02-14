@@ -4,23 +4,21 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+using PingCastle.Rules;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("A-CertWeakRsaComponent", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-	[RuleDurANSSI(3, "certificates_vuln", "Weak or vulnerable certificates")]
-    [RuleIntroducedIn(2,9)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleDurANSSI(3, "certificates_vuln", "Weak or vulnerable certificates")]
+    [RuleIntroducedIn(2, 9)]
     public class HeatlcheckRuleAnomalyCertWeakRSAComponent : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             foreach (HealthcheckCertificateData data in healthcheckData.TrustedCertificates)
             {
@@ -30,7 +28,7 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     key = cert.PublicKey.Key as RSA;
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     Trace.WriteLine("Non RSA key detected in certificate");
                 }
@@ -43,12 +41,12 @@ namespace PingCastle.Healthcheck.Rules
                             var b = new byte[4];
                             for (int i = 0; i < rsaparams.Exponent.Length; i++)
                             {
-                                b[i] = rsaparams.Exponent[rsaparams.Exponent.Length -1 -i];
+                                b[i] = rsaparams.Exponent[rsaparams.Exponent.Length - 1 - i];
                             }
                             var exponent = BitConverter.ToInt32(b, 0);
                             if (exponent < 65537)
                             {
-                                AddRawDetail(data.Source, cert.Subject, exponent); 
+                                AddRawDetail(data.Source, cert.Subject, exponent);
                             }
                         }
                     }

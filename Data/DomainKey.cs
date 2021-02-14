@@ -5,21 +5,18 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Security.Principal;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace PingCastle.Data
 {
-	[DebuggerDisplay("FQDN: {DomainName} SID: {DomainSID} NetBIOS: {DomainNetBIOS}")]
+    [DebuggerDisplay("FQDN: {DomainName} SID: {DomainSID} NetBIOS: {DomainNetBIOS}")]
     public class DomainKey : IComparable<DomainKey>, IEquatable<DomainKey>
     {
         public string DomainName { get; set; }
         public string DomainSID { get; set; }
-		public string DomainNetBIOS { get; set; }
-		public bool IsComplete { get { return DomainSID != null && DomainName != null && DomainNetBIOS != null; } }
+        public string DomainNetBIOS { get; set; }
+        public bool IsComplete { get { return DomainSID != null && DomainName != null && DomainNetBIOS != null; } }
 
         private DomainKey()
         {
@@ -27,25 +24,25 @@ namespace PingCastle.Data
 
         static Regex sidRegex = new Regex(@"(^$|^S-\d-(\d+-){1,14}\d+$)");
 
-		public static DomainKey Create(string DnsName, string domainSid, string domainNetbios)
-		{
-			var key = new DomainKey(DnsName, domainSid, domainNetbios);
-			if (key.DomainSID == null && key.DomainNetBIOS == key.DomainSID && key.DomainName == key.DomainNetBIOS)
-			{
-				return null;
-			}
-			return key;
-		}
+        public static DomainKey Create(string DnsName, string domainSid, string domainNetbios)
+        {
+            var key = new DomainKey(DnsName, domainSid, domainNetbios);
+            if (key.DomainSID == null && key.DomainNetBIOS == key.DomainSID && key.DomainName == key.DomainNetBIOS)
+            {
+                return null;
+            }
+            return key;
+        }
 
         protected DomainKey(string DnsName, string domainSid, string domainNetbios)
         {
-			
-			if (!string.IsNullOrEmpty(DnsName))
-			{
-				// SID History data stored the SID in the FQDN field
-				if (domainSid != DnsName)
-					DomainName = DnsName.ToLowerInvariant();
-			}
+
+            if (!string.IsNullOrEmpty(DnsName))
+            {
+                // SID History data stored the SID in the FQDN field
+                if (domainSid != DnsName)
+                    DomainName = DnsName.ToLowerInvariant();
+            }
             if (!string.IsNullOrEmpty(domainSid))
             {
                 if (sidRegex.IsMatch(domainSid))
@@ -55,11 +52,11 @@ namespace PingCastle.Data
                 else
                 {
                     Trace.WriteLine("Unable to parse the SID " + domainSid);
-					throw new PingCastleException("Unable to parse the SID \"" + domainSid + "\" - it should be like S-1-5-21-3777291851-731158365-1300944990");
+                    throw new PingCastleException("Unable to parse the SID \"" + domainSid + "\" - it should be like S-1-5-21-3777291851-731158365-1300944990");
                 }
             }
-			if (!string.IsNullOrEmpty(domainNetbios))
-				DomainNetBIOS = domainNetbios.ToUpperInvariant();
+            if (!string.IsNullOrEmpty(domainNetbios))
+                DomainNetBIOS = domainNetbios.ToUpperInvariant();
         }
 
         public override bool Equals(object obj)
@@ -77,7 +74,7 @@ namespace PingCastle.Data
         {
 
             if (!string.IsNullOrEmpty(DomainSID) && !string.IsNullOrEmpty(d.DomainSID))
-                return string.Equals(DomainSID, d.DomainSID, StringComparison.InvariantCultureIgnoreCase) ;
+                return string.Equals(DomainSID, d.DomainSID, StringComparison.InvariantCultureIgnoreCase);
             // important:
             // if a SID is being associated to one domain, propagate this information
             if (string.Equals(DomainName, d.DomainName, StringComparison.InvariantCultureIgnoreCase))
@@ -140,12 +137,12 @@ namespace PingCastle.Data
             return DomainName + " (" + DomainSID.ToUpperInvariant() + ")";
         }
 
-		public static bool IsDuplicateNameButNotDuplicateDomain(DomainKey a, DomainKey b)
-		{
-			return ( a !=null && b != null && String.Compare(a.DomainName, b.DomainName, StringComparison.InvariantCultureIgnoreCase) == 0
-					&& a.DomainSID != null && b.DomainSID != null
-					&& a.DomainSID != b.DomainSID);
-		}
+        public static bool IsDuplicateNameButNotDuplicateDomain(DomainKey a, DomainKey b)
+        {
+            return (a != null && b != null && String.Compare(a.DomainName, b.DomainName, StringComparison.InvariantCultureIgnoreCase) == 0
+                    && a.DomainSID != null && b.DomainSID != null
+                    && a.DomainSID != b.DomainSID);
+        }
 
     }
 }

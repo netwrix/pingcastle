@@ -4,20 +4,18 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
+using System.Collections.Generic;
 
 namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("P-RODCNeverReveal", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.RODC)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-    [RuleIntroducedIn(2,9)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(3, "rodc_never_reveal", "Dangerous configuration of read-only domain controllers (RODC) (neverReveal)")]
     public class HeatlcheckRulePrivilegedRODCNeverReveal : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.DomainFunctionalLevel < 3)
                 return 0;

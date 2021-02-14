@@ -4,30 +4,27 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("A-NullSession", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-	//[RuleBSI("M 2.412")]
-	[RuleSTIG("V-14798", "Directory data (outside the root DSE) of a non-public directory must be configured to prevent anonymous access.", STIGFramework.ActiveDirectoryService2003)]
+    [RuleModel("A-NullSession", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    //[RuleBSI("M 2.412")]
+    [RuleSTIG("V-14798", "Directory data (outside the root DSE) of a non-public directory must be configured to prevent anonymous access.", STIGFramework.ActiveDirectoryService2003)]
     [RuleMaturityLevel(2)]
     public class HeatlcheckRuleAnomalyNullSession : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.DomainControllers != null)
             {
                 foreach (var DC in healthcheckData.DomainControllers)
                 {
-					if (DC.HasNullSession)
-					{
-						AddRawDetail(DC.DCName);
-					}
+                    if (DC.HasNullSession)
+                    {
+                        AddRawDetail(DC.DCName);
+                    }
                 }
             }
             return null;

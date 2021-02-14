@@ -90,6 +90,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ADWS\IADConnection.cs" />
+    <Compile Include="ADWS\LinuxConnection.cs" />
+    <Compile Include="ADWS\LinuxFileConnection.cs" />
+    <Compile Include="ADWS\WindowsFileConnection.cs" />
     <Compile Include="Bot\Bot.cs" />
     <Compile Include="Bot\BotData.cs" />
     <Compile Include="Bot\BotStream.cs" />
@@ -114,6 +117,7 @@
     <Compile Include="Data\PingCastleReportCollection.cs" />
     <Compile Include="Data\DataHelper.cs" />
     <Compile Include="Data\PingCastleReportHistoryCollection.cs" />
+    <Compile Include="Healthcheck\InfrastructureSettings.cs" />
     <Compile Include="Healthcheck\FakeHealthCheckDataGenerator.cs" />
     <Compile Include="Healthcheck\HealthCheckEncryption.cs" />
     <Compile Include="Data\HealthCheckBUEntityData.cs" />
@@ -281,6 +285,7 @@
     <Compile Include="License.cs" />
     <Compile Include="RPC\spool.cs" />
     <Compile Include="Rules\RuleSet.cs" />
+    <Compile Include="ADWS\LinuxSidResolver.cs" />
     <Compile Include="Scanners\AntivirusScanner.cs" />
     <Compile Include="Scanners\bluekeepscanner.cs" />
     <Compile Include="Scanners\ComputerVersion.cs" />

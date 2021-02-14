@@ -4,21 +4,18 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("S-Reversible", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleModel("S-Reversible", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleDurANSSI(3, "reversible_password", "Accounts with passwords stored using reversible encryption")]
     public class HeatlcheckRuleStaledReversibleEncryption : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-			return healthcheckData.UserAccountData.NumberReversibleEncryption;
+            return healthcheckData.UserAccountData.NumberReversibleEncryption;
         }
     }
 }

@@ -5,13 +5,11 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -45,7 +43,7 @@ namespace PingCastle
         /// <returns>A valid <see cref="License"/>.</returns>
         public override License GetLicense(LicenseContext context, Type type, object instance, bool allowExceptions)
         {
-            IPingCastleLicenseInfo licenseInfo = (IPingCastleLicenseInfo) instance;
+            IPingCastleLicenseInfo licenseInfo = (IPingCastleLicenseInfo)instance;
             return new ADHealthCheckingLicense(licenseInfo.GetSerialNumber());
         }
         #endregion
@@ -82,18 +80,18 @@ namespace PingCastle
         public ADHealthCheckingLicense(string license)
             : this(license, true)
         {
-            
+
         }
 
         public ADHealthCheckingLicense(string license, bool DoAKeyCheck)
         {
             if (String.IsNullOrEmpty(license))
-				throw new PingCastleException("No license has been provided");
+                throw new PingCastleException("No license has been provided");
             _licKey = license;
             Trace.WriteLine("License: " + _licKey);
             if (!VerifyKey())
             {
-				throw new PingCastleException("the license couldn't validate");
+                throw new PingCastleException("the license couldn't validate");
             }
         }
 
@@ -102,7 +100,7 @@ namespace PingCastle
         public DateTime EndTime { get; set; }
         public string DomainLimitation { get; set; }
         public string CustomerNotice { get; set; }
-		public string Edition { get; set; }
+        public string Edition { get; set; }
 
         /// <summary>
         /// Gets the license key granted to this component.
@@ -181,9 +179,9 @@ namespace PingCastle
                                     Trace.WriteLine("CustomerNotice");
                                     CustomerNotice = Encoding.Unicode.GetString(data);
                                     break;
-								case 4:
-									Trace.WriteLine("Edition");
-									Edition = Encoding.Unicode.GetString(data);
+                                case 4:
+                                    Trace.WriteLine("Edition");
+                                    Edition = Encoding.Unicode.GetString(data);
                                     break;
                             }
                             ms2.Write(BitConverter.GetBytes(infoType), 0, 4);
@@ -245,7 +243,7 @@ namespace PingCastle
                 {
                     Trace.WriteLine("loading rsa key");
                     Trace.WriteLine("verifying the signature");
-					if (!RSA.VerifyHash(hash, "1.3.14.3.2.26", signature))
+                    if (!RSA.VerifyHash(hash, "1.3.14.3.2.26", signature))
                     {
                         throw new Exception("Invalid signature");
                     }

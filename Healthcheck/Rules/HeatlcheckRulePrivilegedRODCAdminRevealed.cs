@@ -4,20 +4,17 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("P-RODCAdminRevealed", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.RODC)]
-	[RuleComputation(RuleComputationType.PerDiscover, 5)]
-    [RuleIntroducedIn(2,9)]
+    [RuleComputation(RuleComputationType.PerDiscover, 5)]
+    [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(2, "rodc_priv_revealed", "Privileged users revealed on RODC")]
     public class HeatlcheckRulePrivilegedRODCAdminRevealed : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.DomainFunctionalLevel < 3)
                 return 0;

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
-using System.Text;
 
 namespace PingCastle.Healthcheck
 {
@@ -185,10 +184,10 @@ namespace PingCastle.Healthcheck
                 {
                     output.Add(GenerateSingleReport(new FakeHealthCheckDataGeneratorDomainModel() { Size = DomainSizeModel.Large }));
                     num++;
-                } 
+                }
             }
             int numberOfTrust = model.NumberOfDomains * model.TrustRatioInPercent / 100;
-            for(int i = 0; i < numberOfTrust; i++)
+            for (int i = 0; i < numberOfTrust; i++)
             {
                 //take 2 random domains
                 int a = rnd.Next(output.Count);
@@ -254,7 +253,7 @@ namespace PingCastle.Healthcheck
             var children = new PingCastleReportCollection<HealthcheckData>();
             // head of forest
             var root = GenerateSingleReport(new FakeHealthCheckDataGeneratorDomainModel() { Size = DomainSizeModel.VerySmall });
-            for(int i = 0; i < numberDomains; i++)
+            for (int i = 0; i < numberDomains; i++)
             {
                 var child = GenerateSingleReport(new FakeHealthCheckDataGeneratorDomainModel() { Size = DomainSizeModel.Medium, Forest = root });
                 children.Add(child);
@@ -289,7 +288,7 @@ namespace PingCastle.Healthcheck
                 trust.KnownDomains = new List<HealthCheckTrustDomainInfoData>();
                 child.Trusts.Add(trust);
 
-                foreach(var child2 in children)
+                foreach (var child2 in children)
                 {
                     if (child2.DomainSid == child.DomainSid)
                         continue;
@@ -405,7 +404,7 @@ namespace PingCastle.Healthcheck
             healthcheckData.AdminLastLoginDate = DateBetween2Dates(healthcheckData.DomainCreation, DateTime.Now); ;
             healthcheckData.AdminAccountName = "Administrator";
             int size = GetCountFromSize(model);
-            for(int i = 0; i< size; i++)
+            for (int i = 0; i < size; i++)
             {
                 ADItem x = new ADItem();
                 x.DistinguishedName = "CN=123";
@@ -455,7 +454,7 @@ namespace PingCastle.Healthcheck
             healthcheckData.LoginScript = new List<HealthcheckLoginScriptData>();
 
             healthcheckData.DomainControllers = new List<HealthcheckDomainController>();
-            size = (int) Math.Exp(Math.Log10(size) / 2);
+            size = (int)Math.Exp(Math.Log10(size) / 2);
             if (size < 1)
                 size = 1;
             for (int i = 0; i < size; i++)

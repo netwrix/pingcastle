@@ -4,25 +4,23 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
+using System.Collections.Generic;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("P-ProtectedUsers", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AccountTakeOver)]
-	[RuleComputation(RuleComputationType.TriggerOnThreshold, 10, 1)]
+    [RuleModel("P-ProtectedUsers", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AccountTakeOver)]
+    [RuleComputation(RuleComputationType.TriggerOnThreshold, 10, 2)]
     [RuleSTIG("V-78131", "Accounts with domain level administrative privileges must be members of the Protected Users group in domains with a domain functional level of Windows 2012 R2 or higher.")]
-	[RuleCERTFR("CERTFR-2017-ALE-012")]
-    [RuleIntroducedIn(2,9)]
+    [RuleCERTFR("CERTFR-2017-ALE-012")]
+    [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(3, "protected_users", "Privileged accounts outside of the Protected Users group")]
     public class HeatlcheckRulePrivilegedProtectedUsers : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-			if (healthcheckData.SchemaVersion < 69)
-				return 0;
+            if (healthcheckData.SchemaVersion < 69)
+                return 0;
             var users = new List<string>();
             foreach (var group in healthcheckData.PrivilegedGroups)
             {
@@ -39,7 +37,7 @@ namespace PingCastle.Healthcheck.Rules
             }
             foreach (var user in users)
                 AddRawDetail(user);
-        	return null;
+            return null;
         }
     }
 }

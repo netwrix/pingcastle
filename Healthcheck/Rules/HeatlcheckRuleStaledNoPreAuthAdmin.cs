@@ -4,20 +4,18 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
+using System;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("S-NoPreAuthAdmin", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
-	[RuleComputation(RuleComputationType.PerDiscover, 5)]
+    [RuleModel("S-NoPreAuthAdmin", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
+    [RuleComputation(RuleComputationType.PerDiscover, 5)]
     [RuleDurANSSI(1, "kerberos_properties_preauth_priv", "Kerberos pre-authentication disabled for privileged accounts")]
-    [RuleIntroducedIn(2,9)]
+    [RuleIntroducedIn(2, 9)]
     public class HeatlcheckRuleStaledNoPreAuthAdmin : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.UserAccountData.ListNoPreAuth != null)
             {

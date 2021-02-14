@@ -4,21 +4,18 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
-using PingCastle.Rules;
 using PingCastle.Graph.Database;
+using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("P-DelegationDCa2d2", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.DelegationCheck)]
-	[RuleComputation(RuleComputationType.PerDiscover, 25)]
+    [RuleComputation(RuleComputationType.PerDiscover, 25)]
     [RuleDurANSSI(1, "delegation_a2d2", "Constrained authentication delegation to a domain controller service")]
-    [RuleIntroducedIn(2,9)]
+    [RuleIntroducedIn(2, 9)]
     public class HeatlcheckRulePrivilegedDelegationDCa2d2 : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             foreach (var dc in healthcheckData.DomainControllers)
             {

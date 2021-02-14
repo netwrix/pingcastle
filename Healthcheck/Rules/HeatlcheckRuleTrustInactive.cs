@@ -4,19 +4,16 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("T-Inactive", RiskRuleCategory.Trusts, RiskModelCategory.TrustInactive)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
+    [RuleModel("T-Inactive", RiskRuleCategory.Trusts, RiskModelCategory.TrustInactive)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
     [RuleDurANSSI(2, "trusts_accounts", "Trust account passwords unchanged for more than a year")]
     public class HeatlcheckRuleTrustInactive : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             foreach (HealthCheckTrustData trust in healthcheckData.Trusts)
             {

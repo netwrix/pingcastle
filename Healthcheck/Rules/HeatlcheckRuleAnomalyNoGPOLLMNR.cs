@@ -4,22 +4,19 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("A-NoGPOLLMNR", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
-	[RuleIntroducedIn(2, 7)]
+    [RuleModel("A-NoGPOLLMNR", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
+    [RuleIntroducedIn(2, 7)]
     [RuleMaturityLevel(3)]
-	public class HeatlcheckRuleAnomalyNoGPOLLMNR : RuleBase<HealthcheckData>
-	{
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
-		{
-			bool found = false;
+    public class HeatlcheckRuleAnomalyNoGPOLLMNR : RuleBase<HealthcheckData>
+    {
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        {
+            bool found = false;
             if (healthcheckData.GPOLsaPolicy != null)
             {
                 foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
@@ -50,9 +47,9 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
-			if (!found)
-				return 1;
-			return 0;
-		}
-	}
+            if (!found)
+                return 1;
+            return 0;
+        }
+    }
 }

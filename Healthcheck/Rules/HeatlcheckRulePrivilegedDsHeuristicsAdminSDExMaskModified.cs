@@ -4,20 +4,17 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("P-DsHeuristicsAdminSDExMask", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-	[RuleIntroducedIn(2,7)]
+    [RuleModel("P-DsHeuristicsAdminSDExMask", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleIntroducedIn(2, 7)]
     [RuleDurANSSI(1, "dsheuristics_bad", "Dangerous dsHeuristics settings")]
-	public class HeatlcheckRulePrivilegedDsHeuristicsAdminSDExMaskModified : RuleBase<HealthcheckData>
+    public class HeatlcheckRulePrivilegedDsHeuristicsAdminSDExMaskModified : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.DsHeuristicsAdminSDExMaskModified)
             {

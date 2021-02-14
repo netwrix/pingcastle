@@ -4,21 +4,20 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Data;
 using PingCastle.Rules;
+using System;
+using System.Collections.Generic;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("S-SIDHistory", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
-	[RuleComputation(RuleComputationType.PerDiscoverWithAMinimumOf, 5, Threshold: 15)]
+    [RuleModel("S-SIDHistory", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
+    [RuleComputation(RuleComputationType.PerDiscoverWithAMinimumOf, 5, Threshold: 15)]
     [RuleANSSI("R15", "paragraph.3.3.1.5")]
     [RuleMaturityLevel(3)]
     public class HeatlcheckRuleStaledSIDHistory : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData, ICollection<DomainKey> SourceDomains)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData, ICollection<DomainKey> SourceDomains)
         {
 
             Dictionary<string, int> domainList = new Dictionary<string, int>();
@@ -61,9 +60,9 @@ namespace PingCastle.Healthcheck.Rules
             }
             if (domainList.Count > 0)
             {
-                foreach(string domain in domainList.Keys)
+                foreach (string domain in domainList.Keys)
                 {
-					AddRawDetail(domain, domainList[domain]); 
+                    AddRawDetail(domain, domainList[domain]);
                 }
             }
             return null;

@@ -6,19 +6,18 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace PingCastle.Data
 {
-	public interface IPingCastleReport
-	{
-		DomainKey Domain { get; }
-		DateTime GenerationDate { get; }
-		string EngineVersion { get; }
-		// used to get trusted domain and detect ubiquous name (ex: corp.local)
-		IList<DomainKey> DomainKnown {get;}
-		string GetHumanReadableFileName();
-		string GetMachineReadableFileName();
-		void SetExportLevel(PingCastleReportDataExportLevel level);
-	}
+    public interface IPingCastleReport
+    {
+        DomainKey Domain { get; }
+        DateTime GenerationDate { get; }
+        string EngineVersion { get; }
+        // used to get trusted domain and detect ubiquous name (ex: corp.local)
+        IList<DomainKey> DomainKnown { get; }
+        string GetHumanReadableFileName();
+        string GetMachineReadableFileName();
+        void SetExportLevel(PingCastleReportDataExportLevel level);
+    }
 }

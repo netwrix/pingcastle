@@ -6,7 +6,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace PingCastle.Healthcheck
 {
@@ -41,12 +40,12 @@ namespace PingCastle.Healthcheck
                     return "No";
                 return "Yes";
             }
-			// tree root which is obsolete
-			else if (IsFlagSet(TrustAttributes, 0x00800000))
-			{
-				return "Not applicable";
-			}
-			else
+            // tree root which is obsolete
+            else if (IsFlagSet(TrustAttributes, 0x00800000))
+            {
+                return "Not applicable";
+            }
+            else
             {
                 // quarantined ?
                 if (IsFlagSet(TrustAttributes, 4))
@@ -55,29 +54,29 @@ namespace PingCastle.Healthcheck
             }
         }
 
-		static public string GetTGTDelegation(HealthCheckTrustData trust)
-		{
-			return GetTGTDelegation(trust.TrustDirection, trust.TrustAttributes);
-		}
+        static public string GetTGTDelegation(HealthCheckTrustData trust)
+        {
+            return GetTGTDelegation(trust.TrustDirection, trust.TrustAttributes);
+        }
 
-		static public string GetTGTDelegation(int TrustDirection, int TrustAttributes)
-		{
-			if (TrustDirection == 0 || TrustDirection == 2)
-			{
-				return "Not applicable";
-			}
-			if (IsFlagSet(TrustAttributes, 8))
-			{
-				// quarantined ?
-				if (!IsFlagSet(TrustAttributes, 0x200))
-				{
-					if (IsFlagSet(TrustAttributes, 0x800))
-						return "Yes";
-				}
-				return "No";
-			}
-			return "Not applicable";
-		}
+        static public string GetTGTDelegation(int TrustDirection, int TrustAttributes)
+        {
+            if (TrustDirection == 0 || TrustDirection == 2)
+            {
+                return "Not applicable";
+            }
+            if (IsFlagSet(TrustAttributes, 8))
+            {
+                // quarantined ?
+                if (!IsFlagSet(TrustAttributes, 0x200))
+                {
+                    if (IsFlagSet(TrustAttributes, 0x800))
+                        return "Yes";
+                }
+                return "No";
+            }
+            return "Not applicable";
+        }
 
         static public string GetTrustAttribute(int trustAttributes)
         {

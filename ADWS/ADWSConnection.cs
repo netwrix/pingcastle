@@ -184,7 +184,7 @@ namespace PingCastle.ADWS
             Trace.WriteLine("Locating a DC");
 			try
 			{
-				Server = NativeMethods.GetDC(Server, true, false);
+				Server = DomainLocator.GetDC(Server, true, false);
 			}
 			catch(Exception)
 			{
@@ -216,7 +216,7 @@ namespace PingCastle.ADWS
 					_resource = null;
 				}
 				if (i > 0)
-					Server = NativeMethods.GetDC(Server, true, true);
+                    Server = DomainLocator.GetDC(Server, true, true);
 			}
             // if we coulnd't connect to the select DC, even after a refresh, go to exception
             throw new EndpointNotFoundException();
@@ -435,6 +435,27 @@ namespace PingCastle.ADWS
 			}
 		}
 
+        public override string ConvertSIDToName(string sidstring, out string referencedDomain)
+        {
+            return NativeMethods.ConvertSIDToNameWithWindowsAPI(sidstring, Server, out referencedDomain);
+        }
+
+        public override System.Security.Principal.SecurityIdentifier ConvertNameToSID(string nameToResolve)
+        {
+            return NativeMethods.GetSidFromDomainNameWithWindowsAPI(Server, nameToResolve);
+        }
+
+        IFileConnection fileConnection = null;
+        public override IFileConnection FileConnection
+        {
+            get
+            {
+                if (fileConnection == null)
+                    fileConnection = new WindowsFileConnection(this.Credential);
+                return fileConnection;
+            }
+        }
+
         void CleanConnection<TChannel>(ClientBase<TChannel> c) where TChannel : class
         {
             if (c != null)
@@ -449,5 +470,5 @@ namespace PingCastle.ADWS
                 }
             }
         }
-	}
+    }
 }

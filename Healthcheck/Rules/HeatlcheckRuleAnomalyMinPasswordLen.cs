@@ -4,21 +4,18 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("A-MinPwdLen", RiskRuleCategory.Anomalies, RiskModelCategory.WeakPassword)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-	//[RuleBSI("M 4.314")]
+    [RuleModel("A-MinPwdLen", RiskRuleCategory.Anomalies, RiskModelCategory.WeakPassword)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    //[RuleBSI("M 4.314")]
     [RuleDurANSSI(2, "privileged_members_password", "Privileged group members with weak password policy")]
     [RuleMaturityLevel(2)]
     public class HeatlcheckRuleAnomalyMinPasswordLen : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             foreach (GPPSecurityPolicy policy in healthcheckData.GPPPasswordPolicy)
             {

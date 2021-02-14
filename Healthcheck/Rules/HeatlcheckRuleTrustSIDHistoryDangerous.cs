@@ -4,21 +4,18 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("T-SIDHistoryDangerous", RiskRuleCategory.Trusts, RiskModelCategory.SIDHistory)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-	[RuleANSSI("R15", "paragraph.3.3.1.5")]
-    [RuleIntroducedIn(2,9)]
+    [RuleModel("T-SIDHistoryDangerous", RiskRuleCategory.Trusts, RiskModelCategory.SIDHistory)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    [RuleANSSI("R15", "paragraph.3.3.1.5")]
+    [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(2, "sidhistory_dangerous", "Accounts or groups with unexpected SID history")]
     public class HeatlcheckRuleTrustSIDHistoryDangerous : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             int count = 0;
             if (healthcheckData.UserAccountData != null && healthcheckData.UserAccountData.ListDomainSidHistory != null
@@ -43,7 +40,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
-			return count;
+            return count;
         }
     }
 }

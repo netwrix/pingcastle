@@ -4,23 +4,21 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
+using System;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("A-MembershipEveryone", RiskRuleCategory.Anomalies, RiskModelCategory.LocalGroupVulnerability)]
-	[RuleComputation(RuleComputationType.PerDiscover, 15)]
+    [RuleModel("A-MembershipEveryone", RiskRuleCategory.Anomalies, RiskModelCategory.LocalGroupVulnerability)]
+    [RuleComputation(RuleComputationType.PerDiscover, 15)]
     [RuleMaturityLevel(1)]
     public class HeatlcheckRuleAnomalyMembershipEveryone : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             foreach (GPOMembership membership in healthcheckData.GPOLocalMembership)
             {
-				if (membership.User == "Authenticated Users" || membership.User == "Everyone" || membership.User == "Users" || membership.User == "Anonymous")
+                if (membership.User == "Authenticated Users" || membership.User == "Everyone" || membership.User == "Users" || membership.User == "Anonymous")
                 {
                     if (string.Equals(membership.MemberOf, "BUILTIN\\Users", StringComparison.OrdinalIgnoreCase))
                         continue;

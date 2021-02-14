@@ -5,13 +5,10 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Security.Principal;
-using System.Text;
 
 namespace PingCastle.RPC
 {
@@ -123,7 +120,7 @@ namespace PingCastle.RPC
             {
                 InitializeStub(interfaceId, MIDL_ProcFormatStringx86, MIDL_TypeFormatStringx86, "\\pipe\\samr");
             }
-			UseNullSession = true;
+            UseNullSession = true;
         }
 
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -174,7 +171,7 @@ namespace PingCastle.RPC
                 if (intptrServer != IntPtr.Zero)
                     Marshal.FreeHGlobal(intptrServer);
             }
-            return (int) result.ToInt64();
+            return (int)result.ToInt64();
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -210,7 +207,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("SamrCloseHandle failed 0x" + Marshal.GetExceptionCode().ToString("x"));
                 return Marshal.GetExceptionCode();
             }
-            return (int) result.ToInt64();
+            return (int)result.ToInt64();
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -261,7 +258,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("SamrEnumerateDomainsInSamServer failed 0x" + Marshal.GetExceptionCode().ToString("x"));
                 return Marshal.GetExceptionCode();
             }
-            return (int) result.ToInt64();
+            return (int)result.ToInt64();
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -269,7 +266,7 @@ namespace PingCastle.RPC
         {
             if (IntptrBuffer == IntPtr.Zero)
                 return null;
-            SAMPR_ENUMERATION_BUFFER Buffer = (SAMPR_ENUMERATION_BUFFER) Marshal.PtrToStructure(IntptrBuffer, typeof(SAMPR_ENUMERATION_BUFFER));
+            SAMPR_ENUMERATION_BUFFER Buffer = (SAMPR_ENUMERATION_BUFFER)Marshal.PtrToStructure(IntptrBuffer, typeof(SAMPR_ENUMERATION_BUFFER));
 
             SAMR_ENUMERATION_ENTRY[] output = new SAMR_ENUMERATION_ENTRY[Buffer.EntriesRead];
             int size = Marshal.SizeOf(typeof(SAMPR_RID_ENUMERATION));
@@ -278,7 +275,7 @@ namespace PingCastle.RPC
                 output[i] = new SAMR_ENUMERATION_ENTRY();
                 SAMPR_RID_ENUMERATION ridenumaration = (SAMPR_RID_ENUMERATION)Marshal.PtrToStructure(new IntPtr(Buffer.Buffer.ToInt64() + size * i), typeof(SAMPR_RID_ENUMERATION));
                 output[i].RelativeId = ridenumaration.RelativeId.ToInt64();
-                output[i].Name = Marshal.PtrToStringUni(ridenumaration.buffer, ridenumaration.Length/2);
+                output[i].Name = Marshal.PtrToStringUni(ridenumaration.buffer, ridenumaration.Length / 2);
                 if (ridenumaration.buffer != IntPtr.Zero && ridenumaration.MaximumLength > 0)
                     FreeMemory(ridenumaration.buffer);
             }
@@ -294,45 +291,45 @@ namespace PingCastle.RPC
             IntPtr result = IntPtr.Zero;
             DomainId = null;
             IntPtr sid = IntPtr.Zero;
-			using (var NameString = new PingCastle.NativeMethods.UNICODE_STRING())
-			{
-				try
-				{
-					NameString.Initialize(Name);
-					if (IntPtr.Size == 8)
-					{
-						result = NativeMethods.NdrClientCall2x64(GetStubHandle(), GetProcStringHandle(190), ServerHandle, NameString, out sid);
-					}
-					else
-					{
-						GCHandle handle1 = GCHandle.Alloc(NameString, GCHandleType.Pinned);
-						IntPtr tempValuePointer1 = handle1.AddrOfPinnedObject();
-						IntPtr tempValue2 = sid;
-						GCHandle handle2 = GCHandle.Alloc(tempValue2, GCHandleType.Pinned);
-						IntPtr tempValuePointer2 = handle2.AddrOfPinnedObject();
-						try
-						{
-							result = CallNdrClientCall2x86(180, ServerHandle, tempValuePointer1, tempValuePointer2);
-							// each pinvoke work on a copy of the arguments (without an out specifier)
-							// get back the data
-							sid = Marshal.ReadIntPtr(tempValuePointer2);
-						}
-						finally
-						{
-							handle1.Free();
-							handle2.Free();
-						}
-					}
-					DomainId = new SecurityIdentifier(sid);
-					FreeMemory(sid);
-				}
-				catch (SEHException)
-				{
-					Trace.WriteLine("SamrLookupDomainInSamServer failed 0x" + Marshal.GetExceptionCode().ToString("x"));
-					return Marshal.GetExceptionCode();
-				}
-			}
-            return (int) result.ToInt64();
+            using (var NameString = new PingCastle.NativeMethods.UNICODE_STRING())
+            {
+                try
+                {
+                    NameString.Initialize(Name);
+                    if (IntPtr.Size == 8)
+                    {
+                        result = NativeMethods.NdrClientCall2x64(GetStubHandle(), GetProcStringHandle(190), ServerHandle, NameString, out sid);
+                    }
+                    else
+                    {
+                        GCHandle handle1 = GCHandle.Alloc(NameString, GCHandleType.Pinned);
+                        IntPtr tempValuePointer1 = handle1.AddrOfPinnedObject();
+                        IntPtr tempValue2 = sid;
+                        GCHandle handle2 = GCHandle.Alloc(tempValue2, GCHandleType.Pinned);
+                        IntPtr tempValuePointer2 = handle2.AddrOfPinnedObject();
+                        try
+                        {
+                            result = CallNdrClientCall2x86(180, ServerHandle, tempValuePointer1, tempValuePointer2);
+                            // each pinvoke work on a copy of the arguments (without an out specifier)
+                            // get back the data
+                            sid = Marshal.ReadIntPtr(tempValuePointer2);
+                        }
+                        finally
+                        {
+                            handle1.Free();
+                            handle2.Free();
+                        }
+                    }
+                    DomainId = new SecurityIdentifier(sid);
+                    FreeMemory(sid);
+                }
+                catch (SEHException)
+                {
+                    Trace.WriteLine("SamrLookupDomainInSamServer failed 0x" + Marshal.GetExceptionCode().ToString("x"));
+                    return Marshal.GetExceptionCode();
+                }
+            }
+            return (int)result.ToInt64();
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -374,7 +371,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("SamrOpenDomain failed 0x" + Marshal.GetExceptionCode().ToString("x"));
                 return Marshal.GetExceptionCode();
             }
-            return (int) result.ToInt64();
+            return (int)result.ToInt64();
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -425,7 +422,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("SamrEnumerateUsersInDomain failed 0x" + Marshal.GetExceptionCode().ToString("x"));
                 return Marshal.GetExceptionCode();
             }
-            return (int) result.ToInt64();
+            return (int)result.ToInt64();
         }
     }
 }

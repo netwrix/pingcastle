@@ -5,6 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using Microsoft.Win32;
+using PingCastle.ADWS;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,7 +15,7 @@ using System.Text;
 
 namespace PingCastle.misc
 {
-	[DebuggerDisplay("{Key}: {Value}")]
+    [DebuggerDisplay("{Key}: {Value}")]
     public class RegistryPolRecord
     {
 
@@ -31,7 +32,7 @@ namespace PingCastle.misc
             ByteValue = bytevalue;
         }
     }
-    
+
     public class RegistryPolReader
     {
 
@@ -39,17 +40,23 @@ namespace PingCastle.misc
         private static readonly uint PolVersion = 1;
 
         private List<RegistryPolRecord> Records = new List<RegistryPolRecord>();
+        private IFileConnection fileConnection;
+
+        public RegistryPolReader(IFileConnection fileConnection)
+        {
+            this.fileConnection = fileConnection;
+        }
 
         public void LoadFile(string filename)
         {
             Records.Clear();
-            byte[]buffer = null;
-            using (FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
+            byte[] buffer = null;
+            using (var fs = fileConnection.GetFileStream(filename))
             {
                 if (fs.Length < 8)
                     throw new InvalidDataException("the file " + filename + " doesn't contain a header");
                 buffer = new byte[fs.Length];
-                fs.Read(buffer, 0, (int) fs.Length);
+                fs.Read(buffer, 0, (int)fs.Length);
             }
             if (BitConverter.ToUInt32(buffer, 0) != PolHeader)
             {
@@ -76,9 +83,9 @@ namespace PingCastle.misc
             }
         }
 
-        private RegistryPolRecord ReadRegistryPolRecord(byte[]buffer, ref int cursor, int size)
+        private RegistryPolRecord ReadRegistryPolRecord(byte[] buffer, ref int cursor, int size)
         {
-            if (cursor + 10> size)
+            if (cursor + 10 > size)
             {
                 throw new InvalidDataException("Registry pol overflow at record located at " + cursor);
             }
@@ -90,7 +97,7 @@ namespace PingCastle.misc
             string value = ReadNullTerminardString(buffer, ref cursor, size);
             if (ReadSingleChar(buffer, ref cursor, size) != ';')
                 throw new InvalidDataException("Record without ';'");
-            RegistryValueKind registryType = (RegistryValueKind) BitConverter.ToUInt32(buffer, cursor);
+            RegistryValueKind registryType = (RegistryValueKind)BitConverter.ToUInt32(buffer, cursor);
             cursor += 4;
             if (ReadSingleChar(buffer, ref cursor, size) != ';')
                 throw new InvalidDataException("Record without ';'");
@@ -117,7 +124,7 @@ namespace PingCastle.misc
         private string ReadNullTerminardString(byte[] buffer, ref int cursor, int size)
         {
             StringBuilder output = new StringBuilder(50);
-            for(; cursor < size; cursor+=2)
+            for (; cursor < size; cursor += 2)
             {
                 char[] chars = UnicodeEncoding.Unicode.GetChars(buffer, cursor, 2);
                 if (chars[0] != '\0')
@@ -127,7 +134,7 @@ namespace PingCastle.misc
                 else
                 {
                     cursor += 2;
-                    return output.ToString(); 
+                    return output.ToString();
                 }
             }
             throw new InvalidDataException("Record overflow");
@@ -144,7 +151,7 @@ namespace PingCastle.misc
                 return false;
             if (record.ByteValue.Length != 4)
                 return false;
-            data = (int)BitConverter.ToUInt32(record.ByteValue,0);
+            data = (int)BitConverter.ToUInt32(record.ByteValue, 0);
             return true;
         }
 
@@ -161,18 +168,18 @@ namespace PingCastle.misc
             return null;
         }
 
-		public List<RegistryPolRecord> SearchRecord(string key)
-		{
-			var output = new List<RegistryPolRecord>();
-			foreach (RegistryPolRecord record in Records)
-			{
-				if (record.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase))
-				{
-					output.Add(record);
-				}
-			}
-			return output;
-		}
+        public List<RegistryPolRecord> SearchRecord(string key)
+        {
+            var output = new List<RegistryPolRecord>();
+            foreach (RegistryPolRecord record in Records)
+            {
+                if (record.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    output.Add(record);
+                }
+            }
+            return output;
+        }
 
         public bool IsValueSet(string key, string value, out string stringvalue)
         {
@@ -182,7 +189,7 @@ namespace PingCastle.misc
                 return false;
             if (record.Type != RegistryValueKind.String)
                 return false;
-			stringvalue = UnicodeEncoding.Unicode.GetString(record.ByteValue).TrimEnd('\0');
+            stringvalue = UnicodeEncoding.Unicode.GetString(record.ByteValue).TrimEnd('\0');
             return true;
         }
 
@@ -214,5 +221,5 @@ namespace PingCastle.misc
                 return false;
             return true;
         }
-	}
+    }
 }

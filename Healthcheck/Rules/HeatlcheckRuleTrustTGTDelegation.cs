@@ -4,21 +4,19 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Data;
 using PingCastle.Rules;
+using System.Collections.Generic;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("T-TGTDelegation", RiskRuleCategory.Trusts, RiskModelCategory.TrustImpermeability)]
-	[RuleComputation(RuleComputationType.PerDiscover, 10)]
-    [RuleIntroducedIn(2,7)]
+    [RuleModel("T-TGTDelegation", RiskRuleCategory.Trusts, RiskModelCategory.TrustImpermeability)]
+    [RuleComputation(RuleComputationType.PerDiscover, 10)]
+    [RuleIntroducedIn(2, 7)]
     [RuleDurANSSI(3, "trusts_tgt_deleg", "Inbound trust relationships with delegation")]
-	public class HeatlcheckRuleTrustTGTDelegation : RuleBase<HealthcheckData>
+    public class HeatlcheckRuleTrustTGTDelegation : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData, ICollection<DomainKey> AllowedMigrationDomains)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData, ICollection<DomainKey> AllowedMigrationDomains)
         {
             foreach (HealthCheckTrustData trust in healthcheckData.Trusts)
             {
@@ -52,7 +50,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(trust.TrustPartner);
                 }
             }
-			return null;
+            return null;
         }
     }
 }

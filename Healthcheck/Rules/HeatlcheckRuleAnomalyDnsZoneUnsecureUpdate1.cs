@@ -4,21 +4,18 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("A-DnsZoneUpdate1", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
-	[RuleIntroducedIn(2, 9)]
+    [RuleModel("A-DnsZoneUpdate1", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
+    [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(1, "dnszone_bad_prop", "Misconfigured DNS zones")]
     public class HeatlcheckRuleAnomalyDnsZoneUnsecureUpdate1 : RuleBase<HealthcheckData>
-	{
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
-		{
+    {
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        {
             if (healthcheckData.DnsZones != null)
             {
                 foreach (var zone in healthcheckData.DnsZones)
@@ -31,7 +28,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
-			return null;
-		}
-	}
+            return null;
+        }
+    }
 }

@@ -18,25 +18,25 @@ using System.Threading;
 
 namespace PingCastle.Scanners
 {
-	public class ComputerVersion : ScannerBase
+    public class ComputerVersion : ScannerBase
     {
-		public override string Name { get { return "computerversion"; } }
+        public override string Name { get { return "computerversion"; } }
 
-		public override string Description { get { return "Get the version of a computer. Can be used to determine if obsolete operating systems are still present."; } }
+        public override string Description { get { return "Get the version of a computer. Can be used to determine if obsolete operating systems are still present."; } }
 
-		override protected string GetCsvHeader()
-		{
-			return "Computer\tVersion";
-		}
+        override protected string GetCsvHeader()
+        {
+            return "Computer\tVersion";
+        }
 
-		override protected string GetCsvData(string computer)
-		{
-		    string version = NativeMethods.GetComputerVersion(computer);
-			if (version != "not found")
-			{
-				return computer + "\t" + version;
-			}
-			return null;
-		}
-	}
+        override protected string GetCsvData(string computer)
+        {
+            string version = NativeMethods.GetComputerVersion(computer);
+            if (version != "not found")
+            {
+                return computer + "\t" + version;
+            }
+            return null;
+        }
+    }
 }

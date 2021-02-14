@@ -4,21 +4,18 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("S-Duplicate", RiskRuleCategory.StaleObjects, RiskModelCategory.Replication)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleModel("S-Duplicate", RiskRuleCategory.StaleObjects, RiskModelCategory.Replication)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleMaturityLevel(4)]
     public class HeatlcheckRuleStaledDuplicateObjects : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-			return healthcheckData.ComputerAccountData.NumberDuplicate + healthcheckData.UserAccountData.NumberDuplicate;
+            return healthcheckData.ComputerAccountData.NumberDuplicate + healthcheckData.UserAccountData.NumberDuplicate;
         }
     }
 }

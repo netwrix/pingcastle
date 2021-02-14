@@ -4,20 +4,19 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+using PingCastle.Rules;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("T-SIDHistoryUnknownDomain", RiskRuleCategory.Trusts, RiskModelCategory.SIDHistory)]
-	[RuleComputation(RuleComputationType.PerDiscover, 10)]
-	[RuleANSSI("R15", "paragraph.3.3.1.5")]
+    [RuleModel("T-SIDHistoryUnknownDomain", RiskRuleCategory.Trusts, RiskModelCategory.SIDHistory)]
+    [RuleComputation(RuleComputationType.PerDiscover, 10)]
+    [RuleANSSI("R15", "paragraph.3.3.1.5")]
     [RuleDurANSSI(3, "sidhistory_present", "Accounts or groups with SID history set")]
     public class HeatlcheckRuleTrustSIDHistoryUnknownDomain : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             Dictionary<string, int> domainList = new Dictionary<string, int>();
             if (healthcheckData.UserAccountData != null && healthcheckData.UserAccountData.ListDomainSidHistory != null
@@ -28,7 +27,7 @@ namespace PingCastle.Healthcheck.Rules
                     if (data.FriendlyName.StartsWith("S-1-5-21", StringComparison.InvariantCultureIgnoreCase))
                     {
                         if (!domainList.ContainsKey(data.DomainSid))
-                            domainList.Add(data.DomainSid,data.Count);
+                            domainList.Add(data.DomainSid, data.Count);
                         else
                             domainList[data.DomainSid] += data.Count;
                     }
@@ -42,7 +41,7 @@ namespace PingCastle.Healthcheck.Rules
                     if (data.FriendlyName.StartsWith("S-1-5-21", StringComparison.InvariantCultureIgnoreCase))
                     {
                         if (!domainList.ContainsKey(data.DomainSid))
-                            domainList.Add(data.DomainSid,data.Count);
+                            domainList.Add(data.DomainSid, data.Count);
                         else
                             domainList[data.DomainSid] += data.Count;
                     }
@@ -50,9 +49,9 @@ namespace PingCastle.Healthcheck.Rules
             }
             if (domainList.Count > 0)
             {
-                foreach(string domain in domainList.Keys)
+                foreach (string domain in domainList.Keys)
                 {
-                    AddRawDetail(domain, domainList[domain]); 
+                    AddRawDetail(domain, domainList[domain]);
                 }
             }
             return null;

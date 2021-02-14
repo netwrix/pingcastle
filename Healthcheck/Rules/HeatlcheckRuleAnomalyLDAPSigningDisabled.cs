@@ -4,21 +4,18 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("A-LDAPSigningDisabled", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-	[RuleIntroducedIn(2, 7)]
+    [RuleModel("A-LDAPSigningDisabled", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleIntroducedIn(2, 7)]
     [RuleMaturityLevel(3)]
-	public class HeatlcheckRuleAnomalyLDAPSigningDisabled : RuleBase<HealthcheckData>
-	{
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
-		{
+    public class HeatlcheckRuleAnomalyLDAPSigningDisabled : RuleBase<HealthcheckData>
+    {
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        {
             if (healthcheckData.GPOLsaPolicy != null)
             {
                 foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
@@ -49,7 +46,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
-			return null;
-		}
-	}
+            return null;
+        }
+    }
 }

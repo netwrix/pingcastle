@@ -4,22 +4,19 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("A-DCRefuseComputerPwdChange", RiskRuleCategory.Anomalies, RiskModelCategory.PassTheCredential)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-	[RuleIntroducedIn(2, 7)]
-	[RuleSTIG("V-4408", "The domain controller must be configured to allow reset of machine account passwords.", STIGFramework.ActiveDirectoryService2008)]
+    [RuleModel("A-DCRefuseComputerPwdChange", RiskRuleCategory.Anomalies, RiskModelCategory.PassTheCredential)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleIntroducedIn(2, 7)]
+    [RuleSTIG("V-4408", "The domain controller must be configured to allow reset of machine account passwords.", STIGFramework.ActiveDirectoryService2008)]
     [RuleMaturityLevel(2)]
-	public class HeatlcheckRuleAnomalyDCRefuseComputerPwdChange : RuleBase<HealthcheckData>
-	{
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
-		{
+    public class HeatlcheckRuleAnomalyDCRefuseComputerPwdChange : RuleBase<HealthcheckData>
+    {
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        {
             if (healthcheckData.GPOLsaPolicy != null)
             {
                 foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
@@ -50,7 +47,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
-			return null;
-		}
-	}
+            return null;
+        }
+    }
 }

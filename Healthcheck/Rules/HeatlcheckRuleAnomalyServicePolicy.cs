@@ -4,19 +4,16 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("A-NoServicePolicy", RiskRuleCategory.Anomalies, RiskModelCategory.WeakPassword)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
+    [RuleModel("A-NoServicePolicy", RiskRuleCategory.Anomalies, RiskModelCategory.WeakPassword)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
     [RuleMaturityLevel(4)]
     public class HeatlcheckRuleAnomalyServicePolicy : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             bool servicePolicy = false;
             foreach (GPPSecurityPolicy policy in healthcheckData.GPPPasswordPolicy)
@@ -27,8 +24,8 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         if (property.Value >= 20)
                         {
-							servicePolicy = true;
-							break;
+                            servicePolicy = true;
+                            break;
                         }
                     }
                 }

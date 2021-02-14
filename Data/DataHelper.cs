@@ -4,6 +4,8 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+using PingCastle.Healthcheck;
+using PingCastle.Rules;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,14 +17,11 @@ using System.Security.Permissions;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
-using PingCastle.Data;
-using PingCastle.Healthcheck;
-using PingCastle.Rules;
 
 namespace PingCastle.Data
 {
     public class DataHelper<T> where T : IPingCastleReport
-	{
+    {
         // important: class to save xml string as UTF8 instead of UTF16
         private sealed class Utf8StringWriter : StringWriter
         {
@@ -31,7 +30,7 @@ namespace PingCastle.Data
 
         public static string SaveAsXml(T data, string filename, bool EncryptReport)
         {
-			try
+            try
             {
                 if (EncryptReport)
                 {
@@ -73,8 +72,8 @@ namespace PingCastle.Data
             string xml = null;
             using (Utf8StringWriter wr = new Utf8StringWriter())
             {
-				var xmlDoc = GetXmlDocumentClearText(data);
-				xmlDoc.Save(wr);
+                var xmlDoc = GetXmlDocumentClearText(data);
+                xmlDoc.Save(wr);
                 xml = wr.ToString();
             }
             return xml;
@@ -87,9 +86,9 @@ namespace PingCastle.Data
             xmlDoc.PreserveWhitespace = true;
             var nav = xmlDoc.CreateNavigator();
             using (XmlWriter wr = nav.AppendChild())
-			using( var wr2 = new SafeXmlWriter(wr))
+            using (var wr2 = new SafeXmlWriter(wr))
             {
-				xs.Serialize(wr2, data);
+                xs.Serialize(wr2, data);
             }
             return xmlDoc;
         }
@@ -148,9 +147,9 @@ namespace PingCastle.Data
         public static T ConvertXmlDocumentToData(XmlDocument xmlDoc)
         {
             XmlSerializer xs = new XmlSerializer(typeof(T));
-            T data = (T) xs.Deserialize(new XmlNodeReader(xmlDoc));
-			if (typeof(T).IsAssignableFrom(typeof(HealthcheckData)))
-				CheckForHCDataUnknownModel((HealthcheckData)Convert.ChangeType(data, typeof(HealthcheckData)));
+            T data = (T)xs.Deserialize(new XmlNodeReader(xmlDoc));
+            if (typeof(T).IsAssignableFrom(typeof(HealthcheckData)))
+                CheckForHCDataUnknownModel((HealthcheckData)Convert.ChangeType(data, typeof(HealthcheckData)));
             return data;
         }
 
@@ -183,11 +182,11 @@ namespace PingCastle.Data
                     throw new PingCastleDataException(filenameForDebug, "The report is encrypted and no decryption key is configured.");
                 decipher(filenameForDebug, xmlDoc, Keys);
             }
-            
+
             return xmlDoc;
         }
 
-		private static void CheckForHCDataUnknownModel(HealthcheckData data)
+        private static void CheckForHCDataUnknownModel(HealthcheckData data)
         {
             foreach (var rule in data.RiskRules)
             {
@@ -233,12 +232,12 @@ namespace PingCastle.Data
             {
                 try
                 {
-					exml.ClearKeyNameMappings();
+                    exml.ClearKeyNameMappings();
                     Trace.WriteLine("Trying to decrypt with keyid " + keyid++);
                     exml.AddKeyNameMapping("rsaKey", Alg);
                     // Decrypt the element.
                     exml.DecryptDocument();
-					return;
+                    return;
                 }
                 catch (Exception ex)
                 {

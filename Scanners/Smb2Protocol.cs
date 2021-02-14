@@ -14,8 +14,8 @@ using System.Text;
 
 namespace PingCastle.Scanners
 {
-	public class Smb2Protocol
-	{
+    public class Smb2Protocol
+    {
         public enum SBM2_Command
         {
             SMB2_NEGOTIATE = 0,
@@ -26,107 +26,107 @@ namespace PingCastle.Scanners
 
         private static byte[] mechTypes = new byte[] { 0x30, 0x0c, 0x06, 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x02, 0x02, 0x0a, };
 
-		public const uint STATUS_MORE_PROCESSING_REQUIRED = 0xc0000016;
+        public const uint STATUS_MORE_PROCESSING_REQUIRED = 0xc0000016;
 
-		// https://msdn.microsoft.com/en-us/library/cc246529.aspx
-		[StructLayout(LayoutKind.Explicit)]
-		public struct SMB2_Header
-		{
-			[FieldOffset(0)]
-			public UInt32 ProtocolId;
-			[FieldOffset(4)]
-			public UInt16 StructureSize;
-			[FieldOffset(6)]
-			public UInt16 CreditCharge;
-			[FieldOffset(8)]
-			public UInt32 Status; // to do SMB3
-			[FieldOffset(12)]
-			public UInt16 Command;
-			[FieldOffset(14)]
-			public UInt16 CreditRequest_Response;
-			[FieldOffset(16)]
-			public UInt32 Flags;
-			[FieldOffset(20)]
-			public UInt32 NextCommand;
-			[FieldOffset(24)]
-			public UInt64 MessageId;
-			[FieldOffset(32)]
-			public UInt32 Reserved;
-			[FieldOffset(36)]
-			public UInt32 TreeId;
-			[FieldOffset(40)]
-			public UInt64 SessionId;
-			[FieldOffset(48)]
-			public UInt64 Signature1;
-			[FieldOffset(56)]
-			public UInt64 Signature2;
-		}
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
+        // https://msdn.microsoft.com/en-us/library/cc246529.aspx
+        [StructLayout(LayoutKind.Explicit)]
+        public struct SMB2_Header
+        {
+            [FieldOffset(0)]
+            public UInt32 ProtocolId;
+            [FieldOffset(4)]
+            public UInt16 StructureSize;
+            [FieldOffset(6)]
+            public UInt16 CreditCharge;
+            [FieldOffset(8)]
+            public UInt32 Status; // to do SMB3
+            [FieldOffset(12)]
+            public UInt16 Command;
+            [FieldOffset(14)]
+            public UInt16 CreditRequest_Response;
+            [FieldOffset(16)]
+            public UInt32 Flags;
+            [FieldOffset(20)]
+            public UInt32 NextCommand;
+            [FieldOffset(24)]
+            public UInt64 MessageId;
+            [FieldOffset(32)]
+            public UInt32 Reserved;
+            [FieldOffset(36)]
+            public UInt32 TreeId;
+            [FieldOffset(40)]
+            public UInt64 SessionId;
+            [FieldOffset(48)]
+            public UInt64 Signature1;
+            [FieldOffset(56)]
+            public UInt64 Signature2;
+        }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
         public struct SMB2_NegotiateRequest
-		{
-			[FieldOffset(0)]
-			public UInt16 StructureSize;
-			[FieldOffset(2)]
-			public UInt16 DialectCount;
-			[FieldOffset(4)]
-			public UInt16 SecurityMode;
-			[FieldOffset(6)]
-			public UInt16 Reserved;
-			[FieldOffset(8)]
-			public UInt32 Capabilities;
-			[FieldOffset(12)]
-			public Guid ClientGuid;
-			[FieldOffset(28)]
-			public UInt64 ClientStartTime;
-			[FieldOffset(36)]
-			public UInt16 DialectToTest;
-		}
+        {
+            [FieldOffset(0)]
+            public UInt16 StructureSize;
+            [FieldOffset(2)]
+            public UInt16 DialectCount;
+            [FieldOffset(4)]
+            public UInt16 SecurityMode;
+            [FieldOffset(6)]
+            public UInt16 Reserved;
+            [FieldOffset(8)]
+            public UInt32 Capabilities;
+            [FieldOffset(12)]
+            public Guid ClientGuid;
+            [FieldOffset(28)]
+            public UInt64 ClientStartTime;
+            [FieldOffset(36)]
+            public UInt16 DialectToTest;
+        }
 
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
-		public struct SMB2_NegotiateResponse
-		{
-			[FieldOffset(0)]
-			public UInt16 StructureSize;
-			[FieldOffset(2)]
-			public byte SecurityMode;
-			[FieldOffset(3)]
-			public UInt16 Dialect;
-		}
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
+        public struct SMB2_NegotiateResponse
+        {
+            [FieldOffset(0)]
+            public UInt16 StructureSize;
+            [FieldOffset(2)]
+            public byte SecurityMode;
+            [FieldOffset(3)]
+            public UInt16 Dialect;
+        }
 
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
         public struct SMB2_SessionSetupResponse
-		{
-			[FieldOffset(0)]
-			public UInt16 StructureSize;
-			[FieldOffset(2)]
-			public UInt16 SessionFlags;
-			[FieldOffset(4)]
-			public UInt16 SecurityBufferOffset;
-			[FieldOffset(6)]
-			public UInt16 SecurityBufferLength;
+        {
+            [FieldOffset(0)]
+            public UInt16 StructureSize;
+            [FieldOffset(2)]
+            public UInt16 SessionFlags;
+            [FieldOffset(4)]
+            public UInt16 SecurityBufferOffset;
+            [FieldOffset(6)]
+            public UInt16 SecurityBufferLength;
 
-		}
+        }
 
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
         public struct SMB2_SessionSetup
-		{
-			[FieldOffset(0)]
-			public UInt16 StructureSize;
-			[FieldOffset(2)]
-			public byte Flags;
-			[FieldOffset(3)]
-			public byte SecurityMode;
-			[FieldOffset(4)]
-			public UInt32 Capabilities;
-			[FieldOffset(8)]
-			public UInt32 Channel;
-			[FieldOffset(12)]
-			public UInt16 SecurityBufferOffset;
-			[FieldOffset(14)]
-			public UInt16 SecurityBufferLength;
-			[FieldOffset(16)]
-			public UInt64 PreviousSessionId;
-		}
+        {
+            [FieldOffset(0)]
+            public UInt16 StructureSize;
+            [FieldOffset(2)]
+            public byte Flags;
+            [FieldOffset(3)]
+            public byte SecurityMode;
+            [FieldOffset(4)]
+            public UInt32 Capabilities;
+            [FieldOffset(8)]
+            public UInt32 Channel;
+            [FieldOffset(12)]
+            public UInt16 SecurityBufferOffset;
+            [FieldOffset(14)]
+            public UInt16 SecurityBufferLength;
+            [FieldOffset(16)]
+            public UInt64 PreviousSessionId;
+        }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
         public struct SMB2_TreeConnect
@@ -235,63 +235,63 @@ namespace PingCastle.Scanners
             public uint Index { get; set; }
         }
 
-		[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         public byte[] GenerateSmb2HeaderFromCommand(SBM2_Command command)
-		{
-			SMB2_Header header = new SMB2_Header();
-			header.ProtocolId = 0x424D53FE;
-			header.Command = (byte) command;
-			header.StructureSize = 64;
-			header.MessageId = _messageId++;
-			header.Reserved = 0xFEFF;
+        {
+            SMB2_Header header = new SMB2_Header();
+            header.ProtocolId = 0x424D53FE;
+            header.Command = (byte)command;
+            header.StructureSize = 64;
+            header.MessageId = _messageId++;
+            header.Reserved = 0xFEFF;
             header.SessionId = _sessionid;
             header.TreeId = _TreeId;
-			return getBytes(header);
-		}
+            return getBytes(header);
+        }
 
 
 
         public static byte[] getBytes(object structure)
-		{
-			int size = Marshal.SizeOf(structure);
-			byte[] arr = new byte[size];
+        {
+            int size = Marshal.SizeOf(structure);
+            byte[] arr = new byte[size];
 
-			IntPtr ptr = Marshal.AllocHGlobal(size);
-			Marshal.StructureToPtr(structure, ptr, true);
-			Marshal.Copy(ptr, arr, 0, size);
-			Marshal.FreeHGlobal(ptr);
-			return arr;
-		}
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            Marshal.StructureToPtr(structure, ptr, true);
+            Marshal.Copy(ptr, arr, 0, size);
+            Marshal.FreeHGlobal(ptr);
+            return arr;
+        }
 
-		// MS-SMB2  2.2.3 SMB2 NEGOTIATE Request
-		[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+        // MS-SMB2  2.2.3 SMB2 NEGOTIATE Request
+        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         public static byte[] GetNegotiateMessageSmbv2(int DialectToTest)
-		{
-			SMB2_NegotiateRequest request = new SMB2_NegotiateRequest();
-			request.StructureSize = 36;
-			request.DialectCount = 1;
-			request.SecurityMode = 1; // signing enabled
-			request.ClientGuid = Guid.NewGuid();
-			request.DialectToTest = (UInt16)DialectToTest;
-			request.Capabilities = 1; //DFS
-			return getBytes(request);
-		}
+        {
+            SMB2_NegotiateRequest request = new SMB2_NegotiateRequest();
+            request.StructureSize = 36;
+            request.DialectCount = 1;
+            request.SecurityMode = 1; // signing enabled
+            request.ClientGuid = Guid.NewGuid();
+            request.DialectToTest = (UInt16)DialectToTest;
+            request.Capabilities = 1; //DFS
+            return getBytes(request);
+        }
 
-		// MS-SMB2  2.2.3 SMB2 NEGOTIATE Request
-		[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+        // MS-SMB2  2.2.3 SMB2 NEGOTIATE Request
+        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         public static byte[] GetSessionSetupMessageSmbv2(int securityBufferLength)
-		{
-			var request = new SMB2_SessionSetup();
-			request.StructureSize = 25;
-			request.Flags = 0;
-			request.SecurityMode = 1; // signing enabled
-			request.Capabilities = 1; //DFS
-			request.Channel = 0;
-			request.PreviousSessionId = 0;
-			request.SecurityBufferLength = (ushort) securityBufferLength;
-			request.SecurityBufferOffset = (ushort) (Marshal.SizeOf(typeof(SMB2_SessionSetup)) + Marshal.SizeOf(typeof(SMB2_Header)));
-			return getBytes(request);
-		}
+        {
+            var request = new SMB2_SessionSetup();
+            request.StructureSize = 25;
+            request.Flags = 0;
+            request.SecurityMode = 1; // signing enabled
+            request.Capabilities = 1; //DFS
+            request.Channel = 0;
+            request.PreviousSessionId = 0;
+            request.SecurityBufferLength = (ushort)securityBufferLength;
+            request.SecurityBufferOffset = (ushort)(Marshal.SizeOf(typeof(SMB2_SessionSetup)) + Marshal.SizeOf(typeof(SMB2_Header)));
+            return getBytes(request);
+        }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         public static byte[] GetTreeConnectMessageSmbv2(int targetlen)
@@ -299,7 +299,7 @@ namespace PingCastle.Scanners
             var request = new SMB2_TreeConnect();
             request.StructureSize = 9;
             request.Flags = 0;
-            request.PathOffset = (ushort) (Marshal.SizeOf(typeof(SMB2_Header)) + Marshal.SizeOf(typeof(SMB2_TreeConnect)));
+            request.PathOffset = (ushort)(Marshal.SizeOf(typeof(SMB2_Header)) + Marshal.SizeOf(typeof(SMB2_TreeConnect)));
             request.PathLength = (ushort)(targetlen * 2);
             return getBytes(request);
         }
@@ -311,53 +311,53 @@ namespace PingCastle.Scanners
             request.StructureSize = 57;
             request.CtlCode = CTLCode;
             request.FileId = new Guid("ffffffff-ffff-ffff-ffff-ffffffffffff");
-            request.InputOffset = (uint) (Marshal.SizeOf(typeof(SMB2_Header)) + Marshal.SizeOf(typeof(SMB2_IOCTLRequest)));
+            request.InputOffset = (uint)(Marshal.SizeOf(typeof(SMB2_Header)) + Marshal.SizeOf(typeof(SMB2_IOCTLRequest)));
             request.OutputOffset = request.InputOffset;
             request.MaxOutputResponse = 0x10000;
             request.MaxInputResponse = 0;
-            request.Flags = (uint) (IsFSCTL ? 1 : 0);
+            request.Flags = (uint)(IsFSCTL ? 1 : 0);
             return getBytes(request);
         }
 
         public static byte[] GetGSSSpNegoToken(int NTLMTokenLen)
-		{
-			// brutal ASN1 encoding - use https://lapo.it/asn1js to verify it
-			return new byte[] 
-			{
-				0x60, (byte) (NTLMTokenLen + 32), 
-                    0x06, 0x06, 
-                        0x2b, 0x06, 0x01, 0x05, 0x05, 0x02, 
-				    0xa0, (byte) (NTLMTokenLen + 22), 
-                        0x30, (byte) (NTLMTokenLen + 20), 
-                            0xa0, 0x0e, 
-                                0x30, 0x0c, 0x06, 0x0a,	0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x02, 0x02, 0x0a, 
-				            0xa2, (byte) (NTLMTokenLen + 2), 
+        {
+            // brutal ASN1 encoding - use https://lapo.it/asn1js to verify it
+            return new byte[]
+            {
+                0x60, (byte) (NTLMTokenLen + 32),
+                    0x06, 0x06,
+                        0x2b, 0x06, 0x01, 0x05, 0x05, 0x02,
+                    0xa0, (byte) (NTLMTokenLen + 22),
+                        0x30, (byte) (NTLMTokenLen + 20),
+                            0xa0, 0x0e,
+                                0x30, 0x0c, 0x06, 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x02, 0x02, 0x0a,
+                            0xa2, (byte) (NTLMTokenLen + 2),
                                 0x04, (byte) NTLMTokenLen
-			};
-		}
+            };
+        }
 
         public static byte[] GetGSSSpNegoToken2(int NTLMTokenLen, int MIClen)
-		{
-			// brutal ASN1 encoding - use https://lapo.it/asn1js to verify it
-			return new byte[]
-			{
-				0xa1,0x82,HighByte(NTLMTokenLen+17+MIClen),LowByte(NTLMTokenLen+17+MIClen),
-					0x30,0x82,HighByte(NTLMTokenLen+13+MIClen),LowByte(NTLMTokenLen+13+MIClen),
-						0xa0,0x03,0x0a,0x01,0x01,
-						0xa2,0x82,HighByte(NTLMTokenLen+4),LowByte(NTLMTokenLen+4),
-							0x04,0x82,HighByte(NTLMTokenLen),LowByte(NTLMTokenLen)
-			};
-		}
+        {
+            // brutal ASN1 encoding - use https://lapo.it/asn1js to verify it
+            return new byte[]
+            {
+                0xa1,0x82,HighByte(NTLMTokenLen+17+MIClen),LowByte(NTLMTokenLen+17+MIClen),
+                    0x30,0x82,HighByte(NTLMTokenLen+13+MIClen),LowByte(NTLMTokenLen+13+MIClen),
+                        0xa0,0x03,0x0a,0x01,0x01,
+                        0xa2,0x82,HighByte(NTLMTokenLen+4),LowByte(NTLMTokenLen+4),
+                            0x04,0x82,HighByte(NTLMTokenLen),LowByte(NTLMTokenLen)
+            };
+        }
 
-		static byte LowByte(int size)
-		{
-			return (byte)(size % 0x100);
-		}
+        static byte LowByte(int size)
+        {
+            return (byte)(size % 0x100);
+        }
 
-		static byte HighByte(int size)
-		{
-			return (byte)(size / 0x100);
-		}
+        static byte HighByte(int size)
+        {
+            return (byte)(size / 0x100);
+        }
 
         static byte[] AESEncrypt(byte[] key, byte[] iv, byte[] data)
         {
@@ -423,14 +423,14 @@ namespace PingCastle.Scanners
             else
             {
                 // Otherwise, the last block shall be padded with 10^i
-                
+
                 d[data.Length] = 0x80;
 
                 for (int i = 1; i < 16 - data.Length % 16; i++)
                 {
                     d[data.Length + i] = 0;
                 }
-                
+
                 // and exclusive-OR'ed with K2
                 for (int j = 0; j < SecondSubkey.Length; j++)
                     d[d.Length - 16 + j] ^= SecondSubkey[j];
@@ -445,16 +445,16 @@ namespace PingCastle.Scanners
             return HashValue;
         }
 
-		public byte[] BuildNegotiatePacket(int dialect)
-		{
-			byte[] header = GenerateSmb2HeaderFromCommand(SBM2_Command.SMB2_NEGOTIATE);
-			byte[] negotiatemessage = GetNegotiateMessageSmbv2(dialect);
-			return BuildPacket(header, negotiatemessage);
-		}
+        public byte[] BuildNegotiatePacket(int dialect)
+        {
+            byte[] header = GenerateSmb2HeaderFromCommand(SBM2_Command.SMB2_NEGOTIATE);
+            byte[] negotiatemessage = GetNegotiateMessageSmbv2(dialect);
+            return BuildPacket(header, negotiatemessage);
+        }
 
         public byte[] BuildSessionSetupPacket(byte[] NTLMSSPMessage, byte[] MIC)
-		{
-			int MIClen = (MIC == null ? 0 : MIC.Length + 4);
+        {
+            int MIClen = (MIC == null ? 0 : MIC.Length + 4);
             byte[] header = GenerateSmb2HeaderFromCommand(SBM2_Command.SMB2_SESSION_SETUP);
             byte[] SpNegoToken = _sessionid == 0 ? GetGSSSpNegoToken(NTLMSSPMessage.Length)
                 : GetGSSSpNegoToken2(NTLMSSPMessage.Length, MIClen);
@@ -462,10 +462,10 @@ namespace PingCastle.Scanners
             byte[] MICPrefix = null;
             if (MIC != null)
             {
-                MICPrefix = new byte[] {0xA3, LowByte(MIC.Length + 2), 0x04, LowByte(MIC.Length)};
+                MICPrefix = new byte[] { 0xA3, LowByte(MIC.Length + 2), 0x04, LowByte(MIC.Length) };
             }
-			return BuildPacket(header, message, SpNegoToken, NTLMSSPMessage, MICPrefix, MIC);
-		}
+            return BuildPacket(header, message, SpNegoToken, NTLMSSPMessage, MICPrefix, MIC);
+        }
 
         public byte[] BuildTreeConnectPacket(string target)
         {
@@ -483,57 +483,57 @@ namespace PingCastle.Scanners
         }
 
         public byte[] ReadPacket()
-		{
-			byte[] netbios = new byte[4];
-			if (_stream.Read(netbios, 0, netbios.Length) != netbios.Length)
-				throw new Smb2NotWellFormatedException(_server);
-			int size = netbios[0] << 24 | netbios[1] << 16 | netbios[2] << 8 | netbios[3] << 0;
-			byte[] output = new byte[size];
-			_stream.Read(output, 0, size);
-			return output;
-		}
+        {
+            byte[] netbios = new byte[4];
+            if (_stream.Read(netbios, 0, netbios.Length) != netbios.Length)
+                throw new Smb2NotWellFormatedException(_server);
+            int size = netbios[0] << 24 | netbios[1] << 16 | netbios[2] << 8 | netbios[3] << 0;
+            byte[] output = new byte[size];
+            _stream.Read(output, 0, size);
+            return output;
+        }
 
         SMB2_Header ReadSMB2Header(byte[] packet)
-		{
-			GCHandle handle = GCHandle.Alloc(packet, GCHandleType.Pinned);
-			SMB2_Header header = (SMB2_Header)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(SMB2_Header));
-			handle.Free();
-			return header;
-		}
+        {
+            GCHandle handle = GCHandle.Alloc(packet, GCHandleType.Pinned);
+            SMB2_Header header = (SMB2_Header)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(SMB2_Header));
+            handle.Free();
+            return header;
+        }
 
         public static T ReadResponse<T>(byte[] packet) where T : struct
-		{
-			GCHandle handle = GCHandle.Alloc(packet, GCHandleType.Pinned);
-			T header = (T)Marshal.PtrToStructure(new IntPtr(handle.AddrOfPinnedObject().ToInt64() + Marshal.SizeOf(typeof(SMB2_Header))), typeof(T));
-			handle.Free();
-			return header;
-		}
+        {
+            GCHandle handle = GCHandle.Alloc(packet, GCHandleType.Pinned);
+            T header = (T)Marshal.PtrToStructure(new IntPtr(handle.AddrOfPinnedObject().ToInt64() + Marshal.SizeOf(typeof(SMB2_Header))), typeof(T));
+            handle.Free();
+            return header;
+        }
 
         public static byte[] BuildPacket(params byte[][] bytes)
-		{
-			int size = 0;
-			foreach (var array in bytes)
-			{
+        {
+            int size = 0;
+            foreach (var array in bytes)
+            {
                 if (array == null)
                     continue;
-				size += array.Length;
-			}
-			byte[] output = new byte[size + 4];
-			var byteSize = BitConverter.GetBytes(size);
-			output[0] = byteSize[3];
-			output[1] = byteSize[2];
-			output[2] = byteSize[1];
-			output[3] = byteSize[0];
-			int offset = 4;
-			foreach (var array in bytes)
-			{
+                size += array.Length;
+            }
+            byte[] output = new byte[size + 4];
+            var byteSize = BitConverter.GetBytes(size);
+            output[0] = byteSize[3];
+            output[1] = byteSize[2];
+            output[2] = byteSize[1];
+            output[3] = byteSize[0];
+            int offset = 4;
+            foreach (var array in bytes)
+            {
                 if (array == null)
                     continue;
-				Array.Copy(array, 0, output, offset, array.Length);
-				offset += array.Length;
-			}
-			return output;
-		}
+                Array.Copy(array, 0, output, offset, array.Length);
+                offset += array.Length;
+            }
+            return output;
+        }
 
         public static byte[] ExtractSSP(byte[] answer, SMB2_SessionSetupResponse sessionSetupResponse)
         {
@@ -562,14 +562,14 @@ namespace PingCastle.Scanners
 
         void SendPacket(byte[] packet)
         {
-            
+
             _stream.Write(packet, 0, packet.Length);
             _stream.Flush();
         }
 
         private Stream _stream;
         private string _server;
-        
+
         ulong _sessionid = 0;
         ulong _messageId = 0;
         byte[] sessionkey;
@@ -646,7 +646,7 @@ namespace PingCastle.Scanners
                 }
 
                 var sessionSetupResponse = ReadResponse<SMB2_SessionSetupResponse>(answer);
-                
+
                 _sessionid = header.SessionId;
                 // extract SSP answer from GSSPAPI answer
                 ServerSSPIPacket = ExtractSSP(answer, sessionSetupResponse);
@@ -658,7 +658,7 @@ namespace PingCastle.Scanners
         {
             var packet = BuildTreeConnectPacket(target);
             SendPacket(packet);
-               
+
             Trace.WriteLine("TreeConnect Packet sent");
             var answer = ReadPacket();
             var header = ReadSMB2Header(answer);
@@ -677,7 +677,7 @@ namespace PingCastle.Scanners
         {
             var packet = BuildIOCTLRequestPacket(CTLCode, IsFSCTL);
             SendPacket(packet);
-            
+
             Trace.WriteLine("IOCTLRequest Packet sent");
             var answer = ReadPacket();
             var header = ReadSMB2Header(answer);
@@ -715,7 +715,7 @@ namespace PingCastle.Scanners
                 if (n.SockAddr_Storage_Family == 0x2)
                 {
                     var t = new byte[4];
-                    Array.Copy(o, offset +  Marshal.OffsetOf(typeof(SMB2_NETWORK_INTERFACE_INFO), "SockAddr_Storage_Buffer").ToInt32() + 2, t, 0, t.Length);
+                    Array.Copy(o, offset + Marshal.OffsetOf(typeof(SMB2_NETWORK_INTERFACE_INFO), "SockAddr_Storage_Buffer").ToInt32() + 2, t, 0, t.Length);
                     ni.IP = new IPAddress(t);
                 }
                 else if (n.SockAddr_Storage_Family == 0x17)
@@ -725,7 +725,7 @@ namespace PingCastle.Scanners
                     ni.IP = new IPAddress(t);
                 }
                 else throw new NotImplementedException("SockAddr_Storage_Family unknown: " + n.SockAddr_Storage_Family);
-                
+
 
                 output.Add(ni);
                 Marshal.FreeHGlobal(pt);
@@ -737,31 +737,31 @@ namespace PingCastle.Scanners
             } while (offset != 0);
             return output;
         }
-        
+
 
     }
     public class Smb2ProtocolTest
     {
-		[SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-		public static bool DoesServerSupportDialectWithSmbV2(string server, int dialect, out SMBSecurityModeEnum securityMode)
-		{
-			Trace.WriteLine("Checking " + server + " for SMBV2 dialect 0x" + dialect.ToString("X2"));
-			securityMode = SMBSecurityModeEnum.NotTested;
-			TcpClient client = new TcpClient();
-			client.ReceiveTimeout = 500;
-			client.SendTimeout = 500;
-			try
-			{
-				client.Connect(server, 445);
-			}
-			catch (Exception)
-			{
-				throw new SmbPortClosedException(server);
-			}
-			try
-			{
-				NetworkStream stream = client.GetStream();
-                
+        [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+        public static bool DoesServerSupportDialectWithSmbV2(string server, int dialect, out SMBSecurityModeEnum securityMode)
+        {
+            Trace.WriteLine("Checking " + server + " for SMBV2 dialect 0x" + dialect.ToString("X2"));
+            securityMode = SMBSecurityModeEnum.NotTested;
+            TcpClient client = new TcpClient();
+            client.ReceiveTimeout = 500;
+            client.SendTimeout = 500;
+            try
+            {
+                client.Connect(server, 445);
+            }
+            catch (Exception)
+            {
+                throw new SmbPortClosedException(server);
+            }
+            try
+            {
+                NetworkStream stream = client.GetStream();
+
                 var smb2 = new Smb2Protocol(stream, server);
 
                 var negotiateresponse = smb2.SendNegotiateRequest(dialect);
@@ -780,34 +780,34 @@ namespace PingCastle.Scanners
                 }
 
                 Trace.WriteLine("Checking " + server + " for SMBV2 dialect 0x" + dialect.ToString("X2") + " = Supported");
-				return true;
-			}
-			catch (Exception)
-			{
-				throw new Smb2NotSupportedException(server);
-			}
-		}
-        
+                return true;
+            }
+            catch (Exception)
+            {
+                throw new Smb2NotSupportedException(server);
+            }
+        }
 
-		[SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+
+        [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         public static List<Smb2Protocol.NetworkInfo> GetFCTL_QUERY_NETWORK_INFO(string server, NetworkCredential credential = null)
-		{
-			Trace.WriteLine("Checking " + server + " for GetFCTL_QUERY_NETWORK_INFO");
-			TcpClient client = new TcpClient();
-			client.ReceiveTimeout = 500;
-			client.SendTimeout = 500;
-			try
-			{
-				client.Connect(server, 445);
-			}
-			catch (Exception)
-			{
+        {
+            Trace.WriteLine("Checking " + server + " for GetFCTL_QUERY_NETWORK_INFO");
+            TcpClient client = new TcpClient();
+            client.ReceiveTimeout = 500;
+            client.SendTimeout = 500;
+            try
+            {
+                client.Connect(server, 445);
+            }
+            catch (Exception)
+            {
                 Trace.WriteLine("Error with " + server + "(port closed)");
                 return null;
-			}
-			try
-			{
-				NetworkStream stream = client.GetStream();
+            }
+            try
+            {
+                NetworkStream stream = client.GetStream();
                 var smb2 = new Smb2Protocol(stream, server);
 
                 smb2.SendNegotiateRequest(0x0302);
@@ -819,16 +819,16 @@ namespace PingCastle.Scanners
                 var o = smb2.GetNetworkInterfaceInfo();
 
                 client.Close();
-                
-                return o;
-			}
-			catch (Exception ex)
-			{
-				Trace.WriteLine("Error with " + server + "(" + ex.Message + ")");
-                return null;
-			}
-		}
 
-		
-	}
+                return o;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("Error with " + server + "(" + ex.Message + ")");
+                return null;
+            }
+        }
+
+
+    }
 }

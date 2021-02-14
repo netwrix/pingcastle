@@ -4,20 +4,17 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("S-Domain$$$", RiskRuleCategory.Trusts, RiskModelCategory.SIDHistory)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-	[RuleANSSI("R15", "paragraph.3.3.1.5")]
+    [RuleModel("S-Domain$$$", RiskRuleCategory.Trusts, RiskModelCategory.SIDHistory)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleANSSI("R15", "paragraph.3.3.1.5")]
     [RuleMaturityLevel(3)]
     public class HeatlcheckRuleTrustSIDHistoryAuditingGroup : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.SIDHistoryAuditingGroupPresent)
             {

@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using System.Text;
 
 namespace PingCastle.RPC
 {
     using System.Net;
-    using HANDLE = System.IntPtr;
 
     public enum SecBufferType
     {
@@ -325,7 +322,7 @@ namespace PingCastle.RPC
         public const int STANDARD_CONTEXT_ATTRIBUTES = ISC_REQ_CONFIDENTIALITY | ISC_REQ_REPLAY_DETECT | ISC_REQ_SEQUENCE_DETECT | ISC_REQ_CONNECTION;
 
         bool _bGotCredentials = false;
-        
+
         [DllImport("secur32", CharSet = CharSet.Auto)]
         static extern int AcquireCredentialsHandle(
         string pszPrincipal, //SEC_CHAR*
@@ -496,7 +493,7 @@ namespace PingCastle.RPC
                 _bGotCredentials = true;
             }
 
-                
+
 
             SecBufferDesc ClientToken = new SecBufferDesc(MAX_TOKEN_SIZE);
 

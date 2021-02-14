@@ -4,24 +4,22 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using PingCastle.Rules;
+using System;
+using System.Diagnostics;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("T-ScriptOutOfDomain", RiskRuleCategory.Trusts, RiskModelCategory.TrustImpermeability)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    [RuleModel("T-ScriptOutOfDomain", RiskRuleCategory.Trusts, RiskModelCategory.TrustImpermeability)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
     [RuleMaturityLevel(2)]
     public class HeatlcheckRuleTrustLoginScriptOutOfDomain : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             foreach (HealthcheckLoginScriptData script in healthcheckData.LoginScript)
             {
-				if (IsForeignScript(script.LoginScript, healthcheckData) != null)
+                if (IsForeignScript(script.LoginScript, healthcheckData) != null)
                 {
                     Trace.WriteLine("Foreignscript:" + script.LoginScript);
                     AddRawDetail(script.LoginScript);
@@ -32,7 +30,7 @@ namespace PingCastle.Healthcheck.Rules
                 if (IsForeignScript(script.CommandLine, healthcheckData) != null)
                 {
                     Trace.WriteLine("Foreignscript:" + script.CommandLine);
-					AddRawDetail(script.CommandLine);
+                    AddRawDetail(script.CommandLine);
                 }
             }
             return null;
@@ -60,12 +58,12 @@ namespace PingCastle.Healthcheck.Rules
                     if (server.EndsWith(healthcheckData.DomainFQDN, StringComparison.InvariantCultureIgnoreCase)
                         || server.EndsWith(healthcheckData.ForestFQDN, StringComparison.InvariantCultureIgnoreCase))
                     {
-						return null;
+                        return null;
                     }
-					return server;
+                    return server;
                 }
             }
-			return null;
+            return null;
         }
     }
 }

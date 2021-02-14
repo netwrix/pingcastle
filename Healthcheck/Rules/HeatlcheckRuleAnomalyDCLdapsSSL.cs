@@ -4,38 +4,34 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("A-DCLdapsProtocol", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-	[RuleIntroducedIn(2, 8)]
+    [RuleModel("A-DCLdapsProtocol", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
+    [RuleIntroducedIn(2, 8)]
     [RuleMaturityLevel(3)]
-	public class HeatlcheckRuleAnomalyDCLdapsSSL : RuleBase<HealthcheckData>
+    public class HeatlcheckRuleAnomalyDCLdapsSSL : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             foreach (var dc in healthcheckData.DomainControllers)
             {
-				if (dc.LDAPSProtocols == null)
-					continue;
-				foreach (var protocol in dc.LDAPSProtocols)
-				{
-					switch (protocol)
-					{
-						case "Ssl2":
-						case "Ssl3":
-							AddRawDetail(dc.DCName, protocol);
-							break;
-					}
-				}
+                if (dc.LDAPSProtocols == null)
+                    continue;
+                foreach (var protocol in dc.LDAPSProtocols)
+                {
+                    switch (protocol)
+                    {
+                        case "Ssl2":
+                        case "Ssl3":
+                            AddRawDetail(dc.DCName, protocol);
+                            break;
+                    }
+                }
             }
-			return null;
+            return null;
         }
     }
 }

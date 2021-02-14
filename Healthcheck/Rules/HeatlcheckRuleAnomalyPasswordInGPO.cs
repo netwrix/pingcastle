@@ -4,25 +4,22 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("A-PwdGPO", RiskRuleCategory.Anomalies, RiskModelCategory.PasswordRetrieval)]
-	[RuleComputation(RuleComputationType.PerDiscover, 20)]
-	[RuleCERTFR("CERTFR-2015-ACT-046", "SECTION00020000000000000000")]
+    [RuleModel("A-PwdGPO", RiskRuleCategory.Anomalies, RiskModelCategory.PasswordRetrieval)]
+    [RuleComputation(RuleComputationType.PerDiscover, 20)]
+    [RuleCERTFR("CERTFR-2015-ACT-046", "SECTION00020000000000000000")]
     [RuleMaturityLevel(1)]
     public class HeatlcheckRuleAnomalyPasswordInGPO : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-			foreach (var pass in healthcheckData.GPPPassword)
-			{
-				AddRawDetail(pass.GPOName, pass.UserName, pass.Password);
-			}
+            foreach (var pass in healthcheckData.GPPPassword)
+            {
+                AddRawDetail(pass.GPOName, pass.UserName, pass.Password);
+            }
             return null;
         }
     }

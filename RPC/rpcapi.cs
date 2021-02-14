@@ -5,12 +5,9 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
-using System.Text;
 
 namespace PingCastle.RPC
 {
@@ -34,7 +31,7 @@ namespace PingCastle.RPC
         allocmemory AllocateMemoryDelegate = AllocateMemory;
         freememory FreeMemoryDelegate = FreeMemory;
 
-		public bool UseNullSession { get; set; }
+        public bool UseNullSession { get; set; }
         // 5 seconds
         public UInt32 RPCTimeOut = 5000;
 
@@ -51,7 +48,7 @@ namespace PingCastle.RPC
             public IntPtr Bind;
             public IntPtr Unbind;
         }
-        
+
 
         [StructLayout(LayoutKind.Sequential)]
         private struct RPC_VERSION
@@ -77,7 +74,7 @@ namespace PingCastle.RPC
             public RPC_VERSION SyntaxVersion;
         }
 
-        
+
 
         [StructLayout(LayoutKind.Sequential)]
         private struct RPC_CLIENT_INTERFACE
@@ -226,7 +223,7 @@ namespace PingCastle.RPC
 
         delegate IntPtr bind(IntPtr IntPtrserver);
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        protected IntPtr Bind (IntPtr IntPtrserver)
+        protected IntPtr Bind(IntPtr IntPtrserver)
         {
             string server = Marshal.PtrToStringUni(IntPtrserver);
             IntPtr bindingstring = IntPtr.Zero;
@@ -247,32 +244,32 @@ namespace PingCastle.RPC
                 Trace.WriteLine("RpcBindingFromStringBinding failed with status 0x" + status.ToString("x"));
                 return IntPtr.Zero;
             }
-			if (UseNullSession)
-			{
-				// note: windows xp doesn't support user or domain = "" => return 0xE
-				NativeMethods.SEC_WINNT_AUTH_IDENTITY identity = new NativeMethods.SEC_WINNT_AUTH_IDENTITY();
-				identity.User = "";
-				identity.UserLength = identity.User.Length * 2;
-				identity.Domain = "";
-				identity.DomainLength = identity.Domain.Length * 2;
-				identity.Password = "";
-				identity.Flags = 2;
+            if (UseNullSession)
+            {
+                // note: windows xp doesn't support user or domain = "" => return 0xE
+                NativeMethods.SEC_WINNT_AUTH_IDENTITY identity = new NativeMethods.SEC_WINNT_AUTH_IDENTITY();
+                identity.User = "";
+                identity.UserLength = identity.User.Length * 2;
+                identity.Domain = "";
+                identity.DomainLength = identity.Domain.Length * 2;
+                identity.Password = "";
+                identity.Flags = 2;
 
-				NativeMethods.RPC_SECURITY_QOS qos = new NativeMethods.RPC_SECURITY_QOS();
-				qos.Version = 1;
-				qos.ImpersonationType = 3;
-				GCHandle qoshandle = GCHandle.Alloc(qos, GCHandleType.Pinned);
+                NativeMethods.RPC_SECURITY_QOS qos = new NativeMethods.RPC_SECURITY_QOS();
+                qos.Version = 1;
+                qos.ImpersonationType = 3;
+                GCHandle qoshandle = GCHandle.Alloc(qos, GCHandleType.Pinned);
 
-				// 9 = negotiate , 10 = ntlm ssp
-				status = NativeMethods.RpcBindingSetAuthInfoEx(binding, server, 0, 9, ref identity, 0, ref qos);
-				qoshandle.Free();
-				if (status != 0)
-				{
-					Trace.WriteLine("RpcBindingSetAuthInfoEx failed with status 0x" + status.ToString("x"));
-					Unbind(IntPtrserver, binding);
-					return IntPtr.Zero;
-				}
-			}
+                // 9 = negotiate , 10 = ntlm ssp
+                status = NativeMethods.RpcBindingSetAuthInfoEx(binding, server, 0, 9, ref identity, 0, ref qos);
+                qoshandle.Free();
+                if (status != 0)
+                {
+                    Trace.WriteLine("RpcBindingSetAuthInfoEx failed with status 0x" + status.ToString("x"));
+                    Unbind(IntPtrserver, binding);
+                    return IntPtr.Zero;
+                }
+            }
 
             status = NativeMethods.RpcBindingSetOption(binding, 12, RPCTimeOut);
             if (status != 0)

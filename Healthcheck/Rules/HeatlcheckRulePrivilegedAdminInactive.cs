@@ -4,23 +4,20 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("P-Inactive", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AdminControl)]
-	[RuleComputation(RuleComputationType.TriggerOnThreshold, 30, Threshold: 30, Order: 1)]
-	[RuleComputation(RuleComputationType.TriggerOnThreshold, 20, Threshold: 15, Order: 2)]
-	[RuleANSSI("R36", "subsection.3.6")]
+    [RuleModel("P-Inactive", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AdminControl)]
+    [RuleComputation(RuleComputationType.TriggerOnThreshold, 30, Threshold: 30, Order: 1)]
+    [RuleComputation(RuleComputationType.TriggerOnThreshold, 20, Threshold: 15, Order: 2)]
+    [RuleANSSI("R36", "subsection.3.6")]
     [RuleMaturityLevel(3)]
     public class HeatlcheckRulePrivilegedAdminInactive : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            
+
             int adminEnabledAndInactive = 0;
             if (healthcheckData.AllPrivilegedMembers.Count > 20)
             {
@@ -29,7 +26,7 @@ namespace PingCastle.Healthcheck.Rules
                     if (member.IsEnabled && !member.IsActive)
                         adminEnabledAndInactive++;
                 }
-				return 100 * adminEnabledAndInactive / healthcheckData.AllPrivilegedMembers.Count;
+                return 100 * adminEnabledAndInactive / healthcheckData.AllPrivilegedMembers.Count;
             }
             return 0;
         }

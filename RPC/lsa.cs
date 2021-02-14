@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Security.Principal;
-using System.Text;
 
 namespace PingCastle.RPC
 {
@@ -21,7 +20,8 @@ namespace PingCastle.RPC
         public SecurityIdentifier DomainSid;
     }
 
-    public enum SID_NAME_USE {
+    public enum SID_NAME_USE
+    {
         SidTypeUser = 1,
         SidTypeGroup,
         SidTypeDomain,
@@ -42,7 +42,7 @@ namespace PingCastle.RPC
         public string TranslatedName;
         public SID_NAME_USE Use;
     }
-    
+
     public class lsa : rpcapi
     {
 
@@ -229,7 +229,7 @@ namespace PingCastle.RPC
             {
                 InitializeStub(interfaceId, MIDL_ProcFormatStringx86, MIDL_TypeFormatStringx86, "\\pipe\\lsarpc", 0);
             }
-			UseNullSession = true;
+            UseNullSession = true;
         }
 
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -283,7 +283,7 @@ namespace PingCastle.RPC
                 if (intptrSystemName != IntPtr.Zero)
                     Marshal.FreeHGlobal(intptrSystemName);
             }
-            return (int) result.ToInt64();
+            return (int)result.ToInt64();
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -319,7 +319,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("LsarClose failed 0x" + Marshal.GetExceptionCode().ToString("x"));
                 return Marshal.GetExceptionCode();
             }
-            return (int) result.ToInt64();
+            return (int)result.ToInt64();
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -358,7 +358,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("LsarQueryInformationPolicy failed 0x" + Marshal.GetExceptionCode().ToString("x"));
                 return Marshal.GetExceptionCode();
             }
-            return (int) result.ToInt64();
+            return (int)result.ToInt64();
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -370,7 +370,7 @@ namespace PingCastle.RPC
             LSA_DOMAIN_INFORMATION output = new LSA_DOMAIN_INFORMATION();
             output.DomainName = Marshal.PtrToStringUni(Buffer.buffer, Buffer.Length / 2);
             output.DomainSid = new SecurityIdentifier(Buffer.DomainSid);
-            
+
             if (Buffer.buffer != IntPtr.Zero && Buffer.MaximumLength > 0)
                 FreeMemory(Buffer.buffer);
             if (Buffer.DomainSid != IntPtr.Zero)
@@ -380,7 +380,7 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public Int32 LsarLookupSids(IntPtr PolicyHandle, SecurityIdentifier[] SidEnumBuffer, out LSA_LOOKUP_RESULT[] LookupResult, UInt32 LookupLevel,out UInt32 MappedCount)
+        public Int32 LsarLookupSids(IntPtr PolicyHandle, SecurityIdentifier[] SidEnumBuffer, out LSA_LOOKUP_RESULT[] LookupResult, UInt32 LookupLevel, out UInt32 MappedCount)
         {
             List<GCHandle> HandleToFree = new List<GCHandle>();
             IntPtr result = IntPtr.Zero;
@@ -407,7 +407,7 @@ namespace PingCastle.RPC
                     IntPtr tempValue2 = IntPtr.Zero;
                     GCHandle handle2 = GCHandle.Alloc(tempValue2, GCHandleType.Pinned);
                     IntPtr tempValuePointer2 = handle2.AddrOfPinnedObject();
-                    
+
                     IntPtr tempValue4 = IntPtr.Zero;
                     GCHandle handle4 = GCHandle.Alloc(tempValue4, GCHandleType.Pinned);
                     IntPtr tempValuePointer4 = handle4.AddrOfPinnedObject();
@@ -443,14 +443,14 @@ namespace PingCastle.RPC
                     handle.Free();
                 }
             }
-            return (int) result.ToInt64();
+            return (int)result.ToInt64();
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         private LSAPR_SID_ENUM_BUFFER Marshal_LSAPR_SID_ENUM_BUFFER(SecurityIdentifier[] SidEnumBuffer, List<GCHandle> HandleToFree)
         {
             LSAPR_SID_ENUM_BUFFER output = new LSAPR_SID_ENUM_BUFFER();
-            output.Entries = (UInt32) SidEnumBuffer.Length;
+            output.Entries = (UInt32)SidEnumBuffer.Length;
             IntPtr[] sidPtr = new IntPtr[SidEnumBuffer.Length];
             for (int i = 0; i < SidEnumBuffer.Length; i++)
             {
@@ -503,10 +503,10 @@ namespace PingCastle.RPC
 
                 if (translatedName.buffer != IntPtr.Zero)
                     output[i].TranslatedName = Marshal.PtrToStringUni(translatedName.buffer, translatedName.Length / 2);
-                output[i].Use = (SID_NAME_USE) translatedName.Use;
+                output[i].Use = (SID_NAME_USE)translatedName.Use;
                 output[i].DomainName = referencedDomainsString[translatedName.DomainIndex];
                 output[i].DomainSid = referencedDomainsSid[translatedName.DomainIndex];
-                
+
                 if (translatedName.buffer != IntPtr.Zero && translatedName.MaximumLength > 0)
                     FreeMemory(translatedName.buffer);
             }

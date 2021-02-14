@@ -4,20 +4,17 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("S-OS-NT", RiskRuleCategory.StaleObjects, RiskModelCategory.ObsoleteOS)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 60)]
-	[RuleCERTFR("CERTFR-2005-INF-003", "SECTION00032400000000000000")]
+    [RuleModel("S-OS-NT", RiskRuleCategory.StaleObjects, RiskModelCategory.ObsoleteOS)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 60)]
+    [RuleCERTFR("CERTFR-2005-INF-003", "SECTION00032400000000000000")]
     [RuleMaturityLevel(2)]
     public class HeatlcheckRuleStaledObsoleteNT4 : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             foreach (HealthcheckOSData os in healthcheckData.OperatingSystem)
             {

@@ -5,53 +5,172 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
-using System.Text;
 
 namespace PingCastle.ADWS
 {
     public class DomainLocator
     {
+        [Flags]
+        public enum DSGETDCNAME_FLAGS : uint
+        {
+            DS_FORCE_REDISCOVERY = 0x00000001,
+            DS_DIRECTORY_SERVICE_REQUIRED = 0x00000010,
+            DS_DIRECTORY_SERVICE_PREFERRED = 0x00000020,
+            DS_GC_SERVER_REQUIRED = 0x00000040,
+            DS_PDC_REQUIRED = 0x00000080,
+            DS_BACKGROUND_ONLY = 0x00000100,
+            DS_IP_REQUIRED = 0x00000200,
+            DS_KDC_REQUIRED = 0x00000400,
+            DS_TIMESERV_REQUIRED = 0x00000800,
+            DS_WRITABLE_REQUIRED = 0x00001000,
+            DS_GOOD_TIMESERV_PREFERRED = 0x00002000,
+            DS_AVOID_SELF = 0x00004000,
+            DS_ONLY_LDAP_NEEDED = 0x00008000,
+            DS_IS_FLAT_NAME = 0x00010000,
+            DS_IS_DNS_NAME = 0x00020000,
+            DS_RETURN_DNS_NAME = 0x40000000,
+            DS_RETURN_FLAT_NAME = 0x80000000,
+            DS_WEB_SERVICE_REQUIRED = 0x00100000,
+        }
+
+        [DllImport("libPingCastlesmb", EntryPoint = "DsGetDcName", CharSet = CharSet.Ansi)]
+        private static extern int DsGetDcNameUnix
+        (
+            string ComputerName,
+            string DomainName,
+            [In] IntPtr DomainGuid,
+            string SiteName,
+            DSGETDCNAME_FLAGS Flags,
+            out IntPtr pDOMAIN_CONTROLLER_INFO
+        );
+
+        [DllImport("Netapi32.dll", CharSet = CharSet.Unicode)]
+        private static extern int DsGetDcName
+        (
+            [MarshalAs(UnmanagedType.LPWStr)]
+            string ComputerName,
+            [MarshalAs(UnmanagedType.LPWStr)]
+            string DomainName,
+            [In] IntPtr DomainGuid,
+            [MarshalAs(UnmanagedType.LPWStr)]
+            string SiteName,
+            DSGETDCNAME_FLAGS Flags,
+            out IntPtr pDOMAIN_CONTROLLER_INFO
+        );
+
+        [DllImport("Netapi32", CharSet = CharSet.Auto)]
+        internal static extern int NetApiBufferFree(IntPtr Buffer);
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct DOMAIN_CONTROLLER_INFO
+        {
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string DomainControllerName;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string DomainControllerAddress;
+            public uint DomainControllerAddressType;
+            public Guid DomainGuid;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string DomainName;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string DnsForestName;
+            public uint Flags;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string DcSiteName;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string ClientSiteName;
+        }
 
         string Server;
+        PlatformID platform;
+
         public DomainLocator(string server)
         {
             Server = server;
+            platform = Environment.OSVersion.Platform;
         }
 
         public bool LocateDomainFromNetbios(string netbios, out string domain, out string forest)
         {
-			return LocateSomething(netbios, out domain, out forest, NativeMethods.DSGETDCNAME_FLAGS.DS_IS_FLAT_NAME |
-																	NativeMethods.DSGETDCNAME_FLAGS.DS_RETURN_DNS_NAME |
-																	NativeMethods.DSGETDCNAME_FLAGS.DS_ONLY_LDAP_NEEDED);
+            return LocateSomething(netbios, out domain, out forest, DSGETDCNAME_FLAGS.DS_IS_FLAT_NAME |
+                                                                    DSGETDCNAME_FLAGS.DS_RETURN_DNS_NAME |
+                                                                    DSGETDCNAME_FLAGS.DS_ONLY_LDAP_NEEDED);
         }
 
         public bool LocateNetbiosFromFQDN(string fqdn, out string netbios, out string forest)
         {
-			return LocateSomething(fqdn, out netbios, out forest, NativeMethods.DSGETDCNAME_FLAGS.DS_IS_DNS_NAME |
-																	NativeMethods.DSGETDCNAME_FLAGS.DS_RETURN_FLAT_NAME | 
-																	NativeMethods.DSGETDCNAME_FLAGS.DS_ONLY_LDAP_NEEDED);
+            return LocateSomething(fqdn, out netbios, out forest, DSGETDCNAME_FLAGS.DS_IS_DNS_NAME |
+                                                                    DSGETDCNAME_FLAGS.DS_RETURN_FLAT_NAME |
+                                                                    DSGETDCNAME_FLAGS.DS_ONLY_LDAP_NEEDED);
         }
 
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-		bool LocateSomething(string intput, out string domain, out string forest, NativeMethods.DSGETDCNAME_FLAGS flag)
+        internal static string GetDC(string domain, bool ADWS, bool forceRediscovery)
+        {
+            DOMAIN_CONTROLLER_INFO domainInfo;
+            const int ERROR_SUCCESS = 0;
+            IntPtr pDCI = IntPtr.Zero;
+            try
+            {
+                var flags = DSGETDCNAME_FLAGS.DS_DIRECTORY_SERVICE_REQUIRED |
+                            DSGETDCNAME_FLAGS.DS_RETURN_DNS_NAME |
+                            DSGETDCNAME_FLAGS.DS_IP_REQUIRED;
+                if (ADWS)
+                {
+                    flags |= DSGETDCNAME_FLAGS.DS_WEB_SERVICE_REQUIRED;
+                }
+                if (forceRediscovery)
+                {
+                    flags |= DSGETDCNAME_FLAGS.DS_FORCE_REDISCOVERY;
+                }
+                int val = DsGetDcName("", domain, IntPtr.Zero, "", flags, out pDCI);
+                //check return value for error
+                if (ERROR_SUCCESS == val)
+                {
+                    domainInfo = (DOMAIN_CONTROLLER_INFO)Marshal.PtrToStructure(pDCI, typeof(DOMAIN_CONTROLLER_INFO));
+
+                    return domainInfo.DomainControllerName.Substring(2);
+                }
+                else
+                {
+                    throw new Win32Exception(val);
+                }
+            }
+            finally
+            {
+                if (pDCI != IntPtr.Zero)
+                    NetApiBufferFree(pDCI);
+            }
+        }
+
+        [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+        bool LocateSomething(string intput, out string domain, out string forest, DSGETDCNAME_FLAGS flag)
         {
             IntPtr DomainInfoResolution;
             domain = null;
             forest = null;
             Trace.WriteLine("Trying to solve " + intput + "(" + DateTime.Now.ToString("u") + ")");
-            
-            int ret = NativeMethods.DsGetDcName(Server, intput, IntPtr.Zero, null, flag, out DomainInfoResolution);
+
+            int ret;
+            if (platform != PlatformID.Win32NT)
+            {
+                ret = DsGetDcNameUnix(Server, intput, IntPtr.Zero, null, flag, out DomainInfoResolution);
+            }
+            else
+            {
+                ret = DsGetDcName(Server, intput, IntPtr.Zero, null, flag, out DomainInfoResolution);
+            }
             if (ret == 0)
             {
                 Trace.WriteLine("DsGetDcName for " + intput + " succeeded (" + DateTime.Now.ToString("u") + ")");
-                NativeMethods.DOMAIN_CONTROLLER_INFO di = (NativeMethods.DOMAIN_CONTROLLER_INFO)Marshal.PtrToStructure(DomainInfoResolution, typeof(NativeMethods.DOMAIN_CONTROLLER_INFO));
+                DOMAIN_CONTROLLER_INFO di = (DOMAIN_CONTROLLER_INFO)Marshal.PtrToStructure(DomainInfoResolution, typeof(DOMAIN_CONTROLLER_INFO));
                 domain = di.DomainName.ToLowerInvariant();
                 forest = di.DnsForestName.ToLowerInvariant();
-                NativeMethods.NetApiBufferFree(DomainInfoResolution);
+                NetApiBufferFree(DomainInfoResolution);
                 return true;
             }
             else if (ret == 0x0000054B)
@@ -64,82 +183,5 @@ namespace PingCastle.ADWS
             }
             return false;
         }
-
-
-        //// use the locator service of a DC via DsGetDcName
-        //// do a parallele resolution because it can takes time
-        //private int ResolveNetbiosNameToFQDN(ref string lastWorkingDC, ADDomainInfo domainInfo, string NetbiosName, out IntPtr DomainInfoResolution)
-        //{
-        //    int ret = 0x0000054B;
-        //    DomainInfoResolution = IntPtr.Zero;
-        //    BlockingQueue<string> queue = new BlockingQueue<string>(50);
-        //    int numberOfThread = 20;
-        //    Thread[] threads = new Thread[numberOfThread];
-        //    string workingDC = lastWorkingDC;
-        //    IntPtr workingoutput = IntPtr.Zero;
-        //    bool stop = false;
-        //    ThreadStart threadFunction = () =>
-        //    {
-        //        for (; ; )
-        //        {
-        //            string dc = null;
-        //            IntPtr output;
-        //            int threadret = 0;
-        //            if (!queue.Dequeue(out dc)) break;
-        //            if (!stop)
-        //            {
-        //                Trace.WriteLine("Trying DC " + dc + "." + domainInfo.DomainName);
-        //                threadret = NativeMethods.DsGetDcName(dc + "." + domainInfo.DomainName, NetbiosName, IntPtr.Zero, null, 0x00010000 + 0x40000000 + 0x00008000, out output);
-        //                if (threadret == 0)
-        //                {
-        //                    Trace.WriteLine("DsGetDcName for " + NetbiosName + "for DC " + dc + "." + domainInfo.DomainName + " worked");
-        //                    lock (queue)
-        //                    {
-        //                        workingDC = dc + "." + domainInfo.DomainName;
-        //                        workingoutput = output;
-        //                        ret = threadret;
-        //                        stop = true;
-        //                    }
-        //                }
-        //                else
-        //                {
-        //                    Trace.WriteLine("DsGetDcName for " + NetbiosName + "for DC " + dc + "." + domainInfo.DomainName + " returned 0x" + ret.ToString("x"));
-        //                }
-        //            }
-        //        }
-        //    };
-        //    try
-        //    {
-        //        // Consumers
-        //        for (int i = 0; i < numberOfThread; i++)
-        //        {
-        //            threads[i] = new Thread(threadFunction);
-        //            threads[i].Start();
-        //        }
-
-        //        foreach (string dc in healthcheckData.DomainControllers)
-        //        {
-        //            if ((dc + "." + domainInfo.DomainName).Equals(domainInfo.DnsHostName, StringComparison.InvariantCultureIgnoreCase))
-        //                continue;
-        //            if ((dc + "." + domainInfo.DomainName).Equals(lastWorkingDC, StringComparison.InvariantCultureIgnoreCase))
-        //                continue;
-        //            queue.Enqueue(dc);
-        //        }
-        //    }
-        //    finally
-        //    {
-        //        queue.Quit();
-        //        DomainInfoResolution = workingoutput;
-        //        lastWorkingDC = workingDC;
-        //        for (int i = 0; i < numberOfThread; i++)
-        //        {
-        //            if (threads[i] != null)
-        //                if (threads[i].ThreadState == System.Threading.ThreadState.Running)
-        //                    threads[i].Abort();
-        //        }
-        //    }
-        //    return ret;
-        //}
-
     }
 }

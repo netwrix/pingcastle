@@ -4,9 +4,6 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
@@ -30,7 +27,7 @@ namespace PingCastle.Healthcheck.Rules
                 if (analysis.Typology == Data.CompromiseGraphDataTypology.Infrastructure
                     || analysis.Typology == Data.CompromiseGraphDataTypology.PrivilegedAccount)
                 {
-				    if (analysis.NumberOfIndirectMembers > max)
+                    if (analysis.NumberOfIndirectMembers > max)
                     {
                         max = analysis.NumberOfIndirectMembers;
                     }

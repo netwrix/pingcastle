@@ -11,7 +11,6 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Security.Principal;
-using System.Text;
 
 namespace PingCastle.Scanners
 {
@@ -74,7 +73,7 @@ namespace PingCastle.Scanners
             NativeMethods.UNICODE_STRING serverName = new NativeMethods.UNICODE_STRING();
             serverName.Initialize(ServerName);
             List<SecurityIdentifier> output = new List<SecurityIdentifier>();
-            
+
             IntPtr hServerHandle, hBuiltinHandle, hAliasHandle;
             IntPtr membersSid;
             int memberRetourned;
@@ -101,7 +100,7 @@ namespace PingCastle.Scanners
                             throw new Win32Exception(NativeMethods.LsaNtStatusToWinError(status));
                         for (int i = 0; i < memberRetourned; i++)
                         {
-                            SecurityIdentifier sid = new SecurityIdentifier(Marshal.ReadIntPtr(membersSid,Marshal.SizeOf(typeof(IntPtr))*i));
+                            SecurityIdentifier sid = new SecurityIdentifier(Marshal.ReadIntPtr(membersSid, Marshal.SizeOf(typeof(IntPtr)) * i));
                             output.Add(sid);
                         }
                         NativeMethods.SamFreeMemory(membersSid);

@@ -12,7 +12,6 @@ using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Permissions;
 using System.Security.Principal;
-using System.Text;
 
 namespace PingCastle.shares
 {
@@ -28,11 +27,11 @@ namespace PingCastle.shares
                     continue;
                 if (((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.WorldSid)
                     || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AuthenticatedUserSid)
-					|| ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.BuiltinUsersSid)
-					|| ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AccountComputersSid)
-					|| ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AccountDomainUsersSid)
-					|| ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AnonymousSid)
-					)
+                    || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.BuiltinUsersSid)
+                    || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AccountComputersSid)
+                    || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AccountDomainUsersSid)
+                    || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AnonymousSid)
+                    )
                 {
                     return true;
                 }

@@ -4,19 +4,16 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("T-Downlevel", RiskRuleCategory.Trusts, RiskModelCategory.OldTrustProtocol)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
+    [RuleModel("T-Downlevel", RiskRuleCategory.Trusts, RiskModelCategory.OldTrustProtocol)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
     [RuleMaturityLevel(3)]
     public class HeatlcheckRuleTrustDownlevel : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             // trust
             foreach (HealthCheckTrustData trust in healthcheckData.Trusts)

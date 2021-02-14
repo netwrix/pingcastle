@@ -5,12 +5,10 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Security.Principal;
-using System.Text;
 
 namespace PingCastle.RPC
 {
@@ -58,7 +56,7 @@ namespace PingCastle.RPC
         private bool EnumerateAccountUsingLsa(TypeOfEnumeration method, int MaximumNumber)
         {
             Trace.WriteLine("EnumerateAccountUsingLsa");
-            int UserEnumerated = 0; 
+            int UserEnumerated = 0;
             Int32 returnCode;
             IntPtr PolicyHandle = IntPtr.Zero;
             lsa lsa = new lsa();
@@ -127,7 +125,7 @@ namespace PingCastle.RPC
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         private bool EnumerateAccountUsingSamr(TypeOfEnumeration method, int MaximumNumber)
         {
-            Trace.WriteLine("EnumerateAccountUsingSamr"); 
+            Trace.WriteLine("EnumerateAccountUsingSamr");
             int UserEnumerated = 0;
             IntPtr ServerHandle = IntPtr.Zero;
             samr sam = new samr();
@@ -202,7 +200,7 @@ namespace PingCastle.RPC
             {
                 sam.SamrCloseHandle(ref ServerHandle);
             }
-            Trace.WriteLine("EnumerateAccountUsingSamr done"); 
+            Trace.WriteLine("EnumerateAccountUsingSamr done");
             return UserEnumerated > 0;
         }
 

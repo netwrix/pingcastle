@@ -4,30 +4,27 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("P-ExchangeAdminSDHolder", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-	[RuleANSSI("R18", "subsubsection.3.3.2")]
-	[RuleIntroducedIn(2, 6)]
+    [RuleModel("P-ExchangeAdminSDHolder", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleANSSI("R18", "subsubsection.3.3.2")]
+    [RuleIntroducedIn(2, 6)]
     [RuleMaturityLevel(2)]
-	public class HeatlcheckRulePrivilegedExchangeAdminSDHolder : RuleBase<HealthcheckData>
+    public class HeatlcheckRulePrivilegedExchangeAdminSDHolder : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             foreach (HealthcheckDelegationData delegation in healthcheckData.Delegations)
             {
-				if (delegation.DistinguishedName == "AdminSDHolder"
-					&& delegation.Account.Contains("Exchange"))
-				{
-					return 1;
-				}
-			}
+                if (delegation.DistinguishedName == "AdminSDHolder"
+                    && delegation.Account.Contains("Exchange"))
+                {
+                    return 1;
+                }
+            }
             return 0;
         }
     }

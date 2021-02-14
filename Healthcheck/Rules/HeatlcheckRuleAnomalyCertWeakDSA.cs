@@ -4,23 +4,21 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+using PingCastle.Rules;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("A-CertWeakDSA", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
+    [RuleModel("A-CertWeakDSA", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
     [RuleDurANSSI(1, "certificates_vuln", "Weak or vulnerable certificates")]
-    [RuleIntroducedIn(2,9)]
+    [RuleIntroducedIn(2, 9)]
     public class HeatlcheckRuleAnomalyCertWeakDSA : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             foreach (HealthcheckCertificateData data in healthcheckData.TrustedCertificates)
             {
@@ -30,7 +28,7 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     key = cert.PublicKey.Key as DSA;
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     Trace.WriteLine("Non DSA key detected in certificate");
                 }

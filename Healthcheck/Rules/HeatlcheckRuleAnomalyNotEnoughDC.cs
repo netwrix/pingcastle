@@ -4,22 +4,19 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("A-NotEnoughDC", RiskRuleCategory.Anomalies, RiskModelCategory.Backup)]
-	[RuleComputation(RuleComputationType.TriggerIfLessThan, 5, Threshold: 2)]
-	[RuleIntroducedIn(2, 6)]
+    [RuleModel("A-NotEnoughDC", RiskRuleCategory.Anomalies, RiskModelCategory.Backup)]
+    [RuleComputation(RuleComputationType.TriggerIfLessThan, 5, Threshold: 2)]
+    [RuleIntroducedIn(2, 6)]
     [RuleMaturityLevel(3)]
-	public class HeatlcheckRuleAnomalyNotEnoughDC : RuleBase<HealthcheckData>
+    public class HeatlcheckRuleAnomalyNotEnoughDC : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-			return healthcheckData.NumberOfDC;
+            return healthcheckData.NumberOfDC;
         }
     }
 }

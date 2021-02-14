@@ -4,23 +4,21 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+using PingCastle.Rules;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-	[RuleModel("A-WeakRSARootCert", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
-	[RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-	[RuleSTIG("V-14820", "PKI certificates (server and clients) must be issued by the DoD PKI or an approved External Certificate Authority (ECA).", STIGFramework.ActiveDirectoryService2003)]
+    [RuleModel("A-WeakRSARootCert", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleSTIG("V-14820", "PKI certificates (server and clients) must be issued by the DoD PKI or an approved External Certificate Authority (ECA).", STIGFramework.ActiveDirectoryService2003)]
     [RuleDurANSSI(1, "certificates_vuln", "Weak or vulnerable certificates")]
     public class HeatlcheckRuleAnomalyCertWeakRSA : RuleBase<HealthcheckData>
     {
-		protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             foreach (HealthcheckCertificateData data in healthcheckData.TrustedCertificates)
             {
@@ -30,7 +28,7 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     key = cert.PublicKey.Key as RSA;
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     Trace.WriteLine("Non RSA key detected in certificate");
                 }
@@ -41,7 +39,7 @@ namespace PingCastle.Healthcheck.Rules
                         if (rsaparams.Modulus.Length * 8 < 1024)
                         {
                             Trace.WriteLine("Modulus len = " + rsaparams.Modulus.Length * 8);
-							AddRawDetail(data.Source, cert.Subject, rsaparams.Modulus.Length * 8, cert.NotAfter); 
+                            AddRawDetail(data.Source, cert.Subject, rsaparams.Modulus.Length * 8, cert.NotAfter);
                         }
                     }
                 }

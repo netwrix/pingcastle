@@ -11,7 +11,7 @@ using System.Collections.Generic;
 namespace PingCastle.Healthcheck
 {
     public class PingCastleReportHistoryCollection<T> : ICollection<T> where T : IPingCastleReport
-	{
+    {
 
         Dictionary<string, Dictionary<DateTime, T>> data { get; set; }
 
@@ -91,22 +91,22 @@ namespace PingCastle.Healthcheck
             return this.GetEnumerator();
         }
 
-		public PingCastleReportCollection<T> ToLatestReportCollection()
-		{
-			var output = new PingCastleReportCollection<T>();
-			foreach (var sid in data.Keys)
-			{
-				DateTime maxDate = DateTime.MinValue;
-				foreach (var date in data[sid].Keys)
-				{
-					if (maxDate < date)
-						maxDate = date;
-				}
-				output.Add(data[sid][maxDate]);
-			}
-			output.EnrichInformation();
-			return output;
-		}
+        public PingCastleReportCollection<T> ToLatestReportCollection()
+        {
+            var output = new PingCastleReportCollection<T>();
+            foreach (var sid in data.Keys)
+            {
+                DateTime maxDate = DateTime.MinValue;
+                foreach (var date in data[sid].Keys)
+                {
+                    if (maxDate < date)
+                        maxDate = date;
+                }
+                output.Add(data[sid][maxDate]);
+            }
+            output.EnrichInformation();
+            return output;
+        }
 
         public IEnumerable<KeyValuePair<string, DateTime>> GetKeyPoints()
         {
@@ -140,7 +140,7 @@ namespace PingCastle.Healthcheck
                 if (min != DateTime.MinValue)
                     output.Add(data[sid][min]);
             }
-			output.EnrichInformation();
+            output.EnrichInformation();
             return output;
         }
 

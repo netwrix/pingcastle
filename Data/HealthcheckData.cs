@@ -958,6 +958,9 @@ namespace PingCastle.Healthcheck
         public bool ShouldSerializePreWindows2000NoDefault() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public bool PreWindows2000NoDefault { get; set; }
 
+        public bool ShouldSerializePreWindows2000AuthenticatedUsers() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public bool PreWindows2000AuthenticatedUsers { get; set; }
+
         public bool ShouldSerializeDsHeuristicsAnonymousAccess() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public bool DsHeuristicsAnonymousAccess { get; set; }
 

@@ -3778,4 +3778,28 @@ If the script is detected, Windows 7 is considered as supported and this rule is
   <data name="S_OS_Win7_Title" xml:space="preserve">
     <value>Obsolete OS (Windows 7)</value>
   </data>
+  <data name="A_PreWin2000AuthenticatedUsers_Description" xml:space="preserve">
+    <value>The purpose is check if the "Pre-Windows 2000 Compatible Access" group contains authenticated users</value>
+  </data>
+  <data name="A_PreWin2000AuthenticatedUsers_Documentation" xml:space="preserve">
+    <value>https://msdn.microsoft.com/en-us/library/cc223672.aspx</value>
+  </data>
+  <data name="A_PreWin2000AuthenticatedUsers_Rationale" xml:space="preserve">
+    <value>The PreWin2000 compatible group contains "authenticated users"</value>
+  </data>
+  <data name="A_PreWin2000AuthenticatedUsers_Solution" xml:space="preserve">
+    <value>Remove "authenticated users" from the PreWin2000 group.</value>
+  </data>
+  <data name="A_PreWin2000AuthenticatedUsers_TechnicalExplanation" xml:space="preserve">
+    <value>The pre-Windows 2000 compatible access group grants access to some RPC calls.
+    Its default and secure value is the "Authenticated Users" group which allows users to perform group look up using legacy protocols.
+    
+  If this group contains "Authenticated Users", it increases the impact on the exploitation vulnerability on legacy protocols such as the printer spooler.
+    Indeed, in the #PrintNightmare attack, it enables a patch bypass on domain controllers because the property Elevated Token is on when establishing a session to the DC.
+    Removing the group can have side impacts and as a consequence, this is reported here as a special hardening measure.
+  </value>
+  </data>
+  <data name="A_PreWin2000AuthenticatedUsers_Title" xml:space="preserve">
+    <value>Check that the "Pre-Windows 2000 Compatible Access" group does not contain "Authenticated Users"</value>
+  </data>
 </root>

@@ -123,6 +123,7 @@
     <Compile Include="Data\HealthCheckBUEntityData.cs" />
     <Compile Include="Data\CompromiseGraphData.cs" />
     <Compile Include="Healthcheck\HoneyPotSettings.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyPreWin2000AuthenticatedUsers.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteWin7.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleTrustAzureADSSO.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyUnixPassword.cs" />

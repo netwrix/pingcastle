@@ -3509,6 +3509,10 @@ namespace PingCastle.Healthcheck
                                 healthcheckData.PreWindows2000AnonymousAccess = true;
                                 continue;
                             }
+                            if (member.Contains("S-1-5-11"))
+                            {
+                                healthcheckData.PreWindows2000AuthenticatedUsers = true;
+                            }
                             if (!member.StartsWith("CN=S-"))
                             {
                                 healthcheckData.PreWindows2000NoDefault = true;

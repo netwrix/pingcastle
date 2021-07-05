@@ -36,6 +36,9 @@ namespace PingCastle.Healthcheck
 {
     public class HealthcheckAnalyzer : IPingCastleAnalyzer<HealthcheckData>
     {
+        private const string LatinUpperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        private const string LatinLowerCase = "abcdefghijklmnopqrstuvwxyz";
+
         public static bool SkipNullSession { get; set; }
         HealthcheckData healthcheckData;
 
@@ -2004,7 +2007,7 @@ namespace PingCastle.Healthcheck
                 path = directoryFullName + @"\Machine\Preferences\Registry\Registry.xml";
                 if (adws.FileConnection.FileExists(path))
                 {
-                    ExtractGPOSettingsFromRegistryXml(path, GPO);
+                    ExtractNetSessionHardeningFromRegistryXml(path, GPO);
                 }
 
             }
@@ -2072,36 +2075,50 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private void ExtractGPOSettingsFromRegistryXml(string path, GPO GPO)
-        {
-            XmlDocument doc = new XmlDocument();
-            doc.Load(path);
-            XmlNodeList nodeList = doc.SelectNodes(@"//Registry/Properties[@name=""SrvsvcSessionInfo""][@key=""SYSTEM\CurrentControlSet\Services\LanmanServer\DefaultSecurity""]");
-            if (nodeList.Count > 0)
-            {
-                GPPSecurityPolicy SecurityPolicy = null;
-                foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
-                {
-                    if (policy.GPOId == GPO.InternalName)
-                    {
-                        SecurityPolicy = policy;
-                        break;
-                    }
-                }
-                if (SecurityPolicy == null)
-                {
-                    SecurityPolicy = new GPPSecurityPolicy();
-                    SecurityPolicy.GPOName = GPO.DisplayName;
-                    SecurityPolicy.GPOId = GPO.InternalName;
+        private void ExtractNetSessionHardeningFromRegistryXml(string path, GPO gpo) {
+            const string valueName = "SrvsvcSessionInfo";
+            const string valuePath = @"SYSTEM\CurrentControlSet\Services\LanmanServer\DefaultSecurity";
 
-                    lock (healthcheckData.GPOLsaPolicy)
-                    {
-                        healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
-                    }
-                    SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
-                }
-                SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("SrvsvcSessionInfo", 1));
+            var xPath = string.Format("//Registry/Properties[translate(@name, \"{0}\", \"{1}\")=\"{2}\"][translate(@key, \"{0}\", \"{1}\")=\"{3}\"]",
+                                      LatinUpperCase,
+                                      LatinLowerCase,
+                                      valueName.ToLowerInvariant(),
+                                      valuePath.ToLowerInvariant());
+
+            var doc = new XmlDocument();
+            doc.Load(path);
+
+            var nodeList = doc.SelectNodes(xPath);
+            if (nodeList.Count == 0) {
+                return;
             }
+
+            GPPSecurityPolicy secPol = null;
+            foreach (var policy in healthcheckData.GPOLsaPolicy)
+            {
+                if (policy.GPOId == gpo.InternalName)
+                {
+                    secPol = policy;
+                    break;
+                }
+            }
+
+            if (secPol == null)
+            {
+                secPol = new GPPSecurityPolicy {
+                    GPOName = gpo.DisplayName,
+                    GPOId = gpo.InternalName
+                };
+
+                lock (healthcheckData.GPOLsaPolicy)
+                {
+                    healthcheckData.GPOLsaPolicy.Add(secPol);
+                }
+
+                secPol.Properties = new List<GPPSecurityPolicyProperty>();
+            }
+
+            secPol.Properties.Add(new GPPSecurityPolicyProperty(valueName, 1));
         }
 
         private void ExtractRegistryPolInfo(IADConnection adws, ADDomainInfo domainInfo, string directoryFullName, GPO GPO)

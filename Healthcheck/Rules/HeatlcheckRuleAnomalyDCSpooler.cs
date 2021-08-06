@@ -12,6 +12,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
     [RuleIntroducedIn(2, 6)]
     [RuleMaturityLevel(2)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.ForcedAuthentication)]
     public class HeatlcheckRuleAnomalyDCSpooler : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

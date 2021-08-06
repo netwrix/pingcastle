@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleSTIG("V-8555", "Anonymous Access to AD forest data above the rootDSE level must be disabled. ", STIGFramework.Forest)]
     [RuleDurANSSI(1, "dsheuristics_bad", "Dangerous dsHeuristics settings")]
     [RuleIntroducedIn(2, 9)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.BruteForcePasswordSpraying)]
     public class HeatlcheckRuleAnomalyDsHeuristicsAnonNSPI : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

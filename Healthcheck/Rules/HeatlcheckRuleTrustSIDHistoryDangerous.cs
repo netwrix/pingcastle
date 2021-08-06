@@ -13,6 +13,8 @@ namespace PingCastle.Healthcheck.Rules
     [RuleANSSI("R15", "paragraph.3.3.1.5")]
     [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(2, "sidhistory_dangerous", "Accounts or groups with unexpected SID history")]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.AccessTokenManipulationSIDHistoryInjection)]
     public class HeatlcheckRuleTrustSIDHistoryDangerous : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

@@ -35,7 +35,7 @@ namespace PingCastle.Scanners
             Credential = credential;
         }
 
-        public bool QueryForAdditionalParameterInInteractiveMode()
+        public Program.DisplayState QueryForAdditionalParameterInInteractiveMode()
         {
             do
             {
@@ -52,7 +52,7 @@ Example of FQDN: bastion.local";
                 ConsoleMenu.Notice = "The SID of FQDN cannot be empty";
             } while (String.IsNullOrEmpty(EnumInboundSid));
             ConsoleMenu.Notice = null;
-            return true;
+            return Program.DisplayState.AskForServer;
         }
 
         public void Export(string filename)
@@ -120,6 +120,7 @@ Example of FQDN: bastion.local";
             us.Initialize(Server);
             IntPtr PolicyHandle = IntPtr.Zero;
             uint ret = NativeMethods.LsaOpenPolicy(ref us, ref loa, 0x00000800, out PolicyHandle);
+            us.Dispose();
             if (ret != 0)
             {
                 DisplayError("Error when connecting to the remote domain LsaOpenPolicy 0x" + ret.ToString("x"));

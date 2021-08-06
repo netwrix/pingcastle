@@ -12,6 +12,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleSTIG("V-14798", "Directory data (outside the root DSE) of a non-public directory must be configured to prevent anonymous access.", STIGFramework.ActiveDirectoryService2003)]
     [RuleMaturityLevel(2)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.BruteForcePasswordSpraying)]
     public class HeatlcheckRuleAnomalyAnonymousAuthorizedGPO : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

@@ -6,6 +6,7 @@
 //
 using PingCastle.ADWS;
 using PingCastle.Data;
+using PingCastle.Exports;
 using PingCastle.Graph.Reporting;
 using PingCastle.Healthcheck;
 using PingCastle.Report;
@@ -38,6 +39,7 @@ namespace PingCastle
         bool PerformScanner = false;
         bool PerformGenerateFakeReport = false;
         bool PerformBot = false;
+        bool PerformExport = false;
         Tasks tasks = new Tasks();
 
 
@@ -158,6 +160,10 @@ namespace PingCastle
             {
                 if (!tasks.ScannerTask()) return;
             }
+            if (PerformExport)
+            {
+                if (!tasks.ExportTask()) return;
+            }
             if (PerformCarto)
             {
                 if (!tasks.CartoTask(PerformHealthCheckGenerateDemoReports)) return;
@@ -201,7 +207,7 @@ namespace PingCastle
             tasks.CompleteTasks();
         }
 
-        const string basicEditionLicense = "PC2H4sIAAAAAAAEAO29B2AcSZYlJi9tynt/SvVK1+B0oQiAYBMk2JBAEOzBiM3mkuwdaUcjKasqgcplVmVdZhZAzO2dvPfee++999577733ujudTif33/8/XGZkAWz2zkrayZ4hgKrIHz9+fB8/In7NX+PX+DV+A/r/r/F7/j7/6l/zO/3bv+avTb/W9P9n9G9O/6W/xumvMfs1il+jpf9Xv8aS/q5+jXP69yX9vfw1Ln6Nk18j+zUa+rbktnu/xvjXeEj/36Pft+n/L6h1Sz/P6WdNP6f0c0H/5fTXlCBk9F76a6wJQv5rAIk/6Nf4NX6NP/gv+0cfpv/Jn/+//Od/6V/4h//TyWd/4y8+/2XlX/qP/5GPz//Xs9/oN/off4c3/+Wf8Lf+js/u/YPL/d/61/x3/9Qfe/d//H5/0b/6B/4n/87//L/973/gv/Hb/ZKTX/Ef/zWfP/zr/pqf/O4//eWv9fm/+snf+eB7v80v+R3+kP9m8sf+H//KX/nuN/2N/7Xf7lt/2F/6f/8Of9d/++f+xD968fLHfqO/9J/8g//4P378a/9Wv99f9r/9Jr/8d5v9T9Vn//T/A/h89xASAQAA";
+        const string basicEditionLicense = "PC2H4sIAAAAAAAEAO29B2AcSZYlJi9tynt/SvVK1+B0oQiAYBMk2JBAEOzBiM3mkuwdaUcjKasqgcplVmVdZhZAzO2dvPfee++999577733ujudTif33/8/XGZkAWz2zkrayZ4hgKrIHz9+fB8/In7NX+PX+DV+A/r/r/F7/nf/y/E/+m//mr82/drS/5/9GvWvkdN/6a9x+mvMfo2CPit+jerXWNLf1a9xTv++pL+Xv8bFr3Hya2S/RkPfltx279cY/xq7v8YO/btDf23T/19Q+5Z+ntPPmn5O6eeC/svprynByOjN9NdYE4z81wAaf9Cv8Wv8Gr/G7/Sn/jb/yh/67+R/SvL3/a9/4R/9F/9j//m/+uf+bqtf8J/8wskf80v+gu/+1v/e3/3yfzj9hf/ZF//HL/v9/vzf/S/O/ozf/2/9q17/y3/Qt36/v+Uf+11+q8e/8f/RFn/E3/vb/cPlT/1P//Cf9OPlP3H4Z/57v8bf/M9s/aK/47f6w7df/BG/8t/8U/6sp//Cf/pbfvVPfHr4t/yVP/hXfvvZr//X/zWXf0b7r/8rf9K/+Auyv+uf+XP+mfkf+ff+c7/L/wNcbrwUFAEAAA==";
         string _serialNumber;
         public string GetSerialNumber()
         {
@@ -335,6 +341,9 @@ namespace PingCastle
                             }
                             tasks.CenterDomainForSimpliedGraph = args[++i];
                             break;
+                        case "--datefile":
+                            HealthcheckData.UseDateInFileName();
+                            break;
                         case "--debug-license":
                             break;
                         case "--demo-reports":
@@ -364,6 +373,32 @@ namespace PingCastle
                                 return false;
                             }
                             tasks.DomainToNotExplore = new List<string>(args[++i].Split(','));
+                            break;
+                        case "--export":
+                            if (i + 1 >= args.Length)
+                            {
+                                WriteInRed("argument for --export is mandatory");
+                                return false;
+                            }
+                            {
+                                var exports = PingCastleFactory.GetAllExport();
+                                string exportname = args[++i];
+                                if (!exports.ContainsKey(exportname))
+                                {
+                                    string list = null;
+                                    var allexports = new List<string>(exports.Keys);
+                                    allexports.Sort();
+                                    foreach (string name in allexports)
+                                    {
+                                        if (list != null)
+                                            list += ",";
+                                        list += name;
+                                    }
+                                    WriteInRed("Unsupported exportname - available scanners are:" + list);
+                                }
+                                tasks.Export = exports[exportname];
+                                PerformExport = true;
+                            }
                             break;
                         case "--filter-date":
                             if (i + 1 >= args.Length)
@@ -511,6 +546,18 @@ namespace PingCastle
                                 return false;
                             }
                             break;
+                        case "--pagesize":
+                            if (i + 1 >= args.Length)
+                            {
+                                WriteInRed("argument for --pagesize is mandatory");
+                                return false;
+                            }
+                            if (!int.TryParse(args[++i], out LDAPConnection.PageSize))
+                            {
+                                WriteInRed("argument for --pagesize is not a valid value (typically: 500)");
+                                return false;
+                            }
+                            break;
                         case "--password":
                             if (i + 1 >= args.Length)
                             {
@@ -591,6 +638,15 @@ namespace PingCastle
                             break;
                         case "--scmode-dc":
                             ScannerBase.ScanningMode = 5;
+                            break;
+                        case "--scmode-file":
+                            ScannerBase.ScanningMode = 6;
+                            if (i + 1 >= args.Length)
+                            {
+                                WriteInRed("argument for --scmode-file is mandatory");
+                                return false;
+                            }
+                            tasks.FileOrDirectory = args[++i];
                             break;
                         case "--sendxmlTo":
                         case "--sendXmlTo":
@@ -727,7 +783,8 @@ namespace PingCastle
                 && !PerformUploadAllReport
                 && !PerformHCRules
                 && !PerformGenerateFakeReport
-                && !PerformBot)
+                && !PerformBot
+                && !PerformExport)
             {
                 WriteInRed("You must choose at least one value among --healthcheck --hc-conso --advanced-export --advanced-report --nullsession --carto");
                 DisplayHelp();
@@ -738,7 +795,7 @@ namespace PingCastle
             {
                 RunInteractiveMode();
             }
-            if (PerformHealthCheckReport || PerformScanner)
+            if (PerformHealthCheckReport || PerformScanner || PerformExport)
             {
                 if (String.IsNullOrEmpty(tasks.Server))
                 {
@@ -828,7 +885,7 @@ namespace PingCastle
             return builder.ToString();
         }
 
-        private enum DisplayState
+        public enum DisplayState
         {
             Exit,
             MainMenu,
@@ -839,6 +896,7 @@ namespace PingCastle
             AskForScannerParameter,
             ProtocolMenu,
             AskForFile,
+            ExportMenu,
         }
 
         DisplayState DisplayMainMenu()
@@ -853,6 +911,7 @@ namespace PingCastle
                 new ConsoleMenuItem("conso","Aggregate multiple reports into a single one", "With many healthcheck reports, you can get a single report for a whole scope. Maps will be generated."),
                 new ConsoleMenuItem("carto","Build a map of all interconnected domains", "It combines the healthcheck reports that would be run on all trusted domains and then the conso option. But lighter and then faster."),
                 new ConsoleMenuItem("scanner","Perform specific security checks on workstations", "You can know your local admins, if Bitlocker is properly configured, discover unprotect shares, ... A menu will be shown to select the right scanner."),
+                new ConsoleMenuItem("export","Export users or computers", "Don't involve your admin and get the list of users or computers you want to get. A menu will be shown to select the export."),
                 new ConsoleMenuItem("advanced","Open the advanced menu", "This is the place you want to configure PingCastle without playing with command line switches."),
             };
 
@@ -878,6 +937,9 @@ namespace PingCastle
                 case "scanner":
                     PerformScanner = true;
                     return DisplayState.ScannerMenu;
+                case "export":
+                    PerformExport = true;
+                    return DisplayState.ExportMenu;
                 case "advanced":
                     return DisplayState.AvancedMenu;
             }
@@ -911,12 +973,37 @@ namespace PingCastle
             return DisplayState.AskForScannerParameter;
         }
 
+        DisplayState DisplayExportMenu()
+        {
+            var exports = PingCastleFactory.GetAllExport();
+
+            var choices = new List<ConsoleMenuItem>();
+            foreach (var export in exports)
+            {
+                Type exportType = export.Value;
+                IExport iexport = PingCastleFactory.LoadExport(exportType);
+                string description = iexport.Description;
+                choices.Add(new ConsoleMenuItem(export.Key, description));
+            }
+            choices.Sort((ConsoleMenuItem a, ConsoleMenuItem b)
+                =>
+            {
+                return String.Compare(a.Choice, b.Choice);
+            }
+            );
+            ConsoleMenu.Title = "Select an export";
+            ConsoleMenu.Information = "What export whould you like to run ?";
+            int choice = ConsoleMenu.SelectMenu(choices, 1);
+            if (choice == 0)
+                return DisplayState.Exit;
+            tasks.Export = exports[choices[choice - 1].Choice];
+            return DisplayState.AskForServer;
+        }
+
         DisplayState DisplayAskForScannerParameter()
         {
             IScanner iscannerAddParam = PingCastleFactory.LoadScanner(tasks.Scanner);
-            if (!iscannerAddParam.QueryForAdditionalParameterInInteractiveMode())
-                return DisplayState.Exit;
-            return DisplayState.AskForServer;
+            return iscannerAddParam.QueryForAdditionalParameterInInteractiveMode();
         }
 
         DisplayState DisplayAskServer()
@@ -1030,13 +1117,15 @@ namespace PingCastle
             string file = null;
             while (String.IsNullOrEmpty(file) || !File.Exists(file))
             {
-                ConsoleMenu.Title = "Select an existing report";
-                ConsoleMenu.Information = "Please specify the report to open.";
+                ConsoleMenu.Title = "Select an existing file";
+                ConsoleMenu.Information = "Please specify the file to open.";
                 file = ConsoleMenu.AskForString();
                 ConsoleMenu.Notice = "The file " + file + " was not found";
             }
             tasks.FileOrDirectory = file;
             tasks.EncryptReport = false;
+            if (string.IsNullOrEmpty(tasks.Server))
+                tasks.Server = "ignore";
             return DisplayState.Run;
         }
 
@@ -1072,6 +1161,9 @@ namespace PingCastle
                         break;
                     case DisplayState.ProtocolMenu:
                         state = DisplayProtocolMenu();
+                        break;
+                    case DisplayState.ExportMenu:
+                        state = DisplayExportMenu();
                         break;
                     default:
                         // defensive programming
@@ -1113,6 +1205,7 @@ namespace PingCastle
             Console.WriteLine("  --password <pass>   : use this password (default: asked on a secure prompt)");
             Console.WriteLine("  --protocol <proto>  : selection the protocol to use among LDAP or ADWS (fastest)");
             Console.WriteLine("                      : ADWSThenLDAP (default), ADWSOnly, LDAPOnly, LDAPThenADWS");
+            Console.WriteLine("  --pagesize <size>   : change the default LDAP page size - default is 500");
             Console.WriteLine("");
             Console.WriteLine("  --carto             : perform a quick cartography with domains surrounding");
             Console.WriteLine("");
@@ -1124,6 +1217,7 @@ namespace PingCastle
             Console.WriteLine("    --explore-trust and --explore-forest-trust can be run together");
             Console.WriteLine("    --explore-exception <domains> : comma separated values of domains that will not be explored automatically");
             Console.WriteLine("");
+            Console.WriteLine("    --datefile        : insert the date into the report filename");
             Console.WriteLine("    --encrypt         : use an RSA key stored in the .config file to crypt the content of the xml report");
             Console.WriteLine("    --level <level>   : specify the amount of data found in the xml file");
             Console.WriteLine("                      : level: Full, Normal, Light");
@@ -1140,6 +1234,11 @@ namespace PingCastle
             Console.WriteLine("    --webdirectory <dir>: upload the xml report to a webdav server");
             Console.WriteLine("    --webuser <user>  : optional user and password");
             Console.WriteLine("    --webpassword <password>");
+            Console.WriteLine("    --max-depth       : maximum number of relation to explore (default:30)");
+            Console.WriteLine("    --max-nodes       : maximum number of node to include (default:1000)");
+            Console.WriteLine("    --node <node>     : create a report based on a object");
+            Console.WriteLine("                      : example: \"cn=name\" or \"name\"");
+            Console.WriteLine("    --nodes <file>    : create x report based on the nodes listed on a file");
             Console.WriteLine("");
             Console.WriteLine("    --I-swear-I-paid-win7-support : meaningless");
             Console.WriteLine("");
@@ -1161,14 +1260,6 @@ namespace PingCastle
             Console.WriteLine("    --encrypt         : use an RSA key stored in the .config file to crypt the content of the xml report");
             Console.WriteLine("                        the absence of this switch on an encrypted report will produce a decrypted report");
             Console.WriteLine("");
-            Console.WriteLine("  --graph             : perform the light compromise graph computation directly to the AD");
-            Console.WriteLine("    --encrypt         : use an RSA key stored in the .config file to crypt the content of the xml report");
-            Console.WriteLine("    --max-depth       : maximum number of relation to explore (default:30)");
-            Console.WriteLine("    --max-nodes       : maximum number of node to include (default:1000)");
-            Console.WriteLine("    --node <node>     : create a report based on a object");
-            Console.WriteLine("                      : example: \"cn=name\" or \"name\"");
-            Console.WriteLine("    --nodes <file>    : create x report based on the nodes listed on a file");
-            Console.WriteLine("");
             Console.WriteLine("  --scanner <type>    : perform a scan on one of all computers of the domain (using --server)");
             var scanner = PingCastleFactory.GetAllScanners();
             var scannerNames = new List<string>(scanner.Keys);
@@ -1187,9 +1278,24 @@ namespace PingCastle
             Console.WriteLine("    --scmode-workstation : force scanner to check workstations");
             Console.WriteLine("    --scmode-server   : force scanner to check servers");
             Console.WriteLine("    --scmode-dc       : force scanner to check dc");
+            Console.WriteLine("    --scmode-file <file> : force scanner to use the computer from file");
             Console.WriteLine("    --nslimit <number>: Limit the number of users to enumerate (default: unlimited)");
             Console.WriteLine("    --foreigndomain <sid> : foreign domain targeted using its FQDN or sids");
             Console.WriteLine("                        Example of SID: S-1-5-21-4005144719-3948538632-2546531719");
+            Console.WriteLine("");
+            Console.WriteLine("  --export <type>    : perform an export of objects of the domain (using --server)");
+            var exports = PingCastleFactory.GetAllExport();
+            var exportNames = new List<string>(exports.Keys);
+            exportNames.Sort();
+            foreach (var exportName in exportNames)
+            {
+                Type exportType = exports[exportName];
+                IExport iexport = PingCastleFactory.LoadExport(exportType);
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine(iexport.Name);
+                Console.ResetColor();
+                Console.WriteLine(iexport.Description);
+            }
             Console.WriteLine("");
             Console.WriteLine("  --upload-all-reports: use the API to upload all reports in the current directory");
             Console.WriteLine("    --api-endpoint <> : upload report via api call eg: http://server");

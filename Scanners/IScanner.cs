@@ -16,6 +16,6 @@ namespace PingCastle.Scanners
         string Description { get; }
 
         // return false if the user query has been cancelled
-        bool QueryForAdditionalParameterInInteractiveMode();
+        Program.DisplayState QueryForAdditionalParameterInInteractiveMode();
     }
 }

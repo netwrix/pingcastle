@@ -12,6 +12,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 1)]
     [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(3, "dnszone_bad_prop", "Misconfigured DNS zones")]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.ManintheMiddle)]
     public class HeatlcheckRuleAnomalyDnsZoneUnsecureUpdate2 : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

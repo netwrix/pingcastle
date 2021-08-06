@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleCERTFR("CERTFR-2015-ACT-021", "SECTION00010000000000000000")]
     [RuleIntroducedIn(2, 5)]
     [RuleMaturityLevel(3)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.ManintheMiddle)]
     public class HeatlcheckRuleAnomalySMB2SignatureNotRequired : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

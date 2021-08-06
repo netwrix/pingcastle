@@ -11,6 +11,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("A-LimitBlankPasswordUse", RiskRuleCategory.Anomalies, RiskModelCategory.WeakPassword)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleMaturityLevel(2)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.BruteForcePasswordSpraying)]
     public class HeatlcheckRuleAnomalyRemoteBlankPasswordUse : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

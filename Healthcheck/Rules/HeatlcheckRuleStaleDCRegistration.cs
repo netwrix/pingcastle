@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
     [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(1, "dc_inconsistent_uac", "Domain controllers in inconsistent state")]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.RogueDomainController)]
     public class HeatlcheckRuleStaleDCRegistrationEnabled : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

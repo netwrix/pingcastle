@@ -12,6 +12,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("T-AzureADSSO", RiskRuleCategory.Trusts, RiskModelCategory.TrustAzure)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
     [RuleDurANSSI(2, "trusts_accounts", "Trust account passwords unchanged for more than a year")]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.OSCredentialDumping)]
     public class HeatlcheckRuleTrustAzureADSSO : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(3, "rodc_reveal", "Dangerous configuration of read-only domain controllers (RODC) (reveal)")]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
     public class HeatlcheckRulePrivilegedRODCRevealOnDemand : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

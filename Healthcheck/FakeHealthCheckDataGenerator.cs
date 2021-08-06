@@ -1,5 +1,6 @@
 ﻿using PingCastle.ADWS;
 using PingCastle.Data;
+using PingCastle.Graph.Reporting;
 using PingCastle.Rules;
 using System;
 using System.Collections.Generic;
@@ -402,7 +403,7 @@ namespace PingCastle.Healthcheck
         {
             healthcheckData.UserAccountData = new HealthcheckAccountData();
             healthcheckData.AdminLastLoginDate = DateBetween2Dates(healthcheckData.DomainCreation, DateTime.Now); ;
-            healthcheckData.AdminAccountName = "Administrator";
+            healthcheckData.AdminAccountName = GraphObjectReference.Administrator;
             int size = GetCountFromSize(model);
             for (int i = 0; i < size; i++)
             {
@@ -421,7 +422,7 @@ namespace PingCastle.Healthcheck
                 // trusted to authenticate
                 x.UserAccountControl += BoolOnChance(2) * 0x80000;
                 x.PrimaryGroupID = 515 + BoolOnChance(1);
-                new HealthcheckAnalyzer().ProcessAccountData(healthcheckData.UserAccountData, x, false);
+                HealthcheckAnalyzer.ProcessAccountData(healthcheckData.UserAccountData, x, false);
 
             }
             healthcheckData.LoginScript = new List<HealthcheckLoginScriptData>();
@@ -430,6 +431,7 @@ namespace PingCastle.Healthcheck
         private void GenerateComputerData(FakeHealthCheckDataGeneratorDomainModel model, HealthcheckData healthcheckData)
         {
             healthcheckData.OperatingSystem = new List<HealthcheckOSData>();
+            healthcheckData.OperatingSystemVersion = new List<HealthcheckOSVersionData>();
             healthcheckData.ComputerAccountData = new HealthcheckAccountData();
             int size = GetCountFromSize(model);
             for (int i = 0; i < size; i++)
@@ -449,7 +451,7 @@ namespace PingCastle.Healthcheck
                 // trusted to authenticate
                 x.UserAccountControl += BoolOnChance(2) * 0x80000;
                 x.PrimaryGroupID = 515 + BoolOnChance(1);
-                new HealthcheckAnalyzer().ProcessAccountData(healthcheckData.ComputerAccountData, x, true);
+                HealthcheckAnalyzer.ProcessAccountData(healthcheckData.ComputerAccountData, x, true);
             }
             healthcheckData.LoginScript = new List<HealthcheckLoginScriptData>();
 

@@ -1,4 +1,5 @@
-﻿//
+﻿using PingCastle.Graph.Reporting;
+//
 // Copyright (c) Ping Castle. All rights reserved.
 // https://www.pingcastle.com
 //
@@ -12,13 +13,14 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(1, "dnsadmins", "DnsAdmins group members")]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
     public class HeatlcheckRulePrivilegedDNSAdmin : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             foreach (var group in healthcheckData.PrivilegedGroups)
             {
-                if (group.GroupName == "Dns Admins")
+                if (group.GroupName == GraphObjectReference.DnsAdministrators)
                 {
                     return group.NumberOfMemberEnabled;
                 }

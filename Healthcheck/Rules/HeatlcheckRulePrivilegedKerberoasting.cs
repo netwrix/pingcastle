@@ -1,4 +1,5 @@
-﻿//
+﻿using PingCastle.Graph.Reporting;
+//
 // Copyright (c) Ping Castle. All rights reserved.
 // https://www.pingcastle.com
 //
@@ -14,15 +15,16 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.PerDiscover, 5)]
     [RuleIntroducedIn(2, 7)]
     [RuleDurANSSI(1, "spn_priv", "Privileged accounts with SPN")]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.StealorForgeKerberosTicketsKerberoasting)]
     public class HeatlcheckRulePrivilegedKerberoasting : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             var dangerousGroups = new List<string>() {
-                "Domain Admins",
-                "Enterprise Admins",
-                "Schema Admins",
-                "Administrators",
+                GraphObjectReference.DomainAdministrators,
+                GraphObjectReference.EnterpriseAdministrators,
+                GraphObjectReference.SchemaAdministrators,
+                GraphObjectReference.Administrators,
             };
             foreach (var group in healthcheckData.PrivilegedGroups)
             {
@@ -34,7 +36,16 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     if (user.IsService && user.PwdLastSet.AddDays(40) < DateTime.Now)
                     {
-                        AddRawDetail(group.GroupName, user.Name);
+                        bool trap = false;
+                        foreach (var account in healthcheckData.ListHoneyPot)
+                        {
+                            if (account.Name == user.Name || account.Name + "$" == user.Name)
+                            {
+                                trap = true;
+                            }
+                        }
+                        if (!trap)
+                            AddRawDetail(group.GroupName, user.Name);
                     }
                 }
             }

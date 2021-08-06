@@ -13,6 +13,8 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.PerDiscover, 25)]
     [RuleDurANSSI(1, "delegation_t2a4d", "Constrained delegation with protocol transition to a domain controller service")]
     [RuleIntroducedIn(2, 9)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.ForcedAuthentication)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
     public class HeatlcheckRulePrivilegedDelegationDCt2a4d : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

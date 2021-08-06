@@ -13,6 +13,8 @@ namespace PingCastle.Healthcheck.Rules
     [RuleANSSI("R18", "subsubsection.3.3.2")]
     [RuleIntroducedIn(2, 6)]
     [RuleDurANSSI(2, "adupdate_bad", "Bad Active Directory versions")]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.TwoFactorAuthenticationInterception)]
     public class HeatlcheckRulePrivilegedDelegationKeyAdmin : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

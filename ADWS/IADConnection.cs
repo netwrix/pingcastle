@@ -14,5 +14,7 @@ namespace PingCastle.ADWS
 
         IFileConnection FileConnection { get; }
 
+        void ThreadInitialization();
+
     }
 }

@@ -21,6 +21,7 @@ namespace PingCastle.ADWS
             Port = port;
             Credential = credential;
         }
+        public static int PageSize = 500;
 
         public override void Enumerate(string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope)
         {
@@ -49,7 +50,7 @@ namespace PingCastle.ADWS
                 DirectorySearcher clsDS = new DirectorySearcher(entry);
                 clsDS.SearchRoot = entry;
                 clsDS.Filter = filter;
-                clsDS.PageSize = 500;
+                clsDS.PageSize = PageSize;
                 switch (scope)
                 {
                     case "OneLevel":
@@ -77,8 +78,37 @@ namespace PingCastle.ADWS
                     }
                 }
                 Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "]Calling FindAll");
-                foreach (SearchResult sr in clsDS.FindAll())
+                var iterator = clsDS.FindAll().GetEnumerator();
+                while(true)
                 {
+                    try
+                    {
+                        if (!iterator.MoveNext())
+                            break;
+                    }
+                    catch (DirectoryServicesCOMException ex)
+                    {
+                        if (ex.ErrorCode == -2147024662 && ex.ExtendedError == 234)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Console.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] Warning: received \"Calling GetNextRow can potentially return more results\"");
+                            Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] Warning: received \"Calling GetNextRow can potentially return more results\"");
+                            Console.ResetColor();
+                            if (!iterator.MoveNext())
+                            {
+                                Console.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] No more results");
+                                Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] No more results");
+                                break;
+                            }
+                            Console.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] More results found");
+                            Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] More results found");
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    var sr = (SearchResult) iterator.Current;
                     ADItem aditem = null;
                     try
                     {
@@ -229,9 +259,14 @@ namespace PingCastle.ADWS
             get
             {
                 if (fileConnection == null)
-                    fileConnection = new WindowsFileConnection(this.Credential);
+                    fileConnection = new WindowsFileConnection(this.Credential, Server);
                 return fileConnection;
             }
+        }
+
+        public override void ThreadInitialization()
+        {
+            FileConnection.ThreadInitialization();
         }
     }
 }

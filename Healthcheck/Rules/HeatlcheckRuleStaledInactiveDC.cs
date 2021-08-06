@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleANSSI("R45", "paragraph.3.6.6.2")]
     [RuleDurANSSI(1, "password_change_inactive_dc", "Inactive domain controllers")]
     [RuleIntroducedIn(2, 9)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.UserAccountManagement)]
     public class HeatlcheckRuleStaledInactiveDC : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
     [RuleIntroducedIn(2, 7)]
     [RuleMaturityLevel(2)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.ExploitationofRemoteServices)]
     public class HeatlcheckRuleTrustFileDeployedOutOfDomain : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

@@ -5,6 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.ADWS;
+using PingCastle.Graph.Reporting;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -260,22 +261,22 @@ namespace PingCastle.Graph.Database
                 case "S-1-5-10":
                     return -1;
                 case "S-1-5-7":
-                    ntaccount = "Anonymous";
+                    ntaccount = GraphObjectReference.Anonymous;
                     EveryoneLikeGroup = true;
                     break;
                 // SYSTEM
                 case "S-1-5-18":
                     return -1;
                 case "S-1-5-11":
-                    ntaccount = "Authenticated Users";
+                    ntaccount = GraphObjectReference.AuthenticatedUsers;
                     EveryoneLikeGroup = true;
                     break;
                 case "S-1-1-0":
-                    ntaccount = "Everyone";
+                    ntaccount = GraphObjectReference.Everyone;
                     EveryoneLikeGroup = true;
                     break;
                 case "S-1-5-32-545":
-                    ntaccount = "Users";
+                    ntaccount = GraphObjectReference.Users;
                     EveryoneLikeGroup = true;
                     break;
                 default:

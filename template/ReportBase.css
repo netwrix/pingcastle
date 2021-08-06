@@ -150,8 +150,8 @@ html
 @media screen
 {
 	a[name] {
-		padding-top: 60px;
-		margin-top: -60px;
+		padding-top: 80px;
+		margin-top: -80px;
 		display: inline-block; /* required for webkit browsers */
 	}
 }

@@ -131,6 +131,8 @@ namespace PingCastle.ADWS
         public string AttributeID { get; set; }
         [ADAttributeAttribute("cACertificate", ADAttributeValueKind.CertificateStore)]
         public X509Certificate2Collection CACertificate { get; set; }
+        [ADAttributeAttribute("certificateTemplates", ADAttributeValueKind.StringArrayValue)]
+        public string[] CertificateTemplates { get; set; }
         [ADAttributeAttribute("description", ADAttributeValueKind.StringValue)]
         public string Description { get; set; }
         [ADAttributeAttribute("displayName", ADAttributeValueKind.StringValue)]
@@ -171,8 +173,12 @@ namespace PingCastle.ADWS
         public ActiveDirectorySecurity msDSAllowedToActOnBehalfOfOtherIdentity { get; set; }
         [ADAttributeAttribute("msDS-AllowedToDelegateTo", ADAttributeValueKind.StringArrayValue)]
         public string[] msDSAllowedToDelegateTo { get; set; }
+        [ADAttributeAttribute("mS-DS-CreatorSID", ADAttributeValueKind.SIDValue)]
+        public SecurityIdentifier msDSCreatorSID { get; set; }
         [ADAttributeAttribute("msDS-EnabledFeature", ADAttributeValueKind.StringArrayValue)]
         public string[] msDSEnabledFeature { get; set; }
+        [ADAttributeAttribute("msDS-IntId", ADAttributeValueKind.IntValue)]
+        public int msDSIntId { get; set; }
         [ADAttributeAttribute("msDS-SupportedEncryptionTypes", ADAttributeValueKind.IntValue)]
         public int msDSSupportedEncryptionTypes { get; set; }
         [ADAttributeAttribute("msDS-MinimumPasswordAge", ADAttributeValueKind.LongValue)]
@@ -203,6 +209,18 @@ namespace PingCastle.ADWS
         public string[] msDSNeverRevealGroup { get; set; }
         [ADAttributeAttribute("msDS-TrustForestTrustInfo", ADAttributeValueKind.ForestInfoValue)]
         public List<HealthCheckTrustDomainInfoData> msDSTrustForestTrustInfo { get; set; }
+        [ADAttributeAttribute("msPKI-Certificate-Name-Flag", ADAttributeValueKind.IntValue)]
+        public int msPKICertificateNameFlag { get; set; }
+        [ADAttributeAttribute("msPKI-Cert-Template-OID", ADAttributeValueKind.StringValue)]
+        public string msPKICertTemplateOID { get; set; }
+        [ADAttributeAttribute("msPKI-Enrollment-Flag", ADAttributeValueKind.IntValue)]
+        public int msPKIEnrollmentFlag { get; set; }
+        [ADAttributeAttribute("msPKI-Private-Key-Flag", ADAttributeValueKind.IntValue)]
+        public int msPKIPrivateKeyFlag { get; set; }
+        [ADAttributeAttribute("msPKI-RA-Application-Policies", ADAttributeValueKind.StringValue)]
+        public string msPKIRAApplicationPolicies { get; set; }
+        [ADAttributeAttribute("msPKI-Template-Schema-Version", ADAttributeValueKind.IntValue)]
+        public int msPKITemplateSchemaVersion { get; set; }
         [ADAttributeAttribute("msiFileList", ADAttributeValueKind.StringArrayValue)]
         public string[] msiFileList { get; set; }
         [ADAttributeAttribute("name", ADAttributeValueKind.StringValue)]
@@ -217,6 +235,12 @@ namespace PingCastle.ADWS
         public int ObjectVersion { get; set; }
         [ADAttributeAttribute("operatingSystem", ADAttributeValueKind.StringValue)]
         public string OperatingSystem { get; set; }
+        [ADAttributeAttribute("operatingSystemVersion", ADAttributeValueKind.StringValue)]
+        public string OperatingSystemVersion { get; set; }
+        [ADAttributeAttribute("pKIExtendedKeyUsage", ADAttributeValueKind.StringArrayValue)]
+        public string[] pKIExtendedKeyUsage { get; set; }
+        [ADAttributeAttribute("possSuperiors", ADAttributeValueKind.StringArrayValue)]
+        public string[] possSuperiors { get; set; }
         [ADAttributeAttribute("primaryGroupID", ADAttributeValueKind.IntValue)]
         public int PrimaryGroupID { get; set; }
         [ADAttributeAttribute("pwdLastSet", ADAttributeValueKind.DateValue)]
@@ -239,6 +263,8 @@ namespace PingCastle.ADWS
         public string SiteObject { get; set; }
         [ADAttributeAttribute("siteObjectBL", ADAttributeValueKind.StringArrayValue)]
         public string[] SiteObjectBL { get; set; }
+        [ADAttributeAttribute("subClassOf", ADAttributeValueKind.StringValue)]
+        public string subClassOf { get; set; }
         [ADAttributeAttribute("trustAttributes", ADAttributeValueKind.IntValue)]
         public int TrustAttributes { get; set; }
         [ADAttributeAttribute("trustDirection", ADAttributeValueKind.IntValue)]

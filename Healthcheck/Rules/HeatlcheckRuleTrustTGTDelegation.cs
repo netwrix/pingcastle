@@ -14,6 +14,8 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.PerDiscover, 10)]
     [RuleIntroducedIn(2, 7)]
     [RuleDurANSSI(3, "trusts_tgt_deleg", "Inbound trust relationships with delegation")]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.ForcedAuthentication)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
     public class HeatlcheckRuleTrustTGTDelegation : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData, ICollection<DomainKey> AllowedMigrationDomains)

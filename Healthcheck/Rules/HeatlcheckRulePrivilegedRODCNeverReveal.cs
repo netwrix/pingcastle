@@ -1,4 +1,5 @@
-﻿//
+﻿using PingCastle.Graph.Reporting;
+//
 // Copyright (c) Ping Castle. All rights reserved.
 // https://www.pingcastle.com
 //
@@ -13,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(3, "rodc_never_reveal", "Dangerous configuration of read-only domain controllers (RODC) (neverReveal)")]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
     public class HeatlcheckRulePrivilegedRODCNeverReveal : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
@@ -26,11 +28,11 @@ namespace PingCastle.Healthcheck.Rules
                     continue;
                 var mandatoryDN = new Dictionary<string, string>();
 
-                mandatoryDN.Add("S-1-5-32-544", "Administrators");
-                mandatoryDN.Add("S-1-5-32-549", "Server Operators");
-                mandatoryDN.Add("S-1-5-32-548", "Account Operators");
-                mandatoryDN.Add("S-1-5-32-551", "Backup Operators");
-                mandatoryDN.Add(healthcheckData.DomainSid + "-572", "Denied RODC Password Replication Group");
+                mandatoryDN.Add("S-1-5-32-544", GraphObjectReference.Administrators);
+                mandatoryDN.Add("S-1-5-32-549", GraphObjectReference.ServerOperators);
+                mandatoryDN.Add("S-1-5-32-548", GraphObjectReference.AccountOperators);
+                mandatoryDN.Add("S-1-5-32-551", GraphObjectReference.BackupOperators);
+                mandatoryDN.Add(healthcheckData.DomainSid + "-572", GraphObjectReference.DeniedRODCPasswordReplicationGroup);
 
                 if (dc.msDSNeverRevealGroup != null)
                 {

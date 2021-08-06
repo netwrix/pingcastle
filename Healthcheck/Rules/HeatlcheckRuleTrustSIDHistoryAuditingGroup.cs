@@ -12,6 +12,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleANSSI("R15", "paragraph.3.3.1.5")]
     [RuleMaturityLevel(3)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
     public class HeatlcheckRuleTrustSIDHistoryAuditingGroup : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

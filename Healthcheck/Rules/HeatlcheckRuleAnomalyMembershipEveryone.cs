@@ -1,4 +1,5 @@
-﻿//
+﻿using PingCastle.Graph.Reporting;
+//
 // Copyright (c) Ping Castle. All rights reserved.
 // https://www.pingcastle.com
 //
@@ -12,13 +13,15 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("A-MembershipEveryone", RiskRuleCategory.Anomalies, RiskModelCategory.LocalGroupVulnerability)]
     [RuleComputation(RuleComputationType.PerDiscover, 15)]
     [RuleMaturityLevel(1)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
     public class HeatlcheckRuleAnomalyMembershipEveryone : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             foreach (GPOMembership membership in healthcheckData.GPOLocalMembership)
             {
-                if (membership.User == "Authenticated Users" || membership.User == "Everyone" || membership.User == "Users" || membership.User == "Anonymous")
+                if (membership.User == GraphObjectReference.AuthenticatedUsers || membership.User == GraphObjectReference.Everyone || 
+                        membership.User == GraphObjectReference.Users || membership.User == GraphObjectReference.Anonymous)
                 {
                     if (string.Equals(membership.MemberOf, "BUILTIN\\Users", StringComparison.OrdinalIgnoreCase))
                         continue;

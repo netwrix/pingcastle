@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleSTIG("V-8547", "The Anonymous Logon and Everyone groups must not be members of the Pre-Windows 2000 Compatible Access group.")]
     //[RuleBSI("M 2.412")]
     [RuleDurANSSI(2, "compatible_2000_anonymous", "The \"Pre - Windows 2000 Compatible Access\" group includes \"Anonymous\"")]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.BruteForcePasswordSpraying)]
     public class HeatlcheckRuleAnomalyPreWin2000Anonymous : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

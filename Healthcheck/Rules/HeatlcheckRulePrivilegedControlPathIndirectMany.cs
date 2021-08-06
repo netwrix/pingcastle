@@ -15,6 +15,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnThreshold, 5, Threshold: 20, Order: 4)]
     [RuleIntroducedIn(2, 8)]
     [RuleMaturityLevel(2)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.PermissionGroupsDiscoveryDomainGroups)]
     public class HeatlcheckRulePrivilegedControlPathIndirectMany : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

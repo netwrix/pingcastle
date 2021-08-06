@@ -5,6 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using System;
+using System.ComponentModel;
 using System.Text;
 
 namespace PingCastle.Rules
@@ -384,5 +385,191 @@ namespace PingCastle.Rules
         }
 
         public int Level { get; set; }
+    }
+
+    public enum MitreAttackMainTechnique
+    {
+        [Description("Initial Access")]
+        InitialAccess,
+        [Description("Privilege Escalation")]
+        PrivilegeEscalation,
+        [Description("Defense Evasion")]
+        DefenseEvasion,
+        [Description("Credential Access")]
+        CredentialAccess,
+        [Description("Discovery")]
+        Discovery,
+        [Description("Lateral Movement")]
+        LateralMovement,
+    }
+
+    public enum MitreAttackTechnique
+    {
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.InitialAccess, "T1078", "003", "Valid Accounts", "Local Accounts")]
+        ValidAccountsLocalAccounts,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.PrivilegeEscalation, "T1134", "005", "Access Token Manipulation", "SID-History Injection")]
+        AccessTokenManipulationSIDHistoryInjection,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.DefenseEvasion, "T1207", "Rogue Domain Controller")]
+        RogueDomainController,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.DefenseEvasion, "T1600", "001", "Weaken Encryption", "Reduce Key Space")]
+        WeakenEncryptionReduceKeySpace,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T1558", "Steal or Forge Kerberos Tickets")]
+        StealorForgeKerberosTickets,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T1558", "001", "Steal or Forge Kerberos Tickets", "Golden Ticket")]
+        StealorForgeKerberosTicketsGoldenTicket,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T1558", "003", "Steal or Forge Kerberos Tickets", "Kerberoasting")]
+        StealorForgeKerberosTicketsKerberoasting,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T1558", "004", "Steal or Forge Kerberos Tickets", "AS-REP Roasting")]
+        StealorForgeKerberosTicketsASREPRoasting,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T1555", "005", "Credentials from Password Stores", "Password Managers")]
+        CredentialsfromPasswordStoresPasswordManagers,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T1003", "OS Credential Dumping")]
+        OSCredentialDumping,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T1552", "Unsecured Credentials")]
+        UnsecuredCredentials,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T1110", "003", "Brute Force", "Password Spraying")]
+        BruteForcePasswordSpraying,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T1187", "Forced Authentication")]
+        ForcedAuthentication,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T1557", "Man-in-the-Middle")]
+        ManintheMiddle,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T1557", "001", "Man-in-the-Middle", "LLMNR/NBT-NS Poisoning and SMB Relay")]
+        ManintheMiddleLLMNRNBTNSPoisoningandSMBRelay,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T111", "Two-Factor Authentication Interception")]
+        TwoFactorAuthenticationInterception,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T1110", "002", "Brute Force", "Password Cracking")]
+        BruteForcePasswordCracking,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T1552", "006", "Unsecured Credentials", "Group Policy Preferences")]
+        UnsecuredCredentialsGroupPolicyPreferences,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T1003", "004", "OS Credential Dumping", "LSA Secrets")]
+        OSCredentialDumpingLSASecrets,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.Discovery, "T1018", "Remote System Discovery")]
+        RemoteSystemDiscovery,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.Discovery, "T1087", "001", "Account Discovery", "Local Account")]
+        AccountDiscoveryLocalAccount,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.Discovery, "T1069", "002", "Permission Groups Discovery", "Domain Groups")]
+        PermissionGroupsDiscoveryDomainGroups,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.Discovery, "T1201", "Password Policy Discovery")]
+        PasswordPolicyDiscovery,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.LateralMovement, "T1563", "Remote Service Session Hijacking")]
+        RemoteServiceSessionHijacking,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.LateralMovement, "T1210", "Exploitation of Remote Services")]
+        ExploitationofRemoteServices,
+        
+    }
+
+    public class MitreAttackTechniqueAttribute : Attribute
+    {
+        public MitreAttackTechniqueAttribute(MitreAttackMainTechnique main, string ID, string Label)
+            : this(main, ID, null, Label, null)
+        {
+        }
+
+        public MitreAttackTechniqueAttribute(MitreAttackMainTechnique main, string ID, string SubID, string Label, string SubLabel)
+        {
+            this.ID = ID;
+            this.SubID = SubID;
+            this.Label = Label;
+            this.SubLabel = SubLabel;
+            this.Main = main;
+        }
+
+        public string ID { get; set; }
+        public string SubID { get; set; }
+        public string SubLabel { get; set; }
+        public string Label { get; set; }
+        public MitreAttackMainTechnique Main { get; set; }
+    }
+
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public class RuleMitreAttackTechniqueAttribute : RuleFrameworkReference
+    {
+        public RuleMitreAttackTechniqueAttribute(MitreAttackTechnique technique)
+        {
+            var memInfo = typeof(MitreAttackTechnique).GetMember(technique.ToString());
+            var attributes = memInfo[0].GetCustomAttributes(typeof(MitreAttackTechniqueAttribute), false);
+            var mit = ((MitreAttackTechniqueAttribute)attributes[0]);
+            ID = mit.ID;
+            SubID = mit.SubID;
+            Country = "mitre";
+            Label = ID + (!string.IsNullOrEmpty(SubID) ? "." + SubID : null) + " " + mit.Label + (!string.IsNullOrEmpty(mit.SubLabel) ? ": " + mit.SubLabel : null);
+            MainTechnique = mit.Main;
+        }
+
+        public string ID { get; private set; }
+        public string SubID { get; private set; }
+        public MitreAttackMainTechnique MainTechnique { get; private set; }
+        public override string URL
+        {
+            get
+            {
+                return "https://attack.mitre.org/techniques/" + ID + (!string.IsNullOrEmpty(SubID) ? "/" + SubID : null);
+            }
+        }
+    }
+
+    public class MitreAttackMitigationAttribute : Attribute
+    {
+        public MitreAttackMitigationAttribute(string ID, string Label)
+        {
+            this.ID = ID;
+            this.Label = Label;
+        }
+
+        public string ID { get; set; }
+        public string Label { get; set; }
+    }
+
+
+    public enum MitreAttackMitigation
+    {
+        [Description("Audit")]
+        [MitreAttackMitigation("M1047", "Audit")]
+        Audit,
+        [Description("Active Directory Configuration")]
+        [MitreAttackMitigation("M1015", "Active Directory Configuration")]
+        ActiveDirectoryConfiguration,
+        [Description("Data Backup")]
+        [MitreAttackMitigation("M1053", "Data Backup")]
+        DataBackup,
+        [Description("Privileged Account Management")]
+        [MitreAttackMitigation("M1026", "Privileged Account Management")]
+        PrivilegedAccountManagement,
+        [Description("Privileged Process Integrity")]
+        [MitreAttackMitigation("M1025", "Privileged Process Integrity")]
+        PrivilegedProcessIntegrity,
+        [Description("Update Software")]
+        [MitreAttackMitigation("M1051", "Update Software")]
+        UpdateSoftware,
+        [Description("User Account Management")]
+        [MitreAttackMitigation("M1018", "User Account Management")]
+        UserAccountManagement,
+    }
+
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public class RuleMitreAttackMitigationAttribute : RuleFrameworkReference
+    {
+
+        public RuleMitreAttackMitigationAttribute(MitreAttackMitigation mitigation)
+        {
+            var memInfo = typeof(MitreAttackMitigation).GetMember(mitigation.ToString());
+            var attributes = memInfo[0].GetCustomAttributes(typeof(MitreAttackMitigationAttribute), false);
+            var mit = ((MitreAttackMitigationAttribute)attributes[0]);
+            ID = mit.ID;
+            Country = "mitre";
+            Label = "Mitre Att&ck - Mitigation - " + mit.Label;
+            MainTechnique = mitigation;
+        }
+
+        public string ID { get; private set; }
+        public string SubID { get; private set; }
+        public MitreAttackMitigation MainTechnique { get; private set; }
+        public override string URL
+        {
+            get
+            {
+                return "https://attack.mitre.org/mitigations/" + ID + (!string.IsNullOrEmpty(SubID) ? "/" + SubID : null);
+            }
+        }
     }
 }

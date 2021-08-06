@@ -1,4 +1,5 @@
-﻿//
+﻿using PingCastle.Graph.Reporting;
+//
 // Copyright (c) Ping Castle. All rights reserved.
 // https://www.pingcastle.com
 //
@@ -15,6 +16,8 @@ namespace PingCastle.Healthcheck.Rules
     [RuleSTIG("V-36432", "Membership to the Domain Admins group must be restricted to accounts used only to manage the Active Directory domain and domain controllers.")]
     [RuleANSSI("R11", "subsection.2.5")]
     [RuleDurANSSI(1, "dont_expire_priv", "Privileged accounts with never-expiring passwords")]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.OSCredentialDumpingLSASecrets)]
     public class HeatlcheckRulePrivilegedServiceDomainAdmin : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
@@ -22,7 +25,7 @@ namespace PingCastle.Healthcheck.Rules
             HealthCheckGroupData domainadmins = null;
             foreach (HealthCheckGroupData group in healthcheckData.PrivilegedGroups)
             {
-                if (group.GroupName == "Domain Admins")
+                if (group.GroupName == GraphObjectReference.DomainAdministrators)
                 {
                     domainadmins = group;
                     break;
@@ -33,7 +36,7 @@ namespace PingCastle.Healthcheck.Rules
                 Trace.WriteLine("Group domain admins not found");
                 return 0;
             }
-            if (domainadmins.Members != null)
+            if (domainadmins.Members == null)
             {
                 return domainadmins.NumberOfMemberPwdNeverExpires;
             }

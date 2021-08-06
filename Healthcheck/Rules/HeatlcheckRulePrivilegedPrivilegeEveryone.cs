@@ -1,4 +1,5 @@
-﻿//
+﻿using PingCastle.Graph.Reporting;
+//
 // Copyright (c) Ping Castle. All rights reserved.
 // https://www.pingcastle.com
 //
@@ -14,6 +15,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleANSSI("R18", "subsubsection.3.3.2")]
     [RuleIntroducedIn(2, 6)]
     [RuleMaturityLevel(2)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
     public class HeatlcheckRulePrivilegedPrivilegeEveryone : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
@@ -36,9 +38,9 @@ namespace PingCastle.Healthcheck.Rules
             {
                 if (!dangerousPrivileges.Contains(privilege.Privilege))
                     continue;
-                if (privilege.User == "Authenticated Users" || privilege.User == "Everyone" || privilege.User == "Domain Users"
-                    || privilege.User == "Domain Computers" || privilege.User == "Users"
-                    || privilege.User == "Anonymous")
+                if (privilege.User == GraphObjectReference.AuthenticatedUsers || privilege.User == GraphObjectReference.Everyone || privilege.User == GraphObjectReference.DomainUsers
+                    || privilege.User == GraphObjectReference.DomainComputers || privilege.User == GraphObjectReference.Users
+                    || privilege.User == GraphObjectReference.Anonymous)
                 {
                     AddRawDetail(privilege.GPOName, privilege.User, privilege.Privilege);
                 }

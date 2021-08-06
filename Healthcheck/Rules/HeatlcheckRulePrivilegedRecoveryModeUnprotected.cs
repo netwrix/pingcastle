@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleSTIG("V-1159", "The Recovery Console option is set to permit automatic logon to the system.", STIGFramework.Windows7)]
     [RuleIntroducedIn(2, 7)]
     [RuleMaturityLevel(2)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
     public class HeatlcheckRulePrivilegedRecoveryModeUnprotected : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

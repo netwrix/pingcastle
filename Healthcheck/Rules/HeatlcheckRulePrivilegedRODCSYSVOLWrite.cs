@@ -12,6 +12,8 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.PerDiscover, 5)]
     [RuleIntroducedIn(2, 9)]
     [RuleMaturityLevel(2)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.RogueDomainController)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
     public class HeatlcheckRulePrivilegedRODCSYSVOLWrite : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

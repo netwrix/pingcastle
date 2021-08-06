@@ -12,6 +12,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 2)]
     [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(3, "compatible_2000_not_default", "Use of the \"Pre-Windows 2000 Compatible Access\" group")]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.BruteForcePasswordSpraying)]
     public class HeatlcheckRuleAnomalyPreWin2000Other : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

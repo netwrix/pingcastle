@@ -143,7 +143,7 @@ namespace PingCastle.Rules
             {
                 MaturityLevel = 0;
             }
-            MaturityLevel = 5;
+            MaturityLevel = 6;
             foreach (var m in ruleMaturity)
             {
                 if (MaturityLevel > m.Level)

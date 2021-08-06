@@ -15,6 +15,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleCERTFR("CERTFR-2017-ALE-012")]
     [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(3, "protected_users", "Privileged accounts outside of the Protected Users group")]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedProcessIntegrity)]
     public class HeatlcheckRulePrivilegedProtectedUsers : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

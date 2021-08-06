@@ -1,4 +1,5 @@
 ﻿using PingCastle.Data;
+using PingCastle.Exports;
 using PingCastle.Healthcheck;
 using PingCastle.Report;
 using PingCastle.Scanners;
@@ -29,6 +30,26 @@ namespace PingCastle
         public static IScanner LoadScanner(Type scannerType)
         {
             return (IScanner)Activator.CreateInstance(scannerType);
+        }
+
+        public static Dictionary<string, Type> GetAllExport()
+        {
+            var output = new Dictionary<string, Type>();
+            foreach (Type type in Assembly.GetAssembly(typeof(PingCastleFactory)).GetExportedTypes())
+            {
+                if (!type.IsAbstract && typeof(IExport).IsAssignableFrom(type))
+                {
+                    PropertyInfo pi = type.GetProperty("Name");
+                    IExport export = (IExport)Activator.CreateInstance(type);
+                    output.Add(export.Name, type);
+                }
+            }
+            return output;
+        }
+
+        public static IExport LoadExport(Type scannerType)
+        {
+            return (IExport)Activator.CreateInstance(scannerType);
         }
 
         public static string GetFilePatternForLoad<T>() where T : IPingCastleReport

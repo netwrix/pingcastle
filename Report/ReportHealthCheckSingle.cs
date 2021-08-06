@@ -12,9 +12,11 @@ using PingCastle.template;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace PingCastle.Report
 {
@@ -88,19 +90,37 @@ $(function() {
       });
    });
 $(document).ready(function(){
-	$('table').not('.model_table').not('.nopaging').DataTable(
-		{
-			'paging': true,
+    $('table').not('.model_table').not('.nopaging').each(function( index ) {
+        try {
+            $(this).DataTable(
+                {
+                    'paging': true,
 			'searching': true,
 			'lengthMenu': [[10, 25, 50, 100, 500, 1000, -1], [10, 25, 50, 100, 500, 1000, 'All']],
-		}
-	);
-	$('table').not('.model_table').filter('.nopaging').DataTable(
-		{
-			'paging': false,
-			'searching': false
-		}
-	);
+                }
+            );
+        }
+        catch(e)
+        {
+            console.error('An error occured when building the table ' + e + '. Please contact support@pingcastle.com');
+            console.error('data:' + $(this).html());
+        }
+    });
+    $('table').not('.model_table').filter('.nopaging').each(function( index ) {
+        try {
+            $(this).DataTable(
+                {
+                    'paging': false,
+                    'searching': true
+                }
+            );
+        }
+        catch(e)
+        {
+            console.error('An error occured when building the table ' + e + '. Please contact support@pingcastle.com');
+            console.error('data:' + $(this).html());
+        }
+    });
 	$('[data-toggle=""tooltip""]').tooltip({html: true, container: 'body'});
 	$('[data-toggle=""popover""]').popover();
 
@@ -179,6 +199,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             });
 
             GenerateSection("Maturity Level", GenerateMaturityInformation);
+            GenerateSection("Mitre Att&ck&#174;", GenerateMitreAttackInformation);
 
             GenerateSection("Stale Objects", () =>
             {
@@ -207,6 +228,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             GenerateSection("Control Paths Analysis", GenerateCompromissionGraphInformation);
             GenerateSection("Trusts details", GenerateTrustInformation);
             GenerateSection("Anomalies", GenerateAnomalyDetail);
+            GenerateSection("PKI", GeneratePKIDetail);
             GenerateSection("Password Policies", GeneratePasswordPoliciesDetail);
             GenerateSection("GPO", GenerateGPODetail);
         }
@@ -291,41 +313,115 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             Add("</div>");
             Add("</div></div>");
 
-            List<string> l = null;
-            int nextLevel = 0;
-            for (int i = Report.MaturityLevel + 1; i < 6; i++)
+            if (data.Count > 0)
+            {
+                Add("<div class='row mt-4'><div class='col-lg-12'>");
+                Add(@"<ul class=""nav nav-tabs d-none1"">");
+                bool first = true;
+                for (int i = 1; i <= 5; i++)
+                {
+                    if (data.ContainsKey(i) && data[i].Count > 0)
+                    {
+                        Add("<li class='nav-item bg-light'>");
+                        Add(@"<a class='nav-link");
+                        if (first)
+                        {
+                            Add(" active");
+                            first = false;
+                        }
+                        Add(@"' data-toggle=""tab"" href=""#maturitylevel");
+                        Add(i);
+                        Add(@""">");
+                        Add("<span class=\"badge grade-");
+                        Add(i);
+                        Add("\">");
+                        Add("Level ");
+                        Add(i);
+                        Add("</span> ");
+                        Add("</a>");
+                        Add("</li>");
+                    }
+                }
+                Add("</ul>");
+                Add("</div></div>");
+            }
+
+            Dictionary<int, int> nextLevels = new Dictionary<int, int>();
+            int start = Report.MaturityLevel;
+            for (int i = start + 1; i < 6; i++)
             {
                 if (data.ContainsKey(i) && data[i].Count > 0)
                 {
-                    l = data[Report.MaturityLevel];
-                    nextLevel = i;
-                    break;
+                    if (!nextLevels.ContainsKey(start))
+                        nextLevels[start] = i;
+                    start = i;
                 }
             }
-            if (nextLevel != 0)
+            if (Report.MaturityLevel < 5 && !nextLevels.ContainsKey(Report.MaturityLevel))
+                nextLevels[Report.MaturityLevel] = 5;
+            Add("<div class='row'><div class='col-lg-12'>");
+            Add(@"<div class=""tab-content"">");
+            for (int i = Report.MaturityLevel; i < 6; i++)
             {
-                Add("<p class='mt-2'>To reach ");
-                Add("<span class=\"badge grade-");
-                Add(nextLevel);
-                Add("\">");
-                Add("Level ");
-                Add(nextLevel);
-                Add("</span> you need to fix the following rules:</p>");
-                GenerateAccordion("rulesmaturity", () =>
+                if (data.ContainsKey(i) && data[i].Count > 0)
                 {
-                    Report.RiskRules.Sort((HealthcheckRiskRule a, HealthcheckRiskRule b)
-                        =>
+                    var l = data[i];
+                    
+                    
+                    Add(@"<div id=""maturitylevel");
+                    Add(i);
+                    Add(@""" class=""tab-pane");
+                    if (i == Report.MaturityLevel)
                     {
-                        return -a.Points.CompareTo(b.Points);
+                        Add(" active");
                     }
-                    );
-                    foreach (HealthcheckRiskRule rule in Report.RiskRules)
+                    Add(@""">");
+
+            
+                    Add("<p class='mt-2'>");
+
+                    if (nextLevels.ContainsKey(i))
                     {
-                        if (l.Contains(rule.RiskId))
-                            GenerateIndicatorPanelDetail("maturity", rule, "maturity");
+                        Add("To reach ");
+                        var nextLevel = nextLevels[i];
+                        Add("<span class=\"badge grade-");
+                        Add(nextLevel);
+                        Add("\">");
+                        Add("Level ");
+                        Add(nextLevel);
+                        Add("</span> ");
                     }
-                });
+                    else
+                    {
+                        Add("To reach the maximum level ");
+                    }
+                    /*Add("From ");
+                    Add("<span class=\"badge grade-");
+                    Add(level);
+                    Add("\">");
+                    Add("Level ");
+                    Add(level);
+                    Add("</span> ");*/
+                    Add(" you need to fix the following rules:</p>");
+                    GenerateAccordion("rulesmaturity" + i, () =>
+                    {
+                        Report.RiskRules.Sort((HealthcheckRiskRule a, HealthcheckRiskRule b)
+                            =>
+                        {
+                            return -a.Points.CompareTo(b.Points);
+                        }
+                        );
+                        foreach (HealthcheckRiskRule rule in Report.RiskRules)
+                        {
+                            if (l.Contains(rule.RiskId))
+                                GenerateIndicatorPanelDetail("maturity" + i, rule, "maturity" + i);
+                        }
+                    });
+                    Add("</div>");
+                }
             }
+            Add("</div>");
+            Add("</div></div>");
 
         }
 
@@ -348,7 +444,338 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         }
         #endregion
 
+        #region mitre
 
+        protected void GenerateMitreAttackInformation()
+        {
+            AddParagraph(@"This section represents an evaluation of the techniques available in the <a href=""https://attack.mitre.org/"">Mitre Att&ck&#174;</a>");
+            if (string.IsNullOrEmpty(_license.Edition))
+            {
+                AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
+                return;
+            }
+            GenerateMitreTechnique();
+            GenerateMitreMitigation();
+        }
+
+        void GenerateMitreTechnique()
+        {
+            var reference = new Dictionary<RuleMitreAttackTechniqueAttribute, List<HealthcheckRiskRule>>();
+            foreach (var rule in Report.RiskRules)
+            {
+                var hcrule = RuleSet<HealthcheckData>.GetRuleFromID(rule.RiskId);
+                if (hcrule == null)
+                {
+                    continue;
+                }
+                object[] frameworks = hcrule.GetType().GetCustomAttributes(typeof(RuleMitreAttackTechniqueAttribute), true);
+                foreach (RuleMitreAttackTechniqueAttribute f in frameworks)
+                {
+                    if (!reference.ContainsKey(f))
+                    {
+                        reference[f] = new List<HealthcheckRiskRule>();
+                    }
+                    reference[f].Add(rule);
+                }
+            }
+            var keys = new List<RuleMitreAttackTechniqueAttribute>(reference.Keys);
+            keys.Sort((RuleMitreAttackTechniqueAttribute a, RuleMitreAttackTechniqueAttribute b) => { return string.Compare(a.Label, b.Label); });
+
+            Add("<h2>Techniques</h2>");
+            // CARDS
+            Add("<div class='row'><div class='col-lg-12'>");
+            Add("<div class='card-deck'>");
+            foreach (MitreAttackMainTechnique mainTechnique in Enum.GetValues(typeof(MitreAttackMainTechnique)))
+            {
+                Add("<div class='card'>");
+                Add("<div class='card-body'>");
+                Add("<h5 class='card-title'>");
+                var description = ReportHelper.GetEnumDescription(mainTechnique);
+                Add(description);
+                Add("</h5>");
+                int num = 0;
+                foreach (var l in keys)
+                {
+                    if (l.MainTechnique != mainTechnique)
+                        continue;
+                    num++;
+                }
+                if (num > 0)
+                {
+                    Add("<p class='card-text'>");
+                    Add(num);
+                    Add(" technique(s) matched");
+                    Add("</p>");
+                }
+                else
+                {
+                    Add("<p class='card-text'>No technique matched</p>");
+                }
+                Add("</div>");
+                Add("</div>");
+            }
+            Add("</div>");
+            Add("</div></div>");
+
+
+            // tab header
+            if (reference.Count > 0)
+            {
+                Add("<div class='row mt-4'><div class='col-lg-12'>");
+                Add(@"<ul class=""nav nav-tabs d-none1"">");
+                bool first = true;
+                foreach (MitreAttackMainTechnique mainTechnique in Enum.GetValues(typeof(MitreAttackMainTechnique)))
+                {
+                    int num = 0;
+                    foreach (var l in keys)
+                    {
+                        if (l.MainTechnique != mainTechnique)
+                            continue;
+                        num++;
+                    }
+                    if (num > 0)
+                    {
+                        Add("<li class='nav-item bg-light'>");
+                        Add(@"<a class='nav-link");
+                        if (first)
+                        {
+                            Add(" active");
+                            first = false;
+                        }
+                        Add(@"' data-toggle=""tab"" href=""#mitre");
+                        Add(mainTechnique.ToString());
+                        Add(@""">");
+                        var description = ReportHelper.GetEnumDescription(mainTechnique);
+                        Add(description);
+                        Add("</a>");
+                        Add("</li>");
+                    }
+                }
+                Add("</ul>");
+                Add("</div></div>");
+
+
+                // tab content
+                Add("<div class='row'><div class='col-lg-12'>");
+                Add(@"<div class=""tab-content"">");
+                first = true;
+                foreach (MitreAttackMainTechnique mainTechnique in Enum.GetValues(typeof(MitreAttackMainTechnique)))
+                {
+                    int num = 0;
+                    foreach (var l in keys)
+                    {
+                        if (l.MainTechnique != mainTechnique)
+                            continue;
+                        num++;
+                    }
+                    if (num > 0)
+                    {
+
+                        Add(@"<div id=""mitre");
+                        Add(mainTechnique.ToString());
+                        Add(@""" class=""tab-pane");
+                        if (first)
+                        {
+                            Add(" active");
+                            first = false;
+                        }
+                        Add(@""">");
+
+                        Add("<div class='row'><div class='col-lg-12'>");
+                        var description = ReportHelper.GetEnumDescription(mainTechnique);
+                        Add("<p class='mt-2'><strong>" + description + "</strong></p>");
+
+                        foreach (var l in keys)
+                        {
+                            if (l.MainTechnique != mainTechnique)
+                                continue;
+                            //title
+                            Add("<p class='mt-2'><a href=");
+                            Add(((RuleFrameworkReference)l).URL);
+                            Add(">");
+                            Add(((RuleFrameworkReference)l).Label);
+                            Add("</a> [");
+                            Add(reference[l].Count);
+                            Add("]</p>");
+                            GenerateAccordion("rulesmitre" + l.ID + l.SubID, () =>
+                            {
+                                reference[l].Sort((HealthcheckRiskRule a, HealthcheckRiskRule b) => { return -a.Points.CompareTo(b.Points); });
+                                foreach (HealthcheckRiskRule rule in reference[l])
+                                {
+                                    GenerateIndicatorPanelDetail("mitre" + l.ID + l.SubID, rule, "mitre" + l.ID + l.SubID);
+                                }
+                            });
+                        }
+                        Add("</div></div>");
+                        Add("</div>");
+                    }
+                }
+                Add("</div>");
+                Add("</div></div>");
+            }
+
+        }
+
+        void GenerateMitreMitigation()
+        {
+            var reference = new Dictionary<RuleMitreAttackMitigationAttribute, List<HealthcheckRiskRule>>();
+            int notcovered = 0;
+            foreach (var rule in Report.RiskRules)
+            {
+                var hcrule = RuleSet<HealthcheckData>.GetRuleFromID(rule.RiskId);
+                if (hcrule == null)
+                {
+                    continue;
+                }
+                object[] frameworks = hcrule.GetType().GetCustomAttributes(typeof(RuleMitreAttackMitigationAttribute), true);
+                if (frameworks == null || frameworks.Length == 0)
+                    notcovered++;
+                foreach (RuleMitreAttackMitigationAttribute f in frameworks)
+                {
+                    if (!reference.ContainsKey(f))
+                    {
+                        reference[f] = new List<HealthcheckRiskRule>();
+                    }
+                    reference[f].Add(rule);
+                }
+            }
+            var keys = new List<RuleMitreAttackMitigationAttribute>(reference.Keys);
+            keys.Sort((RuleMitreAttackMitigationAttribute a, RuleMitreAttackMitigationAttribute b) => { return string.Compare(a.Label, b.Label); });
+
+            Add("<hr>");
+            Add("<h2 class='mt-4'>Mitigations</h2>");
+
+            // CARDS
+            Add("<div class='row'><div class='col-lg-12'>");
+            Add("<div class='card-deck'>");
+            foreach (MitreAttackMitigation mainTechnique in Enum.GetValues(typeof(MitreAttackMitigation)))
+            {
+                Add("<div class='card'>");
+                Add("<div class='card-body'>");
+                Add("<h5 class='card-title'>");
+                var description = ReportHelper.GetEnumDescription(mainTechnique);
+                Add(description);
+                Add("</h5>");
+                int num = 0;
+                foreach (var l in keys)
+                {
+                    if (l.MainTechnique != mainTechnique)
+                        continue;
+                    num++;
+                }
+                if (num > 0)
+                {
+                    Add("<p class='card-text'>Mitigation did matched");
+                    Add("</p>");
+                }
+                else
+                {
+                    Add("<p class='card-text'>No match</p>");
+                }
+                Add("</div>");
+                Add("</div>");
+            }
+            Add("</div>");
+            Add("</div></div>");
+
+            // tab header
+            if (reference.Count > 0)
+            {
+                Add("<div class='row mt-4'><div class='col-lg-12'>");
+                Add(@"<ul class=""nav nav-tabs d-none1"">");
+                bool first = true;
+                foreach (MitreAttackMitigation mainTechnique in Enum.GetValues(typeof(MitreAttackMitigation)))
+                {
+                    int num = 0;
+                    foreach (var l in keys)
+                    {
+                        if (l.MainTechnique != mainTechnique)
+                            continue;
+                        num++;
+                    }
+                    if (num > 0)
+                    {
+                        Add("<li class='nav-item bg-light'>");
+                        Add(@"<a class='nav-link");
+                        if (first)
+                        {
+                            Add(" active");
+                            first = false;
+                        }
+                        Add(@"' data-toggle=""tab"" href=""#mitre");
+                        Add(mainTechnique.ToString());
+                        Add(@""">");
+                        var description = ReportHelper.GetEnumDescription(mainTechnique);
+                        Add(description);
+                        Add("</a>");
+                        Add("</li>");
+                    }
+                }
+                Add("</ul>");
+                Add("</div></div>");
+
+
+                // tab content
+                Add("<div class='row'><div class='col-lg-12'>");
+                Add(@"<div class=""tab-content"">");
+                first = true;
+                foreach (MitreAttackMitigation mainTechnique in Enum.GetValues(typeof(MitreAttackMitigation)))
+                {
+                    int num = 0;
+                    foreach (var l in keys)
+                    {
+                        if (l.MainTechnique != mainTechnique)
+                            continue;
+                        num++;
+                    }
+                    if (num > 0)
+                    {
+
+                        Add(@"<div id=""mitre");
+                        Add(mainTechnique.ToString());
+                        Add(@""" class=""tab-pane");
+                        if (first)
+                        {
+                            Add(" active");
+                            first = false;
+                        }
+                        Add(@""">");
+
+                        Add("<div class='row'><div class='col-lg-12'>");
+                        var description = ReportHelper.GetEnumDescription(mainTechnique);
+                        Add("<p class='mt-2'><strong>" + description + "</strong></p>");
+
+                        foreach (var l in keys)
+                        {
+                            if (l.MainTechnique != mainTechnique)
+                                continue;
+                            //title
+                            Add("<p class='mt-2'><a href=");
+                            Add(((RuleFrameworkReference)l).URL);
+                            Add(">");
+                            Add(((RuleFrameworkReference)l).Label);
+                            Add("</a> [");
+                            Add(reference[l].Count);
+                            Add("]</p>");
+                            GenerateAccordion("rulesmitre" + l.ID + l.SubID, () =>
+                            {
+                                reference[l].Sort((HealthcheckRiskRule a, HealthcheckRiskRule b) => { return -a.Points.CompareTo(b.Points); });
+                                foreach (HealthcheckRiskRule rule in reference[l])
+                                {
+                                    GenerateIndicatorPanelDetail("mitre" + l.ID + l.SubID, rule, "mitre" + l.ID + l.SubID);
+                                }
+                            });
+                        }
+                        Add("</div></div>");
+                        Add("</div>");
+                    }
+                }
+                Add("</div>");
+                Add("</div></div>");
+            }
+        }
+
+        #endregion
 
         #region domain info
         protected void GenerateDomainInformation()
@@ -635,7 +1062,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 });
         }
 
-        void SectionList(string accordion, string section, int value, List<HealthcheckAccountDetailData> list)
+        void SectionList(string accordion, string section, int value, IList<HealthcheckAccountDetailData> list)
         {
             if (value > 0 && list != null && list.Count > 0)
             {
@@ -668,7 +1095,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     break;
                 }
             }
-            GenerateAccordionDetail(id, accordion, title, list.Count, false, () =>
+            GenerateAccordionDetailForDetail(id, accordion, title, list.Count, () =>
                 {
                     AddBeginTable("Account list");
                     AddHeaderText("Name");
@@ -823,7 +1250,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 }
                 AddEndTable();
             }
-            else
+            else if (Report.OperatingSystemVersion == null || Report.OperatingSystemVersion.Count == 0)
             {
                 AddBeginTable("Operating System list");
                 AddHeaderText("Operating System");
@@ -856,6 +1283,48 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 }
                 AddEndTable();
             }
+            else
+            {
+                AddBeginTable("Operating System list");
+                AddHeaderText("Operating System");
+                AddHeaderText("Nb OS");
+                AddAccountCheckHeader(true);
+                AddBeginTableData();
+                
+                foreach (HealthcheckOSData os in Report.OperatingSystem)
+                {
+                    if (os.OperatingSystem.Contains("Windows"))
+                        continue;
+                    AddBeginRow();
+                    AddCellText(os.OperatingSystem);
+                    AddCellNum(os.data.Number);
+                    AddCellNum(os.data.NumberEnabled);
+                    AddCellNum(os.data.NumberDisabled);
+                    AddCellNum(os.data.NumberActive);
+                    AddCellNum(os.data.NumberInactive);
+                    AddCellNum(os.data.NumberSidHistory);
+                    AddCellNum(os.data.NumberBadPrimaryGroup);
+                    AddCellNum(os.data.NumberTrustedToAuthenticateForDelegation);
+                    AddCellNum(os.data.NumberReversibleEncryption);
+                    AddEndRow();
+                }
+                foreach (HealthcheckOSVersionData os in Report.OperatingSystemVersion)
+                {
+                    AddBeginRow();
+                    AddCellText(GetOSVersionString(os));
+                    AddCellNum(os.data.Number);
+                    AddCellNum(os.data.NumberEnabled);
+                    AddCellNum(os.data.NumberDisabled);
+                    AddCellNum(os.data.NumberActive);
+                    AddCellNum(os.data.NumberInactive);
+                    AddCellNum(os.data.NumberSidHistory);
+                    AddCellNum(os.data.NumberBadPrimaryGroup);
+                    AddCellNum(os.data.NumberTrustedToAuthenticateForDelegation);
+                    AddCellNum(os.data.NumberReversibleEncryption);
+                    AddEndRow();
+                }
+                AddEndTable();
+            }
         }
 
         private void GenerateDCInformation()
@@ -868,7 +1337,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             GenerateAccordion("domaincontrollers", ()
                 =>
                 {
-                    GenerateAccordionDetail("domaincontrollersdetail", "domaincontrollers", "Domain controllers", Report.DomainControllers.Count, false,
+                    GenerateAccordionDetailForDetail("domaincontrollersdetail", "domaincontrollers", "Domain controllers", Report.DomainControllers.Count,
                         () =>
                         {
                             AddBeginTable("Domain Controllers list");
@@ -1023,7 +1492,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 GenerateAccordion("admingroupsaccordeon",
                     () =>
                     {
-                        GenerateAccordionDetail("allprivileged", "admingroupsaccordeon", "All users in Admins groups", Report.AllPrivilegedMembers.Count, false, () => GenerateAdminGroupsDetail(Report.AllPrivilegedMembers));
+                        GenerateAccordionDetailForDetail("allprivileged", "admingroupsaccordeon", "All users in Admins groups", Report.AllPrivilegedMembers.Count, () => GenerateAdminGroupsDetail(Report.AllPrivilegedMembers));
                     });
                 Add("</div></div>");
             }
@@ -1036,7 +1505,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 GenerateAccordion("protectedusersaccordeon",
                     () =>
                     {
-                        GenerateAccordionDetail("protectedusers", "protectedusersaccordeon", "Protected Users and not Admins", Report.ProtectedUsersNotPrivileged.Members.Count, false, () => GenerateAdminGroupsDetail(Report.ProtectedUsersNotPrivileged.Members));
+                        GenerateAccordionDetailForDetail("protectedusers", "protectedusersaccordeon", "Protected Users and not Admins", Report.ProtectedUsersNotPrivileged.Members.Count, () => GenerateAdminGroupsDetail(Report.ProtectedUsersNotPrivileged.Members));
                     });
                 Add("</div></div>");
             }
@@ -1082,7 +1551,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 GenerateAccordion("delegationaccordeon",
                     () =>
                     {
-                        GenerateAccordionDetail("alldelegation", "delegationaccordeon", "All delegations", Report.Delegations.Count, false, GenerateDelegationDetail);
+                        GenerateAccordionDetailForDetail("alldelegation", "delegationaccordeon", "All delegations", Report.Delegations.Count, GenerateDelegationDetail);
                     });
                 Add("</div></div>");
             }
@@ -2178,6 +2647,12 @@ Then this password is changed at a fixed interval. The risk is when a local admi
 <p><strong>LAPS installation date: </strong> " + (Report.LAPSInstalled == DateTime.MaxValue ? "<span class=\"unticked\">Never</span>" : (Report.LAPSInstalled == DateTime.MinValue ? "<span class=\"unticked\">Not checked (older version of PingCastle)</span>" : Report.LAPSInstalled.ToString("u"))) + @"</p>
 		</div></div>
 ");
+            if (Report.ListLAPSJoinedComputersToReview != null && Report.ListLAPSJoinedComputersToReview.Count > 0)
+            {
+                AddParagraph("Here is the list of computers joined to the domain by users who have access to the LAPS password (or can modify the security to see it). This program looks if the mS-DS-CreatorSID is found: on the owner or on security permissions such as write owner, write security descriptor and all extended rights.");
+                GenerateAccordion("lapscreatedsid", () => GenerateListAccountDetail("lapscreatedsid", "lapscreatedsidpanel", "Computers joined to the domain by a user who has now access to their LAPS password", Report.ListLAPSJoinedComputersToReview));
+            }
+
             GenerateSubSection("Windows Event Forwarding (WEF)");
             Add(@"
 		<div class=""row""><div class=""col-lg-12"">
@@ -2195,7 +2670,7 @@ Here is the list of servers configured for WEF found in GPO</p>
 			<div class=""col-md-12"">");
                 GenerateAccordion("wef", () =>
                     {
-                        GenerateAccordionDetail("wefPanel", "wef", "Windows Event Forwarding servers", Report.GPOEventForwarding.Count, false, () =>
+                        GenerateAccordionDetailForDetail("wefPanel", "wef", "Windows Event Forwarding servers", Report.GPOEventForwarding.Count, () =>
                             {
                                 AddBeginTable("WEF list");
                                 AddHeaderText("GPO Name");
@@ -2303,7 +2778,7 @@ Hackers can then perform a reconnaissance of the environement with only a networ
 ");
                     GenerateAccordion("nullsessions", () =>
                         {
-                            GenerateAccordionDetail("nullsessionPanel", "nullsessions", "Domain controllers with NULL SESSION Enabled", countnullsession, false, () =>
+                            GenerateAccordionDetailForDetail("nullsessionPanel", "nullsessions", "Domain controllers with NULL SESSION Enabled", countnullsession, () =>
                                 {
                                     AddBeginTable("Null session list");
                                     AddHeaderText("Domain Controller");
@@ -2389,93 +2864,6 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 		</div>
 	</div>
 ");
-                // certificate
-                GenerateSubSection("Certificates", "certificates");
-                Add(@"
-		<div class=""row"">
-			<div class=""col-lg-12"">
-				<p>This detects trusted certificate which can be used in man in the middle attacks or which can issue smart card logon certificates</p>
-				<p><strong>Number of trusted certificates:</strong> " + Report.TrustedCertificates.Count + @" 
-			</div>
-		</div>
-		<div class=""row"">
-			<div class=""col-lg-12"">
-");
-                GenerateAccordion("trustedCertificates", () =>
-                    {
-                        GenerateAccordionDetail("trustedCertificatesPanel", "trustedCertificates", "Trusted certificates", Report.TrustedCertificates.Count, false, () =>
-                            {
-                                AddBeginTable("Certificates list");
-                                AddHeaderText("Source");
-                                AddHeaderText("Store");
-                                AddHeaderText("Subject");
-                                AddHeaderText("Issuer");
-                                AddHeaderText("NotBefore");
-                                AddHeaderText("NotAfter");
-                                AddHeaderText("Module size");
-                                AddHeaderText("Signature Alg");
-                                AddHeaderText("SC Logon");
-                                AddBeginTableData();
-
-                                foreach (HealthcheckCertificateData data in Report.TrustedCertificates)
-                                {
-                                    X509Certificate2 cert = new X509Certificate2(data.Certificate);
-                                    bool SCLogonAllowed = false;
-                                    foreach (X509Extension ext in cert.Extensions)
-                                    {
-                                        if (ext.Oid.Value == "1.3.6.1.4.1.311.20.2.2")
-                                        {
-                                            SCLogonAllowed = true;
-                                            break;
-                                        }
-                                    }
-                                    int modulesize = 0;
-                                    RSA key = null;
-                                    try
-                                    {
-                                        key = cert.PublicKey.Key as RSA;
-                                    }
-                                    catch (Exception)
-                                    {
-                                    }
-                                    if (key != null)
-                                    {
-                                        RSAParameters rsaparams = key.ExportParameters(false);
-                                        modulesize = rsaparams.Modulus.Length * 8;
-                                    }
-                                    AddBeginRow();
-                                    if (data.Source == "NTLMStore")
-                                    {
-                                        Add("<td class='text'>");
-                                        Add(@"Enterprise NTAuth");
-                                        AddBeginTooltip();
-                                        Add("This store is used by the Windows PKI. You can view it with the command 'certutil -viewstore -enterprise NTAuth' or edit it with the command 'Manage AD Container' of the 'Enterprise PKI' snapin of mmc.");
-                                        AddEndTooltip();
-                                        Add(@"</td>");
-                                    }
-                                    else
-                                    {
-                                        AddCellText(data.Source);
-                                    }
-                                    AddCellText(data.Store);
-                                    AddCellTextNoWrap(cert.Subject);
-                                    AddCellTextNoWrap(cert.Issuer);
-                                    AddCellDateNoWrap(cert.NotBefore);
-                                    AddCellDateNoWrap(cert.NotAfter);
-                                    AddCellNum(modulesize);
-                                    AddCellText(cert.SignatureAlgorithm.FriendlyName);
-                                    AddCellText(SCLogonAllowed.ToString());
-                                    AddEndRow();
-                                }
-                                AddEndTable();
-                            }
-                        );
-                    }
-                    );
-                Add(@"
-			</div>
-		</div>
-");
 
                 GenerateSubSection("Advanced");
                 AddParagraph("This section display advanced information, if any has been found");
@@ -2502,6 +2890,315 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             }
         }
         #endregion anomaly
+
+        #region pki
+        protected void GeneratePKIDetail()
+        {
+            // certificate
+            GenerateSubSection("Certificates", "certificates");
+            Add(@"
+		<div class=""row"">
+			<div class=""col-lg-12"">
+				<p>This detects trusted certificate which can be used in man in the middle attacks or which can issue smart card logon certificates</p>
+				<p><strong>Number of trusted certificates:</strong> " + Report.TrustedCertificates.Count + @" 
+			</div>
+		</div>
+		<div class=""row"">
+			<div class=""col-lg-12"">
+");
+            GenerateAccordion("trustedCertificates", () =>
+            {
+                GenerateAccordionDetailForDetail("trustedCertificatesPanel", "trustedCertificates", "Trusted certificates", Report.TrustedCertificates.Count, () =>
+                {
+                    AddBeginTable("Certificates list");
+                    AddHeaderText("Source");
+                    AddHeaderText("Store");
+                    AddHeaderText("Subject");
+                    AddHeaderText("Issuer");
+                    AddHeaderText("NotBefore");
+                    AddHeaderText("NotAfter");
+                    AddHeaderText("Module size");
+                    AddHeaderText("Signature Alg");
+                    AddHeaderText("SC Logon");
+                    AddBeginTableData();
+
+                    foreach (HealthcheckCertificateData data in Report.TrustedCertificates)
+                    {
+                        if (data.Certificate == null || data.Certificate.Length == 0)
+                            continue;
+                        X509Certificate2 cert = null;
+                        try
+                        {
+                            cert = new X509Certificate2(data.Certificate);
+                        }
+                        catch (Exception)
+                        {
+                            continue;
+                        }
+                        bool SCLogonAllowed = false;
+                        foreach (X509Extension ext in cert.Extensions)
+                        {
+                            if (ext.Oid.Value == "1.3.6.1.4.1.311.20.2.2")
+                            {
+                                SCLogonAllowed = true;
+                                break;
+                            }
+                        }
+                        int modulesize = 0;
+                        RSA key = null;
+                        try
+                        {
+                            key = cert.PublicKey.Key as RSA;
+                        }
+                        catch (Exception)
+                        {
+                        }
+                        if (key != null)
+                        {
+                            RSAParameters rsaparams = key.ExportParameters(false);
+                            modulesize = rsaparams.Modulus.Length * 8;
+                        }
+                        AddBeginRow();
+                        if (data.Source == "NTLMStore")
+                        {
+                            Add("<td class='text'>");
+                            Add(@"Enterprise NTAuth");
+                            AddBeginTooltip();
+                            Add("This store is used by the Windows PKI. You can view it with the command 'certutil -viewstore -enterprise NTAuth' or edit it with the command 'Manage AD Container' of the 'Enterprise PKI' snapin of mmc.");
+                            AddEndTooltip();
+                            Add(@"</td>");
+                        }
+                        else
+                        {
+                            AddCellText(data.Source);
+                        }
+                        AddCellText(data.Store);
+                        AddCellTextNoWrap(cert.Subject);
+                        AddCellTextNoWrap(cert.Issuer);
+                        AddCellDateNoWrap(cert.NotBefore);
+                        AddCellDateNoWrap(cert.NotAfter);
+                        AddCellNum(modulesize);
+                        AddCellText(cert.SignatureAlgorithm.FriendlyName);
+                        AddCellText(SCLogonAllowed.ToString());
+                        AddEndRow();
+                    }
+                    AddEndTable();
+                }
+                );
+            }
+                );
+            Add(@"
+			</div>
+		</div>
+");
+
+            if (Report.CertificateTemplates != null && Report.CertificateTemplates.Count > 0)
+            {
+                // certificate template
+                GenerateSubSection("Certificate Templates", "certificatetemplates");
+                Add(@"
+		<div class=""row"">
+			<div class=""col-lg-12"">
+				<p>This section lists certificate templates which can be used to generate certificate. A miss configuration can allow an attacker to create its own certificate and use it to impersonate other users</p>
+				<p><strong>Number of certificate templates:</strong> " + Report.CertificateTemplates.Count + @" 
+			</div>
+		</div>
+		<div class=""row"">
+			<div class=""col-lg-12"">
+");
+                GenerateAccordion("certificateTemplates", () =>
+                {
+                    GenerateAccordionDetailForDetail("certificateTemplatesPanel", "certificateTemplates", "Certificate Templates", Report.CertificateTemplates.Count, () =>
+                    {
+                        AddBeginTable("Certificate Templates list");
+                        AddHeaderText("Name");
+                        AddHeaderText("Destination");
+                        AddHeaderText("Manager approval", "Require the CA certiicate manager approval before being issued");
+                        AddHeaderText("Enrollee can supply subject", "Indicates if the user doing the request can submit its own subject or subject alternate name");
+                        AddHeaderText("Issuance requirements", "Specify if an authorized signature is required before issuing the certificate");
+                        AddHeaderText("Vulnerable ACL", "Specify if large group such as EVERYONE can take controle of the template object");
+                        AddHeaderText("Everyone can enroll", "Indicates if there is no security restriction to request a certificate");
+                        AddHeaderText("Agent template", "Specify if the certificates issued by this template can generate certificates on behalf other users");
+                        AddHeaderText("Any purpose", "Indicates if no restrictions are in place for the certificate use such as authentication or agent use");
+                        AddHeaderText("For Authentication", "Indicates certificates issued will be used for authentication purpose");
+                        AddBeginTableData();
+
+                        foreach (var data in Report.CertificateTemplates)
+                        {
+                            AddBeginRow();
+                            AddNameWithCA(data.Name, data.CA);
+                            AddCellText((data.Flags & 0x40) > 0 ? "Computer" : "User");
+                            AddCellText(data.CAManagerApproval ? "YES" : "NO", data.CAManagerApproval, true);
+                            AddCellText(data.EnrolleeSupplies > 0 ? "YES" : "NO", data.EnrolleeSupplies > 0, false);
+                            AddCellText(data.IssuanceRequirementsEmpty ? "NO" : "YES", !data.IssuanceRequirementsEmpty, true);
+                            AddCellText(data.VulnerableTemplateACL ? "YES" : "NO", data.VulnerableTemplateACL, false);
+                            AddCellText(data.LowPrivCanEnroll ? "YES" : "NO", data.LowPrivCanEnroll, false);
+                            AddCellText(data.EnrollmentAgentTemplate ? "YES" : "NO", data.EnrollmentAgentTemplate, false);
+                            AddCellText(data.HasAnyPurpose ? "YES" : "NO", data.HasAnyPurpose, false);
+                            AddCellText(data.HasAuthenticationEku ? "YES" : "NO");
+
+                            AddEndRow();
+                        }
+                        AddEndTable();
+                    }
+                    );
+                }
+                    );
+                Add(@"
+			</div>
+		</div>
+");
+            }
+
+            int DCCertCount = 0;
+            foreach(var dc in Report.DomainControllers)
+            {
+                if (dc.LDAPCertificate != null && dc.LDAPCertificate.Length > 0)
+                    DCCertCount++;
+            }
+            if (DCCertCount > 0)
+            {
+                // certificate template
+                GenerateSubSection("Domain Controller Certificate", "dccertificate");
+                Add(@"
+		<div class=""row"">
+			<div class=""col-lg-12"">
+				<p>This section lists certificate in use on Domain Controllers. It gives an attacker hits about the PKI configuration.</p>
+				<p><strong>Number of DC certificates:</strong> " + DCCertCount + @" 
+			</div>
+		</div>
+		<div class=""row"">
+			<div class=""col-lg-12"">
+");
+                GenerateAccordion("DCcertificates", () =>
+                {
+                    GenerateAccordionDetailForDetail("DCcertificatesPanel", "DCcertificates", "DC Certificates", DCCertCount, () =>
+                    {
+                        AddBeginTable("DC Certificates list");
+                        AddHeaderText("DC Name");
+                        AddHeaderText("Subject");
+                        AddHeaderText("SAN", "Subject Alternate Name");
+                        AddHeaderText("EKU", "Extended Key Usage");
+                        AddHeaderText("Template", "The certificate template used to generate this certificate, if any");
+                        AddHeaderText("NotBefore");
+                        AddHeaderText("NotAfter");
+                        AddHeaderText("Module size");
+                        AddHeaderText("Signature Alg");
+                        AddBeginTableData();
+
+                        foreach(var dc in Report.DomainControllers)
+                        {
+                            if (dc.LDAPCertificate == null || dc.LDAPCertificate.Length == 0)
+                                continue;
+                            X509Certificate2 cert = null;
+                            try
+                            {
+                                cert = new X509Certificate2(dc.LDAPCertificate);
+                            }
+                            catch(Exception)
+                            {
+                                continue;
+                            }
+                            string san = cert.GetNameInfo(X509NameType.DnsFromAlternativeName, false);
+                            var intendedpurposes = string.Empty;
+                            var templateName = string.Empty;
+                            foreach (var ext in cert.Extensions)
+                            {
+                                var eku = ext as X509EnhancedKeyUsageExtension;
+                                if (eku != null)
+                                {
+                                    foreach (var oid in eku.EnhancedKeyUsages)
+                                    {
+                                        intendedpurposes += oid.FriendlyName + ", ";
+                                    }
+                                }
+                                // X509CertificateTemplateExtension not available in .net 2
+                                else if (ext.Oid.Value == "1.3.6.1.4.1.311.21.7")
+                                {
+                                    AsnEncodedData asndata = new AsnEncodedData(ext.Oid, ext.RawData);
+                                    var s = asndata.Format(false).Split(',');
+                                    if (s.Length > 0 && !string.IsNullOrEmpty(s[0]) && s[0].Contains("="))
+                                    {
+                                        var TemplateOid = new Oid(s[0].Split('=')[1]);
+                                        /*var MajorVersion = int.Parse(s[1].Split('=')[1]);
+                                        var MinorVersion = int.Parse(s[2].Split('=')[1]);*/
+
+                                        templateName = string.IsNullOrEmpty(TemplateOid.FriendlyName) ? TemplateOid.Value : TemplateOid.FriendlyName;
+                                        if (Report.CertificateTemplates != null)
+                                        {
+                                            foreach (var template in Report.CertificateTemplates)
+                                            {
+                                                if (template.OID == TemplateOid.Value)
+                                                {
+                                                    templateName = template.Name;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            int modulesize = 0;
+                            RSA key = null;
+                            try
+                            {
+                                key = cert.PublicKey.Key as RSA;
+                            }
+                            catch (Exception)
+                            {
+                            }
+                            if (key != null)
+                            {
+                                RSAParameters rsaparams = key.ExportParameters(false);
+                                modulesize = rsaparams.Modulus.Length * 8;
+                            }
+                            AddBeginRow();
+                            AddCellText(dc.DCName);
+                            AddCellText(cert.Subject);
+                            AddCellText(san);
+                            AddCellText(intendedpurposes);
+                            AddCellText(templateName);
+                            AddCellDateNoWrap(cert.NotBefore);
+                            AddCellDateNoWrap(cert.NotAfter);
+                            AddCellNum(modulesize);
+                            AddCellText(cert.SignatureAlgorithm.FriendlyName);
+                            AddEndRow();
+                           
+
+                        }
+                        AddEndTable();
+                    }
+                    );
+                }
+                    );
+                Add(@"
+			</div>
+		</div>
+");
+            }
+        }
+
+        void AddNameWithCA(string Name, List<string> CA)
+        {
+            Add(@"<td class='text'>");
+            AddEncoded(Name);
+            if (CA != null && CA.Count > 0)
+            {
+                AddBeginTooltip(true);
+                Add("<div class='text-left'>Used in:<br><ul>");
+                foreach (var i in CA)
+                {
+                    Add("<li>");
+                    AddEncoded(i);
+                    Add("</li>");
+                }
+                Add("</ul></div>");
+                AddEndTooltip();
+            }
+            Add("</td>");
+        }
+
+        #endregion pki
 
         #region password policies
 

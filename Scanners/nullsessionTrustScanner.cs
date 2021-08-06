@@ -32,9 +32,9 @@ namespace PingCastle.Scanners
             Credential = credential;
         }
 
-        public bool QueryForAdditionalParameterInInteractiveMode()
+        public Program.DisplayState QueryForAdditionalParameterInInteractiveMode()
         {
-            return true;
+            return Program.DisplayState.AskForServer;
         }
 
         public void Export(string filename)

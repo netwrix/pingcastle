@@ -129,9 +129,9 @@ namespace PingCastle.Scanners
             Trace.WriteLine(value);
         }
 
-        public bool QueryForAdditionalParameterInInteractiveMode()
+        public Program.DisplayState QueryForAdditionalParameterInInteractiveMode()
         {
-            return true;
+            return Program.DisplayState.AskForServer;
         }
 
 

@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleANSSI("R18", "subsubsection.3.3.2")]
     [RuleIntroducedIn(2, 6)]
     [RuleMaturityLevel(2)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
     public class HeatlcheckRulePrivilegedExchangeAdminSDHolder : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

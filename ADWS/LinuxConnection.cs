@@ -181,10 +181,11 @@ namespace PingCastle.ADWS
                         Trace.WriteLine(control);
                     }
                 }
-                Trace.WriteLine("supportedLDAPVersion: ");
+                Trace.WriteLine("namingContexts: ");
                 info.NamingContexts = new List<string>();
                 foreach (var nc in GetValues(result, "namingContexts"))
                 {
+                    Trace.WriteLine(nc);
                     info.NamingContexts.Add(nc);
                 }
                 return info;
@@ -412,6 +413,11 @@ namespace PingCastle.ADWS
             }
         }
 
+
+        public override void ThreadInitialization()
+        {
+            
+        }
     }
 
 

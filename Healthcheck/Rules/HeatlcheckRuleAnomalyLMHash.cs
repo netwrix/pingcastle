@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
     //[RuleBSI("M 2.412")]
     [RuleSTIG("V-3379", "The system is configured to store the LAN Manager hash of the password in the SAM.", STIGFramework.Windows2008)]
     [RuleMaturityLevel(1)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.BruteForcePasswordCracking)]
     public class HeatlcheckRuleAnomalyLMHash : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

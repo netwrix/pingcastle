@@ -12,6 +12,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.PerDiscover, 20)]
     [RuleCERTFR("CERTFR-2015-ACT-046", "SECTION00020000000000000000")]
     [RuleMaturityLevel(1)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.UnsecuredCredentialsGroupPolicyPreferences)]
     public class HeatlcheckRuleAnomalyPasswordInGPO : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

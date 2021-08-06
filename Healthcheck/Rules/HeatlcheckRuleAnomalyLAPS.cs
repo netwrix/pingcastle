@@ -14,6 +14,8 @@ namespace PingCastle.Healthcheck.Rules
     [RuleSTIG("V-36438", "Local administrator accounts on domain systems must not share the same password.")]
     [RuleCERTFR("CERTFR-2015-ACT-046", "SECTION00020000000000000000")]
     [RuleMaturityLevel(3)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.ValidAccountsLocalAccounts)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
     public class HeatlcheckRuleAnomalyLAPS : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

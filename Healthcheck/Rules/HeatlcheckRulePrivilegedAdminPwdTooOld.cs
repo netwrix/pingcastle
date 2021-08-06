@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
     [RuleIntroducedIn(2, 9)]
     [RuleDurANSSI(1, "password_change_priv", "Privileged account passwords age too old")]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
     public class HeatlcheckRulePrivilegedAdminPwdTooOld : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

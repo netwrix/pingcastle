@@ -15,6 +15,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnThreshold, 20, Threshold: 366, Order: 4)]
     [RuleCERTFR("CERTFR-2014-ACT-032", "SECTION00030000000000000000")]
     [RuleDurANSSI(2, "krbtgt", "Krbtgt account password unchanged for more than a year")]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.StealorForgeKerberosTicketsGoldenTicket)]
     public class HeatlcheckRuleAnomalyKrbtgt : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

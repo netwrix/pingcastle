@@ -14,6 +14,7 @@ using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace PingCastle.Report
 {
@@ -687,11 +688,7 @@ namespace PingCastle.Report
             Add(@" -->");
             if (!string.IsNullOrEmpty(section))
             {
-                Add(@"
-		<a name=""");
-                AddEncoded(section);
-                Add(@"""></a>
-");
+                AddAnchor(section);
             }
             Add(@"
 		<div class=""row""><div class=""col-lg-12 mt-2"">
@@ -723,12 +720,25 @@ namespace PingCastle.Report
 ");
 
         }
-        protected void GenerateAccordionDetail(string id, string dataParent, string title, int? itemCount, bool RuleStyle, GenerateContentDelegate content)
+
+        protected void GenerateAccordionDetailForDetail(string id, string dataParent, string title, int itemCount, GenerateContentDelegate content)
+        {
+            GenerateAccordionDetail(id, dataParent, title, 
+                () => {
+                    Add(@"<i class=""float-right"">[");
+                    Add((int)itemCount);
+                    Add(@"]</i>");
+                },content);
+        }
+
+        protected void GenerateAccordionDetail(string id, string dataParent, string title, GenerateContentDelegate header, GenerateContentDelegate content)
         {
             Add(@"
     <div class=""card-header"" id=""heading");
             Add(id);
-            Add(@""">
+            Add("\">");
+            AddAnchor("anchor" + id);
+            Add(@"
       <span class=""card-title mb-0"">
         <button class=""btn btn-link"" data-toggle=""collapse"" data-target=""#");
             Add(id);
@@ -741,24 +751,9 @@ namespace PingCastle.Report
         </button>
       </span>
 ");
-            if (itemCount != null)
+            if (header != null)
             {
-                if (!RuleStyle)
-                {
-                    Add(@"<i class=""float-right"">[");
-                    Add((int)itemCount);
-                    Add(@"]</i>");
-                }
-                else if ((int)itemCount == 0)
-                {
-                    Add(@"<i class=""float-right"">Informative rule</i>");
-                }
-                else
-                {
-                    Add(@"<i class=""float-right"">+ ");
-                    Add((int)itemCount);
-                    Add(@" Point(s)</i>");
-                }
+                header();
             }
             Add(@"
     </div>
@@ -888,6 +883,127 @@ namespace PingCastle.Report
                     return 14;
             }
             return 0;
+        }
+
+        // ref: https://social.technet.microsoft.com/wiki/contents/articles/22615.how-to-get-the-number-of-computers-per-windows-operating-system-in-an-active-directory-domain-using-powershell.aspx
+        // https://docs.microsoft.com/en-us/windows-server/get-started/windows-server-release-info
+        // https://docs.microsoft.com/en-us/windows/release-health/release-information
+        public static string GetOSVersionString(HealthcheckOSVersionData osVersion)
+        {
+            // ex: 10.0 (18362)
+            Regex re = new Regex("(?<major>\\d+).(?<minor>\\d+) \\((?<release>\\d+)\\)");
+            if (osVersion == null || string.IsNullOrEmpty(osVersion.OSVersion))
+                return "Error";
+            var m = re.Match(osVersion.OSVersion);
+            if (!m.Success)
+                return "Unknown (" + osVersion.OSVersion + (osVersion.IsServer ? " (Server)" : null) + ")";
+            int major = int.Parse(m.Groups["major"].Value);
+            int minor = int.Parse(m.Groups["minor"].Value);
+            int release = int.Parse(m.Groups["release"].Value);
+            if (osVersion.IsServer)
+            {
+                if (major == 3)
+                {
+                    return "Windows NT 3.51 Server";
+                }
+                if (major == 4)
+                {
+                    return "Windows NT 4.0 Server";
+                }
+                if (major == 5)
+                {
+                    if (minor == 0)
+                    {
+                        return "Windows 2000 Server";
+                    }
+                    if (minor == 1)
+                    {
+                        return "Windows Server 2003";
+                    }
+                }
+                if (major == 6)
+                {
+                    if (minor == 0)
+                        return "Windows Server 2008";
+                    if (minor == 1)
+                        return "Windows Server 2008 R2";
+                    if (minor == 2)
+                        return "Windows Server 2012";
+                    if (minor == 3)
+                        return "Windows Server 2012 R2";
+                }
+                if (major == 10)
+                {
+                    if (minor == 0)
+                    {
+                        switch (release)
+                        {
+                            case 14393: return "Windows Server 2016 1607";
+                            case 17763: return "Windows Server 2019 1809";
+                            case 18362: return "Windows Server 2019 1903";
+                            case 18363: return "Windows Server 2019 1909";
+                            case 19041: return "Windows Server 2019 2004";
+                            case 19042: return "Windows Server 2019 20H2";
+                            default: return "Windows Server 2019 (Build " + release + ")";
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (major == 3)
+                {
+                    return "Windows NT 3.51 Workstation";
+                }
+                if (major == 4)
+                {
+                    return "Windows NT 4.0 Workstation";
+                }
+                if (major == 5)
+                {
+                    if (minor == 0)
+                        return "Windows 2000";
+                    if (minor == 1)
+                        return "Windows XP";
+                    if (minor == 2)
+                        return "Windows XP 64-Bit Edition";
+                }
+                if (major == 6)
+                {
+                    if (minor == 0)
+                        return "Windows Vista";
+                    if (minor == 1)
+                        return "Windows 7";
+                    if (minor == 2)
+                        return "Windows 8";
+                    if (minor == 3)
+                        return "Windows 8.1";
+                }
+                if (major == 10 && minor == 0)
+                {
+                    string w;
+                    switch (release)
+                    {
+                        case 22000: w = "Windows 11 21H2"; break;
+                        case 21996: w = "Windows 11 Dev"; break;
+                        case 19043: w = "Windows 10 21H1"; break;
+                        case 19042: w = "Windows 10 20H2"; break;
+                        case 19041: w = "Windows 10 2004"; break;
+                        case 18363: w = "Windows 10 1909"; break;
+                        case 18362: w = "Windows 10 1903"; break;
+                        case 17763: w = "Windows 10 1809"; break;
+                        case 17134: w = "Windows 10 1803"; break;
+                        case 16299: w = "Windows 10 1709"; break;
+                        case 15063: w = "Windows 10 1703"; break;
+                        case 14393: w = "Windows 10 1607"; break;
+                        case 10586: w = "Windows 10 1511"; break;
+                        case 10240: w = "Windows 10 1507"; break;
+                        default: w = "Windows 10 (Build " + release + ")"; break;
+                    }
+                    return w + (osVersion.IsLTSC ? " (LTSC)": null);
+                }
+            }
+            return "Unknown (" + osVersion.OSVersion + (osVersion.IsServer ? " (Server)" : null) + ")";
         }
 
         protected void AddPSOStringValue(GPPSecurityPolicy policy, string propertyName)

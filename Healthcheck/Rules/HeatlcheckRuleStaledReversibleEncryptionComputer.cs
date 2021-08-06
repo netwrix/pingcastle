@@ -11,6 +11,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("S-C-Reversible", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleDurANSSI(3, "reversible_password", "Accounts with passwords stored using reversible encryption")]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.BruteForcePasswordCracking)]
     public class HeatlcheckRuleStaledReversibleEncryptionComputer : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

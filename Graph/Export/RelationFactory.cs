@@ -438,11 +438,12 @@ namespace PingCastle.Graph.Export
 
                 // SYSVOL volume cannot be accessed with login / password login
                 // in this case, the server (aka the domain) needs to be replaced with the FQDN of the server
-                if (uri.Host.Equals(DomainInfo.DomainName, StringComparison.InvariantCultureIgnoreCase))
+                if (uri.Host.Equals(DomainInfo.DomainName, StringComparison.OrdinalIgnoreCase))
                 {
                     UriBuilder builder = new UriBuilder(uri);
                     builder.Host = DomainInfo.DnsHostName;
                     uri = builder.Uri;
+                    Trace.WriteLine("Change " + fileName + " by " + uri.LocalPath);
                 }
                 string alternativeFilepath = uri.LocalPath;
 

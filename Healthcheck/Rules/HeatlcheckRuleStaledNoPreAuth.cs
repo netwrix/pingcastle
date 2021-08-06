@@ -12,6 +12,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("S-NoPreAuth", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleDurANSSI(2, "kerberos_properties_preauth", "Kerberos pre-authentication disabled")]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.StealorForgeKerberosTicketsASREPRoasting)]
     public class HeatlcheckRuleStaledNoPreAuth : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

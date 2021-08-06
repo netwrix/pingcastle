@@ -12,6 +12,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerIfLessThan, 5, Threshold: 2)]
     [RuleIntroducedIn(2, 6)]
     [RuleMaturityLevel(3)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.DataBackup)]
     public class HeatlcheckRuleAnomalyNotEnoughDC : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

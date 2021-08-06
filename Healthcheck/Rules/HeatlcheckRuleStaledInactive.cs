@@ -12,6 +12,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnThreshold, 10, Threshold: 25)]
     [RuleANSSI("R45", "paragraph.3.6.6.2")]
     [RuleDurANSSI(1, "user_accounts_dormant", "Dormant accounts")]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.UserAccountManagement)]
     public class HeatlcheckRuleStaledInactive : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

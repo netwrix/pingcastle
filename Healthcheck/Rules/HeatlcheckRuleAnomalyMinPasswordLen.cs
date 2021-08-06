@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
     //[RuleBSI("M 4.314")]
     [RuleDurANSSI(2, "privileged_members_password", "Privileged group members with weak password policy")]
     [RuleMaturityLevel(2)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.PasswordPolicyDiscovery)]
     public class HeatlcheckRuleAnomalyMinPasswordLen : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

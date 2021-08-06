@@ -351,7 +351,7 @@ namespace PingCastle.ADWS
 				Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "]Getting Enumerate page " + pagenum);
 				Pull pull = new Pull();
 				pull.EnumerationContext = enumerateResponse.EnumerationContext;
-				pull.MaxElements = "500";
+                pull.MaxElements = LDAPConnection.PageSize.ToString();
 				if (nTSecurityDescriptor || DomainScope)
 				{
 
@@ -451,9 +451,14 @@ namespace PingCastle.ADWS
             get
             {
                 if (fileConnection == null)
-                    fileConnection = new WindowsFileConnection(this.Credential);
+                    fileConnection = new WindowsFileConnection(this.Credential, Server);
                 return fileConnection;
             }
+        }
+
+        public override void ThreadInitialization()
+        {
+            FileConnection.ThreadInitialization();
         }
 
         void CleanConnection<TChannel>(ClientBase<TChannel> c) where TChannel : class

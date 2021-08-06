@@ -12,6 +12,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleIntroducedIn(2, 7)]
     [RuleMaturityLevel(3)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.ManintheMiddle)]
     public class HeatlcheckRuleAnomalyLDAPSigningDisabled : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

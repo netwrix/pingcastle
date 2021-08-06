@@ -411,6 +411,27 @@ namespace PingCastle
         internal static extern int NetApiBufferFree(IntPtr Buffer);
 
 
+        [DllImport("Dnsapi.dll", CharSet = CharSet.Unicode, EntryPoint = "DnsQuery_W")]
+        internal static extern int DnsQuery([In] string recordName, [In] short recordType, [In] int options, [In] IntPtr servers, out IntPtr dnsResultList, [Out] IntPtr reserved);
+
+        [DllImport("Dnsapi.dll", CharSet = CharSet.Unicode)]
+        internal static extern void DnsRecordListFree([In] IntPtr dnsResultList, [In] bool dnsFreeType);
+
+        [DllImport("Crypt32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern bool CryptDecodeObject([In] uint dwCertEncodingType, [In] [MarshalAs(UnmanagedType.LPStr)] string lpszStructType, [In] byte[] pbEncoded, [In] uint cbEncoded, [In] uint dwFlags, [Out] IntPtr pvStructInfo, [In] [Out] ref uint pcbStructInfo);
+
+        public struct CERT_TEMPLATE_EXT
+        {
+            [MarshalAs(UnmanagedType.LPStr)]
+            public string pszObjId;
+
+            public uint dwMajorVersion;
+
+            public bool fMinorVersion;
+
+            public uint dwMinorVersion;
+        }
+
         #region convert command line to argc
         [DllImport("shell32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         static extern IntPtr CommandLineToArgvW([MarshalAs(UnmanagedType.LPWStr)] string lpCmdLine, out int pNumArgs);

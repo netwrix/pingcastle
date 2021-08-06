@@ -338,6 +338,10 @@ namespace PingCastle.ADWS
             Marshal.Copy(buffer, 0, dest, buffer.Length);
         }
 
+        public void ThreadInitialization()
+        {
+        }
+
         #region pinvoke
         internal const string SmbLibrary = "libPingCastlesmb";
         
@@ -463,6 +467,8 @@ namespace PingCastle.ADWS
             Dispose(false);
         }
         #endregion IDispose
+
+
     }
 
     internal class LinuxFileStream : Stream
@@ -478,6 +484,7 @@ namespace PingCastle.ADWS
             IntPtr mem = Marshal.AllocHGlobal(count);
             var result = smbc_read(descriptor, mem, count);
             Marshal.Copy(mem, buffer, offset, count);
+            Marshal.FreeHGlobal(mem);
             return result;
         }
 

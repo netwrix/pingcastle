@@ -28,10 +28,11 @@ namespace PingCastle.Scanners
             {"CSFalconService", "CrowdStrike Falcon Sensor Service"},
 
             {"CylanceSvc", "Cylance"},
-
+            {"ekm", "ESET"},
             {"epfw", "ESET"},
             {"epfwlwf", "ESET"},
             {"epfwwfp" , "ESET"},
+            {"EraAgentSvc", "ESET"},
 
             {"xagt" , "FireEye Endpoint Agent"},
 
@@ -119,7 +120,7 @@ namespace PingCastle.Scanners
             return "Computer\tService Found\tDescription";
         }
 
-        public override bool QueryForAdditionalParameterInInteractiveMode()
+        public override Program.DisplayState QueryForAdditionalParameterInInteractiveMode()
         {
             string input = null;
             customService.Clear();
@@ -243,6 +244,10 @@ Or just press enter to use the default.";
             finally
             {
                 NativeMethods.LsaClose(PolicyHandle);
+                for (int k = 0; k < names.Length; k++)
+                {
+                    names[k].Dispose();
+                }
             }
             return sb.ToString();
         }

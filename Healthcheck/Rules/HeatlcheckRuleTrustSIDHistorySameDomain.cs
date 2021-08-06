@@ -12,6 +12,8 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 50)]
     [RuleANSSI("R15", "paragraph.3.3.1.5")]
     [RuleDurANSSI(3, "sidhistory_present", "Accounts or groups with SID history set")]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.AccessTokenManipulationSIDHistoryInjection)]
     public class HeatlcheckRuleTrustSIDHistorySameDomain : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

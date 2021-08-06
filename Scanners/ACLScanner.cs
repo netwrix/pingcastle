@@ -1,6 +1,7 @@
 ﻿using PingCastle.ADWS;
 using PingCastle.Graph.Database;
 using PingCastle.Graph.Export;
+using PingCastle.Graph.Reporting;
 using PingCastle.misc;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ namespace PingCastle.Scanners
         public NetworkCredential Credential { get; private set; }
 
         List<KeyValuePair<SecurityIdentifier, string>> UsersToMatch;
-        public static List<string> UserList;
+        public static List<string> UserList = new List<string>();
 
         public void Initialize(string server, int port, NetworkCredential credential)
         {
@@ -88,7 +89,7 @@ namespace PingCastle.Scanners
                     DisplayAdvancement("Analyzing AD Objects");
                     adws.Enumerate(domainInfo.DefaultNamingContext, "(objectClass=*)", new string[] { "distinguishedName", "nTSecurityDescriptor" }, callback);
                     DisplayAdvancement("Analyzing files");
-                    CheckFilePermission(domainInfo, sw);
+                    CheckFilePermission(domainInfo, sw, adws);
                     DisplayAdvancement("Done");
                 }
             }
@@ -115,12 +116,12 @@ namespace PingCastle.Scanners
             UsersToMatch = new List<KeyValuePair<SecurityIdentifier, string>>();
             if (UserList.Count == 0)
             {
-                UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier("S-1-1-0"), "Everyone"));
-                UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier("S-1-5-7"), "Anonymous"));
-                UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier("S-1-5-11"), "Authenticated Users"));
-                UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier("S-1-5-32-545"), "Users"));
-                UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier(domainInfo.DomainSid.Value + "-513"), "Domain Users"));
-                UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier(domainInfo.DomainSid.Value + "-515"), "Domain Computers"));
+                UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier("S-1-1-0"), GraphObjectReference.Everyone));
+                UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier("S-1-5-7"), GraphObjectReference.Anonymous));
+                UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier("S-1-5-11"), GraphObjectReference.AuthenticatedUsers));
+                UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier("S-1-5-32-545"), GraphObjectReference.Users));
+                UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier(domainInfo.DomainSid.Value + "-513"), GraphObjectReference.DomainUsers));
+                UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier(domainInfo.DomainSid.Value + "-515"), GraphObjectReference.DomainComputers));
                 return;
             }
             foreach (var user in UserList)
@@ -144,10 +145,10 @@ namespace PingCastle.Scanners
             }
         }
 
-        public bool QueryForAdditionalParameterInInteractiveMode()
+        public Program.DisplayState QueryForAdditionalParameterInInteractiveMode()
         {
             string input = null;
-            UserList = new List<string>();
+            UserList.Clear();
             do
             {
                 ConsoleMenu.Title = "Enter users or groups to check";
@@ -164,7 +165,7 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
                     break;
                 }
             } while (true);
-            return true;
+            return Program.DisplayState.AskForServer;
         }
 
         private KeyValuePair<SecurityIdentifier, string>? MatchesUsersToCheck(IdentityReference Owner)
@@ -312,7 +313,7 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
             return false;
         }
 
-        void CheckFilePermission(ADDomainInfo domainInfo, StreamWriter sw)
+        void CheckFilePermission(ADDomainInfo domainInfo, StreamWriter sw, ADWebService adws)
         {
             var pathToCheck = new List<string>();
             foreach (var script in Directory.GetDirectories(@"\\" + domainInfo.DnsHostName + @"\SYSVOL\" + domainInfo.DomainName + @"\scripts", "*", SearchOption.TopDirectoryOnly))
@@ -333,6 +334,7 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
 
                 ThreadStart threadFunction = () =>
                 {
+                    adws.ThreadInitialization();
                     for (; ; )
                     {
                         string path = null;

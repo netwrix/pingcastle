@@ -79,6 +79,7 @@ namespace PingCastle.Scanners
             int memberRetourned;
 
             status = NativeMethods.SamConnect(ref serverName, out hServerHandle, SAM_SERVER_CONNECT | SAM_SERVER_LOOKUP_DOMAIN, 0);
+            serverName.Dispose();
             if (status != 0)
                 throw new Win32Exception(NativeMethods.LsaNtStatusToWinError(status));
             try

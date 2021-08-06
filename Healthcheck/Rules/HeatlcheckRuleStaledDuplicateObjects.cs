@@ -11,6 +11,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("S-Duplicate", RiskRuleCategory.StaleObjects, RiskModelCategory.Replication)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleMaturityLevel(4)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
     public class HeatlcheckRuleStaledDuplicateObjects : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

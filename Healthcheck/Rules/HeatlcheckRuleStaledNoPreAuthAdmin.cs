@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.PerDiscover, 5)]
     [RuleDurANSSI(1, "kerberos_properties_preauth_priv", "Kerberos pre-authentication disabled for privileged accounts")]
     [RuleIntroducedIn(2, 9)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.StealorForgeKerberosTicketsASREPRoasting)]
     public class HeatlcheckRuleStaledNoPreAuthAdmin : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

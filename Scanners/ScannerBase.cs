@@ -35,12 +35,14 @@ namespace PingCastle.Scanners
             Credential = credential;
         }
 
+        public string FileOrDirectory { get; set; }
+
         private static object _syncRoot = new object();
 
         abstract protected string GetCsvHeader();
         abstract protected string GetCsvData(string computer);
 
-        public virtual bool QueryForAdditionalParameterInInteractiveMode()
+        public virtual Program.DisplayState QueryForAdditionalParameterInInteractiveMode()
         {
             var choices = new List<ConsoleMenuItem>(){
                 new ConsoleMenuItem("all","This is a domain. Scan all computers."),
@@ -48,14 +50,17 @@ namespace PingCastle.Scanners
                 new ConsoleMenuItem("workstation","Scan all computers except servers."),
                 new ConsoleMenuItem("server","Scan all servers."),
                 new ConsoleMenuItem("domaincontrollers","Scan all domain controllers."),
+                new ConsoleMenuItem("file","Import items from a file (one computer per line)."),
             };
             ConsoleMenu.Title = "Select the scanning mode";
             ConsoleMenu.Information = "This scanner can collect all the active computers from a domain and scan them one by one automatically. Or scan only one computer";
             int choice = ConsoleMenu.SelectMenu(choices);
             if (choice == 0)
-                return false;
+                return Program.DisplayState.Exit;
             ScanningMode = choice;
-            return true;
+            if (choice == 6)
+                return Program.DisplayState.AskForFile;
+            return Program.DisplayState.AskForServer;
         }
 
         public void Export(string filename)
@@ -183,6 +188,11 @@ namespace PingCastle.Scanners
 
         List<string> GetListOfComputerToExplore()
         {
+            if (ScanningMode == 6)
+            {
+                DisplayAdvancement("Loading " + FileOrDirectory);
+                return new List<string>(File.ReadAllLines(FileOrDirectory));
+            }
             ADDomainInfo domainInfo = null;
 
             List<string> computers = new List<string>();

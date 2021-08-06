@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
     [RuleIntroducedIn(2, 9)]
     [RuleMaturityLevel(4)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.AccountDiscoveryLocalAccount)]
     public class HeatlcheckRuleAnomalyNoNetSessionHardening : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

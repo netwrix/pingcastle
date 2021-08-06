@@ -1,3 +1,39 @@
+2.10.0.0
+* change pre-win 2000 compabitility group to handle group rename
+* added a setting to change the LDAP page size (to test when the AD corruption message is showing)
+* update to bootstrap 4.6.0
+* add the ability to see the rules for each level in the maturity report
+* be more scoped when looking for sites GPO
+* fix: replace "admins" string in code, because they were some strings unmatched (especially in P-Kerberoasting & P-ServiceDomainAdmin)
+* fix S-PwdLastSet-45 S-PwdLastSet-90: the check was made against inactive computers instead of active ones
+* added the rule A-DnsZoneTransfert which checks for DNS Zone Transfers
+* added the rule A-LAPS-Joined-Computers which checks for manually joined computers - the owner of the computer objects see the LAPS password
+* fix P-AdminNum for a better wording if it matches
+* fix unixpassword LDAP search query for optimization (looks only on active user account)
+* added the MS FAQ for Krbtgt reset in the A-Krbtgt rule links
+* fix a non timeout issue when SSL connection are "suspensed" by a network device
+* fix when using a custom identity, forward the impersonation token to all threads launched by the application
+* added the rule A-CertTempAgent, A-CertTempAnyPurpose, A-CertTempAnyone, A-CertTempCustomSubject for certificate template abuse
+* added Mitre Att&ck mapping & reports
+* added the rule A-PreWin2000AuthenticatedUsers for information for the printnightmare problem
+* added a detail by OS (Windows 10 edition / Windows 2008 R2)
+* added the rule S-OS-W10 for Windows 10 non supported versions
+* added details for DC certificate
+* added DC certificates to A-CertROCA and A-WeakRSARootCert
+* change the algorithm which finds the DnsAdmin group to be more flexible for translation and moves
+* fix password authentication that was not working in some cases
+* for honeypot accounts, change P-Kerberoasting to take it into account
+* fix NetCease check to be case insensitive (thanks to @ralish)
+* added an option for scanners to use a file as input instead of querying the AD
+* added an export section to export users or computers (a scanner was already present and moved to this section)
+* added the rule S-ADRegistrationSchema for schema class check à la CVE-2021-34470
+* fixed P-AdminLogin that wasn't effective (this check was active only during the first 35 days of the domain)
+* defer DataTable initialization (css for table) to avoid any problem in table stop javascript
+* fix a bug when msDS-GroupManagedServiceAccount and msDS-ManagedServiceAccount were not counted as group member
+* fix a problem in P-ServiceDomainAdmin to look individually at each password change and to set them as exception if needed
+* change the rule detail rendering to avoid issues with strange items
+* added the option --datefile
+
 2.9.2.0
 * modify P-UnkownDelegation to not be triggered with SID having their RID < 1000 (RID is the last number)
 * modify A-AuditDC to not request simple audit policies anymore and removing the need for Other Account Logon Events reserved for future use
@@ -31,6 +67,8 @@
 * Do not raise an alert when the account sensitive checkbox is not checked but the user is in protected users. Thanks Fanaw.
 * Do not raise an alert if there is only one user not in protected users as this is a regular admin practice. Thanks Oliver-André
 * Add the possibility to have DC in the honeyPot account. Typically used for riverbed devices for example
+* specify in the rule A-NTFRSOnSysvol that NTFRS is supported up to Windows 2022 at this time - also match only if there is a DC < win 2019
+* add new definition of the ESET AV for AV scanner module
 
 2.9.0.0
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -113,6 +151,7 @@ Information: the 3.0 version of PingCastle will run by default on .net 4 instead
 * added the rule A-AuditPowershell to check for powershell auditing (informative)
 * added the rule S-OS-Vista to check for Vista presence (which is not supported anymore). Windows 7 & 2008 added after extended support stops.
 * added honey pot setting to avoid honey pot accounts to be in error
+* added a new view for the DC certificates
 
 2.7.1.0
 * update the TGT delegation algorithm after the July update (new flag CROSS_ORGANIZATION_ENABLE_TGT_DELEGATION)

@@ -12,6 +12,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 40)]
     [RuleCERTFR("CERTFR-2005-INF-003", "SECTION00032400000000000000")]
     [RuleMaturityLevel(2)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.UpdateSoftware)]
     public class HeatlcheckRuleStaledObsolete2000 : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

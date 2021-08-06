@@ -19,6 +19,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 15, Order: 8)]
     [RuleANSSI("R40", "paragraph.3.6.3.1")]
     [RuleMaturityLevel(3)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
     public class HeatlcheckRuleAnomalyAdminSDHolder : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

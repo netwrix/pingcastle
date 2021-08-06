@@ -1,4 +1,5 @@
-﻿//
+﻿using PingCastle.Graph.Reporting;
+//
 // Copyright (c) Ping Castle. All rights reserved.
 // https://www.pingcastle.com
 //
@@ -13,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("S-ADRegistration", RiskRuleCategory.StaleObjects, RiskModelCategory.Provisioning)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
     [RuleMaturityLevel(3)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.UserAccountManagement)]
     public class HeatlcheckRuleStaleADRegistrationEnabled : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
@@ -43,10 +45,10 @@ namespace PingCastle.Healthcheck.Rules
                 }
                 if (right.Privilege == "SeMachineAccountPrivilege")
                 {
-                    if (right.User == "Everyone"
-                        || right.User == "Authenticated Users"
-                        || right.User == "Users"
-                        || right.User == "Anonymous"
+                    if (right.User == GraphObjectReference.Everyone
+                        || right.User == GraphObjectReference.AuthenticatedUsers
+                        || right.User == GraphObjectReference.Users
+                        || right.User == GraphObjectReference.Anonymous
                         )
                     {
                         Trace.WriteLine("SeMachineAccountPrivilege found in GPO 1 " + right.GPOName);

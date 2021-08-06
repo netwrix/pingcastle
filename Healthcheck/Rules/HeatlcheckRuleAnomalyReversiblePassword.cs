@@ -11,6 +11,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("A-ReversiblePwd", RiskRuleCategory.Anomalies, RiskModelCategory.PasswordRetrieval)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
     [RuleDurANSSI(3, "reversible_password", "Accounts with passwords stored using reversible encryption")]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.BruteForcePasswordCracking)]
     public class HeatlcheckRuleAnomalyReversiblePassword : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

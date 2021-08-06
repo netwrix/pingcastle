@@ -17,6 +17,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
     [RuleDurANSSI(1, "certificates_vuln", "Weak or vulnerable certificates")]
     [RuleIntroducedIn(2, 9)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.WeakenEncryptionReduceKeySpace)]
     public class HeatlcheckRuleAnomalyCertROCA : RuleBase<HealthcheckData>
     {
 
@@ -41,6 +42,34 @@ namespace PingCastle.Healthcheck.Rules
                     if (ROCAVulnerabilityTester.IsVulnerable(rsaparams))
                     {
                         AddRawDetail(data.Source, cert.Subject, cert.NotAfter.ToString("u"));
+                    }
+                }
+            }
+            if (healthcheckData.DomainControllers != null)
+            {
+                foreach (var dc in healthcheckData.DomainControllers)
+                {
+                    if (dc.LDAPCertificate != null && dc.LDAPCertificate.Length > 0)
+                    {
+                        X509Certificate2 cert = null;
+                        RSA key = null;
+                        try
+                        {
+                            cert = new X509Certificate2(dc.LDAPCertificate);
+                            key = cert.PublicKey.Key as RSA;
+                        }
+                        catch (Exception)
+                        {
+                            Trace.WriteLine("Non RSA key detected in certificate");
+                        }
+                        if (key != null)
+                        {
+                            RSAParameters rsaparams = key.ExportParameters(false);
+                            if (ROCAVulnerabilityTester.IsVulnerable(rsaparams))
+                            {
+                                AddRawDetail("DC " + dc.DCName, cert.Subject, cert.NotAfter.ToString("u"));
+                            }
+                        }
                     }
                 }
             }

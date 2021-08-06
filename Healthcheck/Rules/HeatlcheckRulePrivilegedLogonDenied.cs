@@ -1,4 +1,5 @@
-﻿//
+﻿using PingCastle.Graph.Reporting;
+//
 // Copyright (c) Ping Castle. All rights reserved.
 // https://www.pingcastle.com
 //
@@ -13,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 1)]
     [RuleIntroducedIn(2, 8)]
     [RuleMaturityLevel(4)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
     public class HeatlcheckRulePrivilegedLogonDenied : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
@@ -20,15 +22,15 @@ namespace PingCastle.Healthcheck.Rules
             if (healthcheckData.UserAccountData.NumberActive > 200 && healthcheckData.ComputerAccountData.NumberActive > 200)
             {
                 var dangerousGroups = new List<string>() {
-                    "Domain Admins",
-                    "Administrators",
+                    GraphObjectReference.DomainAdministrators,
+                    GraphObjectReference.Administrators,
                 };
                 bool restrictionFound = false;
                 foreach (var policy in healthcheckData.GPPLoginAllowedOrDeny)
                 {
                     if (policy.Privilege == "SeDenyRemoteInteractiveLogonRight" || policy.Privilege == "SeDenyInteractiveLogonRight")
                     {
-                        if (policy.User == "Administrators" || policy.User == "Domain Admins")
+                        if (policy.User == GraphObjectReference.Administrators || policy.User == GraphObjectReference.DomainAdministrators)
                         {
                             restrictionFound = true;
                             break;

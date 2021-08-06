@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleANSSI("R26", "subsection.3.5")]
     [RuleANSSI("R30", "subsubsection.3.5.7")]
     [RuleDurANSSI(1, "privileged_members", "Large privileged group member count")]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
     public class HeatlcheckRulePrivilegedAdminNumber : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
@@ -23,11 +24,11 @@ namespace PingCastle.Healthcheck.Rules
                 return 0;
             if ((healthcheckData.AllPrivilegedMembers.Count * 100 / healthcheckData.UserAccountData.NumberActive) > 10)
             {
-                return 1;
+                return healthcheckData.AllPrivilegedMembers.Count;
             }
             if (healthcheckData.AllPrivilegedMembers.Count > 50)
             {
-                return 1;
+                return healthcheckData.AllPrivilegedMembers.Count;
             }
             return 0;
         }

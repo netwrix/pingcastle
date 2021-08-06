@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleIntroducedIn(2, 7)]
     [RuleSTIG("V-4408", "The domain controller must be configured to allow reset of machine account passwords.", STIGFramework.ActiveDirectoryService2008)]
     [RuleMaturityLevel(2)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
     public class HeatlcheckRuleAnomalyDCRefuseComputerPwdChange : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

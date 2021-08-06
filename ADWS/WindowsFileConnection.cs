@@ -26,6 +26,8 @@ namespace PingCastle.ADWS
         string PathCombine(string path1, string path2);
         List<string> GetAllSubDirectories(string path);
         List<string> GetAllSubFiles(string path);
+
+        void ThreadInitialization();
     }
 
     internal class WindowsFileConnection : IFileConnection
@@ -78,11 +80,11 @@ namespace PingCastle.ADWS
         WindowsIdentity identity;
         WindowsImpersonationContext context;
 
-        public WindowsFileConnection(NetworkCredential credential)
+        public WindowsFileConnection(NetworkCredential credential, string server)
         {
             if (credential != null)
             {
-                identity = GetWindowsIdentityForUser(credential);
+                identity = GetWindowsIdentityForUser(credential, server);
                 context = identity.Impersonate();
             }
         }
@@ -101,25 +103,36 @@ namespace PingCastle.ADWS
         [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern bool LogonUser(string lpszUsername, string lpszDomain, string lpszPassword, int dwLogonType, int dwLogonProvider, ref IntPtr phToken);
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool CloseHandle(IntPtr hObject);
+
         // logon types
         const int LOGON32_LOGON_NEW_CREDENTIALS = 9;
 
         // logon providers
         const int LOGON32_PROVIDER_DEFAULT = 0;
 
-        public static WindowsIdentity GetWindowsIdentityForUser(NetworkCredential credential, string optionalRemoteserver = null)
+        public static WindowsIdentity GetWindowsIdentityForUser(NetworkCredential credential, string remoteserver)
         {
             IntPtr token = IntPtr.Zero;
-            string domain = credential.Domain;
-            if (String.IsNullOrEmpty(domain))
-                domain = optionalRemoteserver;
-            Trace.WriteLine("Preparing to login with login = " + credential.UserName + " domain = " + domain);
-            bool isSuccess = LogonUser(credential.UserName, (credential.UserName.Contains("@") ? null : domain), credential.Password, LOGON32_LOGON_NEW_CREDENTIALS, LOGON32_PROVIDER_DEFAULT, ref token);
+            Trace.WriteLine("Preparing to login with login = " + credential.UserName + " remoteserver = " + remoteserver);
+            var szDomain = credential.Domain;
+            if (string.IsNullOrEmpty(szDomain))
+            {
+                if (!credential.UserName.Contains("@"))
+                {
+                    szDomain = remoteserver;
+                }
+            }
+
+            bool isSuccess = LogonUser(credential.UserName, szDomain, credential.Password, LOGON32_LOGON_NEW_CREDENTIALS, LOGON32_PROVIDER_DEFAULT, ref token);
             if (!isSuccess)
             {
                 throw new Win32Exception();
             }
-            return new WindowsIdentity(token);
+            var output = new WindowsIdentity(token);
+            CloseHandle(token);
+            return output;
         }
 
         #region IDispose
@@ -200,6 +213,13 @@ namespace PingCastle.ADWS
         public List<string> GetAllSubFiles(string path)
         {
             return new List<string>(Directory.GetFiles(path, "*.*", SearchOption.AllDirectories));
+        }
+
+
+        public void ThreadInitialization()
+        {
+            if (identity != null)
+                identity.Impersonate();
         }
     }
 }

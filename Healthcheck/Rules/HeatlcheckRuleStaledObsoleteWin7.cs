@@ -16,6 +16,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleCERTFR("CERTFR-2005-INF-003", "SECTION00032400000000000000")]
     [RuleIntroducedIn(2, 9)]
     [RuleMaturityLevel(2)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.UpdateSoftware)]
     public class HeatlcheckRuleStaledObsoleteWin7 : RuleBase<HealthcheckData>
     {
         public static bool IPaidSupport { get; set; }

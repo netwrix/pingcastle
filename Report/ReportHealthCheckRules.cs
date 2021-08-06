@@ -108,6 +108,8 @@ $(document).ready(function(){
             GenerateRuleAccordeon(RiskRuleCategory.Trusts);
             GenerateSubSection("Anomalies");
             GenerateRuleAccordeon(RiskRuleCategory.Anomalies);
+            GenerateSubSection("Mitre Att&ck mapping");
+            GenerateMitreSection();
             GenerateSubSection("ANSSI Rules mapping");
             GenerateANSSISection();
         }
@@ -278,10 +280,20 @@ $(document).ready(function(){
         private void GenerateIndicatorPanelDetail(RiskModelCategory category, RuleBase<HealthcheckData> hcrule)
         {
             string safeRuleId = hcrule.RiskId.Replace("$", "dollar");
-            GenerateAccordionDetail("rules" + safeRuleId, "rules" + category.ToString(), hcrule.Title + " (" + hcrule.RiskId + ")", null, true,
+            object[] frameworks;
+            string prefix = string.Empty;
+            frameworks = hcrule.GetType().GetCustomAttributes(typeof(RuleMitreAttackMitigationAttribute), true);
+            if (frameworks != null && frameworks.Length > 0)
+                prefix += "[M]";
+            frameworks = hcrule.GetType().GetCustomAttributes(typeof(RuleMitreAttackTechniqueAttribute), true);
+            if (frameworks != null && frameworks.Length > 0)
+                prefix += "[T]";
+
+            GenerateAccordionDetail("rules" + safeRuleId, "rules" + category.ToString(), prefix + hcrule.Title + " (" + hcrule.RiskId + ")", null,
                 () =>
                 {
                     Add("<h3>");
+                    
                     Add(hcrule.Title);
                     Add("</h3>\r\n<strong>Rule ID:</strong><p class=\"text-justify\">");
                     Add(hcrule.RiskId);
@@ -311,6 +323,147 @@ $(document).ready(function(){
                         Add("</p>");
                     }
                 });
+        }
+
+        private void GenerateMitreSection()
+        {
+            AddParagraph("This is the mapping of the Mitre Att&ck framework with PingCastle rules.");
+            int covered = 0, notcovered = 0;
+            foreach (var rule in RuleSet<HealthcheckData>.Rules)
+            {
+                object[] frameworks = rule.GetType().GetCustomAttributes(typeof(RuleMitreAttackTechniqueAttribute), true);
+                if (frameworks == null || frameworks.Length == 0)
+                {
+                    frameworks = rule.GetType().GetCustomAttributes(typeof(RuleMitreAttackMitigationAttribute), true);
+                    if (frameworks == null || frameworks.Length == 0)
+                    {
+                        notcovered++;
+                    }
+                    else
+                    {
+                        covered++;
+                    }
+                }
+                else
+                {
+                    covered++;
+                }
+            }
+            AddParagraph("Number of rules covered: " + covered);
+            AddParagraph("Number of rules not covered: " + notcovered);
+            AddParagraph("<h3>Techniques</h3>");
+            GenerateMitreTechnique();
+            AddParagraph("<h3>Mitigations</h3>");
+            GenerateMitreMitigation();
+        }
+
+        void GenerateMitreTechnique()
+        {
+            var reference = new Dictionary<RuleMitreAttackTechniqueAttribute, List<RuleBase<HealthcheckData>>>();
+            int notcovered = 0;
+            foreach (var rule in RuleSet<HealthcheckData>.Rules)
+            {
+                object[] frameworks = rule.GetType().GetCustomAttributes(typeof(RuleMitreAttackTechniqueAttribute), true);
+                if (frameworks == null || frameworks.Length == 0)
+                    notcovered++;
+                foreach (RuleMitreAttackTechniqueAttribute f in frameworks)
+                {
+                    if (!reference.ContainsKey(f))
+                    {
+                        reference[f] = new List<RuleBase<HealthcheckData>>();
+                    }
+                    reference[f].Add(rule);
+                }
+            }
+            Add("<p>Number of Mitre rules matched: ");
+            Add(reference.Count);
+            Add("</p>");
+            Add("<p>Number of PingCastle rules not covered: ");
+            Add(notcovered);
+            Add("</p>");
+
+            Add("<div class='row'>");
+            Add("<div class='col-lg-12'>");
+
+            var keys = new List<RuleMitreAttackTechniqueAttribute>(reference.Keys);
+            keys.Sort((RuleMitreAttackTechniqueAttribute a, RuleMitreAttackTechniqueAttribute b) => { return string.Compare(a.Label, b.Label); });
+            foreach (MitreAttackMainTechnique mainTechnique in Enum.GetValues(typeof(MitreAttackMainTechnique)))
+            {
+                var description = ReportHelper.GetEnumDescription(mainTechnique);
+                AddParagraph("<strong>" + description + "</strong>");
+                foreach (var l in keys)
+                {
+                    if (l.MainTechnique != mainTechnique)
+                        continue;
+                    Add("<p><a href=");
+                    Add(((RuleFrameworkReference)l).URL);
+                    Add(">");
+                    Add(((RuleFrameworkReference)l).Label);
+                    Add("</a> [");
+                    Add(reference[l].Count);
+                    Add("]</p>");
+                    reference[l].Sort((RuleBase<HealthcheckData> a, RuleBase<HealthcheckData> b) => { return string.CompareOrdinal(a.RiskId, b.RiskId); });
+                    foreach (var k in reference[l])
+                    {
+                        Add(" <span class=\"text-monospace\">");
+                        Add(k.RiskId);
+                        Add("</span>");
+                    }
+                }
+            }
+            Add("</div>");
+            Add("</div>");
+        }
+
+        void GenerateMitreMitigation()
+        {
+            var reference = new Dictionary<RuleMitreAttackMitigationAttribute, List<RuleBase<HealthcheckData>>>();
+            int notcovered = 0;
+            foreach (var rule in RuleSet<HealthcheckData>.Rules)
+            {
+                object[] frameworks = rule.GetType().GetCustomAttributes(typeof(RuleMitreAttackMitigationAttribute), true);
+                if (frameworks == null || frameworks.Length == 0)
+                    notcovered++;
+                foreach (RuleMitreAttackMitigationAttribute f in frameworks)
+                {
+                    if (!reference.ContainsKey(f))
+                    {
+                        reference[f] = new List<RuleBase<HealthcheckData>>();
+                    }
+                    reference[f].Add(rule);
+                }
+            }
+            Add("<p>Number of Mitre rules matched: ");
+            Add(reference.Count);
+            Add("</p>");
+            Add("<p>Number of PingCastle rules not covered: ");
+            Add(notcovered);
+            Add("</p>");
+
+            Add("<div class='row'>");
+            Add("<div class='col-lg-12'>");
+
+            var keys = new List<RuleMitreAttackMitigationAttribute>(reference.Keys);
+            keys.Sort( (RuleMitreAttackMitigationAttribute a, RuleMitreAttackMitigationAttribute b) => { return string.Compare(a.Label, b.Label);});
+            foreach (var l in keys)
+            {
+                Add("<p><a href=");
+                Add(((RuleFrameworkReference)l).URL);
+                Add(">");
+                Add(((RuleFrameworkReference)l).Label);
+                Add("</a> [");
+                Add(reference[l].Count);
+                Add("]</p>");
+                reference[l].Sort((RuleBase<HealthcheckData> a, RuleBase<HealthcheckData> b) => { return string.CompareOrdinal(a.RiskId, b.RiskId); });
+                foreach (var k in reference[l])
+                {
+                    Add(" <span class=\"text-monospace\">");
+                    Add(k.RiskId);
+                    Add("</span>");
+                }
+            }
+            Add("</div>");
+            Add("</div>");
         }
 
         private class DurANSSIRegroup

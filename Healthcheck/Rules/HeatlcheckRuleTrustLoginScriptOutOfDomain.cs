@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("T-ScriptOutOfDomain", RiskRuleCategory.Trusts, RiskModelCategory.TrustImpermeability)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
     [RuleMaturityLevel(2)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.ExploitationofRemoteServices)]
     public class HeatlcheckRuleTrustLoginScriptOutOfDomain : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

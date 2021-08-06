@@ -319,11 +319,76 @@ namespace PingCastle.Report
 ");
         }
 
+        public IActionPlan ActionPlanOrchestrator { get; set; }
+
+        protected void GenerateAccordionDetailForRule(string id, string dataParent, string title, HealthcheckRiskRule rule, RuleBase<HealthcheckData> hcrule, GenerateContentDelegate content)
+        {
+            GenerateAccordionDetail(id, dataParent, title,
+                () =>
+                {
+                    if (rule.Points == 0)
+                    {
+                        Add(@"<i class=""float-right"">Informative rule</i>");
+                    }
+                    else
+                    {
+                        Add(@"<i class=""float-right""><span class='float-right'>+ ");
+                        Add(rule.Points);
+                        Add(@" Point(s)</span>");
+                        if (ActionPlanOrchestrator != null)
+                        {
+                            ActionPlanOrchestrator.GenerateMainActionPlan(sb, rule, hcrule);
+                        }
+                        Add("</i>");
+                    }
+                }, content);
+        }
+
+        List<string> GetTokens(List<string> details)
+        {
+            if (details == null || details.Count == 0 || string.IsNullOrEmpty(details[0]))
+                return null;
+            var tokens = GetTokens(details[0]);
+            for (int i = 1; i < details.Count; i++)
+            {
+                var t = GetTokens(details[i]);
+                var toRemove = new List<string>();
+                foreach (var t1 in tokens)
+                {
+                    if (!t.Contains(t1))
+                        toRemove.Add(t1);
+                }
+                foreach (var t1 in toRemove)
+                {
+                    tokens.Remove(t1);
+                }
+            }
+            return tokens;
+        }
+
+        List<string> GetTokens(string detail)
+        {
+            if (string.IsNullOrEmpty(detail))
+                return null;
+            var tokens = new List<string>();
+            var test = detail.Replace("Domain controller:", "Domain_controller:").Split(' ');
+            if (test.Length <= 1 || !test[0].EndsWith(":"))
+                return null;
+            for (int i = 0; i < test.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(test[i]) && test[i].EndsWith(":"))
+                {
+                    tokens.Add(test[i]);
+                }
+            }
+            return tokens;
+        }
+
         protected void GenerateIndicatorPanelDetail(string category, HealthcheckRiskRule rule, string optionalId = null)
         {
             string safeRuleId = rule.RiskId.Replace("$", "dollar");
-            var hcrule = RuleSet<T>.GetRuleFromID(rule.RiskId);
-            GenerateAccordionDetail("rules" + optionalId + safeRuleId, "rules" + category, rule.Rationale, rule.Points, true,
+            var hcrule = RuleSet<HealthcheckData>.GetRuleFromID(rule.RiskId);
+            GenerateAccordionDetailForRule("rules" + optionalId + safeRuleId, "rules" + category, rule.Rationale, rule, hcrule,
                 () =>
                 {
                     if (hcrule == null)
@@ -354,7 +419,7 @@ namespace PingCastle.Report
                     if ((rule.Details != null && rule.Details.Count > 0) || (hcrule != null && !String.IsNullOrEmpty(hcrule.ReportLocation)))
                     {
                         Add("<strong>Details:</strong>");
-                        if (!String.IsNullOrEmpty(hcrule.ReportLocation))
+                        if (hcrule != null && !String.IsNullOrEmpty(hcrule.ReportLocation))
                         {
                             Add("<p>");
                             Add(hcrule.ReportLocation);
@@ -362,17 +427,9 @@ namespace PingCastle.Report
                         }
                         if (rule.Details != null && rule.Details.Count > 0 && !string.IsNullOrEmpty(rule.Details[0]))
                         {
-                            var test = rule.Details[0].Replace("Domain controller:", "Domain_controller:").Split(' ');
-                            if (test.Length > 1 && test[0].EndsWith(":"))
+                            var tokens = GetTokens(rule.Details);
+                            if (tokens != null && tokens.Count > 0)
                             {
-                                var tokens = new List<string>();
-                                for (int i = 0; i < test.Length; i++)
-                                {
-                                    if (!string.IsNullOrEmpty(test[i]) && test[i].EndsWith(":"))
-                                    {
-                                        tokens.Add(test[i]);
-                                    }
-                                }
                                 Add(@"<div class=""row"">
 			<div class=""col-md-12 table-responsive"">
 				<table class=""table table-striped table-bordered"">
@@ -382,6 +439,10 @@ namespace PingCastle.Report
                                     Add("<th>");
                                     AddEncoded(token.Replace("Domain_controller:", "Domain controller:").Substring(0, token.Length - 1));
                                     Add("</th>");
+                                }
+                                if (ActionPlanOrchestrator != null)
+                                {
+                                    Add("<th>Action Plan</th>");
                                 }
                                 Add("</tr></thead><tbody>");
                                 foreach (var d in rule.Details)
@@ -406,6 +467,12 @@ namespace PingCastle.Report
                                         }
                                     }
                                     Add("</td>");
+                                    if (ActionPlanOrchestrator != null)
+                                    {
+                                        Add("<td>");
+                                        ActionPlanOrchestrator.GenerateDetailledActionPlan(sb, rule, hcrule, d);
+                                        Add("</td>");
+                                    }
                                     Add("</tr>");
                                 }
                                 Add("</tbody></table></div></div>");

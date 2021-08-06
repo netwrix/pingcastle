@@ -13,6 +13,8 @@ namespace PingCastle.Healthcheck.Rules
     [RuleANSSI("R18", "subsubsection.3.3.2")]
     [RuleIntroducedIn(2, 6)]
     [RuleDurANSSI(2, "delegation_t4d", "Unconstrained authentication delegation")]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.ForcedAuthentication)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
     public class HeatlcheckRulePrivilegedUnconstrainedDelegation : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

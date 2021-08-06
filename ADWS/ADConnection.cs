@@ -53,6 +53,7 @@ namespace PingCastle.ADWS
         {
             try
             {
+                Trace.WriteLine("Encoding sid: " + sid);
                 var realsid = new System.Security.Principal.SecurityIdentifier(sid);
                 var bytesid = new byte[realsid.BinaryLength];
                 realsid.GetBinaryForm(bytesid, 0);
@@ -71,5 +72,8 @@ namespace PingCastle.ADWS
 
         public abstract IFileConnection FileConnection {get;}
 
+
+
+        public abstract void ThreadInitialization();
     }
 }

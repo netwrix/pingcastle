@@ -11,6 +11,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("T-Downlevel", RiskRuleCategory.Trusts, RiskModelCategory.OldTrustProtocol)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
     [RuleMaturityLevel(3)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
     public class HeatlcheckRuleTrustDownlevel : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

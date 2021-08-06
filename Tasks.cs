@@ -5,6 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.Data;
+using PingCastle.Exports;
 using PingCastle.Healthcheck;
 using PingCastle.misc;
 using PingCastle.Report;
@@ -49,6 +50,7 @@ namespace PingCastle
         public DateTime FilterReportDate = DateTime.MaxValue;
         public bool smtpTls;
         public Type Scanner;
+        public Type Export;
         public string apiEndpoint;
         public string apiKey;
         public bool AnalyzeReachableDomains;
@@ -76,7 +78,11 @@ namespace PingCastle
                         string name = pi.GetValue(scanner, null) as string;
                         DisplayAdvancement("Running scanner " + name);
                         scanner.Initialize(Server, Port, Credential);
-                        scanner.Export("ad_scanner_" + name + "_" + Server + ".txt");
+                        if (scanner as ScannerBase != null)
+                            ((ScannerBase)scanner).FileOrDirectory = FileOrDirectory;
+                        string file = "ad_scanner_" + name + "_" + Server + ".txt";
+                        scanner.Export(file);
+                        DisplayAdvancement("Results saved to " + new FileInfo(file).FullName);
                     }
                 );
         }
@@ -728,7 +734,8 @@ namespace PingCastle
                                     Trace.WriteLine(ex.GetType());
                                     Trace.WriteLine(ex.Message);
                                     Trace.WriteLine(ex.StackTrace);
-                                    WriteInRed(report.Key + "-" + ex.Message);
+                                    WriteInRed(report.Key);
+                                    DisplayException(null, ex);
                                 }
                             }
                         }
@@ -828,6 +835,24 @@ This is the PingCastle program sending reports for:
                     {
                         var bot = new PingCastle.Bot.Bot();
                         bot.Run(botPipe);
+                    }
+            );
+        }
+
+        public bool ExportTask()
+        {
+            return StartTask("Running Export",
+                    () =>
+                    {
+
+                        PropertyInfo pi = Export.GetProperty("Name");
+                        IExport export = PingCastleFactory.LoadExport(Export);
+                        string name = pi.GetValue(export, null) as string;
+                        DisplayAdvancement("Running export " + name);
+                        export.Initialize(Server, Port, Credential);
+                        string file = "ad_export_" + name + "_" + Server + ".txt";
+                        export.Export(file);
+                        DisplayAdvancement("Results saved to " + new FileInfo(file).FullName);
                     }
             );
         }

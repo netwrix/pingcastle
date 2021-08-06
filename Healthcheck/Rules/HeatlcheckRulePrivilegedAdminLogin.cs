@@ -11,11 +11,13 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("P-AdminLogin", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AdminControl)]
     [RuleComputation(RuleComputationType.TriggerIfLessThan, 20, Threshold: 35)]
     [RuleMaturityLevel(3)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
     public class HeatlcheckRulePrivilegedAdminLogin : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            if (healthcheckData.DomainCreation.AddDays(35) < healthcheckData.GenerationDate)
+            // avoid this check on domains created less than 35 days ago
+            if (healthcheckData.DomainCreation.AddDays(35) > healthcheckData.GenerationDate)
             {
                 return 100;
             }

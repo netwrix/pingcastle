@@ -330,6 +330,11 @@ namespace PingCastle.ADWS
             }
         }
 
+        public void ThreadInitialization()
+        {
+            connection.ThreadInitialization();
+        }
+
         #region IDispose
         public void Dispose()
         {
@@ -370,6 +375,5 @@ namespace PingCastle.ADWS
             Dispose(false);
         }
         #endregion IDispose
-
     }
 }

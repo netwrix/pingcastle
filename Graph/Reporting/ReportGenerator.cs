@@ -827,11 +827,12 @@ namespace PingCastle.Graph.Reporting
 
         private bool IsNodeTypeAUserNode(string type)
         {
+            // type is lowercase
             switch (type)
             {
                 case "user":
-                case "msDS-GroupManagedServiceAccount":
-                case "msDS-ManagedServiceAccount":
+                case "msds-groupmanagedserviceaccount":
+                case "msds-managedserviceaccount":
                 case "inetorgperson":
                     return true;
                 default:
@@ -892,7 +893,7 @@ namespace PingCastle.Graph.Reporting
                         links[link.FromId].Add(link);
 
                         var node = storage.RetrieveNode(link.ToId);
-                        if (!IsStopNode(node) && tree[distance - 1].Contains(link.FromId) && !tree[distance].Contains(link.ToId))
+                        if (tree[distance - 1].Contains(link.FromId) && !tree[distance].Contains(link.ToId))
                         {
                             tree[distance].Add(link.ToId);
                         }

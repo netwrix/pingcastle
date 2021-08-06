@@ -16,6 +16,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
     [RuleDurANSSI(1, "certificates_vuln", "Weak or vulnerable certificates")]
     [RuleIntroducedIn(2, 9)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.WeakenEncryptionReduceKeySpace)]
     public class HeatlcheckRuleAnomalyCertWeakDSA : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

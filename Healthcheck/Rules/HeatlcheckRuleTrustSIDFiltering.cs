@@ -19,6 +19,8 @@ namespace PingCastle.Healthcheck.Rules
     //[RuleBSI("M 4.314")]
     [RuleDurANSSI(1, "trusts_forest_sidhistory", "Outbound forest trust relationships with sID History enabled")]
     [RuleDurANSSI(1, "trusts_domain_notfiltered", "Unfiltered outbound domain trust relationship")]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.AccessTokenManipulationSIDHistoryInjection)]
     public class HeatlcheckRuleTrustSIDFiltering : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData, ICollection<DomainKey> AllowedMigrationDomains)

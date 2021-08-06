@@ -15,6 +15,8 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.PerDiscoverWithAMinimumOf, 5, Threshold: 15)]
     [RuleANSSI("R15", "paragraph.3.3.1.5")]
     [RuleMaturityLevel(3)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.AccessTokenManipulationSIDHistoryInjection)]
     public class HeatlcheckRuleStaledSIDHistory : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData, ICollection<DomainKey> SourceDomains)

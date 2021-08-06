@@ -14,6 +14,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
     [RuleIntroducedIn(2, 8)]
     [RuleMaturityLevel(3)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.Audit)]
     public class HeatlcheckRuleAnomalyAuditDC : RuleBase<HealthcheckData>
     {
         private class RequiredSimple

@@ -13,6 +13,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleSTIG("V-78131", "Accounts with domain level administrative privileges must be members of the Protected Users group in domains with a domain functional level of Windows 2012 R2 or higher.")]
     [RuleCERTFR("CERTFR-2017-ALE-012")]
     [RuleMaturityLevel(3)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
     public class HeatlcheckRuleAnomalySchemaProtectedUsers : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

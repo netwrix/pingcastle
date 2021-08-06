@@ -121,7 +121,7 @@
     <value>The purpose is to ensure that the SMB version 2 protocol has the signature enabled when communicating with domain controllers</value>
   </data>
   <data name="A_SMB2SignatureNotEnabled_Solution" xml:space="preserve">
-    <value>Enable the group policy "Digitally sign communications (if client agrees)" or check for any policy which may alter the server settings</value>
+    <value>Enable the group policy "Digitally sign communications (if client agrees)" or check for any policy which may alter the server settings. See the &lt;a href="https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/smbv1-microsoft-network-server-digitally-sign-communications-if-client-agrees"&gt;official documentation&lt;/a&gt; for more information.</value>
   </data>
   <data name="A_SMB2SignatureNotEnabled_Rationale" xml:space="preserve">
     <value>{count} Domain Controller(s) have been found where SMB signature is not enabled</value>
@@ -133,7 +133,7 @@
     <value>The purpose is to ensure that the SMB version 2 protocol has the signature enforced when communicating with domain controllers</value>
   </data>
   <data name="A_SMB2SignatureNotRequired_Solution" xml:space="preserve">
-    <value>Enable the group policy "Digitally sign communications (always)" or check for any policy which may alter the server settings</value>
+    <value>Enable the group policy "Digitally sign communications (always)" or check for any policy which may alter the server settings. See the &lt;a href="https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/microsoft-network-server-digitally-sign-communications-always"&gt;official documentation&lt;/a&gt; for more information.</value>
   </data>
   <data name="A_SMB2SignatureNotRequired_Rationale" xml:space="preserve">
     <value>{count} Domain Controller(s) have been found where SMB signature is not enforced</value>
@@ -166,7 +166,7 @@
     <value>The purpose is to ensure that the schema has been updated for the creation of Protected Users group.</value>
   </data>
   <data name="A_ProtectedUsers_Solution" xml:space="preserve">
-    <value>The Protected Users group is automatically created when a Windows 2012 R2 domain controller is installed and upgraded to a PDC (primary DC). The group is then be automatically created and replicated.
+    <value>The Protected Users group is automatically created when the PDC (primary DC) emulator role is transferred to Windows 2012 R2 or newer domain controller. The group is then automatically replicated to all other domain controllers.
 &lt;b&gt; Warning: Do not add service account into this group as this will result in "authentication failure" messages. Use "protected accounts" instead&lt;/b&gt;</value>
   </data>
   <data name="A_ProtectedUsers_Rationale" xml:space="preserve">
@@ -185,7 +185,7 @@
     <value>The purpose is to verify if Domain Controller(s) are vulnerable to the MS17-010 vulnerability</value>
   </data>
   <data name="S_Vuln_MS17_010_Solution" xml:space="preserve">
-    <value>To fix the security breach, you should pacth the DC as soon as it has been established it was vulnerable. Another good remediation is to disable SMB v1 (see "DC Vulnerability (SMB v1)). You can verify that using the github program in the links: this program will check remotely the last startup time of the DC and evaluate the risk</value>
+    <value>To fix the security breach, you should patch the DC as soon as it has been established it was vulnerable. Another good remediation is to disable SMB v1 (see "DC Vulnerability (SMB v1)). You can verify that using the github program in the links: this program will check remotely the last startup time of the DC and evaluate the risk</value>  
   </data>
   <data name="S_Vuln_MS17_010_Rationale" xml:space="preserve">
     <value>Number of DC(s) vulnerable to MS17-010 = {count} (&gt;0)</value>
@@ -197,7 +197,7 @@
     <value>The purpose is to verify if Domain Controller(s) are vulnerable to the SMB v1 vulnerability</value>
   </data>
   <data name="S_SMB_v1_Solution" xml:space="preserve">
-    <value>It is highly recommended by Microsoft to disable SMB v1 whenever it is possible on both client and server side. &lt;b&gt;Do note that if you are still not following best practices regarding the usage of deprecated OS (Windows 2000, 2003, XP, CE), regarding Network printer using SMBv1 scan2shares functionalities, or regarding software accessing Windows share with a custom implementation relying on SMB v1, you should consider fixing this issues before disabling SMB v1, as it will generates additional errors&lt;/b&gt;.</value>
+    <value>It is highly recommended by Microsoft to disable SMB v1 whenever it is possible on both client and server side. &lt;b&gt;Do note that if you are still not following best practices regarding the usage of deprecated OS (Windows 2000, 2003, XP, CE), regarding Network printer using SMBv1 scan2shares functionalities, or regarding software accessing Windows share with a custom implementation relying on SMB v1, you should consider fixing this issues before disabling SMB v1, as it will generate additional errors&lt;/b&gt;.</value>
   </data>
   <data name="S_SMB_v1_Rationale" xml:space="preserve">
     <value>SMB v1 activated on {count} DC</value>
@@ -209,7 +209,7 @@
     <value>The purpose is to verify if Domain Controller(s) are vulnerable to the MS14-068 vulnerability</value>
   </data>
   <data name="S_Vuln_MS14_068_Solution" xml:space="preserve">
-    <value>To fix the security breach, you should pacth the DC as soon as it has been established it was vulnerable. You can verify that using a program in the links: this program will check remotely the last startup time of the DC and evaluate the risk</value>
+    <value>To fix the security breach, you should patch the DC as soon as it has been established it was vulnerable. You can verify that using a program in the links: this program will check remotely the last startup time of the DC and evaluate the risk</value>
   </data>
   <data name="S_Vuln_MS14_068_Rationale" xml:space="preserve">
     <value>Number of DC(s) vulnerable to MS14-068 = {count} (&gt;0)</value>
@@ -218,10 +218,10 @@
     <value>Domain controller: {0} Reason: {1}</value>
   </data>
   <data name="A_MembershipEveryone_Description" xml:space="preserve">
-    <value>The purpose is to identify if there are restricted group such as local administrators, terminal server access, … where Authenticated Users or Everyone is being granted access by a GPO</value>
+    <value>The purpose is to identify if there are restricted groups such as local administrators, terminal server access, â€¦ where Authenticated Users or Everyone is being granted access by a GPO</value>
   </data>
   <data name="A_MembershipEveryone_Solution" xml:space="preserve">
-    <value>In order to correct the issue, you should edit the GPO and remove the "Members" security access rule. Another solution is to change the group by a more targeted one containing a limited set of users.</value>
+    <value>In order to correct the issue, you should edit the GPO and remove the "Members" security access rule. Another solution is to change the group to a more targeted one containing a limited set of users.</value>
   </data>
   <data name="A_MembershipEveryone_Rationale" xml:space="preserve">
     <value>Presence of restricted group where anybody is a member: {count}</value>
@@ -236,7 +236,7 @@
     <value>To solve this security issue, you should change the ownership of the domain controller to match the "Domain Administrators" group.
 To control the ownership of domain controller objects, you can use the following PowerShell command: 
 &lt;i&gt;Get-ADComputer -server my.domain.to.check -LDAPFilter "(&amp;(objectCategory=computer)(|(primarygroupid=521)(primarygroupid=516)))" -properties name, ntsecuritydescriptor | select name,{$_.ntsecuritydescriptor.Owner}&lt;/i&gt;.
-To change it you can edit the owner of an object using &lt;a href="https://docs.microsoft.com/en-us/sysinternals/downloads/adexplorer"&gt;adexplorer.exe&lt;/a&gt;. First, locate the DC object then right click to select properties. Open the security tab and press the advanced button. You then have a new dialog with an owner tab. Select the owner and change it for the domain administrators group. You’re done (no reboot needed)</value>
+To change it you can edit the owner of an object using &lt;a href="https://docs.microsoft.com/en-us/sysinternals/downloads/adexplorer"&gt;adexplorer.exe&lt;/a&gt;. First, locate the DC object then right click to select properties. Open the security tab and press the advanced button. You then have a new dialog with an owner tab. Select the owner and change it for the domain administrators group. Youâ€™re done (no reboot needed).</value>
   </data>
   <data name="P_DCOwner_Rationale" xml:space="preserve">
     <value>{count} domain controller(s) have been found where the owner is not the Domain Admins group or the Enterprise Admins group</value>
@@ -269,7 +269,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>The purpose is to ensure that basic users cannot register extra computers in the domain</value>
   </data>
   <data name="S_ADRegistration_Solution" xml:space="preserve">
-    <value>To solve the issue limit the number of extra computers that can be registered by a basic user.  It can be reduced by modifying the value of &lt;i&gt;ms-DS-MachineAccountQuota&lt;/i&gt; to zero (0). Another solution can be to remove altogether the authenticated users group in the domain controllers policy. Do note that if you need to set delegation to an account so it can add computers to the domain, it can be done through 2 methods: Delegation in the OU or by assigning the &lt;i&gt;SeMachineAccountPrivilege&lt;/i&gt; to a special group</value>
+    <value>To solve the issue, limit the number of extra computers that can be registered by a basic user.  It can be reduced by modifying the value of &lt;i&gt;ms-DS-MachineAccountQuota&lt;/i&gt; to zero (0). Another solution can be to remove altogether the authenticated users group in the domain controllers policy. Do note that if you need to set delegation to an account so it can add computers to the domain, it can be done through 2 methods: Delegation in the OU or by assigning the &lt;i&gt;SeMachineAccountPrivilege&lt;/i&gt; to a special group</value>
   </data>
   <data name="S_ADRegistration_Rationale" xml:space="preserve">
     <value>Non-admin users can add up to {count} computer(s) to a domain</value>
@@ -419,10 +419,10 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>Domain controller: {0}</value>
   </data>
   <data name="A_PreWin2000Anonymous_Description" xml:space="preserve">
-    <value>The purpose is to identify domains which allow access without any account because of a Pre-Windows 2000 compatibility. </value>
+    <value>The purpose is to identify domains which allow access without any account because of a Pre-Windows 2000 compatibility</value>
   </data>
   <data name="A_PreWin2000Anonymous_Solution" xml:space="preserve">
-    <value>Remove the "EveryOne" and "Anonymous" from the PreWin2000 group while making sure that the group "Authenticated Users" is present. Then reboot each DC</value>
+    <value>Remove the "Everyone" and "Anonymous" from the PreWin2000 group while making sure that the group "Authenticated Users" is present, then reboot each DC</value>
   </data>
   <data name="A_PreWin2000Anonymous_Rationale" xml:space="preserve">
     <value>The group Everyone and/or Anonymous is present in the Pre-Windows 2000 group.</value>
@@ -564,10 +564,10 @@ For LmCompatibilityLevel the setting is located in: Network security: LAN Manage
   </data>
   <data name="A_Krbtgt_Solution" xml:space="preserve">
     <value>The password of the krbtgt account should be changed twice to invalidate the golden ticket attack.
-&lt;b&gt;Beware: two changes of the krbtgt password not replicated to domain controllers can break these domain controllers&lt;/b&gt; You should wait at least 8 hours between each krbtgt password change.
+&lt;b&gt;Beware: two changes of the krbtgt password not replicated to domain controllers can break these domain controllers&lt;/b&gt; You should wait at least 10 hours between each krbtgt password change.
 
 There are several possibilities to change the krbtgt password.
-First, a Microsoft script can be run in order to guarantee the correct replication of these secrets. Unfortunately this script supports only English operating systems.
+First, a &lt;a href="https://github.com/microsoft/New-KrbtgtKeys.ps1/blob/master/New-KrbtgtKeys.ps1"&gt;Microsoft script&lt;/a&gt; can be run in order to guarantee the correct replication of these secrets. Unfortunately this script supports only English operating systems.
 Second, a more manual way is to essentially reset the password manually once, then to wait 3 days, then to reset it again. This is the safest way as it ensures the password is no longer usable by the Golden ticket attack.
    </value>
   </data>
@@ -632,10 +632,10 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that all Administrator Accounts have the configuration flag "this account is sensitive and cannot be delegated" (and are not member of the built-in group "Protected Users" when your domain functional level is at least Windows Server 2012 R2).</value>
   </data>
   <data name="P_Delegated_Solution" xml:space="preserve">
-    <value>To correct the situation, you should make sure that all your Administrator Accounts has the check-box "This account is sensitive and cannot be delegated" active or add your Administrator Accounts to the built-in group "Protected Users" if your domain functional level is at least Windows Server 2012 R2 (some functionalities may not work properly afterwards, you should check the &lt;a href="https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/how-to-configure-protected-accounts"&gt;official documentation&lt;/a&gt;). Please note that there is a section bellow in this report named "Admin Groups" which give more information.</value>
+    <value>To correct the situation, you should make sure that all your Administrator Accounts has the check-box "This account is sensitive and cannot be delegated" active or add your Administrator Accounts to the built-in group "Protected Users" if your domain functional level is at least Windows Server 2012 R2 (some functionalities may not work properly afterwards, you should check the &lt;a href="https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/how-to-configure-protected-accounts"&gt;official documentation&lt;/a&gt;). Please note that there is a section below in this report named "Admin Groups" which give more information.</value>
   </data>
   <data name="P_Delegated_Rationale" xml:space="preserve">
-    <value>Presence of Admin accounts which have not the flag "this account is sensitive and cannot be delegated": {count}</value>
+    <value>Presence of Admin accounts which do not have the flag "this account is sensitive and cannot be delegated": {count}</value>
   </data>
   <data name="P_Delegated_Detail" xml:space="preserve">
     <value>Domain controller: {0} Reason: {1}</value>
@@ -650,7 +650,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>More than {threshold}% of admins are inactive: {count}%</value>
   </data>
   <data name="P_AdminNum_Description" xml:space="preserve">
-    <value>The purpose is to verify if the number of administrator accounts is not disproportionate. Very few users should have domain admin accounts</value>
+    <value>The purpose is to verify if the number of administrator accounts is not disproportionate. Very few users should have domain admin accounts.</value>
   </data>
   <data name="P_AdminNum_Solution" xml:space="preserve">
     <value>It is strongly advised to perform a review of which users have domain administrator rights, and to ensure that these rights are actually needed. Indeed, the end goal is to remove as much domain administrator as possible, as very few users actually need these high level rights.
@@ -658,7 +658,7 @@ Second, a more manual way is to essentially reset the password manually once, th
   The rule enabled only if the domain has more than 100 active users.</value>
   </data>
   <data name="P_AdminNum_Rationale" xml:space="preserve">
-    <value>Users in Admins groups = {count} (more than {threshold}% of all active users)</value>
+    <value>Users in Admins groups = {count} (more than 50 or than 10% of all active users)</value>
   </data>
   <data name="P_AdminLogin_Description" xml:space="preserve">
     <value>The purpose is to verify if the Native Administrator account is used.</value>
@@ -733,7 +733,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 2003 for the workstations within the domain</value>
   </data>
   <data name="S_OS_2003_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Server 2003*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2003_Rationale" xml:space="preserve">
     <value>Presence of Windows 2003 = {count}</value>
@@ -742,7 +742,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 2000 for the workstations within the domain</value>
   </data>
   <data name="S_OS_2000_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Server 2000*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2000_Rationale" xml:space="preserve">
     <value>Presence of Windows 2000 = {count}</value>
@@ -751,7 +751,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows XP for the workstations within the domain</value>
   </data>
   <data name="S_OS_XP_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Windows XP*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_XP_Rationale" xml:space="preserve">
     <value>Presence of Windows XP = {count}</value>
@@ -760,7 +760,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows NT for the workstations within the domain</value>
   </data>
   <data name="S_OS_NT_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "* NT *" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_NT_Rationale" xml:space="preserve">
     <value>Presence of Windows NT = {count}</value>
@@ -852,7 +852,9 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
     <value>The purpose is to check for unusual value in the primarygroupid attribute used to store group membership</value>
   </data>
   <data name="S_PrimaryGroup_Solution" xml:space="preserve">
-    <value>Unless strongly justified, change the primary group id to its default. 513 or 514 for users, 516 or 521 for domain controllers, 514 or 515 for computers. The primary group can be edited in a friendly manner by editing the account with the "Active Directory Users and Computers" and after selecting the "Member Of" tab, "set primary group".</value>
+    <value>Unless strongly justified, change the primary group id to its default. 513 or 514 for users, 516 or 521 for domain controllers, 514 or 515 for computers. The primary group can be edited in a friendly manner by editing the account with the "Active Directory Users and Computers" and after selecting the "Member Of" tab, "set primary group".
+    You can use the following script to list Users with a primary group id different from domain users:
+    &lt;i&gt;Get-ADUser -Filter * -Properties PrimaryGroup | Where-Object { $_.PrimaryGroup -ne (Get-ADGroup -Identity "Domain Users").DistinguishedName } | Select-Object UserPrincipalName,PrimaryGroup&lt;/i&gt;</value>
   </data>
   <data name="S_PrimaryGroup_Rationale" xml:space="preserve">
     <value>Presence of wrong primary group for users: {count}</value>
@@ -861,7 +863,7 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
     <value>The purpose is to ensure that there are as few inactive computers as possible within the domain</value>
   </data>
   <data name="S_C_Inactive_Solution" xml:space="preserve">
-    <value>To mitigate the risk, you should monitor the number of inactive accounts and reduce it as much as possible. A list of all inactive accounts is obtainable through the command: &lt;i&gt;Search-ADaccount -ComputersOnly -AccountInactive -Timespan (New-TimeSpan -Days 180)&lt;/i&gt;.</value>
+    <value>To mitigate the risk, you should monitor the number of inactive accounts and reduce it as much as possible. A list of all inactive accounts is obtainable through the command: &lt;i&gt;Search-ADAccount –AccountInActive –ComputersOnly –TimeSpan 180:00:00:00 –ResultPageSize 2000 –ResultSetSize $null | ?{$_.Enabled –eq $True} | Select-Object Name, SamAccountName, DistinguishedName&lt;/i&gt;.</value>
   </data>
   <data name="S_C_Inactive_Rationale" xml:space="preserve">
     <value>Relatively high number of inactive computer accounts: {count}% (more than {threshold}% of all computers)</value>
@@ -870,7 +872,7 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
     <value>The purpose is to ensure that there are as few inactive accounts as possible within the domain</value>
   </data>
   <data name="S_Inactive_Solution" xml:space="preserve">
-    <value>To mitigate the risk, you should monitor the number of inactive accounts and reduce it as much as possible. A list of all inactive accounts is obtainable through the command: &lt;i&gt;Search-ADaccount -UsersOnly -AccountInactive -Timespan (New-TimeSpan -Days 180)&lt;/i&gt;.</value>
+    <value>To mitigate the risk, you should monitor the number of inactive accounts and reduce it as much as possible. A list of all inactive accounts is obtainable through the command: &lt;i&gt;Search-ADAccount –AccountInActive –UsersOnly –TimeSpan 180:00:00:00 –ResultPageSize 2000 –ResultSetSize $null | ?{$_.Enabled –eq $True} | Select-Object Name, SamAccountName, DistinguishedName&lt;/i&gt;.</value>
   </data>
   <data name="S_Inactive_Rationale" xml:space="preserve">
     <value>Relatively high number of inactive user accounts: {count}% (more than {threshold}% of all users)</value>
@@ -1295,7 +1297,8 @@ You can use the PowerShell command to get its status:
 https://support.microsoft.com/en-us/help/326690/anonymous-ldap-operations-to-active-directory-are-disabled-on-windows</value>
   </data>
   <data name="A_Krbtgt_Documentation" xml:space="preserve">
-    <value>https://github.com/microsoft/New-KrbtgtKeys.ps1
+    <value>https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/faqs-from-the-field-on-krbtgt-reset/ba-p/2367838
+https://github.com/microsoft/New-KrbtgtKeys.ps1
 https://github.com/PSSecTools/Krbtgt</value>
   </data>
   <data name="A_LAPS_Not_Installed_Documentation" xml:space="preserve">
@@ -1557,7 +1560,7 @@ https://github.com/misterch0c/shadowbroker/tree/master/windows/exploits </value>
     <value>Edit the property of the involved accounts and select the Account tab. Uncheck "Do not require Kerberos preauthentication". For computers which doesn't have the Account tab, you have to manually edit the attribute useraccountcontrol. Subtract from the attribute the value 4194304.</value>
   </data>
   <data name="S_NoPreAuth_TechnicalExplanation" xml:space="preserve">
-    <value>Without kerberos pre-authentication, an attacker can request kerberos data from the domain controller and use this data to brute-force the account password. You can search accounts using the ldap query &lt;i&gt;(userAccountControl:1.2.840.113556.1.4.803:=4194304)&lt;/i&gt;</value>
+    <value>Without kerberos pre-authentication, an attacker can request kerberos data from the domain controller and use this data to brute-force the account password. You can search accounts using the ldap query &lt;i&gt;Get-ADObject -LDAPFilter "(userAccountControl:1.2.840.113556.1.4.803:=4194304)"&lt;/i&gt;</value>
   </data>
   <data name="S_NoPreAuth_Title" xml:space="preserve">
     <value>Check if all accounts do support kerberos pre-authentication</value>
@@ -2049,7 +2052,7 @@ As an alternative, the file GptTmpl.inf can be manually edited.</value>
     <value>First, be sure that the forest level is at least Windows 2008 R2.
     You can check it with Get-ADForest or in the &lt;a href="#domaininformation"&gt;Domain Information&lt;/a&gt; section.
   Then you can enable it using the powershell command:
-Enable-ADOptionalFeature -identity 'CN=Recycle Bin Feature,CN=Optional Features,CN=Directory Service,CN=Windows NT,CN=Services,CN=Configuration,DC=test,DC=mysmartlogon,DC=com' -Scope ForestOrConfigurationSet -Target 'test.mysmartlogon.com'</value>
+Enable-ADOptionalFeature -Identity 'Recycle Bin Feature' -Scope ForestOrConfigurationSet -Target 'test.mysmartlogon.com'</value>
   </data>
   <data name="P_RecycleBin_TechnicalExplanation" xml:space="preserve">
     <value>The Recycle Bin avoids immediate deletion of objects (which can still be partially recovered by its tombstone). This lowers the administration work needed to restore. It also extends the period where traces are available when an investigation is needed.</value>
@@ -2366,6 +2369,15 @@ As an alternative, the file GptTmpl.inf can be manually edited.</value>
   </data>
   <data name="Backup_Detail" xml:space="preserve">
     <value>Althought Active Directory has been designed for redundancy, a backup process is key for a recovery plan.</value>
+  </data>
+  <data name="Audit_Detail" xml:space="preserve">
+    <value>The default audit policy of Windows does not collect key events, to trace activities or discover past compromise.</value>
+  </data>
+  <data name="DelegationCheck_Detail" xml:space="preserve">
+    <value>Delegations are very complex to understand and may grant more privileges than initially thought.</value>
+  </data>
+  <data name="TrustAzure_Detail" xml:space="preserve">
+    <value>The link with Azure Systems may create new compromise methods between the cloud and on premise systems.</value>
   </data>
   <data name="T_TGTDelegation_Description" xml:space="preserve">
     <value>The purpose is to ensure that a forest cannot be used to compromise another forest using kerberos delegation</value>
@@ -2703,7 +2715,7 @@ We recommend to set "*" as the module list.
     <value />
   </data>
   <data name="A_AuditPowershell_TechnicalExplanation" xml:space="preserve">
-    <value>Powershell is a powerful language, also used by hackers because of this quality. Hackers are able to run programs such as mimikatz in memory using obfuscated commands such as Invoke-Mimikatz.
+    <value>Powershell is a powerful language, also used by hackers because of this quality. Hackers are able to run programs such as mimikatz in memory using obfuscated commands such as Invoke&#8211;Mimikatz.
     Because there is no artefact on the disk, the incident response task is difficult for the forensic analysts.
     For this reason, we recommend to enable Powershell logging via a group policy, despite the fact that these security settings may be part of the workstation or server images.
     </value>
@@ -2970,7 +2982,9 @@ The NSPI protocol is used internally by Exchange to resolve addresses, and thus 
   </data>
   <data name="A_NTFRSOnSysvol_Documentation" xml:space="preserve">
     <value>https://docs.microsoft.com/en-us/windows-server/storage/dfs-replication/migrate-sysvol-to-dfsr
-    https://support.microsoft.com/en-us/help/312862/recovering-missing-frs-objects-and-frs-attributes-in-active-directory</value>
+https://support.microsoft.com/en-us/help/312862/recovering-missing-frs-objects-and-frs-attributes-in-active-directory
+https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-frs1/d18cc589-677e-4133-97e5-113641792c5e
+https://docs.microsoft.com/en-us/troubleshoot/windows-server/networking/sysvol-dfsr-migration-fails-after-in-place-upgrade</value>
   </data>
   <data name="A_NTFRSOnSysvol_Rationale" xml:space="preserve">
     <value>The old protocol NTFRS is used to replicate the SYSVOL share</value>
@@ -2987,7 +3001,13 @@ The NSPI protocol is used internally by Exchange to resolve addresses, and thus 
     The SYSVOL share is mainly hosted on domain controllers to host GPO files and login scripts.
   If the content can be modified, it can be used to grant to an hacker the control of the computers reading these configuration files.
 To know if the setting is enabled, PingCastle read the following LDAP entry: CN=Domain System Volume (SYSVOL share),CN=File Replication Service,CN=System
-If there is any entry found, the program consider that NTFRS is in use for SYSVOl replication.</value>
+If there is any entry found, the program consider that NTFRS is in use for SYSVOL replication.
+
+Starting in Windows Server 2019, promoting new domain controllers requires the DFS Replication (DFSR) to replicate the contents in the SYSVOL share.
+As a consequence this rule become informative if at least one Windows 2019 or more recent is installed as a Domain Controller.
+
+Please note that at the time of writing, Microsoft supports it until Windows 2022 (see the Open Specification link in the documentation section below)
+</value>
   </data>
   <data name="A_NTFRSOnSysvol_Title" xml:space="preserve">
     <value>Check if NTFRS is used to replicate SYSVOL</value>
@@ -3778,6 +3798,194 @@ If the script is detected, Windows 7 is considered as supported and this rule is
   <data name="S_OS_Win7_Title" xml:space="preserve">
     <value>Obsolete OS (Windows 7)</value>
   </data>
+  <data name="A_DnsZoneTransfert_Description" xml:space="preserve">
+    <value>The purpose is to ensure that no DNS Zones are configured with Zone Transfers.</value>
+  </data>
+  <data name="A_DnsZoneTransfert_Detail" xml:space="preserve">
+    <value>Zone: {0}</value>
+  </data>
+  <data name="A_DnsZoneTransfert_Documentation" xml:space="preserve">
+    <value>https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dnsp/f97756c9-3783-428b-9451-b376f877319a
+    https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/dnscmd</value>
+  </data>
+  <data name="A_DnsZoneTransfert_Rationale" xml:space="preserve">
+    <value>A DNS Zone is configured with Zone Transfers enabled</value>
+  </data>
+  <data name="A_DnsZoneTransfert_ReportLocation" xml:space="preserve">
+    <value />
+  </data>
+  <data name="A_DnsZoneTransfert_Solution" xml:space="preserve">
+    <value>You have to disable Zone Transfers.
+    Identify the faulty zone in the details below.
+    Go to the DNS console and select a zone in the "Forward Lookup Zones".
+    Right click on it and switch to the "Zone Transfers" tab.
+    Then ensure "Allow zone transfers" is not enabled "To any server".
+    You can also run: dnscmd /zoneresetsecondaries zone /noxfr
+    </value>
+  </data>
+  <data name="A_DnsZoneTransfert_TechnicalExplanation" xml:space="preserve">
+    <value>When the Zone Transfers mechanims is enabled, an attacker can retrieve all DNS records anonymously.
+    He can then use this feature to generate network noise to trigger a man in the middle attack and capture credentials.
+
+    This setting is domain wide, meaning that all servers share the same setting.
+    Please note that PingCastle does this check to only one DNS Server of the zone.
+
+    To test if the Zone Transfers is enabled, issue the following command:
+    on Linux: &lt;pre&gt;host -t axfr domain.name dns-server&lt;/pre&gt; or &lt;pre&gt;dig axfr @dns-server domain.name&lt;/pre&gt;
+    on Windows: &lt;pre&gt;nslookup&lt;/pre&gt; then &lt;pre&gt;server dns-server&lt;/pre&gt; then &lt;pre&gt;set type=any&lt;/pre&gt; then &lt;pre&gt;ls -d domain.name&lt;/pre&gt;
+    </value>
+  </data>
+  <data name="A_DnsZoneTransfert_Title" xml:space="preserve">
+    <value>Check if DNS Zones are configured with Zone Transfers.</value>
+  </data>
+  <data name="A_LAPS_Joined_Computers_Description" xml:space="preserve">
+    <value>The purpose of this rule is to ensure that there is no LAPS permission problems with computers that have been added manually to the domain by a user</value>
+  </data>
+  <data name="A_LAPS_Joined_Computers_Detail" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="A_LAPS_Joined_Computers_Documentation" xml:space="preserve">
+    <value>https://azurecloudai.blog/2019/10/01/laps-security-concern-computers-joiners-are-able-to-see-laps-password/
+https://www.securityinsider-wavestone.com/2020/01/taking-over-windows-workstations-pxe-laps.html</value>
+  </data>
+  <data name="A_LAPS_Joined_Computers_Rationale" xml:space="preserve">
+    <value>The local admin password of at least one computer can be retrieved by the user who joined the computer to the domain</value>
+  </data>
+  <data name="A_LAPS_Joined_Computers_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#laps"&gt;LAPS&lt;/a&gt;</value>
+  </data>
+  <data name="A_LAPS_Joined_Computers_Solution" xml:space="preserve">
+    <value>Review the security of the computer objects listed in the LAPS section below to change their ownership (you can give it to the domain admins group).
+    Check if the creator has also write permissions to change the owner or the security descriptor and if he has the right "all extended rights" on this object.
+    If it is the case, remove the permissions granted to this user.
+    </value>
+  </data>
+  <data name="A_LAPS_Joined_Computers_TechnicalExplanation" xml:space="preserve">
+    <value>By default, every domain user can add up to 10 computers to the domain (see the rule S-ADRegistration for more information).
+    When a computer is added to the domain, the owner of the computer object is the user who joined the computer.
+    To trace this insertion, a special attribute mS-DS-CreatorSID is added, whose value is the SID of its creator.
+    When LAPS is installed, the local admin account has its password stored in a special attribute named, by default, ms-mcs-AdmPwd. Its access is retricted.
+    Because the user who created it is the owner of the underlying object, it can retrieve the LAPS attribute and get the local admin password.
+    
+    In addition to check if the owner of the computer object is the user which added it, this program checks also if this user have an explicit permission on this object to write the owner, write the security descriptor, or "all extended rights".
+    Indeed, the right "all extended rights" allows to read the LAPS password and write access to these attributes can cancel the security hardening of changing the owner.
+    </value>
+  </data>
+  <data name="A_LAPS_Joined_Computers_Title" xml:space="preserve">
+    <value>Check if LAPS passwords can be retrieved from computers that has been added manually by users.</value>
+  </data>
+  <data name="A_CertTempAnyone_Description" xml:space="preserve">
+    <value>The purpose of this rule is to ensure that there is no certificate template that can be edited by anyone</value>
+  </data>
+  <data name="A_CertTempAnyone_Detail" xml:space="preserve">
+    <value>Name: {0}</value>
+  </data>
+  <data name="A_CertTempAnyone_Documentation" xml:space="preserve">
+    <value>https://posts.specterops.io/certified-pre-owned-d95910965cd2
+https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-directory-environment/</value>
+  </data>
+  <data name="A_CertTempAnyone_Rationale" xml:space="preserve">
+    <value>At least one certificate template can be modified by everyone [{count}]</value>
+  </data>
+  <data name="A_CertTempAnyone_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#certificatetemplates"&gt;Certificate Templates&lt;/a&gt;</value>
+  </data>
+  <data name="A_CertTempAnyone_Solution" xml:space="preserve">
+    <value>Review the security permissions of this certificate template and remove the write access to everyone-like group such as domain user, domain computers, everyone, authenticated users, ...
+    </value>
+  </data>
+  <data name="A_CertTempAnyone_TechnicalExplanation" xml:space="preserve">
+    <value>A certificate template is an object whose definition serves as a base to issue certificates.
+    If a user has the right to edit it, it can manually change obscure attributes such as msPKI-Certificate-Name-Flag.
+    Doing so will enable him to provide the subject of the certificate and thus having a certificate on behalf other users such as admins.
+  It can be used to impersonate them and take control of the domain</value>
+  </data>
+  <data name="A_CertTempAnyone_Title" xml:space="preserve">
+    <value>Check if certificate templates can be edited by everyone.</value>
+  </data>
+  <data name="A_CertTempAnyPurpose_Description" xml:space="preserve">
+    <value>The purpose of this rule is to ensure that there is no certificate template with any purpose that can be requested by anyone</value>
+  </data>
+  <data name="A_CertTempAnyPurpose_Detail" xml:space="preserve">
+    <value>Name: {0}</value>
+  </data>
+  <data name="A_CertTempAnyPurpose_Documentation" xml:space="preserve">
+    <value>https://posts.specterops.io/certified-pre-owned-d95910965cd2
+https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-directory-environment/</value>
+  </data>
+  <data name="A_CertTempAnyPurpose_Rationale" xml:space="preserve">
+    <value>At least one certificate template can be requested by everyone having any purpose [{count}]</value>
+  </data>
+  <data name="A_CertTempAnyPurpose_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#certificatetemplates"&gt;Certificate Templates&lt;/a&gt;</value>
+  </data>
+  <data name="A_CertTempAnyPurpose_Solution" xml:space="preserve">
+    <value>Review the permissions that allow a wide enrollement of this certificate template automatically or specify a specific purpose (EKU)
+    </value>
+  </data>
+  <data name="A_CertTempAnyPurpose_TechnicalExplanation" xml:space="preserve">
+    <value>A certificate should define restrictions of its use. It is done via extensions known as EKU (extended key usage).
+    Without a proper purpose or with the global purpose "Any Purpose" it can be used to enroll certificates on behalf other users and impersonate them using it.</value>
+  </data>
+  <data name="A_CertTempAnyPurpose_Title" xml:space="preserve">
+    <value>Check the purpose provided by certificate templates</value>
+  </data>
+  <data name="A_CertTempAgent_Description" xml:space="preserve">
+    <value>The purpose of this rule is to ensure that there is no agent certificate that can be requested by anyone</value>
+  </data>
+  <data name="A_CertTempAgent_Detail" xml:space="preserve">
+    <value>Name: {0}</value>
+  </data>
+  <data name="A_CertTempAgent_Documentation" xml:space="preserve">
+    <value>https://posts.specterops.io/certified-pre-owned-d95910965cd2
+https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-directory-environment/</value>
+  </data>
+  <data name="A_CertTempAgent_Rationale" xml:space="preserve">
+    <value>At least one certificate template can be used to issue agent certificate to everyone [{count}]</value>
+  </data>
+  <data name="A_CertTempAgent_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#certificatetemplates"&gt;Certificate Templates&lt;/a&gt;</value>
+  </data>
+  <data name="A_CertTempAgent_Solution" xml:space="preserve">
+    <value>Review the permissions that allow a wide enrollement of this certificate template
+    </value>
+  </data>
+  <data name="A_CertTempAgent_TechnicalExplanation" xml:space="preserve">
+    <value>An Agent certificate is a special certificate used to request certificate on behalf other users.
+    A template has been detected with the agent EKU and that can be enrolled by a large number of users.</value>
+  </data>
+  <data name="A_CertTempAgent_Title" xml:space="preserve">
+    <value>Check the permission of agent certificate templates</value>
+  </data>
+  <data name="A_CertTempCustomSubject_Description" xml:space="preserve">
+    <value>The purpose of this rule is to ensure that there is no certificate request having an authentication purpose whose subject can be modified</value>
+  </data>
+  <data name="A_CertTempCustomSubject_Detail" xml:space="preserve">
+    <value>Name: {0}</value>
+  </data>
+  <data name="A_CertTempCustomSubject_Documentation" xml:space="preserve">
+    <value>https://posts.specterops.io/certified-pre-owned-d95910965cd2
+https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-directory-environment/</value>
+  </data>
+  <data name="A_CertTempCustomSubject_Rationale" xml:space="preserve">
+    <value>At least one certificate template used for authentication can have its subject modified when being used [{count}]</value>
+  </data>
+  <data name="A_CertTempCustomSubject_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#certificatetemplates"&gt;Certificate Templates&lt;/a&gt;</value>
+  </data>
+  <data name="A_CertTempCustomSubject_Solution" xml:space="preserve">
+    <value>On the certificate template properties, uncheck in the property sheet "Subject Name" the field "Supply in the request".
+    Or in alternative, restrict this template to a restricted group.
+    </value>
+  </data>
+  <data name="A_CertTempCustomSubject_TechnicalExplanation" xml:space="preserve">
+    <value>Usually, the subject of a certificate is generated automatically by the certification authority.
+    By allowing its manual edition before its issuance, a malicious user can set the subject to match an administrator account, and thus get a certificate representing them.
+  This certificate can be abuse later to impersonate them.</value>
+  </data>
+  <data name="A_CertTempCustomSubject_Title" xml:space="preserve">
+    <value>Check the if a custom subject can be pushed on an authentication certificate templates</value>
+  </data>
   <data name="A_PreWin2000AuthenticatedUsers_Description" xml:space="preserve">
     <value>The purpose is check if the "Pre-Windows 2000 Compatible Access" group contains authenticated users</value>
   </data>
@@ -3801,5 +4009,74 @@ If the script is detected, Windows 7 is considered as supported and this rule is
   </data>
   <data name="A_PreWin2000AuthenticatedUsers_Title" xml:space="preserve">
     <value>Check that the "Pre-Windows 2000 Compatible Access" group does not contain "Authenticated Users"</value>
+  </data>
+  <data name="S_OS_W10_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of non supported version of Windows 10 within the domain</value>
+  </data>
+  <data name="S_OS_W10_Documentation" xml:space="preserve">
+    <value>https://docs.microsoft.com/en-us/windows/release-health/release-information</value>
+  </data>
+  <data name="S_OS_W10_Rationale" xml:space="preserve">
+    <value>Presence of non supported Windows 10 = {count}</value>
+  </data>
+  <data name="S_OS_W10_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#operatingsystems"&gt;Operating Systems&lt;/a&gt;</value>
+  </data>
+  <data name="S_OS_W10_Solution" xml:space="preserve">
+    <value>In order to solve this security issue, you should upgrade all the Windows 10 to a more recent version.
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows 10*"}&lt;/i&gt;</value>
+  </data>
+  <data name="S_OS_W10_TechnicalExplanation" xml:space="preserve">
+    <value>Some versions of Windows 10 OS is not supported any longer, and may be vulnerable to exploits that are not patched anymore.</value>
+  </data>
+  <data name="S_OS_W10_Title" xml:space="preserve">
+    <value>Obsolete OS (Windows 10)</value>
+  </data>
+  <data name="S_OS_W10_Detail" xml:space="preserve">
+    <value>Version: {0}  Number: {1} Active: {2}</value>
+  </data>
+  <data name="S_ADRegistrationSchema_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no schema class that can be used to create arbitrary objects</value>
+  </data>
+  <data name="S_ADRegistrationSchema_Documentation" xml:space="preserve">
+    <value>
+https://bugs.chromium.org/p/project-zero/issues/detail?id=2186
+https://gist.github.com/IISResetMe/399a75cfccabc1a17d0cc3b5ae29f3aa#file-update-msexchstoragegroupschema-ps1
+https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-34470</value>
+  </data>
+  <data name="S_ADRegistrationSchema_Rationale" xml:space="preserve">
+    <value>Presence of vulnerable schema class = {count}</value>
+  </data>
+  <data name="S_ADRegistrationSchema_ReportLocation" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="S_ADRegistrationSchema_Solution" xml:space="preserve">
+    <value>For PossSuperiorComputer:
+    You have to edit the schema to change the value of the attribute possSuperior and remove the "computer" value.
+  A powershell script in the documentation provides a fix.
+
+For PossSuperiorUser:
+    You have to edit the schema to change the value of the attribute possSuperior and remove the "user" value.
+  A powershell script in the documentation provides a fix.
+  
+Also the class msExchStorageGroup is known to have this vulnerability via the CVE-2021-34470.
+In this case, the vulnerability is exploitable even if Exchange has been uninstalled.</value>
+  </data>
+  <data name="S_ADRegistrationSchema_TechnicalExplanation" xml:space="preserve">
+    <value>The Classes added to the schema provide additional object types. If misconfigured, a class can be used to bypass security restriction.
+    For the vulnerability PossSuperiorComputer:
+    A class has the attribute possSuperiors containing the class "computer" and this class inherits from "container".
+  That means that every computer can request this class to be added.
+  Once this class has been added, it can be used as a container to create additional users or computers without restrictions.
+
+    For the vulnerability PossSuperiorUser:
+    It is the same vulnerability than PossSuperiorComputer but with the "user" class instead of the "computer" class.
+    </value>
+  </data>
+  <data name="S_ADRegistrationSchema_Title" xml:space="preserve">
+    <value>Vulnerable Schema Class check</value>
+  </data>
+  <data name="S_ADRegistrationSchema_Detail" xml:space="preserve">
+    <value>Class: {0}  Vulnerability: {1}</value>
   </data>
 </root>

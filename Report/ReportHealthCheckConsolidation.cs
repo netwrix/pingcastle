@@ -52,12 +52,22 @@ namespace PingCastle.Report
             AddScript(TemplateManager.LoadJqueryDatatableJs());
             AddScript(TemplateManager.LoadDatatableJs());
             AddScript(@"
-$('table').not('.model_table').DataTable(
-    {
-        'paging': false,
-        'searching': true
+$('table').not('.model_table').each(function( index ) {
+    try {
+        $(this).DataTable(
+            {
+                'paging': true,
+		        'searching': true,
+		        'lengthMenu': [[10, 25, 50, 100, 500, 1000, -1], [10, 25, 50, 100, 500, 1000, 'All']],
+            }
+        );
     }
-);");
+    catch(e)
+    {
+        console.error('An error occured when building the table ' + e + '. Please contact support@pingcastle.com');
+        console.error('data:' + $(this).html());
+    }
+});");
         }
 
         protected override void Hook(StringBuilder sbHtml)

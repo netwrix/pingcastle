@@ -1,4 +1,5 @@
-﻿//
+﻿using PingCastle.Graph.Reporting;
+//
 // Copyright (c) Ping Castle. All rights reserved.
 // https://www.pingcastle.com
 //
@@ -12,13 +13,14 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
     [RuleANSSI("R27", "subsection.3.5")]
     [RuleMaturityLevel(3)]
+    [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
     public class HeatlcheckRulePrivilegedOperatorsEmpty : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             foreach (var group in healthcheckData.PrivilegedGroups)
             {
-                if (group.GroupName == "Account Operators" || group.GroupName == "Server Operators")
+                if (group.GroupName == GraphObjectReference.AccountOperators || group.GroupName == GraphObjectReference.ServerOperators)
                 {
                     if (group.NumberOfMember > 0)
                     {

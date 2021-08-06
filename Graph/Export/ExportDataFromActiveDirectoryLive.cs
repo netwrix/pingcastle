@@ -98,15 +98,23 @@ namespace PingCastle.Graph.Export
             WorkOnReturnedObjectByADWS callback =
                 (ADItem x) =>
                 {
-                    objectReference.Objects[CompromiseGraphDataTypology.PrivilegedAccount].Add(new GraphSingleObject(x.ObjectSid.Value, "Dns Admins", CompromiseGraphDataObjectRisk.Medium));
+                    objectReference.Objects[CompromiseGraphDataTypology.PrivilegedAccount].Add(new GraphSingleObject(x.ObjectSid.Value, GraphObjectReference.DnsAdministrators, CompromiseGraphDataObjectRisk.Medium));
                     dnsAdminFound = true;
                 };
             // we do a one level search just case the group is in the default position
             adws.Enumerate("CN=Users," + domainInfo.DefaultNamingContext, "(&(objectClass=group)(description=DNS Administrators Group))", properties, callback, "OneLevel");
             if (!dnsAdminFound)
             {
+                adws.Enumerate("CN=Users," + domainInfo.DefaultNamingContext, "(&(objectClass=group)(sAMAccountName=DNSAdmins))", properties, callback, "OneLevel");
+            }
+            if (!dnsAdminFound)
+            {
                 // then full tree. This is an optimization for LDAP request
                 adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=group)(description=DNS Administrators Group))", properties, callback);
+            }
+            if (!dnsAdminFound)
+            {
+                adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=group)(sAMAccountName=DNSAdmins))", properties, callback);
             }
         }
 
@@ -286,6 +294,7 @@ namespace PingCastle.Graph.Export
             {
                 ThreadStart threadFunction = () =>
                 {
+                    adws.ThreadInitialization();
                     for (; ; )
                     {
                         string fileName = null;

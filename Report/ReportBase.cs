@@ -654,7 +654,7 @@ namespace PingCastle.Report
 
         protected virtual void GenerateSection(string title, GenerateContentDelegate generateContent)
         {
-            string id = "section" + title.Replace(" ", "");
+            string id = "section" + title.Replace(" ", "").Replace("&", "");
             Add(@"
 <!-- Section " + title + @" -->
 <div id=""" + id + @""">

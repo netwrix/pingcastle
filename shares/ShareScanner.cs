@@ -17,7 +17,7 @@ namespace PingCastle.shares
 
         override protected string GetCsvHeader()
         {
-            return "Computer\tShare\tIsEveryoneAllowed";
+            return "Computer\tShare\tIsEveryoneAllowed\tIsCurrentUserAllowed";
         }
 
         override protected string GetCsvData(string computer)
@@ -28,9 +28,10 @@ namespace PingCastle.shares
                 foreach (string path in ShareEnumerator.EnumShare(computer))
                 {
                     bool everyone = ShareEnumerator.IsEveryoneAllowed(computer, path);
+                    bool currentUser = ShareEnumerator.IsCurrentUserAllowed(computer, path);
                     if (!String.IsNullOrEmpty(output))
                         output += "\r\n";
-                    output += computer + "\t" + path + "\t" + everyone;
+                    output += computer + "\t" + path + "\t" + everyone + "\t" + currentUser;
                 }
             }
             return output;

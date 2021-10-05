@@ -4356,15 +4356,15 @@ namespace PingCastle.Healthcheck
                     computerToQuery.Add(role, parent);
                 };
             role = "PDC";
-            adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=domainDNS)(fSMORoleOwner=*))", properties, callback);
+            adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=domainDNS)(fSMORoleOwner=*)(!(name=*CNF*)))", properties, callback);
             role = "RID pool manager";
-            adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=rIDManager)(fSMORoleOwner=*))", properties, callback);
+            adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=rIDManager)(fSMORoleOwner=*)(!(name=*CNF*)))", properties, callback);
             role = "Infrastructure master";
-            adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=infrastructureUpdate)(fSMORoleOwner=*))", properties, callback);
+            adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=infrastructureUpdate)(fSMORoleOwner=*)(!(name=*CNF*)))", properties, callback);
             role = "Schema master";
-            adws.Enumerate(domainInfo.SchemaNamingContext, "(&(objectClass=dMD)(fSMORoleOwner=*))", properties, callback);
+            adws.Enumerate(domainInfo.SchemaNamingContext, "(&(objectClass=dMD)(fSMORoleOwner=*)(!(name=*CNF*)))", properties, callback);
             role = "Domain naming Master";
-            adws.Enumerate(domainInfo.ConfigurationNamingContext, "(&(objectClass=crossRefContainer)(fSMORoleOwner=*))", properties, callback);
+            adws.Enumerate(domainInfo.ConfigurationNamingContext, "(&(objectClass=crossRefContainer)(fSMORoleOwner=*)(!(name=*CNF*)))", properties, callback);
 
 
             foreach (var computerRole in computerToQuery.Keys)

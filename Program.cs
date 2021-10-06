@@ -1200,7 +1200,7 @@ namespace PingCastle
             Console.WriteLine("Common options when connecting to the AD");
             Console.WriteLine("  --server <server>   : use this server (default: current domain controller)");
             Console.WriteLine("                        the special value * or *.forest do the healthcheck for all domains");
-            Console.WriteLine("  --port <port>       : the port to use for ADWS or LDPA (default: 9389 or 389)");
+            Console.WriteLine("  --port <port>       : the port to use for ADWS or LDAP (default: 9389 or 389)");
             Console.WriteLine("  --user <user>       : use this user (default: integrated authentication)");
             Console.WriteLine("  --password <pass>   : use this password (default: asked on a secure prompt)");
             Console.WriteLine("  --protocol <proto>  : selection the protocol to use among LDAP or ADWS (fastest)");

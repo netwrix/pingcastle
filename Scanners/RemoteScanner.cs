@@ -48,6 +48,8 @@ namespace PingCastle.Scanners
             {"SplashtopRemoteService" , "Splashtop Remote Access"},
             {"chromoting" , "Chrome Remote Desktop"},
             {"Zoho Assist-Unattended Support" , "Zoho Assist"},
+            {"RManService", "Remote Utilities"},
+            {"SplashtopRemoteService", "Splashtop"},
         };
 
         static List<string> customService = new List<string>();

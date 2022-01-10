@@ -3270,7 +3270,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
         {
             AddParagraph("This section focuses on security settings stored in the Active Directory technical security policies.");
             GenerateSubSection("Obfuscated Passwords", "gpoobfuscatedpassword");
-            AddParagraph("The password in GPO are obfuscated, not encrypted. Consider any passwords listed here as compromised and change it immediatly.");
+            AddParagraph("The password in GPO are obfuscated, not encrypted. Consider any passwords listed here as compromised and change them immediately.");
             if (Report.GPPPassword != null && Report.GPPPassword.Count > 0)
             {
                 AddBeginTable("Obfuscated passwords list");

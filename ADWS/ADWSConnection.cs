@@ -234,6 +234,7 @@ namespace PingCastle.ADWS
 							ADItem aditem = null;
 							try
 							{
+                                OneRecord();
 								aditem = ADItem.Create(item);
 							}
 							catch (Exception ex)

@@ -221,6 +221,13 @@ namespace PingCastle.RPC
             Marshal.FreeHGlobal(memory);
         }
 
+        protected static string Reverse(string s)
+        {
+            char[] charArray = s.ToCharArray();
+            Array.Reverse(charArray);
+            return new string(charArray);
+        }
+
         delegate IntPtr bind(IntPtr IntPtrserver);
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         protected IntPtr Bind(IntPtr IntPtrserver)
@@ -231,7 +238,7 @@ namespace PingCastle.RPC
             Int32 status;
 
             Trace.WriteLine("Binding to " + server + " " + PipeName);
-            status = NativeMethods.RpcStringBindingCompose(null, "ncacn_np", server, PipeName, null, out bindingstring);
+            status = NativeMethods.RpcStringBindingCompose(null, Reverse("pn_ncacn"), server, PipeName, null, out bindingstring);
             if (status != 0)
             {
                 Trace.WriteLine("RpcStringBindingCompose failed with status 0x" + status.ToString("x"));
@@ -278,6 +285,16 @@ namespace PingCastle.RPC
             }
             Trace.WriteLine("binding ok (handle=" + binding + ")");
             return binding;
+        }
+
+        protected string magic(int num)
+        {
+            var s = new System.Text.StringBuilder();
+            for (int i = 1; i <= num; i++)
+            {
+                s.Append(i);
+            }
+            return s.ToString();
         }
 
         protected Int32 Bind(string server, out IntPtr binding)

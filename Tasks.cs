@@ -987,7 +987,7 @@ This is the PingCastle program sending reports for:
                 WriteInRed("message: " + novelMessage);
                 WriteInRed("ResultCode: " + novelResultCode);
             }
-            WriteInRed(ex.StackTrace);
+            WriteInDarkRed(ex.StackTrace);
             if (ex.InnerException != null)
             {
                 Trace.WriteLine("innerexception: ");
@@ -1001,6 +1001,14 @@ This is the PingCastle program sending reports for:
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(data);
             Trace.WriteLine("[Red]" + data);
+            Console.ResetColor();
+        }
+
+        private static void WriteInDarkRed(string data)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine(data);
+            Trace.WriteLine("[DarkRed]" + data);
             Console.ResetColor();
         }
 

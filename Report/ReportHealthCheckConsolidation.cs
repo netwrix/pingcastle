@@ -157,6 +157,8 @@ $('table').not('.model_table').each(function( index ) {
         {
             AddBeginTable("Rules consolidation");
             AddHeaderText("Domain");
+            if (AdditionInfoDelegate != null)
+                AddHeaderText("Domain Info");
             AddHeaderText("Category");
             AddHeaderText("Rule");
             AddHeaderText("Score");
@@ -169,6 +171,8 @@ $('table').not('.model_table').each(function( index ) {
                 {
                     AddBeginRow();
                     AddPrintDomain(data.Domain);
+                    if (AdditionInfoDelegate != null)
+                        AddCellText(AdditionInfoDelegate(data.Domain));
                     AddCellText(ReportHelper.GetEnumDescription(rule.Category));
                     AddCellText(rule.RiskId);
                     AddCellNum(rule.Points);
@@ -250,6 +254,8 @@ $('table').not('.model_table').each(function( index ) {
 		</div></div>");
             AddBeginTable("Indicators list");
             AddHeaderText("Domain");
+            if (AdditionInfoDelegate != null)
+                AddHeaderText("Domain Info");
             AddHeaderText("Domain Risk Level");
             AddHeaderText("Maturity Level");
             AddHeaderText("Stale objects");
@@ -262,8 +268,10 @@ $('table').not('.model_table').each(function( index ) {
             {
                 AddBeginRow();
                 AddPrintDomain(data.Domain);
+                if (AdditionInfoDelegate != null)
+                    AddCellText(AdditionInfoDelegate(data.Domain));
                 AddCellNumScore(data.GlobalScore);
-                AddCellNumScore(data.MaturityLevel);
+                AddCellNum(data.MaturityLevel);
                 AddCellNumScore(data.StaleObjectsScore);
                 AddCellNumScore(data.PrivilegiedGroupScore);
                 AddCellNumScore(data.TrustScore);
@@ -280,6 +288,8 @@ $('table').not('.model_table').each(function( index ) {
         {
             AddBeginTable("Domain information");
             AddHeaderText("Domain");
+            if (AdditionInfoDelegate != null)
+                AddHeaderText("Domain Info");
             AddHeaderText("Netbios Name");
             AddHeaderText("Domain Functional Level");
             AddHeaderText("Forest Functional Level");
@@ -294,6 +304,8 @@ $('table').not('.model_table').each(function( index ) {
             {
                 AddBeginRow();
                 AddPrintDomain(data.Domain);
+                if (AdditionInfoDelegate != null)
+                    AddCellText(AdditionInfoDelegate(data.Domain));
                 AddCellText(data.NetBIOSName);
                 AddCellText(ReportHelper.DecodeDomainFunctionalLevel(data.DomainFunctionalLevel));
                 AddCellText(ReportHelper.DecodeForestFunctionalLevel(data.ForestFunctionalLevel));

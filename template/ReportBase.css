@@ -110,6 +110,13 @@ html
 {background-color: #ff6a00; padding:5px;}
 .risk_model_high
 {background-color: #f12828; padding:5px;}
+
+.score_100 { background-color: #a856aa;	padding: 5px;}
+.score_over75 {	background-color: #f12828;	padding: 5px;}
+.score_over50 {	background-color: #ff6a00;	padding: 5px;}
+.score_over25 {	background-color: #ffd800;	padding: 5px;}
+.score_below25 { background-color: #83e043;	padding: 5px;}
+
 .modal-header{background-color: #FA9C1A;}
 .modal-header h4 {color: #fff;}
 

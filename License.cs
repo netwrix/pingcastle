@@ -101,6 +101,7 @@ namespace PingCastle
         public string DomainLimitation { get; set; }
         public string CustomerNotice { get; set; }
         public string Edition { get; set; }
+        public int? DomainNumberLimit { get; set; }
 
         /// <summary>
         /// Gets the license key granted to this component.
@@ -166,6 +167,8 @@ namespace PingCastle
                                 case 0:
                                     Trace.WriteLine("Signature");
                                     VerifySignature(data, ms2.ToArray());
+                                    if (Edition == "Pro" && DomainLimitation == null)
+                                        DomainNumberLimit = 1;
                                     return;
                                 case 1:
                                     Trace.WriteLine("EndTime");
@@ -182,6 +185,9 @@ namespace PingCastle
                                 case 4:
                                     Trace.WriteLine("Edition");
                                     Edition = Encoding.Unicode.GetString(data);
+                                    break;
+                                case 5:
+                                    DomainNumberLimit = BitConverter.ToInt32(data, 0);
                                     break;
                             }
                             ms2.Write(BitConverter.GetBytes(infoType), 0, 4);

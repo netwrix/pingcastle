@@ -63,9 +63,9 @@ namespace PingCastle.Exports
                             data.Add(x.SAMAccountName);
                             data.Add(x.ScriptPath);
                             data.Add(x.PrimaryGroupID.ToString());
-                            data.Add(x.LastLogonTimestamp.ToString());
-                            data.Add(x.PwdLastSet.ToString());
-                            data.Add(x.WhenCreated.ToString());
+                            data.Add(x.LastLogonTimestamp.ToString("u"));
+                            data.Add(x.PwdLastSet.ToString("u"));
+                            data.Add(x.WhenCreated.ToString("u"));
                             data.Add(x.Class);
                             data.Add(x.UserAccountControl.ToString());
                             foreach (var p in hcprop)

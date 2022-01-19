@@ -163,6 +163,7 @@ namespace PingCastle.Data
             }
             catch (XmlException ex)
             {
+                report.Position = 0;
                 Trace.WriteLine("Invalid xml " + ex.Message);
                 Trace.WriteLine("Trying to recover");
                 StreamReader reader = new StreamReader(report);

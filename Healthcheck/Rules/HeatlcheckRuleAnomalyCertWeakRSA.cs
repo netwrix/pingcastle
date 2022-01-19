@@ -6,6 +6,7 @@
 //
 using PingCastle.Rules;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -71,6 +72,61 @@ namespace PingCastle.Healthcheck.Rules
                                     Trace.WriteLine("Modulus len = " + rsaparams.Modulus.Length * 8);
                                     AddRawDetail("DC " + dc.DCName, cert.Subject, rsaparams.Modulus.Length * 8, cert.NotAfter);
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+            if (healthcheckData.GPOWSUS != null)
+            {
+                var WSUSCache = new List<string>();
+                foreach (var wsus in healthcheckData.GPOWSUS)
+                {
+                    if (wsus.WSUSserverCertificate != null && wsus.WSUSserverCertificate.Length > 0 
+                        && !string.IsNullOrEmpty(wsus.WSUSserver) && !WSUSCache.Contains(wsus.WSUSserver))
+                    {
+                        WSUSCache.Add(wsus.WSUSserver);
+                        X509Certificate2 cert = null;
+                        RSA key = null;
+                        try
+                        {
+                            cert = new X509Certificate2(wsus.WSUSserverCertificate);
+                            key = cert.PublicKey.Key as RSA;
+                        }
+                        catch (Exception)
+                        {
+                            Trace.WriteLine("Non RSA key detected in certificate");
+                        }
+                        if (key != null)
+                        {
+                            RSAParameters rsaparams = key.ExportParameters(false);
+                            if (rsaparams.Modulus.Length * 8 < 1024)
+                            {
+                                AddRawDetail("WSUS " + wsus.WSUSserver, cert.Subject, rsaparams.Modulus.Length * 8, cert.NotAfter.ToString("u"));
+                            }
+                        }
+                    }
+                    if (wsus.WSUSserverAlternateCertificate != null && wsus.WSUSserverAlternateCertificate.Length > 0 
+                        && !string.IsNullOrEmpty(wsus.WSUSserverAlternate) && !WSUSCache.Contains(wsus.WSUSserverAlternate))
+                    {
+                        WSUSCache.Add(wsus.WSUSserverAlternate);
+                        X509Certificate2 cert = null;
+                        RSA key = null;
+                        try
+                        {
+                            cert = new X509Certificate2(wsus.WSUSserverAlternateCertificate);
+                            key = cert.PublicKey.Key as RSA;
+                        }
+                        catch (Exception)
+                        {
+                            Trace.WriteLine("Non RSA key detected in certificate");
+                        }
+                        if (key != null)
+                        {
+                            RSAParameters rsaparams = key.ExportParameters(false);
+                            if (rsaparams.Modulus.Length * 8 < 1024)
+                            {
+                                AddRawDetail("WSUS " + wsus.WSUSserverAlternate, cert.Subject, rsaparams.Modulus.Length * 8, cert.NotAfter.ToString("u"));
                             }
                         }
                     }

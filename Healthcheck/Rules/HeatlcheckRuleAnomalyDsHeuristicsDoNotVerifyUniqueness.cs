@@ -8,16 +8,16 @@ using PingCastle.Rules;
 
 namespace PingCastle.Healthcheck.Rules
 {
-    [RuleModel("A-DsHeuristicsAnonymous", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
+    [RuleModel("A-DsHeuristicsDoNotVerifyUniqueness", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-    [RuleSTIG("V-8555", "Anonymous Access to AD forest data above the rootDSE level must be disabled. ", STIGFramework.Forest)]
     [RuleDurANSSI(2, "dsheuristics_bad", "Dangerous dsHeuristics settings")]
-    [RuleMitreAttackTechnique(MitreAttackTechnique.BruteForcePasswordSpraying)]
-    public class HeatlcheckRuleAnomalyDsHeuristicsAnonymous : RuleBase<HealthcheckData>
+    [RuleIntroducedIn(2, 10, 1)]
+    [RuleMitreAttackTechnique(MitreAttackTechnique.ForcedAuthentication)]
+    public class HeatlcheckRuleAnomalyDsHeuristicsDoNotVerifyUniqueness : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            if (healthcheckData.DSHeuristics != null && healthcheckData.DSHeuristics.Length >= 7 && healthcheckData.DSHeuristics.Substring(6, 1) == "2")
+            if (healthcheckData.DSHeuristics != null && healthcheckData.DSHeuristics.Length >= 21 && healthcheckData.DSHeuristics.Substring(20, 1) != "0")
             {
                 return 1;
             }

@@ -34,14 +34,21 @@ namespace PingCastle.Healthcheck.Rules
                 }
                 foreach (var user in group.Members)
                 {
+                    if (user == null)
+                        continue;
                     if (user.IsService && user.PwdLastSet.AddDays(40) < DateTime.Now)
                     {
                         bool trap = false;
-                        foreach (var account in healthcheckData.ListHoneyPot)
+                        if (healthcheckData.ListHoneyPot != null)
                         {
-                            if (account.Name == user.Name || account.Name + "$" == user.Name)
+                            foreach (var account in healthcheckData.ListHoneyPot)
                             {
-                                trap = true;
+                                if (account == null)
+                                    continue;
+                                if (account.Name == user.Name || account.Name + "$" == user.Name)
+                                {
+                                    trap = true;
+                                }
                             }
                         }
                         if (!trap)

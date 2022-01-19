@@ -1,3 +1,35 @@
+2.10.1.0
+* fix more readable error message if the xml file is corrupted
+* fix a bug in P-DNSDelegation to avoid false positive when the computer is in another language than english
+* fix LTSC vs LTSB for older version of Windows 10
+* reimplemented RPC calls to avoid AV false positive
+* fix a bug in the ui if the export menu is cancelled
+* added the rule A-HardenedPaths related to STIG V-63577 (MS15-011 and MS15-014)
+* modify the report to hightlight in particular for delegations DCSync / AADConnect rights
+* added "Add access check for current user in the share scanner"
+* fix problem if there is a conflict replication when defining FSMO roles
+* fix: Do not fail if the .config file has being modified with bugged honeypot data
+* adding option --quota to limit the LDAP query speed
+* add a warning if there is a misconfiguration in the schema
+* added benchmark button
+* fix a modelisation issue when a child domain cannot reach its forest root
+* added the rule S-JavaSchema to check the presence of the RFC 2713 schema extension (java objects representation in LDAP)
+* modified the rule S-PwdLastSet-45 and S-PwdLastSet-90 to be applicable only on server data (lot of false positive for user computers connected once in a while)
+* added a section in the report to display certificate template delegations (excluded admins for clarity as other delegations)
+* added the rules S-WSUS-NoPinning, S-WSUS-UserProxy, S-WSUS-HTTP, A-WSUS-SslProtocol for WSUS configuration
+* modified the wording of the explanation of the rule P-ServiceDomainAdmin
+* added a function in export to save in a file (and on screen) all changes that occurs in real time (modulo the replication time)
+* fixed a typo in UnixPassword check which was clearing the data
+* added azure ad configuration & AzureADConnect info in the report if found
+* fixed S-DC-Inactive to not display an error about the AzureAD Kerberos account
+* fixed a bug when reloading very old PingCastle reports
+* added the rule A-DsHeuristicsDoNotVerifyUniqueness if the mitigation for CVE-2021-42282 has been disabled
+* added the rule A-DsHeuristicsLDAPSecurity if the mitigation for CVE-2021-42291 has been disabled
+* updated S-OS-W10 with new end of support dates
+* added the rule S-OS-Win8 for Windows 8 / 8.1 which is out of regular support
+* added the rule A-Guest to be sure the guest account is disabled
+* added the rule A-DnsZoneAUCreateChild for level 4 hardening about dnszone
+
 2.10.0.0
 * change pre-win 2000 compabitility group to handle group rename
 * added a setting to change the LDAP page size (to test when the AD corruption message is showing)
@@ -128,6 +160,7 @@ Information: the 3.0 version of PingCastle will run by default on .net 4 instead
 * Added ms-mcs-admpwd read check in delegations
 * Fix members of admin groups outside the AD were not visible in the report
 * Add some VPAT / RGAA V4 compability
+* update the rule P-DNSDelegation to informative as it was assigned the identifier CVE-2021-40469 and fixed by a patch in October 2021
 
 2.8.0.0
 * reworked the way third party components are included in reports for better html auditing (aka Content Security Policy)

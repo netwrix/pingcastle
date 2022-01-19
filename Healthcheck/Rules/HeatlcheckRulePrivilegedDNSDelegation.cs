@@ -10,7 +10,7 @@ using System;
 namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("P-DNSDelegation", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
-    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
     [RuleIntroducedIn(2, 8)]
     [RuleMaturityLevel(1)]
     [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
@@ -22,7 +22,9 @@ namespace PingCastle.Healthcheck.Rules
             {
                 if (delegation.DistinguishedName.StartsWith("CN=MicrosoftDNS,CN=System,DC="))
                 {
-                    if (delegation.Account.StartsWith("NT AUTHORITY\\", StringComparison.InvariantCultureIgnoreCase))
+                    //if (delegation.Account.StartsWith("NT AUTHORITY\\", StringComparison.InvariantCultureIgnoreCase))
+                    //    continue;
+                    if (delegation.SecurityIdentifier == "S-1-5-9")
                         continue;
                     if (delegation.Account.EndsWith("\\DnsAdmins", StringComparison.InvariantCultureIgnoreCase))
                         continue;

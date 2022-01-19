@@ -64,6 +64,10 @@ namespace PingCastle.Healthcheck.Rules
                             case 18362:
                                 AddRawDetail("Windows 10 1903", osVersion.data.Number, osVersion.data.NumberActive);
                                 break;
+                            case 18356:
+                            case 18908:
+                                AddRawDetail("Windows 10 " + release + " (insider)", osVersion.data.Number, osVersion.data.NumberActive);
+                                break;
                             case 17763:
                                 if (osVersion.IsLTSC)
                                 {
@@ -101,6 +105,9 @@ namespace PingCastle.Healthcheck.Rules
                                 break;
                             case 10586:
                                 AddRawDetail("Windows 10 1511", osVersion.data.Number, osVersion.data.NumberActive);
+                                break;
+                            case 10240:
+                                AddRawDetail("Windows 10 1507", osVersion.data.Number, osVersion.data.NumberActive);
                                 break;
                         }
                     }

@@ -92,7 +92,7 @@ namespace PingCastle.RPC
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         public nrpc(bool WillUseNullSession = true)
         {
-            Guid interfaceId = new Guid("12345678-1234-ABCD-EF00-01234567CFFB");
+            Guid interfaceId = new Guid(magic(8) + "-" + magic(4) + "-ABCD-EF00-01234567CFFB");
             if (IntPtr.Size == 8)
             {
                 InitializeStub(interfaceId, MIDL_ProcFormatStringx64, MIDL_TypeFormatStringx64, "\\pipe\\netlogon");

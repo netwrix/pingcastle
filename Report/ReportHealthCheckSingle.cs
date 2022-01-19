@@ -25,6 +25,7 @@ namespace PingCastle.Report
 
         protected HealthcheckData Report;
         public static int MaxNumberUsersInHtmlReport = 100;
+        public static string MaxNumberUsersInHtmlReportMessage = "Output limited to {0} items - go to the advanced menu before running the report or add \"--no-enum-limit\" to remove that limit";
         protected ADHealthCheckingLicense _license;
 
         public string GenerateReportFile(HealthcheckData report, ADHealthCheckingLicense license, string filename)
@@ -189,17 +190,76 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 ");
         }
 
+        void AddHiddenValue(string name, string value)
+        {
+            Add("<input type='hidden' name='");
+            AddEncoded(name);
+            Add("' value='");
+            AddEncoded(value);
+            Add("'>");
+        }
+
+
+        protected void AddBenchmarkSection()
+        {
+            Add(@"
+<div class=""modal"" tabindex=""-1"" role=""dialog"" id=""privacyNoticeStatistics"" >
+  <div class=""modal-dialog"" role=""document"">
+    <div class=""modal-content"">
+      <div class=""modal-header"">
+        <h4 class=""modal-title"">Privacy notive</h4>
+        <button type=""button"" class=""close"" data-dismiss=""modal"" aria-label=""Close"">
+          <span aria-hidden=""true"">&times;</span>
+        </button>
+      </div>
+      <div class=""modal-body"">
+        <p>To produce the statistics page, PingCastle will collect anonymous information in order to build this database.</p>
+        <p>The information collected depends on the license level.</p>
+        <p>Information collected:</p>
+<ul>
+<li>IP Adress<br><span class='text-muted'><small>The goal is to compute country statistics and provide protection against database poisoning.</small></span></li>
+<li>for the free license, the hash of the domain FQDN combined with the SID of the domain<br><span class='text-muted'><small>The goal is to compute the number of domains reported, without duplicates. The SID act as a salt to prohibit retrieving the original data by bruteforce.</small></span></li>
+<li>Report generation date<br><span class='text-muted'><small>This is to remove duplicates.</small></span></li>
+<li>The number of active users & active computers<br><span class='text-muted'><small>This is to compare with similar domain size.</small></span></li>
+<li>The domain score and maturity level<br><span class='text-muted'><small>This is to compare with similar domain.</small></span></li>
+<li>Rules ID that matched<br><span class='text-muted'><small>This is to present expected or non expected rules.</small></span></li>
+<li>the license<br><span class='text-muted'><small>This allows licensed customer to not transmit their domain identifier.</small></span></li>
+</ul>
+<p>Information not listed here are not sent to PingCastle</p>
+      </div>
+      <div class=""modal-footer"">
+        <button type=""button"" class=""btn btn-secondary"" data-dismiss=""modal"">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+");
+
+
+            var d = ReportBenchmark.GetData(Report, _license);
+            Add(@"<form action='");
+            Add(ReportBenchmark.GetDestination());
+            Add("' method='POST'>");
+
+            foreach (var item in d)
+            {
+                AddHiddenValue(item.Key, item.Value);
+            }
+            Add(@"<button type='submit' class='btn btn-default'>Compare with statistics</button></form>");
+            AddParagraph("<a href='#' data-toggle='modal' data-target='#privacyNoticeStatistics'>Privacy notice</a>");
+        }
+
         protected void GenerateContent()
         {
             GenerateSection("Active Directory Indicators", () =>
             {
                 AddParagraph("This section focuses on the core security indicators.<br>Locate the sub-process determining the score and fix some rules in that area to get a score improvement.");
-                GenerateIndicators(Report, Report.AllRiskRules);
+                GenerateIndicators(Report, Report.AllRiskRules, AddBenchmarkSection);
                 GenerateRiskModelPanel(Report.RiskRules);
             });
 
             GenerateSection("Maturity Level", GenerateMaturityInformation);
-            GenerateSection("Mitre Att&ck&#174;", GenerateMitreAttackInformation);
+            GenerateSection("MITRE ATT&CK&#174;", GenerateMitreAttackInformation);
 
             GenerateSection("Stale Objects", () =>
             {
@@ -227,8 +287,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             GenerateSection("Admin Groups", GenerateAdminGroupsInformation);
             GenerateSection("Control Paths Analysis", GenerateCompromissionGraphInformation);
             GenerateSection("Trusts details", GenerateTrustInformation);
-            GenerateSection("Anomalies", GenerateAnomalyDetail);
             GenerateSection("PKI", GeneratePKIDetail);
+            GenerateSection("Infrastructure", GenerateInfrastructureDetail);
+            GenerateSection("Anomalies", GenerateAnomalyDetail);
             GenerateSection("Password Policies", GeneratePasswordPoliciesDetail);
             GenerateSection("GPO", GenerateGPODetail);
         }
@@ -366,8 +427,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 if (data.ContainsKey(i) && data[i].Count > 0)
                 {
                     var l = data[i];
-                    
-                    
+
+
                     Add(@"<div id=""maturitylevel");
                     Add(i);
                     Add(@""" class=""tab-pane");
@@ -377,7 +438,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     }
                     Add(@""">");
 
-            
+
                     Add("<p class='mt-2'>");
 
                     if (nextLevels.ContainsKey(i))
@@ -448,7 +509,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
         protected void GenerateMitreAttackInformation()
         {
-            AddParagraph(@"This section represents an evaluation of the techniques available in the <a href=""https://attack.mitre.org/"">Mitre Att&ck&#174;</a>");
+            AddParagraph(@"This section represents an evaluation of the techniques available in the <a href=""https://attack.mitre.org/"">MITRE ATT&CK&#174;</a>");
             if (string.IsNullOrEmpty(_license.Edition))
             {
                 AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
@@ -819,6 +880,31 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             }
             AddEndRow();
             AddEndTable();
+
+            if (Report.version >= new Version(2, 10, 1))
+            {
+                GenerateSubSection("Azure AD Configuration", "azureAD");
+                if (string.IsNullOrEmpty(Report.AzureADName))
+                {
+                    AddParagraph("No Azure AD configuration has been found in this domain");
+                }
+                else
+                {
+                    AddParagraph(@"Here is the Azure AD configuration that has been found in the domain");
+                
+                    AddBeginTable("Azure AD information", true);
+                    AddHeaderText("Tenant name");
+                    AddHeaderText("Tenant id");
+                    AddHeaderText("Kerberos Enabled");
+                    AddBeginTableData();
+                    AddBeginRow();
+                    AddCellText(Report.AzureADName);
+                    AddCellText(Report.AzureADId);
+                    AddCellText(string.IsNullOrEmpty(Report.AzureADKerberosSid) ? "FALSE" : "TRUE");
+                    AddEndRow();
+                    AddEndTable();
+                }
+            }
         }
 
         #endregion domain info
@@ -1146,9 +1232,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         {
                             Add("<td colspan='");
                             Add(eventDate ? 5 : 4);
-                            Add("' class='text'>Output limited to ");
-                            Add(MaxNumberUsersInHtmlReport);
-                            Add(" items - go to the advanced menu before running the report or add \"--no-enum-limit\" to remove that limit</td>");
+                            Add("' class='text'>");
+                            AddEncoded(string.Format(MaxNumberUsersInHtmlReportMessage, MaxNumberUsersInHtmlReport));
+                            Add("</td>");
                         }
                     });
                 });
@@ -1290,7 +1376,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddHeaderText("Nb OS");
                 AddAccountCheckHeader(true);
                 AddBeginTableData();
-                
+
                 foreach (HealthcheckOSData os in Report.OperatingSystem)
                 {
                     if (os.OperatingSystem.Contains("Windows"))
@@ -1405,7 +1491,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             if (Report.PrivilegedGroups != null)
             {
                 GenerateSubSection("Groups", "admingroups");
-                AddParagraph("This section is focused on the groups which are critical for admin activities. If the report has been saved which the full details, each group can be zoomed with its members. If it is not the case, for privacy reasons, only general statictics are available.");
+                AddParagraph("This section is focused on the groups which are critical for admin activities. If the report has been saved which the full details, each group can be zoomed with its members. If it is not the case, for privacy reasons, only general statistics are available.");
                 AddBeginTable("Admin groups list");
                 AddHeaderText("Group Name");
                 AddHeaderText("Nb Admins", "This is the number of user accounts member of this group");
@@ -1551,9 +1637,20 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 GenerateAccordion("delegationaccordeon",
                     () =>
                     {
-                        GenerateAccordionDetailForDetail("alldelegation", "delegationaccordeon", "All delegations", Report.Delegations.Count, GenerateDelegationDetail);
+                        GenerateAccordionDetailForDetail("alldelegation", "delegationaccordeon", "All delegations", Report.Delegations.Count, () => GenerateDelegationDetail(Report.Delegations));
                     });
                 Add("</div></div>");
+                List<HealthcheckDelegationData> dcsync = new List<HealthcheckDelegationData>();
+                foreach (var d in Report.Delegations)
+                    if (d.Right.Contains(RelationType.EXT_RIGHT_REPLICATION_GET_CHANGES_ALL.ToString()))
+                        dcsync.Add(d);
+                AddParagraph("In particular for AD database access (DCSync, AADConnect, ...).");
+                GenerateAccordion("delegationaccordeondcsync",
+                    () =>
+                    {
+                        GenerateAccordionDetailForDetail("dcsyncdelegation", "delegationaccordeondcsync", "AD Database Access", dcsync.Count,
+                            () => GenerateDelegationDetail(dcsync));
+                    });
             }
         }
 
@@ -1620,7 +1717,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             return "modal" + groupname.Replace(" ", "-").Replace("<", "");
         }
 
-        private void GenerateDelegationDetail()
+        private void GenerateDelegationDetail(List<HealthcheckDelegationData> delegations)
         {
             AddBeginTable("Delegations list");
             AddHeaderText("DistinguishedName");
@@ -1628,9 +1725,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             AddHeaderText("Right");
             AddBeginTableData();
 
-            Report.Delegations.Sort(OrderDelegationData);
+            delegations.Sort(OrderDelegationData);
 
-            foreach (HealthcheckDelegationData delegation in Report.Delegations)
+            foreach (HealthcheckDelegationData delegation in delegations)
             {
                 int dcPathPos = delegation.DistinguishedName.IndexOf(",DC=");
                 string path = delegation.DistinguishedName;
@@ -1918,7 +2015,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     continue;
 
                 GenerateSubSection(ReportHelper.GetEnumDescription(typology));
-                AddParagraph("If the report has been saved which the full details, each object can be zoomed with its full detail. If it is not the case, for privacy reasons, only general statictics are available.");
+                AddParagraph("If the report has been saved which the full details, each object can be zoomed with its full detail. If it is not the case, for privacy reasons, only general statistics are available.");
                 AddBeginTable("Summary of group");
                 AddHeaderText("Group or user account", "The graph represents the objects which can take control of this group or user account.");
                 AddHeaderText("Priority", "Indicates relatively to other objects the importance of this object when establishing a remediation plan. This importance is computed based on the impact and the easiness to proceed.");
@@ -2626,6 +2723,145 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             Add("</td>");
         }
 
+        #region infrastructure
+        private void GenerateInfrastructureDetail()
+        {
+            GenerateAzureADConnect();
+            GenerateWSUS();
+            GenerateServicePoints();
+        }
+
+        private void GenerateAzureADConnect()
+        {
+            if (Report.version >= new Version(2, 10, 1))
+            {
+                GenerateSubSection("Azure AD Connect settings");
+                AddParagraph(@"Azure AD Connect help maintaining a synchronization between the Active Directory and Azure AD. Azure AD Connect servers should be considered as Tiers0 as they usually have the right to read of the hashes of the user passwords.");
+                AddBeginTable("Azure AD Connect account list");
+                AddHeaderText("Identifier", "This is the technical identifier set by Microsoft to identify this connection");
+                AddHeaderText("Computer", "This is the server where the synchronization is supposed to be performed");
+                AddHeaderText("Tenant", "This is the tenant FQDN");
+                AddHeaderText("IsEnabled", "Indicates if the account has not been disabled");
+                AddHeaderText("Created", "The creation time of the MSOL account");
+                AddHeaderText("LastLogon", "This is the last time the account has been used");
+                AddHeaderText("PwdLastSet", "This is the last time the password of the account has been changed");
+                AddHeaderText("Computer object found", "This indicates if the computer object associated with this account has been found or not");
+                AddBeginTableData();
+                if (Report.AzureADConnect != null)
+                {
+                    foreach (var a in Report.AzureADConnect)
+                    {
+                        AddBeginRow();
+                        AddCellText(a.Identifier);
+                        AddCellText(a.Computer);
+                        AddCellText(a.Tenant);
+                        AddCellText(a.MSOLIsEnabled ? "TRUE" : "FALSE", !a.MSOLIsEnabled);
+                        AddCellText(a.MSOLCreated.ToString("u"));
+                        AddCellText(a.MSOLLastLogon.ToString("u"), a.MSOLLastLogon.AddMonths(2) < DateTime.Now);
+                        AddCellText(a.MSOLPwdLastSet.ToString("u"), a.MSOLPwdLastSet.AddMonths(2) < DateTime.Now);
+                        var noComputer = string.IsNullOrEmpty(a.ComputerDN);
+                        AddCellText(noComputer ? "FALSE" : "TRUE", noComputer);
+                        AddEndRow();
+                    }
+                }
+                AddEndTable();
+            }
+        }
+
+        private void GenerateWSUS()
+        {
+            if (Report.version >= new Version(2, 10, 1))
+            {
+                GenerateSubSection("WSUS settings", "WSUSsettings");
+                AddParagraph(@"WSUS settings allow workstations and servers located on the intranet to be updated. 
+The <a href=""https://docs.microsoft.com/en-us/windows/deployment/update/waas-wu-settings"">reference documentation is here</a>. 
+Here are the settings found in GPO.");
+                AddBeginTable("WSUS settings list");
+                AddHeaderText("Policy Name");
+                AddHeaderText("WSUS Server", "This is the server that will distribute Windows Update inside the network");
+                AddHeaderText("UseWUServer", "This option defines if the configuration is activated or ignored");
+                AddHeaderText("ElevateNonAdmins", "This option specifies if normal user can disapprove updates");
+                AddHeaderText("AUOptions", "This option determines if the local user can skip some updates");
+                AddHeaderText("NoAutoUpdate", "This option disable the auto update behavior");
+                AddHeaderText("NoAutoRebootWithLoggedOnUsers", "This option can block the update if there is a logged on user");
+                AddBeginTableData();
+                if (Report.GPOWSUS != null)
+                {
+                    foreach (var a in Report.GPOWSUS)
+                    {
+                        AddBeginRow();
+                        AddGPOName(a);
+                        AddCellText(a.WSUSserver);
+                        AddCellText(GetAUOptionsText(a, "UseWUServer"));
+                        AddCellText(GetAUOptionsText(a, "ElevateNonAdmins"));
+                        AddCellText(GetAUOptionsText(a, "AUOptions"));
+                        AddCellText(GetAUOptionsText(a, "NoAutoUpdate"));
+                        AddCellText(GetAUOptionsText(a, "NoAutoRebootWithLoggedOnUsers"));
+                        AddEndRow();
+                    }
+                }
+                AddEndTable();
+            }
+        }
+
+
+        private void GenerateServicePoints()
+        {
+            if (Report.version >= new Version(2, 10, 1))
+            {
+                GenerateSubSection("Service Connection Points", "servicePoints");
+                AddParagraph(@"Service Connection Points are a configuration stored in the AD to expose services to all computers.");
+                AddBeginTable("Service Connection Points list");
+                AddHeaderText("Service", "This value is guessed by PingCastle based on well known class names");
+                AddHeaderText("Class", "This is the value of the property ServiceClassName");
+                AddHeaderText("DNS", "This is the value of the property ServiceDNSName");
+                AddHeaderText("Binding Info", "The value used to establish the connection. Its meaning is on a per class basis");
+                AddHeaderText("DN", "This is the location of the object in the AD");
+                AddBeginTableData();
+                if (Report.ServicePoints != null)
+                {
+                    var spref = new Dictionary<string, string>
+                    {
+                        {"BEMainService", "BackupExec server"},
+                        {"Novel", "Novell Groupwise"},
+                        {"7802DE87-9F23-4DAB-A31D-7991A4F11625", "Novell Groupwise"},
+                        {"FB6F0931-1D3A-4C36-8F97-EC97636138DD", "Novell Groupwise"},
+                        {"Groupwise", "Novell Groupwise"},
+                        {"ldap", "AD LDS"},
+                        {"LDAP", "AD LDS"},
+                        {"TSGateway", "RDS Gateway"},
+                        {"ms-Exchange-AutoDiscover-Service", "Exchange Autodiscover"},
+                        {"", ""},
+                    };
+                    foreach (var a in Report.ServicePoints)
+                    {
+                        AddBeginRow();
+                        if (spref.ContainsKey(a.ClassName))
+                        {
+                            AddCellText(spref[a.ClassName]);
+                        }
+                        else
+                        {
+                            AddCellText(null);
+                        }
+                        AddCellText(a.ClassName);
+                        AddCellText(a.DNS);
+                        string bindingInfo = null;
+                        if (a.BindingInfo != null)
+                        {
+                            bindingInfo = string.Join("\r\n", a.BindingInfo.ToArray());
+                        }
+                        AddCellText(bindingInfo);
+                        AddCellText(a.DN);
+                        AddEndRow();
+                    }
+                }
+                AddEndTable();
+            }
+        }
+
+        #endregion infrastructure
+
         #region anomaly
         protected void GenerateAnomalyDetail()
         {
@@ -2642,7 +2878,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             Add(@"
 		<div class=""row""><div class=""col-lg-12"">
 <p><a href=""https://support.microsoft.com/en-us/kb/3062591"">LAPS</a> is used to have a unique local administrator password on all workstations / servers of the domain.
-Then this password is changed at a fixed interval. The risk is when a local administrator hash is retrieved and used on other workstation in a pass-the-hash attack.</p>
+Then this password is changed at a fixed interval. The risk is when a local administrator hash is retrieved and used on other workstation in a pass-the-hash attack.
+Please note that the LAPS schema is installed on the forest and as a consequence the installation date can be before the domain creation date.</p>
 <p>Mitigation: having a process when a new workstation is created or install LAPS and apply it through a GPO</p>
 <p><strong>LAPS installation date: </strong> " + (Report.LAPSInstalled == DateTime.MaxValue ? "<span class=\"unticked\">Never</span>" : (Report.LAPSInstalled == DateTime.MinValue ? "<span class=\"unticked\">Not checked (older version of PingCastle)</span>" : Report.LAPSInstalled.ToString("u"))) + @"</p>
 		</div></div>
@@ -2752,6 +2989,30 @@ The userPassword attribute is also used in classic LDAP systems to change the us
             if (Report.UnixPasswordUsersCount > 0 && Report.UnixPasswordUsers != null && Report.UnixPasswordUsers.Count > 0)
             {
                 GenerateAccordion("unixpasswords", () => GenerateListAccountDetail("unixpasswords", "unixpasswordspanel", "User List With Unix Passwords", Report.UnixPasswordUsers));
+            }
+
+            // java code reference
+            if (Report.version >= new Version(2, 10, 1))
+            {
+                GenerateSubSection("Java code reference", "javacoderefence");
+                Add(@"
+		<div class=""row""><div class=""col-lg-12"">
+<p>This control detects if one of the attributes javaCodebase, javaFactory or javaClassname has been set on accounts.
+Indeed, these attributes are designed to add custom code to AD object when running java code. However it can be abused to run code on servers having the flag com.sun.jndi.ldap.object.trustURLCodebase set to true.
+This is a vulnerability similar to the log4shell vulnerability.</p>
+<p><strong>Java Schema extension:</strong> " +
+            (Report.JavaClassFound ? "<span class=\"unticked\">Found</span>" : "Not Found")
+        + @"</p>
+		</div></div>
+");
+                if (Report.JavaClassFound && Report.JavaClassFoundDetail != null && Report.JavaClassFoundDetail.Count > 0)
+                {
+                    GenerateAccordion("javacoderefencedetails", () => GenerateListAccountDetail("javacoderefencedetails", "javacoderefencedetailspanel", "User object with custom javacode", Report.JavaClassFoundDetail));
+                }
+                else
+                {
+                    AddParagraph("No active user account found with Java code");
+                }
             }
 
             if (Report.DomainControllers != null)
@@ -2886,7 +3147,35 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     }
                     AddEndTable();
                 }
+                if (Report.GPOHardenedPath != null && Report.GPOHardenedPath.Count > 0)
+                {
+                    AddAnchor("HardenedPaths");
+                    Add(@"
+		<div class=""row"">
+			<div class=""col-lg-12"">
+				<p><strong>Hardened Paths configuration</strong>
+			</div>
+		</div>");
+                    AddBeginTable("Hardened Paths");
+                    AddHeaderText("Policy Name");
+                    AddHeaderText("Key");
+                    AddHeaderText("RequireIntegrity");
+                    AddHeaderText("RequireMutualAuthentication");
+                    AddHeaderText("RequirePrivacy");
 
+                    AddBeginTableData();
+                    foreach (var e in Report.GPOHardenedPath)
+                    {
+                        AddBeginRow();
+                        AddGPOName(e);
+                        AddCellText(e.Key);
+                        AddCellText(e.RequireIntegrity == null ? null : ((bool)e.RequireIntegrity ? "Required" : "Disabled"), e.RequireIntegrity == false, false);
+                        AddCellText(e.RequireMutualAuthentication == null ? null : ((bool)e.RequireMutualAuthentication ? "Required" : "Disabled"), e.RequireMutualAuthentication == false, false);
+                        AddCellText(e.RequirePrivacy == null ? null : ((bool)e.RequirePrivacy ? "Required" : "Disabled"), e.RequirePrivacy == false, false);
+                        AddEndRow();
+                    }
+                    AddEndTable();
+                }
             }
         }
         #endregion anomaly
@@ -3048,10 +3337,33 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 			</div>
 		</div>
 ");
+                if (Report.version >= new Version(2, 10, 1))
+                {
+                    var ctdelegations = new List<HealthcheckDelegationData>();
+                    foreach (var data in Report.CertificateTemplates)
+                    {
+                        if (data.Delegations != null)
+                            ctdelegations.AddRange(data.Delegations);
+                    }
+
+                        Add(@"
+		<div class=""row"">
+			<div class=""col-lg-12"">");
+                    AddParagraph("Each delegations for certificate templates are listed below.");
+                    GenerateAccordion("ctdelegationaccordeon",
+                        () =>
+                        {
+                            GenerateAccordionDetailForDetail("ctalldelegation", "ctdelegationaccordeon", "Certificate Templates delegations", ctdelegations.Count, () => GenerateDelegationDetail(ctdelegations));
+                        });
+                    Add(@"
+			</div>
+		</div>
+");
+                }
             }
 
             int DCCertCount = 0;
-            foreach(var dc in Report.DomainControllers)
+            foreach (var dc in Report.DomainControllers)
             {
                 if (dc.LDAPCertificate != null && dc.LDAPCertificate.Length > 0)
                     DCCertCount++;
@@ -3086,7 +3398,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         AddHeaderText("Signature Alg");
                         AddBeginTableData();
 
-                        foreach(var dc in Report.DomainControllers)
+                        foreach (var dc in Report.DomainControllers)
                         {
                             if (dc.LDAPCertificate == null || dc.LDAPCertificate.Length == 0)
                                 continue;
@@ -3095,7 +3407,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                             {
                                 cert = new X509Certificate2(dc.LDAPCertificate);
                             }
-                            catch(Exception)
+                            catch (Exception)
                             {
                                 continue;
                             }
@@ -3163,7 +3475,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                             AddCellNum(modulesize);
                             AddCellText(cert.SignatureAlgorithm.FriendlyName);
                             AddEndRow();
-                           
+
 
                         }
                         AddEndTable();
@@ -3270,7 +3582,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
         {
             AddParagraph("This section focuses on security settings stored in the Active Directory technical security policies.");
             GenerateSubSection("Obfuscated Passwords", "gpoobfuscatedpassword");
-            AddParagraph("The password in GPO are obfuscated, not encrypted. Consider any passwords listed here as compromised and change it immediatly.");
+            AddParagraph("The password in GPO are obfuscated, not encrypted. Consider any passwords listed here as compromised and change them immediately.");
             if (Report.GPPPassword != null && Report.GPPPassword.Count > 0)
             {
                 AddBeginTable("Obfuscated passwords list");
@@ -3391,7 +3703,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                 }
                 AddEndTable();
             }
-
+            
             GenerateSubSection("Privileges", "gpoprivileges");
             AddParagraph("Giving privileges in a GPO is a way to become administrator without being part of a group.<br>For example, SeTcbPriviledge give the right to act as SYSTEM, which has more privileges than the administrator account.");
             if (Report.GPPRightAssignment != null && Report.GPPRightAssignment.Count > 0)
@@ -3486,6 +3798,75 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     AddEndTable();
                 }
             }
+        }
+        
+        private string GetAUOptionsText(HealthcheckWSUSData data, string name)
+        {
+            HealthcheckWSUSDataOption Option = null;
+            foreach (var o in data.Options)
+            {
+                if (o.Name == name)
+                {
+                    Option = o;
+                    break;
+                }
+            }
+            if (Option == null)
+            {
+                if (name == "UseWUServer")
+                    return "The WUServer value is not respected unless this key is set";
+                return null;
+
+            }
+            if (Option.Name == "AUOptions")
+            {
+                switch (Option.Value)
+                {
+                    case 2:
+                        return "Notify before download";
+                    case 3:
+                        return "Automatically download and notify of installation";
+                    case 4:
+                        return "Automatic download and scheduled installation";
+                    case 5:
+                        return "Automatic Updates is required, but end users can configure it";
+                }
+            }
+            else if (Option.Name == "NoAutoUpdate")
+            {
+                switch (Option.Value)
+                {
+                    case 0:
+                        return "Enable Automatic Updates";
+                    case 1:
+                        return "Disable Automatic Updates";
+                }
+            }
+            else if (Option.Name == "UseWUServer")
+            {
+                return "UseWUServer set";
+            }
+            else if (Option.Name == "NoAutoRebootWithLoggedOnUsers")
+            {
+                switch (Option.Value)
+                {
+                    case 0:
+                        return "Automatic Updates notifies user that the computer will restart in 5 minutes";
+                    case 1:
+                        return "Logged-on user gets to choose whether or not to restart his or her computer";
+                }
+            }
+            else if (Option.Name == "ElevateNonAdmins")
+            {
+                switch (Option.Value)
+                {
+                    case 0:
+                        return "Only users in the Administrators user group can approve or disapprove updates";
+                    case 1:
+                        return "Users in the Users security group are allowed to approve or disapprove updates";
+                }
+            }
+            return "Unknown option (" + Option.Value + ")";
         }
 
         private string GetAuditSimpleDescription(string category)

@@ -75,6 +75,52 @@ namespace PingCastle.shares
             return false;
         }
 
+        public static bool IsCurrentUserAllowed(string server, string share)
+        {
+            string path = "\\\\" + server + "\\" + share + "\\";
+            try
+            {
+                DirectoryInfo di = new DirectoryInfo(path);
+                // special case for the Users default folder
+                if (share.Equals("Users", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    foreach (DirectoryInfo di2 in di.GetDirectories())
+                    {
+                        if (di2.Name.Equals("Default", StringComparison.InvariantCultureIgnoreCase))
+                            continue;
+
+                        try
+                        {
+                            var files = System.IO.Directory.GetFiles(path);
+                            return true;
+                        }
+                        catch
+                        {
+                            continue;
+                        }
+                    }
+                    return false;
+                }
+                else
+                {
+                    try
+                    {
+                        var files = System.IO.Directory.GetFiles(path);
+                        return true;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(path + " " + ex.Message);
+            }
+            return false;
+        }
+
         public static bool IsSensitiveFilePresent(string server, string share)
         {
             string path = "\\\\" + server + "\\" + share + "\\";

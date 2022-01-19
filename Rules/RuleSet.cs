@@ -86,13 +86,17 @@ namespace PingCastle.Rules
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("An exception occured when running the rule : " + ruleName);
+                    Trace.WriteLine("An exception occured when running the rule : " + ruleName);
                     Console.WriteLine("Please contact support@pingcastle.com with the following details so the problem can be fixed");
                     Console.ResetColor();
                     Console.WriteLine("Message: " + ex.Message);
+                    Trace.WriteLine("Message: " + ex.Message);
                     Console.WriteLine("StackTrace: " + ex.StackTrace);
+                    Trace.WriteLine("StackTrace: " + ex.StackTrace);
                     if (ex.InnerException != null)
                     {
                         Console.WriteLine("Inner StackTrace: " + ex.InnerException.StackTrace);
+                        Trace.WriteLine("Inner StackTrace: " + ex.InnerException.StackTrace);
                     }
                 }
 

@@ -21,7 +21,7 @@ namespace PingCastle.Report
 
         #region indicators
 
-        protected void GenerateIndicators(IRiskEvaluation data, IList<IRuleScore> rules)
+        protected void GenerateIndicators(IRiskEvaluation data, IList<IRuleScore> rules, GenerateContentDelegate statistics)
         {
             GenerateSubSection("Indicators");
             Add(@"
@@ -34,8 +34,11 @@ namespace PingCastle.Report
 			<div class=""col-md-8"">
 					<p class=""lead"">Domain Risk Level: ");
             Add(data.GlobalScore.ToString());
-            Add(@" / 100</p>
-					<p>It is the maximum score of the 4 indicators and one score cannot be higher than 100. The lower the better</p>
+            Add(@" / 100</p>");
+            AddParagraph("It is the maximum score of the 4 indicators and one score cannot be higher than 100. The lower the better");
+            if (statistics != null)
+                statistics();
+            Add(@"
 			</div>
 		</div>
 		<div class=""row indicators-border"">
@@ -328,7 +331,12 @@ namespace PingCastle.Report
                 {
                     if (rule.Points == 0)
                     {
-                        Add(@"<i class=""float-right"">Informative rule</i>");
+                        Add(@"<i class=""float-right""><span class='float-right'>Informative rule</span>");
+                        if (ActionPlanOrchestrator != null)
+                        {
+                            ActionPlanOrchestrator.GenerateMainActionPlan(sb, rule, hcrule);
+                        }
+                        Add("</i>");
                     }
                     else
                     {
@@ -349,9 +357,13 @@ namespace PingCastle.Report
             if (details == null || details.Count == 0 || string.IsNullOrEmpty(details[0]))
                 return null;
             var tokens = GetTokens(details[0]);
+            if (tokens == null)
+                return null;
             for (int i = 1; i < details.Count; i++)
             {
                 var t = GetTokens(details[i]);
+                if (t == null)
+                    return null;
                 var toRemove = new List<string>();
                 foreach (var t1 in tokens)
                 {

@@ -278,7 +278,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>Domain controller: {0} Owner: {1}</value>
   </data>
   <data name="A_SHA1RootCert_Description" xml:space="preserve">
-    <value>The purpose is to ensure that there is no use of the SHA1 hashing algorithm in Root Certificate</value>
+    <value>The purpose is to ensure that no Root Certificates use the SHA-1 hashing algorithm</value>
   </data>
   <data name="A_SHA1RootCert_Solution" xml:space="preserve">
     <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
@@ -290,7 +290,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>GPO: {0} Subject: {1}</value>
   </data>
   <data name="A_SHA0RootCert_Description" xml:space="preserve">
-    <value>The purpose is to ensure that there is no use of the SHA0 hashing algorithm in Root Certificate</value>
+    <value>The purpose is to ensure that no Root Certificates use the SHA-0 hashing algorithm</value>
   </data>
   <data name="A_SHA0RootCert_Solution" xml:space="preserve">
     <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
@@ -302,7 +302,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>GPO: {0} Subject: {1}</value>
   </data>
   <data name="A_MD5RootCert_Description" xml:space="preserve">
-    <value>The purpose is to ensure that there is no use of the MD5 hashing algorithm in Root Certificate</value>
+    <value>The purpose is to ensure that no Root Certificates use the MD5 hashing algorithm</value>
   </data>
   <data name="A_MD5RootCert_Solution" xml:space="preserve">
     <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
@@ -314,7 +314,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>GPO: {0} Subject: {1}</value>
   </data>
   <data name="A_MD4RootCert_Description" xml:space="preserve">
-    <value>The purpose is to ensure that there is no use of the MD4 hashing algorithm in Root Certificate</value>
+    <value>The purpose is to ensure that no Root Certificates use the MD4 hashing algorithm</value>
   </data>
   <data name="A_MD4RootCert_Solution" xml:space="preserve">
     <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
@@ -326,7 +326,7 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>GPO: {0} Subject: {1}</value>
   </data>
   <data name="A_MD2RootCert_Description" xml:space="preserve">
-    <value>The purpose is to ensure that there is no use of the MD2 hashing algorithm in Root Certificate</value>
+    <value>The purpose is to ensure that no Root Certificates use the MD2 hashing algorithm</value>
   </data>
   <data name="A_MD2RootCert_Solution" xml:space="preserve">
     <value>To solve the matter, the certificate should be removed from the GPO and if needed, certificates depending on it should be reissued.</value>
@@ -538,10 +538,10 @@ For LmCompatibilityLevel the setting is located in: Network security: LAN Manage
     <value>Number of account(s) using a smart card whose password is not changed: {count}</value>
   </data>
   <data name="A_PwdGPO_Description" xml:space="preserve">
-    <value>The purpose is to alert when a clear text password has been identified in the GPO. Regardless of whether the password is present or not, both the account and password should be considered compromised</value>
+    <value>The purpose is to alert when a password is present in a GPO. If a password is in a GPO, the password should be considered compromised and reset.</value>
   </data>
   <data name="A_PwdGPO_Solution" xml:space="preserve">
-    <value>In order to solve this issue, you should manually change the password to a new one. If this password is shared on many systems, each system should have a different password. If the GPO was used to define the native local administrator account, it is recommended to install a password solution manager such as the LAPS solution. </value>
+    <value>To solve this issue, you should manually change the password to a new one. If this password is shared on many systems, each system should have a different password. If the GPO was used to define the native local administrator account, it is recommended to install a password solution manager such as LAPS.</value>
   </data>
   <data name="A_PwdGPO_Rationale" xml:space="preserve">
     <value>Number of password(s) found in GPO: {count}</value>
@@ -620,13 +620,14 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The group Schema Admins is not empty: {count} account(s)</value>
   </data>
   <data name="P_ServiceDomainAdmin_Description" xml:space="preserve">
-    <value>The purpose is to check for "Service Accounts" in the "Domain Administrator" group</value>
+    <value>The purpose is to check for accounts with non expiring passwords in the "Domain Administrator" group</value>
   </data>
   <data name="P_ServiceDomainAdmin_Solution" xml:space="preserve">
-    <value>To mitigate the security risk, it is strongly advised to lower the privileges of the "Service Accounts", meaning that they should be removed from the "Domain Administrator" group, while ensuring that the password of each and every "Service Account" is higher than 20 characters</value>
+    <value>Accounts with never expires passwords are mostly service accounts. 
+    To mitigate the security risk, it is strongly advised to lower the privileges of the "Service Accounts", meaning that they should be removed from the "Domain Administrator" group, while ensuring that the password of each and every "Service Account" is higher than 20 characters</value>
   </data>
   <data name="P_ServiceDomainAdmin_Rationale" xml:space="preserve">
-    <value>Presence of service accounts in the domain admin group (at least {threshold} accounts have a password which never expire): {count}</value>
+    <value>Presence of accounts with non expiring passwords in the domain admin group (at least {threshold} accounts): {count}</value>
   </data>
   <data name="P_Delegated_Description" xml:space="preserve">
     <value>The purpose is to ensure that all Administrator Accounts have the configuration flag "this account is sensitive and cannot be delegated" (and are not member of the built-in group "Protected Users" when your domain functional level is at least Windows Server 2012 R2).</value>
@@ -795,10 +796,10 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
     <value>Trust: {0}</value>
   </data>
   <data name="S_Duplicate_Description" xml:space="preserve">
-    <value>The purpose is to verify if there currently are duplicate accounts within the domain. A duplicate account is essentially a duplicate of two objects having the same attributes.</value>
+    <value>The purpose is to check if there are duplicate accounts within the domain. A duplicate account is essentially a duplicate of two objects having the same attributes.</value>
   </data>
   <data name="S_Duplicate_Solution" xml:space="preserve">
-    <value>Duplicate accounts often means there are weaknesses in term of processes, that is why they should be monitored and removed. To identify all duplicate accounts, you should use the following PowerShell commands: &lt;i&gt;get-adobject -ldapfilter "(cn=*cnf:*)"&lt;/i&gt; ; &lt;i&gt;get-adobject -ldapfilter "(sAMAccountName=$duplicate)"&lt;/i&gt;</value>
+    <value>Duplicate accounts being present often means there are process failures, and they should be identified and removed. To identify all duplicate accounts, you can use the following PowerShell commands: &lt;i&gt;get-adobject -ldapfilter "(cn=*cnf:*)"&lt;/i&gt; ; &lt;i&gt;get-adobject -ldapfilter "(sAMAccountName=$duplicate)"&lt;/i&gt;</value>
   </data>
   <data name="S_Duplicate_Rationale" xml:space="preserve">
     <value>Presence of duplicate accounts = {count}</value>
@@ -834,7 +835,7 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
     <value>The purpose is to verify that no weak encryption algorithm such as DES is used as crypto algorithm.</value>
   </data>
   <data name="S_DesEnabled_Solution" xml:space="preserve">
-    <value>It is recommended to disable DES as an encyrption algorithm in the user configuration dialog or in the "msDSSupportedEncryptionTypes" attribute at LDAP level. It has to be disabled in the property of an account by unchecking the box "Use Kerberos DES encryption for this account"</value>
+    <value>It is recommended to disable DES as an encryption algorithm in the user configuration dialog or in the "msDSSupportedEncryptionTypes" attribute at LDAP level. It has to be disabled in the property of an account by unchecking the box "Use Kerberos DES encryption for this account". You can also detect which accounts support Kerberos DES encryption by running: Get-ADUser -Filter {UserAccountControl -band 0x200000}.</value>
   </data>
   <data name="S_DesEnabled_Rationale" xml:space="preserve">
     <value>Presence of Des Enabled account = {count}</value>
@@ -903,7 +904,7 @@ Each security descriptor of the domain (including file shares for example) shoul
     <value>Check for Short password length in password policy</value>
   </data>
   <data name="P_ServiceDomainAdmin_Title" xml:space="preserve">
-    <value>Check if Service Accounts are domain administrators</value>
+    <value>Check if Service Accounts (aka accounts with never expires password) are domain administrators</value>
   </data>
   <data name="A_SHA1RootCert_Title" xml:space="preserve">
     <value>Check for Root Certificates using unsafe hashing algorithm (SHA1)</value>
@@ -1124,8 +1125,7 @@ It is possible to verify the results provided by the PingCastle solution by usin
     <value>The Protected Users group is a special group which is a very effective mitigation solution to counter attacks using Credential theft starting with Windows 8.1. Older Operating System must be updated to take this protection in account such as the &lt;b&gt;Windows 7 KB2871997&lt;/b&gt; patch.</value>
   </data>
   <data name="A_PwdGPO_TechnicalExplanation" xml:space="preserve">
-    <value>A check is performed to identify passwords in the GPO. If a password is identified through the PingCastle solution, it means that it can be identified through many other means by attackers, and that the account should be considered compromised. 
-Do note that the AES key used to encrypt passwords in GPOs has been made public for interoperability reasons, which is why even an encrypted password is compromised. It has been revealed in &lt;a href="https://msdn.microsoft.com/en-us/library/cc422924.aspx"&gt;this page&lt;/a&gt;</value>
+    <value>PingCastle attempts to identify passwords stored in GPOs. If PingCastle was able to retrieve a password, attackers can also obtain it and so the account should be considered compromised. Note that Microsoft published the AES key used to encrypt passwords in GPOs, which is why even an encrypted password is insecure.</value>
   </data>
   <data name="A_ReversiblePwd_TechnicalExplanation" xml:space="preserve">
     <value>The policy "Store passwords using reversible encryption" is enabled. In this case, it means that the password is actually stored in clear text in the &lt;i&gt;supplementalCredential&lt;/i&gt; attribute of the account and that it can be retrieved using DCSync attack.</value>
@@ -1173,7 +1173,8 @@ Do note that the AES key used to encrypt passwords in GPOs has been made public 
     <value>The group "Schema Admins" is used to give permissions to alter the schema. Once a modification is performed on the schema such as new objects, it cannot be undone. This can result in a rebuild of the domain. The best practice is to have this group empty and to add an administrator when a schema update is required then to remove this group membership.</value>
   </data>
   <data name="P_ServiceDomainAdmin_TechnicalExplanation" xml:space="preserve">
-    <value>"Service Accounts" can imply a high security risk as their password are stored in clear text in the LSA database, which can then be easily exploited using Mimikatz or Cain&amp;Abel for instance. In addition, their passwords don't change and can be used in kerberoast attacks.</value>
+    <value>PingCastle is checking accounts with never expires password that are mostly used as service accounts.
+    "Service Accounts" can imply a high security risk as their password are stored in clear text in the LSA database, which can then be easily exploited using Mimikatz or Cain&amp;Abel for instance. In addition, their passwords don't change and can be used in kerberoast attacks.</value>
   </data>
   <data name="P_UnkownDelegation_TechnicalExplanation" xml:space="preserve">
     <value>In the case where a delegation has been created where the account can't be translated to a NT account, it means that the delegation is actually from another domain or that the user has been deleted. </value>
@@ -1207,29 +1208,29 @@ Do note that the AES key used to encrypt passwords in GPOs has been made public 
     <value>When multiple sites are created in a domain, networks should be declared in the domain in order to optimize processes such as DC attribution. In addition, PingCastle can collect the information to be able to build a network map. This rule has been triggered because at least one domain controller has an IP address which was not found in subnet declaration. These IP addresses have been collected by querying the DC FQDN IP address in both IPv6 and IPv4 format.</value>
   </data>
   <data name="S_DesEnabled_TechnicalExplanation" xml:space="preserve">
-    <value>DES is very weak algorithm and once assigned to an account, it can be used in Kerberos ticket requests, even though it is easily breakable. It represents a security risk for the kerberos ticket, therefore for the whole AD.</value>
+    <value>DES is a very weak algorithm and once assigned to an account, it can be used in Kerberos ticket requests, even though it is easily cracked. If the attacker cracks the Kerberos ticket, they can steal the token and compromise the user account.</value>
   </data>
   <data name="S_Domain____TechnicalExplanation" xml:space="preserve">
     <value>To migrate accounts to another domain, the attribute SID History should be added to the new account. Despite the fact that numerous hacking tools such as mimikatz allows the creation of the SID History attribute, its official creation requires the presence of a special auditing group named DOMAIN-$$$ such as TEST-$$$ for the TEST domain.</value>
   </data>
   <data name="S_Duplicate_TechnicalExplanation" xml:space="preserve">
-    <value>In order to identify a duplicate account, a check is performed on the "DN" and the "sAMAccountName". Indeed, when a DC detects a conflict, there is a replacement performed on the second object</value>
+    <value>To identify a duplicate account, a check is performed on the "DN" and the "sAMAccountName". When a DC detects a conflict, there is a replacement performed on the second object.</value>
   </data>
   <data name="S_Inactive_TechnicalExplanation" xml:space="preserve">
     <value>Inactive accounts often stay in the network because of weaknesses in the decommissioning process. These stale computer accounts can be used as backdoors and therefore represents a possible security breach. </value>
   </data>
   <data name="S_OS_2000_TechnicalExplanation" xml:space="preserve">
-    <value>The Windows 2000 OS is not supported any longer, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
+    <value>The Windows 2000 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
   </data>
   <data name="S_OS_2003_TechnicalExplanation" xml:space="preserve">
-    <value>The Windows 2003 OS is not supported any longer, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
+    <value>The Windows 2003 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
   </data>
   <data name="S_OS_NT_TechnicalExplanation" xml:space="preserve">
-    <value>The Windows NT OS is not supported any longer, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.
+    <value>The Windows NT OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.
 </value>
   </data>
   <data name="S_OS_XP_TechnicalExplanation" xml:space="preserve">
-    <value>The Windows XP OS is not supported any longer, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
+    <value>The Windows XP OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
   </data>
   <data name="S_PrimaryGroup_TechnicalExplanation" xml:space="preserve">
     <value>In Active Directory, group membership is stored on the "members" attribute and on the "primarygroupid" attribute. The default primary group value is "Domain Users" for the users, "Domain Computers" for the computers and "Domain Controllers" for the domain controllers. The primarygroupid contains the RID (last digits of a SID) of the group targeted. It can be used to store hidden membership as this attribute is not often analyzed.</value>
@@ -1287,7 +1288,8 @@ You can use the PowerShell command to get its status:
     <value>https://msdn.microsoft.com/en-us/library/ms675212(v=vs.85).aspx</value>
   </data>
   <data name="A_AnonymousAuthorizedGPO_Documentation" xml:space="preserve">
-    <value>https://technet.microsoft.com/en-us/library/cc963223.aspx https://technet.microsoft.com/en-us/library/jj852184.aspx</value>
+    <value>https://technet.microsoft.com/en-us/library/cc963223.aspx
+https://technet.microsoft.com/en-us/library/jj852184.aspx</value>
   </data>
   <data name="A_BackupMetadata_Documentation" xml:space="preserve">
     <value>https://technet.microsoft.com/en-us/library/jj130668(v=ws.10).aspx</value>
@@ -1428,7 +1430,8 @@ http://blog.backslasher.net/preventing-users-from-adding-computers-to-a-domain.h
     <value />
   </data>
   <data name="S_DesEnabled_Documentation" xml:space="preserve">
-    <value>https://docs.microsoft.com/en-us/archive/blogs/openspecification/msds-supportedencryptiontypes-episode-1-computer-accounts</value>
+    <value>https://docs.microsoft.com/en-us/archive/blogs/openspecification/msds-supportedencryptiontypes-episode-1-computer-accounts
+https://docs.microsoft.com/en-us/services-hub/health/remediation-steps-ad/remove-the-highly-insecure-des-encryption-from-user-accounts</value>
   </data>
   <data name="S_Domain____Documentation" xml:space="preserve">
     <value />
@@ -1548,7 +1551,7 @@ https://github.com/misterch0c/shadowbroker/tree/master/windows/exploits </value>
     <value>https://msdn.microsoft.com/en-us/library/cc246675.aspx</value>
   </data>
   <data name="S_NoPreAuth_Description" xml:space="preserve">
-    <value>The purpose is to ensure that all accounts do support kerberos pre-authentication</value>
+    <value>The purpose is to ensure that all accounts require kerberos pre-authentication</value>
   </data>
   <data name="S_NoPreAuth_Documentation" xml:space="preserve">
     <value>http://www.harmj0y.net/blog/activedirectory/roasting-as-reps/</value>
@@ -1560,10 +1563,10 @@ https://github.com/misterch0c/shadowbroker/tree/master/windows/exploits </value>
     <value>Edit the property of the involved accounts and select the Account tab. Uncheck "Do not require Kerberos preauthentication". For computers which doesn't have the Account tab, you have to manually edit the attribute useraccountcontrol. Subtract from the attribute the value 4194304.</value>
   </data>
   <data name="S_NoPreAuth_TechnicalExplanation" xml:space="preserve">
-    <value>Without kerberos pre-authentication, an attacker can request kerberos data from the domain controller and use this data to brute-force the account password. You can search accounts using the ldap query &lt;i&gt;Get-ADObject -LDAPFilter "(userAccountControl:1.2.840.113556.1.4.803:=4194304)"&lt;/i&gt;</value>
+    <value>Without kerberos pre-authentication, an attacker can request kerberos data from the domain controller and use this data to crack the account password. You can find which accounts don't require Kerberos pre-authentication with the PowerShell command: &lt;i&gt;Get-ADObject -LDAPFilter "(userAccountControl:1.2.840.113556.1.4.803:=4194304)"&lt;/i&gt;</value>
   </data>
   <data name="S_NoPreAuth_Title" xml:space="preserve">
-    <value>Check if all accounts do support kerberos pre-authentication</value>
+    <value>Check if all accounts require kerberos pre-authentication</value>
   </data>
   <data name="P_DelegationLoginScript_Description" xml:space="preserve">
     <value>The purpose is to ensure that standard users cannot modify login scripts</value>
@@ -1599,7 +1602,7 @@ https://github.com/misterch0c/shadowbroker/tree/master/windows/exploits </value>
     <value>The spooler service is remotely accessible from {count} DC</value>
   </data>
   <data name="A_DC_Spooler_TechnicalExplanation" xml:space="preserve">
-    <value>When there’s an account with unconstrained delegation configured (which is fairly common) and the Print Spooler service running on a computer, you can get that computers credentials sent to the system with unconstrained delegation as a user. With a domain controller, the TGT of the DC can be extracted allowing an attacker to reuse it with a DCSync attack and obtain all user hashes and impersonate them.</value>
+    <value>When there's an account with unconstrained delegation configured (which is fairly common) and the Print Spooler service running on a computer, you can get that computers credentials sent to the system with unconstrained delegation as a user. With a domain controller, the TGT of the DC can be extracted allowing an attacker to reuse it with a DCSync attack and obtain all user hashes and impersonate them.</value>
   </data>
   <data name="A_DC_Spooler_Detail" xml:space="preserve">
     <value>Domain controller: {0}</value>
@@ -1764,8 +1767,8 @@ SeBackupPrivilege can be used to backup Windows registry and use third party too
 SeTakeOwnershipPrivilege can be used to take ownership of any secureable object in the system including a service registry key. Then to change its ACL to define its own service running as LocalSystem.
 SeCreateTokenPrivilege can be used to create a custom token with all privileges and thus be abused like SeTcbPrivilege 
 SeImpersonatePrivilege and SeAssignPrimaryTokenPrivilege can be abused to impersonate privileged tokens. These tokens can be retrieved by establishing security context such as Local DCOM DCE/RPC reflexion.
-SeSecurityPrivilege can be use to clear the security event log and shrink it to make events flushed soon. Also read security log and view events where the user inverted the login and its password.
-SeManageVolumePrivilege can be use to reset the security descriptor on the C volume and thus, change the inherited permissions to critical files</value>
+SeSecurityPrivilege can be used to clear the security event log and shrink it to make events flushed soon. Also read security log and view events where the user inverted the login and its password.
+SeManageVolumePrivilege can be used to reset the security descriptor on the C volume and thus, change the inherited permissions to critical files</value>
   </data>
   <data name="P_PrivilegeEveryone_Title" xml:space="preserve">
     <value>Ensure that dangerous privileges are not granted to everyone by GPO</value>
@@ -1997,7 +2000,7 @@ https://support.microsoft.com/en-us/help/4490059/using-shared-permissions-model-
   <data name="P_ExchangePrivEsc_Solution" xml:space="preserve">
     <value>Edit the root domain security descriptor. Identify the ACE giving the right ModifyDACL to the principal Exchange Windows Permissions. Go to the advanced settings and set the inheritance to Inherit Only.
     
-Or run the powershell script Fix-DomainObjectDACL.ps1 referenced below.</value>
+Or run the PowerShell script Fix-DomainObjectDACL.ps1 referenced below.</value>
   </data>
   <data name="P_ExchangePrivEsc_TechnicalExplanation" xml:space="preserve">
     <value>When Exchange is installed, a set of permissions is modified to allow a deep Windows integration. A dependancy analysis has shown that the permissions that Exchange set introduce privilege escalation.
@@ -2051,7 +2054,7 @@ As an alternative, the file GptTmpl.inf can be manually edited.</value>
   <data name="P_RecycleBin_Solution" xml:space="preserve">
     <value>First, be sure that the forest level is at least Windows 2008 R2.
     You can check it with Get-ADForest or in the &lt;a href="#domaininformation"&gt;Domain Information&lt;/a&gt; section.
-  Then you can enable it using the powershell command:
+  Then you can enable it using the PowerShell command:
 Enable-ADOptionalFeature -Identity 'Recycle Bin Feature' -Scope ForestOrConfigurationSet -Target 'test.mysmartlogon.com'</value>
   </data>
   <data name="P_RecycleBin_TechnicalExplanation" xml:space="preserve">
@@ -2208,7 +2211,7 @@ As an alternative, the file GptTmpl.inf can be manually edited.</value>
     <value>The detail can be found in &lt;a href="#lsasettings"&gt;Security settings&lt;/a&gt;</value>
   </data>
   <data name="P_DelegationFileDeployed_Description" xml:space="preserve">
-    <value>The purpose is to check that files deployed to computers cannot be changed by everyone.</value>
+    <value>The purpose is to ensure that files deployed to computers cannot be changed by everyone.</value>
   </data>
   <data name="P_DelegationFileDeployed_Documentation" xml:space="preserve">
     <value />
@@ -2217,13 +2220,13 @@ As an alternative, the file GptTmpl.inf can be manually edited.</value>
     <value>At least one GPO is deploying a file which can be modified by everyone</value>
   </data>
   <data name="P_DelegationFileDeployed_Solution" xml:space="preserve">
-    <value>Locate the file mentionned by the GPO specified in Details and change its permissions.</value>
+    <value>Locate the file mentioned by the GPO specified in Details and change its permissions.</value>
   </data>
   <data name="P_DelegationFileDeployed_TechnicalExplanation" xml:space="preserve">
-    <value>Application provided in a msi form or general files can be deployed by a GPO. If an attacker can modify one of this file, it can take control of the user account.</value>
+    <value>Applications and other files can be deployed by a GPO. If an attacker can modify one of these files, they may be able to compromise the user's account.</value>
   </data>
   <data name="P_DelegationFileDeployed_Title" xml:space="preserve">
-    <value>Ensure that file deployed by a GPO cannot be modified by everyone.</value>
+    <value>Ensure that files deployed by a GPO cannot be modified by everyone.</value>
   </data>
   <data name="P_DelegationFileDeployed_Detail" xml:space="preserve">
     <value>GPO: {0} Type: {1} FileName: {2} Account: {3} Right: {4}</value>
@@ -2259,7 +2262,7 @@ As an alternative, the file GptTmpl.inf can be manually edited.</value>
     <value>The purpose is to ensure that local name resolution protocol (LLMNR) cannot be used to collect credentials by performing a network attack</value>
   </data>
   <data name="A_NoGPOLLMNR_Solution" xml:space="preserve">
-    <value>Enable the GPO &lt;a href="https://getadmx.com/?Category=Windows_10_2016&amp;Policy=Microsoft.Policies.DNSClient::Turn_Off_Multicast"&gt;Turn off multicast name resolution&lt;/a&gt; and check that no GPO override this setting.
+    <value>Enable the GPO &lt;a href="https://docs.microsoft.com/en-us/windows/client-management/mdm/policy-csp-admx-dnsclient#admx-dnsclient-turn-off-multicast"&gt;Turn off multicast name resolution&lt;/a&gt; and check that no GPO override this setting.
     (if it is the case, the policy involved will be displayed below)</value>
   </data>
   <data name="A_NoGPOLLMNR_Rationale" xml:space="preserve">
@@ -2433,13 +2436,13 @@ If the user is a person, the SPN attribute of the account should be removed.</va
     <value>Group: {0} User: {1}</value>
   </data>
   <data name="P_Kerberoasting_TechnicalExplanation" xml:space="preserve">
-    <value>To access a service using kerberos, a user does request a ticket (named TGS) to the DC specific to the service.
-However this ticket is encrypted using a derivative of the service password. This ticket can then be brute-forced to retrieve the original password.
+    <value>To access a service using Kerberos, a user requests a ticket (named TGS) to the DC specific to the service.
+This ticket is encrypted using a derivative of the service password, but can be brute-forced to retrieve the original password.
 Any account having the attribute SPN populated is considered as a service account.
-Given the fact that any user can request a ticket for service account, these accounts can have their password retrieved.
+Given that any user can request a ticket for a service account, these accounts can have their password retrieved.
 In addition, services are known to have their password not changed at a regular basis and to use well-known words.
 
-Please note that this program skips service accounts having their password changed for less than 40 days ago to allow a mitigation using a password change process.</value>
+Please note that this program ignores service accounts that had their password changed in the last 40 days ago to support using password rotation as a mitigation.</value>
   </data>
   <data name="P_Kerberoasting_Documentation" xml:space="preserve">
     <value>https://adsecurity.org/?p=3466</value>
@@ -2454,9 +2457,20 @@ Please note that this program skips service accounts having their password chang
     <value>The purpose is to ensure that no specific delegation has been setup to manage the Microsoft DNS.</value>
   </data>
   <data name="P_DNSDelegation_Solution" xml:space="preserve">
-    <value>You should remove the explicit write delegation located in the CN=MicrosoftDNS,CN=System container and do a proper delegation.
+    <value>Rule update:
+The Path Tuesday of October 2021 fixed this vulnerability and assigned it the identifier CVE-2021-40469.
+If the patch has been applied, there is no additional mitigation to perform.
+
+This rule is transformed into an informative rule in PingCastle 2.10.1 and will be removed in future version of PingCastle.
+      
+      You should remove the explicit write delegation located in the CN=MicrosoftDNS,CN=System container and do a proper delegation.
     First, grant only "Read Property", "List", "List object" and "Read permssions" to CN=MicrosoftDNS,CN=System to enable access to the RPC service.
-  Then on each zone (the object in the tree below with the class dnsZone), grant "Read Property", "List", "List object", "Read permissions", "Create Child", "Delete Child", "Delete", "Delete Tree".</value>
+  Then on each zone (the object in the tree below with the class dnsZone), grant "Read Property", "List", "List object", "Read permissions", "Create Child", "Delete Child", "Delete", "Delete Tree".
+
+
+
+After the Patch day the Key does exist. 
+    </value>
   </data>
   <data name="P_DNSDelegation_Rationale" xml:space="preserve">
     <value>An explicit delegation has been put in place to manage the Microsoft DNS service.</value>
@@ -2476,7 +2490,9 @@ In this case, an explicit delegation has been setup and this delegation is not u
   </data>
   <data name="P_DNSDelegation_Documentation" xml:space="preserve">
     <value>https://medium.com/@esnesenon/feature-not-bug-dnsadmin-to-dc-compromise-in-one-line-a0f779b8dc83
-https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dnsp/007efcd2-2955-46dd-a59e-f83ae88f4678</value>
+https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dnsp/007efcd2-2955-46dd-a59e-f83ae88f4678
+https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-40469
+https://blog.0patch.com/2021/11/micropatch-for-remote-code-execution-by.html</value>
   </data>
   <data name="P_DNSDelegation_Title" xml:space="preserve">
     <value>Check if there is an explicit delegation on DNS servers.</value>
@@ -2592,7 +2608,7 @@ https://github.com/ANSSI-FR/AD-control-paths</value>
     <value>The detail can be found in &lt;a href="#controlpath"&gt;Control Paths Analysis&lt;/a&gt;</value>
   </data>
   <data name="P_ControlPathIndirectMany_Description" xml:space="preserve">
-    <value>The purpose is to ensure that there is no control path involving a large number of users.</value>
+    <value>The purpose is to check if users can abuse their write access to obtain additional privileges.</value>
   </data>
   <data name="P_ControlPathIndirectMany_Solution" xml:space="preserve">
     <value>You should analyze the chart and determine which underlying object is involved and grants too much write permissions.
@@ -2700,24 +2716,24 @@ https://adsecurity.org/?p=376</value>
     <value>The detail can be found in &lt;a href="#domaincontrollersection"&gt;Domain controllers&lt;/a&gt;</value>
   </data>
   <data name="A_AuditPowershell_Description" xml:space="preserve">
-    <value>The purpose is to ensure that Powershell logging is enabled.</value>
+    <value>The purpose is to ensure that PowerShell logging is enabled.</value>
   </data>
   <data name="A_AuditPowershell_Solution" xml:space="preserve">
     <value>Go to Computer Configuration -&gt; Administrative Templates -&gt; Windows Components -&gt; Windows PowerShell
-And enable "Turn on Module logging" and "Turn on Powershell Script Block logging"
+And enable "Turn on Module logging" and "Turn on PowerShell Script Block logging"
 We recommend to set "*" as the module list.
   </value>
   </data>
   <data name="A_AuditPowershell_Rationale" xml:space="preserve">
-    <value>The powershell audit configuration is not fully enabled.</value>
+    <value>The PowerShell audit configuration is not fully enabled.</value>
   </data>
   <data name="A_AuditPowershell_Detail" xml:space="preserve">
     <value />
   </data>
   <data name="A_AuditPowershell_TechnicalExplanation" xml:space="preserve">
-    <value>Powershell is a powerful language, also used by hackers because of this quality. Hackers are able to run programs such as mimikatz in memory using obfuscated commands such as Invoke&#8211;Mimikatz.
+    <value>PowerShell is a powerful language, also used by hackers because of this quality. Hackers are able to run programs such as mimikatz in memory using obfuscated commands such as Invoke&#8211;Mimikatz.
     Because there is no artefact on the disk, the incident response task is difficult for the forensic analysts.
-    For this reason, we recommend to enable Powershell logging via a group policy, despite the fact that these security settings may be part of the workstation or server images.
+    For this reason, we recommend to enable PowerShell logging via a group policy, despite the fact that these security settings may be part of the workstation or server images.
     </value>
   </data>
   <data name="A_AuditPowershell_Documentation" xml:space="preserve">
@@ -2725,7 +2741,7 @@ We recommend to set "*" as the module list.
 https://docs.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-logging?view=powershell-6</value>
   </data>
   <data name="A_AuditPowershell_Title" xml:space="preserve">
-    <value>Check if there is powershell logging enabled.</value>
+    <value>Check if PowerShell logging is enabled.</value>
   </data>
   <data name="A_AuditPowershell_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href="#lsasettings"&gt;Security settings&lt;/a&gt;</value>
@@ -2734,7 +2750,7 @@ https://docs.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-loggi
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows Vista for the workstations within the domain</value>
   </data>
   <data name="S_OS_Vista_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt; You can replace &lt;i&gt;[-Filter *]&lt;/i&gt; with &lt;i&gt;[-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_Vista_Rationale" xml:space="preserve">
     <value>Presence of Windows Vista = {count}</value>
@@ -2743,7 +2759,7 @@ https://docs.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-loggi
     <value>Obsolete OS (Windows Vista)</value>
   </data>
   <data name="S_OS_Vista_TechnicalExplanation" xml:space="preserve">
-    <value>The Windows Vista OS is not supported any longer, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
+    <value>The Windows Vista OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
   </data>
   <data name="S_OS_Vista_Documentation" xml:space="preserve">
     <value />
@@ -2788,7 +2804,7 @@ https://docs.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-loggi
     <value>In order to solve this security issue, you should upgrade all the servers to a more recent version of Windows, starting from Windows 2012. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2008_TechnicalExplanation" xml:space="preserve">
-    <value>The Windows 2008 OS is not supported any longer, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
+    <value>The Windows 2008 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
   </data>
   <data name="S_OS_2008_Title" xml:space="preserve">
     <value>Obsolete OS (Windows 2008)</value>
@@ -3102,7 +3118,7 @@ Please note that at the time of writing, Microsoft supports it until Windows 202
     </value>
   </data>
   <data name="S_DC_Inactive_TechnicalExplanation" xml:space="preserve">
-    <value>Domain Controllers are user accounts with powerfull privileges.
+    <value>Domain Controllers are user accounts with powerful privileges.
     While an active Domain Controller change its password every 30 days, an inactive account can be involved in a domain compromise.
     Indeed, another account, which have rights over this object, may reset the password of this account without being noticed.
     </value>
@@ -3325,13 +3341,13 @@ PARTIAL_SECRETS_ACCOUNT (0x04000000) | TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION (0
   </data>
   <data name="P_DelegationDCsourcedeleg_Solution" xml:space="preserve">
     <value>You should edit the msDS-AllowedToDelegateToattribute attribute of the domain controllers and remove the account involved.
-    You can do this with the powershell command:
+    You can do this with the PowerShell command:
     Set-ADComputer COMPUTER -PrincipalsAllowedToDelegateToAccount $Null
     </value>
   </data>
   <data name="P_DelegationDCsourcedeleg_TechnicalExplanation" xml:space="preserve">
     <value>Resource based contrained delegation are a new feature of Windows 2012 which tries to handle the limitation of Constrained delegations.
-    This delegation is defined by setting the msDS-AllowedToDelegateToattribute attribute either using the GUI or a powershell command.
+    This delegation is defined by setting the msDS-AllowedToDelegateToattribute attribute either using the GUI or a PowerShell command.
 </value>
   </data>
   <data name="P_DelegationDCsourcedeleg_Title" xml:space="preserve">
@@ -3356,7 +3372,7 @@ PARTIAL_SECRETS_ACCOUNT (0x04000000) | TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION (0
     <value>Check that the "Pre-Windows 2000 Compatible Access" group has not being modified from its default</value>
   </data>
   <data name="P_ProtectedUsers_Description" xml:space="preserve">
-    <value>The purpose is to ensure that all privileged accounts are in the special group Protected Users</value>
+    <value>The purpose is to ensure that all privileged accounts are in the Protected User security group</value>
   </data>
   <data name="P_ProtectedUsers_Detail" xml:space="preserve">
     <value>User: {0}</value>
@@ -3377,13 +3393,13 @@ https://blog.andreas-schreiner.de/2018/09/07/active-directory-sicherheit-teil-1-
     <value>After having reviewed the potential impact on adding users to this group, add the missing privileged accounts to this group.</value>
   </data>
   <data name="P_ProtectedUsers_TechnicalExplanation" xml:space="preserve">
-    <value>The Protected Users group is a special group which is a very effective mitigation solution to counter attacks using Credential theft starting with Windows 8.1. Older Operating System must be updated to take this protection in account such as the Windows 7 KB2871997 patch.
+    <value>The Protected User group is a special security group which automatically applies protections to minimize credential exposure. starting with Windows 8.1. Older Operating System must be updated to take this protection in account such as the Windows 7 KB2871997 patch.
     For admins, it:
-- disable NTLM authentication
-- reduce Kerberos ticket lifetime
-- enforce usage of strong encryption algorthms such as AES
-- prevent caching of passwords on workstations
-- prevent any type of Kerberos delegation
+- Disables NTLM authentication
+- Reduces Kerberos ticket lifetime
+- Mandates strong encryption algorithms, such as AES
+- Prevents password caching on workstations
+- Prevents any type of Kerberos delegation
 
 Please also note that a few links (see below) recommends that at least one account is kept outside of the group Protected Users in case there is a permission problem.
 That's why this rule is not triggered if only one account is not protected.</value>
@@ -3398,7 +3414,8 @@ That's why this rule is not triggered if only one account is not protected.</val
     <value>Computer: {0} Creation: {1} LastUsed: {2} LastChange: {3}</value>
   </data>
   <data name="S_PwdLastSet_45_Documentation" xml:space="preserve">
-    <value>https://support.microsoft.com/en-us/help/154501/how-to-disable-automatic-machine-account-password-changes</value>
+    <value>https://support.microsoft.com/en-us/help/154501/how-to-disable-automatic-machine-account-password-changes
+https://access.redhat.com/discussions/1283873</value>
   </data>
   <data name="S_PwdLastSet_45_Rationale" xml:space="preserve">
     <value>Number of computer without password change: {count}</value>
@@ -3413,6 +3430,8 @@ That's why this rule is not triggered if only one account is not protected.</val
       If it is not the case, check the following registry keys:
 * HKLM\System\CurrentControlSet\Services\Netlogon\Parameters\DisablePasswordChange: must be set to 0 or inexistent;
 * HKLM\System\CurrentControlSet\Services\Netlogon\Parameters\MaximumPasswordAge: must be set to 30.
+
+For Linux systems, the password change may not be enabled by default - solutions exist, see the link in documentation, like a daily cron job to run msktutil --auto-update.
     </value>
   </data>
   <data name="S_PwdLastSet_45_TechnicalExplanation" xml:space="preserve">
@@ -3434,7 +3453,8 @@ That's why this rule is not triggered if only one account is not protected.</val
     <value>Computer: {0} Creation: {1} LastUsed: {2} LastChange: {3}</value>
   </data>
   <data name="S_PwdLastSet_90_Documentation" xml:space="preserve">
-    <value>https://support.microsoft.com/en-us/help/154501/how-to-disable-automatic-machine-account-password-changes</value>
+    <value>https://support.microsoft.com/en-us/help/154501/how-to-disable-automatic-machine-account-password-changes
+https://access.redhat.com/discussions/1283873</value>
   </data>
   <data name="S_PwdLastSet_90_Rationale" xml:space="preserve">
     <value>Number of computer without password change for at least 3 months: {count}</value>
@@ -3449,6 +3469,8 @@ That's why this rule is not triggered if only one account is not protected.</val
       If it is not the case, check the following registry keys:
 * HKLM\System\CurrentControlSet\Services\Netlogon\Parameters\DisablePasswordChange: must be set to 0 or inexistent;
 * HKLM\System\CurrentControlSet\Services\Netlogon\Parameters\MaximumPasswordAge: must be set to 30.
+
+For Linux systems, the password change may not be enabled by default - solutions exist, see the link in documentation, like a daily cron job to run msktutil --auto-update.
     </value>
   </data>
   <data name="S_PwdLastSet_90_TechnicalExplanation" xml:space="preserve">
@@ -3489,7 +3511,7 @@ That's why this rule is not triggered if only one account is not protected.</val
     <value>Check if all admin passwords are changed on the field.</value>
   </data>
   <data name="S_NoPreAuthAdmin_Description" xml:space="preserve">
-    <value>The purpose is to ensure that all admin accounts do support kerberos pre-authentication</value>
+    <value>The purpose is to ensure that all admin accounts require kerberos pre-authentication</value>
   </data>
   <data name="S_NoPreAuthAdmin_Detail" xml:space="preserve">
     <value>Account: {0} Created: {1} LastLogon: {2}</value>
@@ -3510,7 +3532,7 @@ That's why this rule is not triggered if only one account is not protected.</val
     <value>Without kerberos pre-authentication, an attacker can request kerberos data from the domain controller and use this data to brute-force the account password. You can search accounts using the ldap query &lt;i&gt;(userAccountControl:1.2.840.113556.1.4.803:=4194304)&lt;/i&gt;</value>
   </data>
   <data name="S_NoPreAuthAdmin_Title" xml:space="preserve">
-    <value>Check if all admin accounts do support kerberos pre-authentication</value>
+    <value>Check if all admin accounts require kerberos pre-authentication</value>
   </data>
   <data name="S_NoPreAuth_Detail" xml:space="preserve">
     <value>Account: {0} Created: {1} LastLogon: {2}</value>
@@ -3703,7 +3725,7 @@ The settings that you selected appear as preference items in the Registry Wizard
   </data>
   <data name="A_NoNetSessionHardening_TechnicalExplanation" xml:space="preserve">
     <value>By default, Windows computers allow any authenticated user to enumerate network sessions to it.
-This means an attacker could enumerate network sessions to a file share hosting home directories or a Domain Controller to see who’s connected to SYSVOL (to apply Group Policy) and determine which workstations each user and admin account is logged into.
+This means an attacker could enumerate network sessions to a file share hosting home directories or a Domain Controller to see who's connected to SYSVOL (to apply Group Policy) and determine which workstations each user and admin account is logged into.
 Bloodhound uses this capability extensively to map out credentials in the network.
 
 Disabling Net Session Enumeration removes the capability for any user to enumerate net session info (Recon).</value>
@@ -3728,7 +3750,7 @@ https://www.blackhillsinfosec.com/domain-goodness-learned-love-ad-explorer/</val
     <value>The detail can be found in &lt;a href="#unixpasswordsfound"&gt;Unix Passwords&lt;/a&gt;</value>
   </data>
   <data name="A_UnixPwd_Solution" xml:space="preserve">
-    <value>The attribute unixUserPassword and userPassword should be cleared from the mentionned user account, unless the remote system is known to have a strong cryptographic protocol.</value>
+    <value>The attribute unixUserPassword and userPassword should be cleared from the mentioned user account, unless the remote system is known to have a strong cryptographic protocol.</value>
   </data>
   <data name="A_UnixPwd_TechnicalExplanation" xml:space="preserve">
     <value>To perform Single Sign On (SSO) systems need to share secrets with Active Directory.
@@ -3747,7 +3769,7 @@ A misconfigured application can change the user password using this old mechanis
     <value>Check if attributes unixUserPassword and userPassword are set</value>
   </data>
   <data name="T_AzureADSSO_Description" xml:space="preserve">
-    <value>The purpose is to check that password rotation is in place with AzureAD SSO</value>
+    <value>The purpose is to check that password rotation is in place with Azure AD SSO</value>
   </data>
   <data name="T_AzureADSSO_Detail" xml:space="preserve">
     <value />
@@ -3758,7 +3780,7 @@ https://itpro-tips.com/wp-content/uploads/files/TechnetGallery/Azure-AD-SSO-Key-
 https://www.dsinternals.com/en/impersonating-office-365-users-mimikatz/</value>
   </data>
   <data name="T_AzureADSSO_Rationale" xml:space="preserve">
-    <value>The password used in AzureAD SSO has not been changed for at least one year</value>
+    <value>The password used in Azure AD SSO has not been changed for at least one year</value>
   </data>
   <data name="T_AzureADSSO_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href="#azure"&gt;Azure&lt;/a&gt;</value>
@@ -3791,7 +3813,7 @@ That means that an extraction of its password (using DCSync for example) can lea
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_Win7_TechnicalExplanation" xml:space="preserve">
-    <value>The Windows 7 OS is not supported any longer, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.
+    <value>The Windows 7 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.
 PingCastle is trying to guess if support has been purchased from Microsoft. Based on the documentation referenced below, the program checks if the script Activate-ProductOnline.ps1 is present.
 If the script is detected, Windows 7 is considered as supported and this rule is not triggered.</value>
   </data>
@@ -3958,7 +3980,7 @@ https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-a
     <value>Check the permission of agent certificate templates</value>
   </data>
   <data name="A_CertTempCustomSubject_Description" xml:space="preserve">
-    <value>The purpose of this rule is to ensure that there is no certificate request having an authentication purpose whose subject can be modified</value>
+    <value>The purpose of this rule is to ensure that no certificate request templates allow users to control the subject</value>
   </data>
   <data name="A_CertTempCustomSubject_Detail" xml:space="preserve">
     <value>Name: {0}</value>
@@ -3975,22 +3997,23 @@ https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-a
   </data>
   <data name="A_CertTempCustomSubject_Solution" xml:space="preserve">
     <value>On the certificate template properties, uncheck in the property sheet "Subject Name" the field "Supply in the request".
-    Or in alternative, restrict this template to a restricted group.
+     Alternatively, restrict this template to a specific group.
     </value>
   </data>
   <data name="A_CertTempCustomSubject_TechnicalExplanation" xml:space="preserve">
     <value>Usually, the subject of a certificate is generated automatically by the certification authority.
-    By allowing its manual edition before its issuance, a malicious user can set the subject to match an administrator account, and thus get a certificate representing them.
-  This certificate can be abuse later to impersonate them.</value>
+    By allowing editing before its issuance, a malicious user can set the subject to an administrator account, and thus get a certificate representing them.
+  This certificate can be abused later to impersonate them.</value>
   </data>
   <data name="A_CertTempCustomSubject_Title" xml:space="preserve">
-    <value>Check the if a custom subject can be pushed on an authentication certificate templates</value>
+    <value>Check if authentication certificate templates allow users to control the subject</value>
   </data>
   <data name="A_PreWin2000AuthenticatedUsers_Description" xml:space="preserve">
     <value>The purpose is check if the "Pre-Windows 2000 Compatible Access" group contains authenticated users</value>
   </data>
   <data name="A_PreWin2000AuthenticatedUsers_Documentation" xml:space="preserve">
-    <value>https://msdn.microsoft.com/en-us/library/cc223672.aspx</value>
+    <value>https://msdn.microsoft.com/en-us/library/cc223672.aspx
+https://www.gradenegger.eu/?p=1132</value>
   </data>
   <data name="A_PreWin2000AuthenticatedUsers_Rationale" xml:space="preserve">
     <value>The PreWin2000 compatible group contains "authenticated users"</value>
@@ -4011,13 +4034,13 @@ https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-a
     <value>Check that the "Pre-Windows 2000 Compatible Access" group does not contain "Authenticated Users"</value>
   </data>
   <data name="S_OS_W10_Description" xml:space="preserve">
-    <value>The purpose is to ensure that there is no use of non supported version of Windows 10 within the domain</value>
+    <value>The purpose is to ensure that there is no use of non-supported version of Windows 10 within the domain</value>
   </data>
   <data name="S_OS_W10_Documentation" xml:space="preserve">
     <value>https://docs.microsoft.com/en-us/windows/release-health/release-information</value>
   </data>
   <data name="S_OS_W10_Rationale" xml:space="preserve">
-    <value>Presence of non supported Windows 10 = {count}</value>
+    <value>Presence of non-supported version of Windows 10 = {count}</value>
   </data>
   <data name="S_OS_W10_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href="#operatingsystems"&gt;Operating Systems&lt;/a&gt;</value>
@@ -4027,7 +4050,7 @@ https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-a
     Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows 10*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_W10_TechnicalExplanation" xml:space="preserve">
-    <value>Some versions of Windows 10 OS is not supported any longer, and may be vulnerable to exploits that are not patched anymore.</value>
+    <value>Some versions of Windows 10 OS is no longer supported, and may be vulnerable to exploits that are not patched anymore.</value>
   </data>
   <data name="S_OS_W10_Title" xml:space="preserve">
     <value>Obsolete OS (Windows 10)</value>
@@ -4036,7 +4059,7 @@ https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-a
     <value>Version: {0}  Number: {1} Active: {2}</value>
   </data>
   <data name="S_ADRegistrationSchema_Description" xml:space="preserve">
-    <value>The purpose is to ensure that there is no schema class that can be used to create arbitrary objects</value>
+    <value>The purpose is to ensure that no schema class can be used to create arbitrary objects</value>
   </data>
   <data name="S_ADRegistrationSchema_Documentation" xml:space="preserve">
     <value>
@@ -4053,17 +4076,17 @@ https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-34470</value>
   <data name="S_ADRegistrationSchema_Solution" xml:space="preserve">
     <value>For PossSuperiorComputer:
     You have to edit the schema to change the value of the attribute possSuperior and remove the "computer" value.
-  A powershell script in the documentation provides a fix.
+  A PowerShell script in the documentation provides a fix.
 
 For PossSuperiorUser:
     You have to edit the schema to change the value of the attribute possSuperior and remove the "user" value.
-  A powershell script in the documentation provides a fix.
+  A PowerShell script in the documentation provides a fix.
   
 Also the class msExchStorageGroup is known to have this vulnerability via the CVE-2021-34470.
 In this case, the vulnerability is exploitable even if Exchange has been uninstalled.</value>
   </data>
   <data name="S_ADRegistrationSchema_TechnicalExplanation" xml:space="preserve">
-    <value>The Classes added to the schema provide additional object types. If misconfigured, a class can be used to bypass security restriction.
+    <value>The Classes added to the schema provide additional object types. If misconfigured, a class can be used to bypass a security restriction.
     For the vulnerability PossSuperiorComputer:
     A class has the attribute possSuperiors containing the class "computer" and this class inherits from "container".
   That means that every computer can request this class to be added.
@@ -4078,5 +4101,375 @@ In this case, the vulnerability is exploitable even if Exchange has been uninsta
   </data>
   <data name="S_ADRegistrationSchema_Detail" xml:space="preserve">
     <value>Class: {0}  Vulnerability: {1}</value>
+  </data>
+  <data name="A_HardenedPaths_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no weakness related to hardened paths</value>
+  </data>
+  <data name="A_HardenedPaths_Documentation" xml:space="preserve">
+    <value>
+https://labs.f-secure.com/archive/how-to-own-any-windows-network-with-group-policy-hijacking-attacks/
+https://talubu.wordpress.com/2018/02/28/configuring-unc-hardened-access-through-group-policy/
+https://adsecurity.org/?p=1405
+https://support.microsoft.com/en-us/topic/ms15-011-vulnerability-in-group-policy-could-allow-remote-code-execution-february-10-2015-91b4bda2-945d-455b-ebbb-01d1ec191328</value>
+  </data>
+  <data name="A_HardenedPaths_Rationale" xml:space="preserve">
+    <value>Hardened Paths have been modified to lower the security level</value>
+  </data>
+  <data name="A_HardenedPaths_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in the &lt;a href="#HardenedPaths"&gt;Hardened Paths configuration&lt;/a&gt; section.</value>
+  </data>
+  <data name="A_HardenedPaths_Solution" xml:space="preserve">
+    <value>You have to edit the Hardened Path section in the GPO.
+    This section is located in Computer Configuration/Policies/Administrative Templates/Network/Network Provider
+  Check each value reported here and make sure that entries containing SYSVOL or NETLOGON have RequireIntegrity and RequireMutualAuthentication set to 1.
+  In addition to that, check entries having the pattern \\DCName\* and apply the same solution.</value>
+  </data>
+  <data name="A_HardenedPaths_TechnicalExplanation" xml:space="preserve">
+    <value>Two vulnerabilities have been reported in 2015 (MS15-011 and MS15-014) which allows a domain takeover via GPO modifications done with a man-in-the-middle attack.
+    To mitigate these vulnerabilites, Microsoft has designed a workaround named "Hardened Paths". It forces connection settings to enforce Integrity, Mutual Authentication or Privacy.
+    By default if this policy is empty, if will enforce Integrity and Mutual Authentication on the SYSVOL or NETLOGON shares.
+    This rule checks if there have been any overwrite to disable this protection.
+    </value>
+  </data>
+  <data name="A_HardenedPaths_Title" xml:space="preserve">
+    <value>Hardened Paths weakness</value>
+  </data>
+  <data name="A_HardenedPaths_Detail" xml:space="preserve">
+    <value>GPO: {0}  Key: {1} RequireIntegrity: {2} RequireMutualAuthentication: {3} RequirePrivacy: {4}</value>
+  </data>
+  <data name="S_JavaSchema_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no java schema extension</value>
+  </data>
+  <data name="S_JavaSchema_Documentation" xml:space="preserve">
+    <value>
+https://www.blackhat.com/docs/us-16/materials/us-16-Munoz-A-Journey-From-JNDI-LDAP-Manipulation-To-RCE.pdf
+https://datatracker.ietf.org/doc/html/rfc2713
+https://docs.oracle.com/cd/E19424-01/820-4813/6ng8jv82s/index.html</value>
+  </data>
+  <data name="S_JavaSchema_Rationale" xml:space="preserve">
+    <value>The Java schema extension has been found</value>
+  </data>
+  <data name="S_JavaSchema_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in the &lt;a href="#javacoderefence"&gt;Java Code Reference&lt;/a&gt; section.</value>
+  </data>
+  <data name="S_JavaSchema_Solution" xml:space="preserve">
+    <value>Unforuntaly there can be legit cases to use these java attributes, that's why this rule is set to informative only.
+The recommended way to deal with this situation is to make sure that no objects are using these attributes or to set the value com.sun.jndi.ldap.object.trustURLCodebase to false to ALL the java code.
+PingCastle is displaying the active users having these java attributes set in the Detail section.
+
+If you want to disable the java extension you can proceed by setting each java attributes to defunct.
+See the following procedure to disable existing schema attribute : https://docs.microsoft.com/en-us/windows/win32/ad/disabling-existing-classes-and-attributes
+</value>
+  </data>
+  <data name="S_JavaSchema_TechnicalExplanation" xml:space="preserve">
+    <value>The Log4shell vulnerability abused the fact that log4j could load objects via a special string containing jndi load instructions.
+This load instruction refers to many protocols such as corba, dns, ... but also LDAP.
+This rule checks if the RFC 2713 schema extension, which allows the representation of java objects in the AD, has been applied.
+More precisely it checks if the schema contains the java attributes javacodebase, javafactory, javaclassname, javaremotelocation or javaserializeddata.
+
+If the attributes have been found in the schema, the program reports if one of these attributes have been found on enabled user accounts.</value>
+  </data>
+  <data name="S_JavaSchema_Title" xml:space="preserve">
+    <value>Search for Java schema extension RFC 2713</value>
+  </data>
+  <data name="S_JavaSchema_Detail" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="S_WSUS_HTTP_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no access of WSUS server via HTTP</value>
+  </data>
+  <data name="S_WSUS_HTTP_Documentation" xml:space="preserve">
+    <value>
+https://www.gosecure.net/blog/2021/11/22/gosecure-investigates-abusing-windows-server-update-services-wsus-to-enable-ntlm-relaying-attacks/
+https://github.com/pimps/wsuxploit
+https://github.com/GoSecure/WSuspicious
+https://docs.microsoft.com/en-us/windows/deployment/update/waas-wu-settings</value>
+  </data>
+  <data name="S_WSUS_HTTP_Rationale" xml:space="preserve">
+    <value>WSUS is configured with http instead of https</value>
+  </data>
+  <data name="S_WSUS_HTTP_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in the &lt;a href="#WSUSsettings"&gt;WSUS settings&lt;/a&gt; section.</value>
+  </data>
+  <data name="S_WSUS_HTTP_Solution" xml:space="preserve">
+    <value>WSUS needs to be configured with HTTPS.
+See this guide for more information:
+https://docs.microsoft.com/en-us/windows-server/administration/windows-server-update-services/deploy/2-configure-wsus#23-secure-wsus-with-the-secure-sockets-layer-protocol
+    
+Then all GPO which reference the HTTP path should be changed to the HTTPS path.
+This program is looking at the settings defined in "Set the intranet update service for detecting updates" and "Set the alternate download server" in GPO Computer Configuration\Policies\Administrative Templates\Windows Components\Windows Update\Specify intranet Microsoft update service location
+(refers to registry key HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\WUServer and HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\UpdateServiceUrlAlternate)
+</value>
+  </data>
+  <data name="S_WSUS_HTTP_TechnicalExplanation" xml:space="preserve">.
+    <value>WSUS is the component used on the intranet to deliver Windows updates. The recommendation of Microsoft is to use https for transport but for convenience or tests, http can be configured.
+The HTTP protocol can be intercepted on the network with tools such as wsuxploit or WSuspicious (see below for links) and malicious updates can be delivered.
+The attacker can then take control of many assets.</value>
+  </data>
+  <data name="S_WSUS_HTTP_Title" xml:space="preserve">
+    <value>Search for WSUS configuration using HTTP instead of HTTPS</value>
+  </data>
+  <data name="S_WSUS_HTTP_Detail" xml:space="preserve">
+    <value>GPO: {0} Server: {1}</value>
+  </data>
+  <data name="S_WSUS_UserProxy_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no user proxy possibility for WSUS</value>
+  </data>
+  <data name="S_WSUS_UserProxy_Documentation" xml:space="preserve">
+    <value>
+https://www.gosecure.net/blog/2021/11/22/gosecure-investigates-abusing-windows-server-update-services-wsus-to-enable-ntlm-relaying-attacks/
+https://github.com/pimps/wsuxploit
+https://github.com/GoSecure/WSuspicious
+https://docs.microsoft.com/en-us/windows/client-management/mdm/policy-csp-update#update-setproxybehaviorforupdatedetection
+  </value>
+  </data>
+  <data name="S_WSUS_UserProxy_Rationale" xml:space="preserve">
+    <value>WSUS is configured to accept user proxy</value>
+  </data>
+  <data name="S_WSUS_UserProxy_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in the &lt;a href="#WSUSsettings"&gt;WSUS settings&lt;/a&gt; section.</value>
+  </data>
+  <data name="S_WSUS_UserProxy_Solution" xml:space="preserve">
+    <value>The use of a user proxy need to be disabled.
+    This program is looking at element named Select the proxy behavior defined in GPO Computer Configuration\Policies\Administrative Templates\Windows Components\Windows Update\Specify intranet Microsoft update service location
+(refers to registry key HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\SetProxyBehaviorForUpdateDetection)
+
+OR WSUS needs to be configured with HTTPS.
+See this guide for more information:
+https://docs.microsoft.com/en-us/windows-server/administration/windows-server-update-services/deploy/2-configure-wsus#23-secure-wsus-with-the-secure-sockets-layer-protocol
+</value>
+  </data>
+  <data name="S_WSUS_UserProxy_TechnicalExplanation" xml:space="preserve">.
+    <value>Unprivileged domain users may set a user proxy that is used for Windows Update if it is being allowed by a GPO.
+    Since the cumulative updates from September 2020 and January 2021, WSUS clients do not use the user proxy to connect to the server by default.
+    However, it is possible to configure a GPO setting that allows the connection via user proxy as a fallback to the system proxy.
+  
+    This program consider as an anomaly if the setting SetProxyBehaviorForUpdateDetection is set, combined with a HTTP WSUS server.</value>
+  </data>
+  <data name="S_WSUS_UserProxy_Title" xml:space="preserve">
+    <value>Search for WSUS configuration enabling the use of a user proxy</value>
+  </data>
+  <data name="S_WSUS_UserProxy_Detail" xml:space="preserve">
+    <value>GPO: {0}</value>
+  </data>
+  <data name="S_WSUS_NoPinning_Description" xml:space="preserve">
+    <value>The purpose is to ensure that WSUS Certificate Pinning has not been disabled</value>
+  </data>
+  <data name="S_WSUS_NoPinning_Documentation" xml:space="preserve">
+    <value>
+https://www.gosecure.net/blog/2021/11/22/gosecure-investigates-abusing-windows-server-update-services-wsus-to-enable-ntlm-relaying-attacks/
+https://github.com/pimps/wsuxploit
+https://github.com/GoSecure/WSuspicious
+https://docs.microsoft.com/en-us/windows/client-management/mdm/policy-csp-update#update-donotenforceenterprisetlscertpinningforupdatedetection
+  </value>
+  </data>
+  <data name="S_WSUS_NoPinning_Rationale" xml:space="preserve">
+    <value>The Certificate Pinning security of WSUS has been disabled</value>
+  </data>
+  <data name="S_WSUS_NoPinning_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in the &lt;a href="#WSUSsettings"&gt;WSUS settings&lt;/a&gt; section.</value>
+  </data>
+  <data name="S_WSUS_NoPinning_Solution" xml:space="preserve">
+    <value>Remove the setting which disable the Certificate Pinning for WSUS.
+    
+    It is located in: Computer Configuration\Policies\Administrative Templates\Windows Components\Windows Update\Specify intranet Microsoft update service location
+  This is the setting "Allow user proxy to be used as a fallback if detection using system proxy fails".
+  
+  It refers to the registry key: HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\DoNotEnforceEnterpriseTLSCertPinningForUpdateDetection
+</value>
+  </data>
+  <data name="S_WSUS_NoPinning_TechnicalExplanation" xml:space="preserve">.
+    <value>Even though HTTPS makes it harder for attackers to intercept WSUS responses, it it still possible with a specific configuration.
+    HTTPS connections may be intercepted by a proxy that signs the response again with a self-signed certificate after receiving it from the WSUS server.
+    The certificate can be installed in a user cert store so responses from the HTTPS proxy can still be validated.
+In the cumulative update of January 2021, Microsoft implemented a certificate pinning mechanism where the certificate served by the WSUS' IIS server is installed in a system cert store specifically for WSUS (WindowsServerUpdateServices) that an unauthenticated user cannot control.
+Certificates in this store are enforced by default to mitigate HTTPS-intercepting proxy attacks but this pinning mechanism can also be disabled via GPO.
+
+If the WSUS cert store does not contain any certificates, the pinning will not be enforced, too.
+
+PingCastle cannot check if the certificate is present to enforce the certificate pinning, but it checks if a GPO disable this security.</value>
+  </data>
+  <data name="S_WSUS_NoPinning_Title" xml:space="preserve">
+    <value>Search for WSUS configuration where Certificate Pinning has been disabled</value>
+  </data>
+  <data name="S_WSUS_NoPinning_Detail" xml:space="preserve">
+    <value>GPO: {0}</value>
+  </data>
+  <data name="A_WSUS_SslProtocol_Description" xml:space="preserve">
+    <value>The purpose is to ensure that all WSUS servers don't use weak SSL protocols.</value>
+  </data>
+  <data name="A_WSUS_SslProtocol_Solution" xml:space="preserve">
+    <value>Apply Windows updates and registry tweaks described in the documentation section to disable the weak SSL protocols.
+  </value>
+  </data>
+  <data name="A_WSUS_SslProtocol_Rationale" xml:space="preserve">
+    <value>At least one WSUS server uses a weak SSL protocol.</value>
+  </data>
+  <data name="A_WSUS_SslProtocol_Detail" xml:space="preserve">
+    <value>WSUS: {0} Protocol: {1}</value>
+  </data>
+  <data name="A_WSUS_SslProtocol_TechnicalExplanation" xml:space="preserve">
+    <value>SSL version 2 and SSL version 3 are considered weak and it is strongly advised to disable them.
+    The SSL protocols in Windows is provided by the Schannel component.
+The Schannel component needs to be tuned in order to not propose these weak protocols. Many guidelines to handle this problem issued by Microsoft do not talk about Schannel but rather IIS. These guidlines are quoted in the documentation section below.
+
+PingCastle is able to check the SSL version if SSL is exposed.
+Please note that PingCastle is using the native .Net SSL stack to perform this test. .Net begins to ignore these weak protocols starting the version 4.7 of the framework and as a consequence, PingCasle may miss some weak protocol detection.
+
+To test these protocol, you can use openssl with the following commands:
+openssl s_client -connect dc.domain.local:636 -ssl2
+openssl s_client -connect dc.domain.local:636 -ssl3
+    </value>
+  </data>
+  <data name="A_WSUS_SslProtocol_Documentation" xml:space="preserve">
+    <value>https://social.technet.microsoft.com/wiki/contents/articles/2249.windows-server-20082008r2-how-to-disable-sslv2-on-domain-controller-dsforum2wiki.aspx
+https://support.microsoft.com/en-us/help/187498/how-to-disable-pct-1-0-ssl-2-0-ssl-3-0-or-tls-1-0-in-internet-informat
+https://adsecurity.org/?p=376</value>
+  </data>
+  <data name="A_WSUS_SslProtocol_Title" xml:space="preserve">
+    <value>Check if LDAPS is used with weak SSL protocol.</value>
+  </data>
+  <data name="A_WSUS_SslProtocol_ReportLocation" xml:space="preserve">
+     <value>The detail can be found in the &lt;a href="#WSUSsettings"&gt;WSUS settings&lt;/a&gt; section.</value>
+  </data>
+  <data name="A_DsHeuristicsDoNotVerifyUniqueness_Description" xml:space="preserve">
+    <value>The purpose is to identify domains having the SPN and UPN uniqueness check disabled</value>
+  </data>
+  <data name="A_DsHeuristicsDoNotVerifyUniqueness_Documentation" xml:space="preserve">
+    <value>https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/e5899be4-862e-496f-9a38-33950617d2c5
+https://support.microsoft.com/en-us/topic/kb5008382-verification-of-uniqueness-for-user-principal-name-service-principal-name-and-the-service-principal-name-alias-cve-2021-42282-4651b175-290c-4e59-8fcb-e4e5cd0cdb29</value>
+  </data>
+  <data name="A_DsHeuristicsDoNotVerifyUniqueness_Rationale" xml:space="preserve">
+    <value>DsHeuristics has been set to disable the UPN or SPN uniqueness check</value>
+  </data>
+  <data name="A_DsHeuristicsDoNotVerifyUniqueness_Solution" xml:space="preserve">
+    <value>The easiest and fastest way to correct this issue is to &lt;b&gt;replace the 21th character of the DsHeuristics attribute&lt;/b&gt;. If it is not a 0, replace by 0 to fix the issue.</value>
+  </data>
+  <data name="A_DsHeuristicsDoNotVerifyUniqueness_TechnicalExplanation" xml:space="preserve">
+    <value>The way an Active Directory behaves can be controlled via the attribute &lt;i&gt;DsHeuristics&lt;/i&gt; of &lt;i&gt;CN=Directory Service,CN=Windows NT,CN=Services,CN=Configuration&lt;/i&gt;. A parameter stored in its attribute and whose value is &lt;i&gt;DoNotVerifyUPNAndOrSPNUniqueness&lt;/i&gt; can be set to disable the UPN or SPN check.
+This setting has been introduced to overwrite the mitigation of the vulnerability CVE-2021-42282 fixed by the KB5008382.</value>
+  </data>
+  <data name="A_DsHeuristicsDoNotVerifyUniqueness_Title" xml:space="preserve">
+    <value>Check if the UPN and SPN uniqueness check has been disabled</value>
+  </data>
+	<data name="A_DsHeuristicsLDAPSecurity_Description" xml:space="preserve">
+    <value>The purpose is to identify domains having mitigation for CVE-2021-42291 not set to enabled</value>
+  </data>
+	<data name="A_DsHeuristicsLDAPSecurity_Documentation" xml:space="preserve">
+    <value>https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/e5899be4-862e-496f-9a38-33950617d2c5
+https://support.microsoft.com/en-au/topic/kb5008383-active-directory-permissions-updates-cve-2021-42291-536d5555-ffba-4248-a60e-d6cbc849cde1</value>
+  </data>
+	<data name="A_DsHeuristicsLDAPSecurity_Rationale" xml:space="preserve">
+    <value>DsHeuristics has not been set to enable the mitigation for CVE-2021-42291</value>
+  </data>
+	<data name="A_DsHeuristicsLDAPSecurity_Solution" xml:space="preserve">
+    <value>The easiest and fastest way to correct this issue is to &lt;b&gt;replace the 28th and 29th character of the DsHeuristics attribute&lt;/b&gt;.
+    The value of LDAPAddAutZVerifications and LDAPOwnerModify should be set to 1.
+    
+    Open the procedure embedded into the KB5008383 to apply this mitigation and change the DsHeuristics value.
+    
+    Note: you have to pay attention that there is control characters at the 10th and 20th position to avoid undesired changes of the DsHeuristics attribute.
+    Typically if the DsHeuristics is empty, the expected new value is 00000000010000000002000000011
+    </value>
+  </data>
+	<data name="A_DsHeuristicsLDAPSecurity_TechnicalExplanation" xml:space="preserve">
+    <value>The way an Active Directory behaves can be controlled via the attribute &lt;i&gt;DsHeuristics&lt;/i&gt; of &lt;i&gt;CN=Directory Service,CN=Windows NT,CN=Services,CN=Configuration&lt;/i&gt;.
+    A parameter stored in its attribute and whose value is &lt;i&gt;LDAPAddAutZVerifications&lt;/i&gt; and &lt;i&gt;LDAPOwnerModify&lt;/i&gt; can be set to modify the mitigatation of CVE-2021-42291.
+The KB5008383 has introduced changes to default security descriptor of Computer containers to add audit and limit computer creation without being admin.
+Indeed, it is recommended to not let anyone create computer accounts as they can be used to abuse kerberos or to perform relay attacks.
+
+Mitigations in CVE-2021-42291 consist of 3 choices to be set on 2 settings.
+They are named LDAPAddAutZVerifications and LDAPOwnerModify and are respectively the 28th and 29th character of this string.
+For the expected values:
+- With the value 0 (the default), it enables an additional audit mechanism
+- With the value 1 (recommended), it enforces new security permissions, especially to require an action of the domain admin when unusual actions are performed
+- With the value 2 (not recommended), it disables the audit mechanism that has been added by default and do not enable the new security permissions
+</value>
+  </data>
+  <data name="A_DsHeuristicsLDAPSecurity_Detail" xml:space="preserve">
+    <value>Setting: {0} Position: {1} Value: {2}</value>
+  </data>
+	<data name="A_DsHeuristicsLDAPSecurity_Title" xml:space="preserve">
+    <value>Check if the mitigation for CVE-2021-42291 has been enabled</value>
+  </data>
+    <data name="S_OS_Win8_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 8 for the workstations within the domain</value>
+  </data>
+  <data name="S_OS_Win8_Documentation" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="S_OS_Win8_Rationale" xml:space="preserve">
+    <value>Presence of Windows 8 = {count}</value>
+  </data>
+  <data name="S_OS_Win8_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#operatingsystems"&gt;Operating Systems&lt;/a&gt;</value>
+  </data>
+  <data name="S_OS_Win8_Solution" xml:space="preserve">
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+  </data>
+  <data name="S_OS_Win8_TechnicalExplanation" xml:space="preserve">
+    <value>The Windows 8 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
+  </data>
+  <data name="S_OS_Win8_Title" xml:space="preserve">
+    <value>Obsolete OS (Windows 8)</value>
+  </data>
+  <data name="A_Guest_Description" xml:space="preserve">
+    <value>The purpose is to ensure that the guest account of the domain is not enabled</value>
+  </data>
+  <data name="A_Guest_Documentation" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="A_Guest_Rationale" xml:space="preserve">
+    <value>The Guest account of the domain is enabled</value>
+  </data>
+  <data name="A_Guest_ReportLocation" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="A_Guest_Solution" xml:space="preserve">
+    <value>You have to find the GUEST account and disable it.</value>
+  </data>
+  <data name="A_Guest_TechnicalExplanation" xml:space="preserve">
+    <value>The GUEST account is a special account whose SID is S-1-5-domain-501. It is used as a non nominative account to allow anyone to connect to the Active Directory.
+Unless there is a justification about its activation, this represents a security issue because anybody can use this account to connect to any computer without any trace.</value>
+  </data>
+  <data name="A_Guest_Title" xml:space="preserve">
+    <value>Check if the guest account is enabled</value>
+  </data>
+  <data name="A_DnsZoneAUCreateChild_Description" xml:space="preserve">
+    <value>The purpose is to check if Authenticated Users has the right to create DNS records</value>
+  </data>
+  <data name="A_DnsZoneAUCreateChild_Documentation" xml:space="preserve">
+    <value>https://www.ws-its.de/gegenmassnahme-zum-angriff-dns-wildcard/
+https://www.netspi.com/blog/technical/network-penetration-testing/exploiting-adidns/</value>
+  </data>
+  <data name="A_DnsZoneAUCreateChild_Rationale" xml:space="preserve">
+    <value>Authenticated Users can create DNS records</value>
+  </data>
+  <data name="A_DnsZoneAUCreateChild_Solution" xml:space="preserve">
+    <value>As today this rule is considered as informative because the default configuration where Authenticated Users can create DNS records is considered safe.
+  The reason for this classification is that no exploitation of that vulnerability has been reported.
+    
+The proposed enhancement is to replace the identity who has been granted the right to create DNS Records (permission CreateChild) from Authenticated Users to Domain Computers.
+To perform this change, you have to edit the permission of the DNSZone whose object is located in the container CN=MicrosoftDNS,DC=DomainDnsZones.
+
+It should be noticed that if there is a privilege escalation on a computer, an attacker can impersonate the computer account and bypass this mitigation.
+
+The best mitigation is to create the DNS records manually as part as the domain join process and to revoke the permission granted to Authenticated Users.
+    </value>
+  </data>
+  <data name="A_DnsZoneAUCreateChild_TechnicalExplanation" xml:space="preserve">
+    <value>When a computer is joined to a domain, a DNS record is created in the DnsZone to allow the computer to update its DNS settings.
+    By design, Microsoft choose to grant to the group Authenticated Users (aka every computers and users) the right to create DNS records.
+    Once created, only the owner keep the right to edit the new object.
+    
+    The vulnerability is that specific DNS records can be created to perform man-in-the-middle attacks.
+    One example is to create a wildcard record (a record with the name "*"), a failover DNS record or anticipating the creation of a DNS record with the right permissions.
+</value>
+  </data>
+  <data name="A_DnsZoneAUCreateChild_Detail" xml:space="preserve">
+    <value>DNSZone: {0}</value>
+  </data>
+  <data name="A_DnsZoneAUCreateChild_Title" xml:space="preserve">
+    <value>Check if Authenticated Users can create DNS records</value>
   </data>
 </root>

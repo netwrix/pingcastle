@@ -20,8 +20,15 @@ namespace PingCastle
                 if (!type.IsAbstract && typeof(IScanner).IsAssignableFrom(type))
                 {
                     PropertyInfo pi = type.GetProperty("Name");
-                    IScanner scanner = (IScanner)Activator.CreateInstance(type);
-                    output.Add(scanner.Name, type);
+                    try
+                    {
+                        IScanner scanner = (IScanner)Activator.CreateInstance(type);
+                        output.Add(scanner.Name, type);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Unable to load the class " + type + " (" + ex.Message + ")");
+                    }
                 }
             }
             return output;

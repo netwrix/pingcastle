@@ -155,6 +155,8 @@ namespace PingCastle.ADWS
         public string fSMORoleOwner { get; set; }
         [ADAttributeAttribute("gPCFileSysPath", ADAttributeValueKind.StringValue)]
         public string GPCFileSysPath { get; set; }
+        [ADAttributeAttribute("keywords", ADAttributeValueKind.StringArrayValue)]
+        public string[] Keywords { get; set; }
         [ADAttributeAttribute("gPLink", ADAttributeValueKind.StringValue)]
         public string GPLink { get; set; }
         [ADAttributeAttribute("lastLogonTimestamp", ADAttributeValueKind.DateValue)]
@@ -257,6 +259,13 @@ namespace PingCastle.ADWS
         public SecurityIdentifier SecurityIdentifier { get; set; }
         [ADAttributeAttribute("servicePrincipalName", ADAttributeValueKind.StringArrayValue)]
         public string[] ServicePrincipalName { get; set; }
+        [ADAttributeAttribute("serviceClassName", ADAttributeValueKind.StringValue)]
+        public string ServiceClassName { get; set; }
+        [ADAttributeAttribute("serviceDNSName", ADAttributeValueKind.StringValue)]
+        public string ServiceDNSName { get; set; }
+        [ADAttributeAttribute("serviceBindingInformation", ADAttributeValueKind.StringArrayValue)]
+        public string[] ServiceBindingInformation { get; set; }
+
         [ADAttributeAttribute("sIDHistory", ADAttributeValueKind.SIDArrayValue)]
         public SecurityIdentifier[] SIDHistory { get; set; }
         [ADAttributeAttribute("siteObject", ADAttributeValueKind.StringValue)]

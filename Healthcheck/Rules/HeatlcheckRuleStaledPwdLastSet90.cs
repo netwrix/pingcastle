@@ -23,7 +23,7 @@ namespace PingCastle.Healthcheck.Rules
             {
                 foreach (var c in healthcheckData.ListComputerPwdNotChanged)
                 {
-                    if (c.PwdLastSet.AddDays(90) < c.LastLogonDate)
+                    if (c.PwdLastSet.AddDays(90) <= c.LastLogonDate)
                     {
                         AddRawDetail(c.Name, c.CreationDate, c.LastLogonDate, c.PwdLastSet);
                     }

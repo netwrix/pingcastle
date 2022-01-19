@@ -4,6 +4,7 @@ using PingCastle.misc;
 using PingCastle.template;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Net;
@@ -109,19 +110,28 @@ namespace PingCastle.Report
                 data.DomainControllers = new List<NetworkMapDCItem>();
                 var latestForestReports = new Dictionary<string, HealthcheckData>();
 
+                Trace.WriteLine("NetworkMapData: 1");
                 foreach (var report in reports)
                 {
                     // select latest forest report to have the latest network information
                     var version = new Version(report.EngineVersion.Split(' ')[0]);
                     if (!(version.Major < 2 || (version.Major == 2 && version.Minor < 6)))
                     {
-                        if (!latestForestReports.ContainsKey(report.Forest.DomainSID) || latestForestReports[report.Forest.DomainSID].GenerationDate < report.GenerationDate)
+                        if (report.Forest != null && !string.IsNullOrEmpty(report.Forest.DomainSID))
                         {
-                            latestForestReports[report.Forest.DomainSID] = report;
+                            if (!latestForestReports.ContainsKey(report.Forest.DomainSID))
+                            {
+                                latestForestReports[report.Forest.DomainSID] = report;
+                            }
+                            else if (latestForestReports[report.Forest.DomainSID].GenerationDate < report.GenerationDate)
+                            {
+                                latestForestReports[report.Forest.DomainSID] = report;
+                            }
                         }
                     }
                 }
 
+                Trace.WriteLine("NetworkMapData: 2");
                 // store network information
                 foreach (var report in latestForestReports.Values)
                 {
@@ -148,11 +158,14 @@ namespace PingCastle.Report
                         }
                     }
                 }
+                Trace.WriteLine("NetworkMapData: 3");
                 // tag the network
                 foreach (var report in reports)
                 {
                     IEnumerable<NetworkMapDataItem> networks = null;
-                    if (data.networkrange.ContainsKey(report.Forest.DomainSID))
+                    if (report.Forest != null && 
+                        !string.IsNullOrEmpty(report.Forest.DomainSID) && 
+                        data.networkrange.ContainsKey(report.Forest.DomainSID))
                     {
                         networks = data.networkrange[report.Forest.DomainSID];
                     }

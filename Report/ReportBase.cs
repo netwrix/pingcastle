@@ -27,12 +27,18 @@ namespace PingCastle.Report
         protected string PingCastleEnterpriseBaseUrl = "https://www.pingcastle.com/reports/";
 
         protected GetUrlDelegate GetUrlCallback;
+        protected GetAdditionInfoDelegate AdditionInfoDelegate;
 
         public HasDomainAmbigousNameDelegate HasDomainAmbigousName { get; set; }
 
         public void SetUrlDisplayDelegate(GetUrlDelegate uRLDelegate)
         {
             GetUrlCallback = uRLDelegate;
+        }
+
+        public void SetAdditionalInfoDelegate(GetAdditionInfoDelegate additionInfoDelegate)
+        {
+            AdditionInfoDelegate = additionInfoDelegate;
         }
 
         private List<string> CSSToAdd = new List<string> { TemplateManager.LoadBootstrapCss() };
@@ -50,6 +56,7 @@ namespace PingCastle.Report
 
             sb.Length = 0;
             GenerateCspMeta();
+            AddLine();
             Add("<title>");
             GenerateTitleInformation();
             Add("</title>");
@@ -361,19 +368,23 @@ namespace PingCastle.Report
             Add("<td class='num ");
             if (num == 100)
             {
-                Add("risk_model_high");
+                Add("score_100");
             }
             else if (num >= 75)
             {
-                Add("risk_model_high");
+                Add("score_over75");
             }
             else if (num >= 50)
             {
-                Add("risk_model_medium");
+                Add("score_over50");
             }
             else if (num >= 25)
             {
-                Add("risk_model_low");
+                Add("score_over25");
+            }
+            else
+            {
+                Add("score_below25");
             }
             Add("'>");
             Add(num);
@@ -654,7 +665,8 @@ namespace PingCastle.Report
 
         protected virtual void GenerateSection(string title, GenerateContentDelegate generateContent)
         {
-            string id = "section" + title.Replace(" ", "");
+            Regex rgx = new Regex("[^a-zA-Z0-9-]");
+            string id = "section" + rgx.Replace(title, "");
             Add(@"
 <!-- Section " + title + @" -->
 <div id=""" + id + @""">
@@ -863,26 +875,30 @@ namespace PingCastle.Report
                     return 4;
                 case "Windows 10":
                     return 5;
-                case "Windows NT":
+                case "Windows 11":
                     return 6;
-                case "Windows 2000":
+                case "Windows NT":
                     return 7;
-                case "Windows 2003":
+                case "Windows 2000":
                     return 8;
-                case "Windows 2008":
+                case "Windows 2003":
                     return 9;
-                case "Windows 2012":
+                case "Windows 2008":
                     return 10;
-                case "Windows 2016":
+                case "Windows 2012":
                     return 11;
-                case "Windows 2019":
+                case "Windows 2016":
                     return 12;
-                case "Windows Embedded":
+                case "Windows 2019":
                     return 13;
-                case "OperatingSystem not set":
+                case "Windows 2022":
                     return 14;
+                case "Windows Embedded":
+                    return 15;
+                case "OperatingSystem not set":
+                    return 16;
             }
-            return 0;
+            return 100;
         }
 
         // ref: https://social.technet.microsoft.com/wiki/contents/articles/22615.how-to-get-the-number-of-computers-per-windows-operating-system-in-an-active-directory-domain-using-powershell.aspx
@@ -891,7 +907,7 @@ namespace PingCastle.Report
         public static string GetOSVersionString(HealthcheckOSVersionData osVersion)
         {
             // ex: 10.0 (18362)
-            Regex re = new Regex("(?<major>\\d+).(?<minor>\\d+) \\((?<release>\\d+)\\)");
+            Regex re = new Regex("(?<major>\\d+).(?<minor>\\d+)( \\((?<release>\\d+)\\))?");
             if (osVersion == null || string.IsNullOrEmpty(osVersion.OSVersion))
                 return "Error";
             var m = re.Match(osVersion.OSVersion);
@@ -899,7 +915,9 @@ namespace PingCastle.Report
                 return "Unknown (" + osVersion.OSVersion + (osVersion.IsServer ? " (Server)" : null) + ")";
             int major = int.Parse(m.Groups["major"].Value);
             int minor = int.Parse(m.Groups["minor"].Value);
-            int release = int.Parse(m.Groups["release"].Value);
+            int release = 0;
+            if (!string.IsNullOrEmpty(m.Groups["release"].Value))
+                release = int.Parse(m.Groups["release"].Value);
             if (osVersion.IsServer)
             {
                 if (major == 3)
@@ -920,6 +938,10 @@ namespace PingCastle.Report
                     {
                         return "Windows Server 2003";
                     }
+                    if (minor == 2)
+                    {
+                        return "Windows Server 2003 SP2";
+                    }
                 }
                 if (major == 6)
                 {
@@ -939,6 +961,7 @@ namespace PingCastle.Report
                         switch (release)
                         {
                             case 14393: return "Windows Server 2016 1607";
+                            //case 16299:
                             case 17763: return "Windows Server 2019 1809";
                             case 18362: return "Windows Server 2019 1903";
                             case 18363: return "Windows Server 2019 1909";
@@ -985,9 +1008,15 @@ namespace PingCastle.Report
                     switch (release)
                     {
                         case 22000: w = "Windows 11 21H2"; break;
-                        case 21996: w = "Windows 11 Dev"; break;
+                        case 22449:
+                        case 22518:
+                        case 21996: w = "Windows 11 Dev (" + release + ")"; break;
+                        case 20185: w = "Windows 10 21H1 Dev"; break;
+                        case 19044: w = "Windows 10 21H2"; break;
                         case 19043: w = "Windows 10 21H1"; break;
                         case 19042: w = "Windows 10 20H2"; break;
+                        case 18908: w = "Windows 10 20H1"; break;
+                        case 18356: w = "Windows 10 19H1"; break;
                         case 19041: w = "Windows 10 2004"; break;
                         case 18363: w = "Windows 10 1909"; break;
                         case 18362: w = "Windows 10 1903"; break;
@@ -998,7 +1027,15 @@ namespace PingCastle.Report
                         case 14393: w = "Windows 10 1607"; break;
                         case 10586: w = "Windows 10 1511"; break;
                         case 10240: w = "Windows 10 1507"; break;
-                        default: w = "Windows 10 (Build " + release + ")"; break;
+                        default:
+                            if (release >= 22000)
+                            {
+                                w = "Windows 11 (Build " + release + ")"; break;
+                            }
+                            else
+                            {
+                                w = "Windows 10 (Build " + release + ")"; break;
+                            }
                     }
                     return w + (osVersion.IsLTSC ? " (LTSC)": null);
                 }
@@ -1114,7 +1151,7 @@ namespace PingCastle.Report
                 case "refusepasswordchange":
                     return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/domain-controller-refuse-machine-account-password-changes"">Refuse machine account password changes</a> (<a href=""https://support.microsoft.com/en-us/help/154501/how-to-disable-automatic-machine-account-password-changes"">Technical details</a>)";
                 case "enablemulticast":
-                    return @"<a href=""https://getadmx.com/?Category=Windows_10_2016&Policy=Microsoft.Policies.DNSClient::Turn_Off_Multicast"">Turn off multicast name resolution</a> (<a href=""https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-llmnrp/02b1d227-d7a2-4026-9fd6-27ea5651fe85"">Technical details</a>)";
+                    return @"<a href=""https://docs.microsoft.com/en-us/windows/client-management/mdm/policy-csp-admx-dnsclient#admx-dnsclient-turn-off-multicast"">Turn off multicast name resolution</a> (<a href=""https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-llmnrp/02b1d227-d7a2-4026-9fd6-27ea5651fe85"">Technical details</a>)";
                 case "enablesecuritysignature":
                     return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/smbv1-microsoft-network-server-digitally-sign-communications-if-client-agrees"">Microsoft network server: Digitally sign communications (if client agrees)</a> (<a href=""https://www.stigviewer.com/stig/windows_server_2016/2017-11-20/finding/V-73663"">Technical details</a>)";
                 case "enablemodulelogging":

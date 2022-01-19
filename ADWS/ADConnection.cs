@@ -8,6 +8,7 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Security.Principal;
+using System.Threading;
 
 namespace PingCastle.ADWS
 {
@@ -21,7 +22,12 @@ namespace PingCastle.ADWS
 
         public int Port { get; set; }
 
+        public static int RecordPerSeconds = int.MaxValue;
+        int CurrentRecords = 0;
+
         public NetworkCredential Credential { get; set; }
+
+        protected DateTime ConnectionTime;
 
         protected abstract ADDomainInfo GetDomainInfoInternal();
         protected ADDomainInfo domainInfo;
@@ -29,7 +35,10 @@ namespace PingCastle.ADWS
         public ADDomainInfo GetDomainInfo()
         {
             if (domainInfo == null)
+            {
+                ConnectionTime = DateTime.Now;
                 domainInfo = GetDomainInfoInternal();
+            }
             return domainInfo;
         }
 
@@ -72,7 +81,20 @@ namespace PingCastle.ADWS
 
         public abstract IFileConnection FileConnection {get;}
 
-
+        protected void OneRecord()
+        {
+            CurrentRecords++;
+            if (ConnectionTime != default(DateTime) && RecordPerSeconds < int.MaxValue)
+            {
+                var elapsedSeconds = (DateTime.Now - ConnectionTime).TotalSeconds;
+                var quota = elapsedSeconds * RecordPerSeconds;
+                if (CurrentRecords > quota)
+                {
+                    Trace.WriteLine("Sleeping 1s for LDAP quota");
+                    Thread.Sleep(1000);
+                }
+            }
+        }
 
         public abstract void ThreadInitialization();
     }

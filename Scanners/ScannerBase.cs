@@ -160,7 +160,7 @@ namespace PingCastle.Scanners
                                 long totalTime = ((long)(watch.ElapsedMilliseconds * computers.Count) / j);
                                 ETCstring = " [ETC:" + start.AddMilliseconds(totalTime).ToLongTimeString() + "]";
                             }
-                            DisplayAdvancement(j + " on " + computers.Count + ETCstring);
+                            DisplayAdvancement(j + " of " + computers.Count + ETCstring);
                         }
                     }
                     queue.Quit();

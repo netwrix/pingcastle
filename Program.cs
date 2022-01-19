@@ -439,6 +439,9 @@ namespace PingCastle
                         case "--I-swear-I-paid-win7-support":
                             Healthcheck.Rules.HeatlcheckRuleStaledObsoleteWin7.IPaidSupport = true;
                             break;
+                        case "--I-swear-I-paid-win8-support":
+                            Healthcheck.Rules.HeatlcheckRuleStaledObsoleteWin8.IPaidSupportWin8 = true;
+                            break;
                         case "--interactive":
                             delayedInteractiveMode = true;
                             break;
@@ -595,6 +598,22 @@ namespace PingCastle
                                 return false;
                             }
                             break;
+                        case "--quota":
+                            if (i + 1 >= args.Length)
+                            {
+                                WriteInRed("argument for --quota is mandatory");
+                                return false;
+                            }
+                            {
+                                int quota;
+                                if (!int.TryParse(args[++i], out quota))
+                                {
+                                    WriteInRed("argument for --quota is not a valid value (typically: 500)");
+                                    return false;
+                                }
+                                ADConnection.RecordPerSeconds = quota;
+                            }
+                            break;
                         case "--reachable":
                             tasks.AnalyzeReachableDomains = true;
                             break;
@@ -734,6 +753,12 @@ namespace PingCastle
                             else
                             {
                                 user = args[i];
+                                if (!user.Contains("@"))
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;
+                                    Console.WriteLine("Beware: the user is not on the form domain\\user or user@domain.com. Most likely the GPO part will trigger an access denied error.");
+                                    Console.ResetColor();
+                                }
                             }
                             break;
                         case "--webdirectory":
@@ -968,7 +993,10 @@ namespace PingCastle
             ConsoleMenu.Information = "What scanner whould you like to run ?";
             int choice = ConsoleMenu.SelectMenuCompact(choices, 1);
             if (choice == 0)
+            {
+                PerformScanner = false;
                 return DisplayState.Exit;
+            }
             tasks.Scanner = scanners[choices[choice - 1].Choice];
             return DisplayState.AskForScannerParameter;
         }
@@ -995,7 +1023,10 @@ namespace PingCastle
             ConsoleMenu.Information = "What export whould you like to run ?";
             int choice = ConsoleMenu.SelectMenu(choices, 1);
             if (choice == 0)
+            {
+                PerformExport = false;
                 return DisplayState.Exit;
+            }
             tasks.Export = exports[choices[choice - 1].Choice];
             return DisplayState.AskForServer;
         }
@@ -1200,12 +1231,13 @@ namespace PingCastle
             Console.WriteLine("Common options when connecting to the AD");
             Console.WriteLine("  --server <server>   : use this server (default: current domain controller)");
             Console.WriteLine("                        the special value * or *.forest do the healthcheck for all domains");
-            Console.WriteLine("  --port <port>       : the port to use for ADWS or LDPA (default: 9389 or 389)");
+            Console.WriteLine("  --port <port>       : the port to use for ADWS or LDAP (default: 9389 or 389)");
             Console.WriteLine("  --user <user>       : use this user (default: integrated authentication)");
             Console.WriteLine("  --password <pass>   : use this password (default: asked on a secure prompt)");
             Console.WriteLine("  --protocol <proto>  : selection the protocol to use among LDAP or ADWS (fastest)");
             Console.WriteLine("                      : ADWSThenLDAP (default), ADWSOnly, LDAPOnly, LDAPThenADWS");
             Console.WriteLine("  --pagesize <size>   : change the default LDAP page size - default is 500");
+            Console.WriteLine("  --quota <num>       : Number of LDAP items per second that will be processed - default unlimited");
             Console.WriteLine("");
             Console.WriteLine("  --carto             : perform a quick cartography with domains surrounding");
             Console.WriteLine("");
@@ -1241,6 +1273,7 @@ namespace PingCastle
             Console.WriteLine("    --nodes <file>    : create x report based on the nodes listed on a file");
             Console.WriteLine("");
             Console.WriteLine("    --I-swear-I-paid-win7-support : meaningless");
+            Console.WriteLine("    --I-swear-I-paid-win8-support : meaningless");
             Console.WriteLine("");
             Console.WriteLine("--rules               : Generate an html containing all the rules used by PingCastle");
             Console.WriteLine("");

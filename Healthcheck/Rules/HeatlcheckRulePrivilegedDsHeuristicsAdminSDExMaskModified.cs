@@ -17,7 +17,7 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            if (healthcheckData.DsHeuristicsAdminSDExMaskModified)
+            if (healthcheckData.DSHeuristics != null && healthcheckData.DSHeuristics.Length >= 16 && healthcheckData.DSHeuristics.Substring(15, 1) != "0")
             {
                 return 1;
             }

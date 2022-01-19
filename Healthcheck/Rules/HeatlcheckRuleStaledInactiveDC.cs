@@ -21,6 +21,11 @@ namespace PingCastle.Healthcheck.Rules
         {
             foreach (var dc in healthcheckData.DomainControllers)
             {
+                // AzureAD fake DC are not supposed to login and are then considered as inactive
+                if (dc.AzureADKerberos)
+                {
+                    continue;
+                }
                 if (dc.LastComputerLogonDate < DateTime.Now.AddDays(-45))
                 {
                     bool isException = false;

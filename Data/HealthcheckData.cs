@@ -60,6 +60,53 @@ namespace PingCastle.Healthcheck
 
         [XmlAttribute]
         public bool HasAuthenticationEku { get; set; }
+        public List<HealthcheckDelegationData> Delegations { get; set; }
+    }
+
+    [DebuggerDisplay("{DN} {ClassName} {DNS}")]
+    public class HealthCheckServicePoint
+    {
+        [XmlAttribute]
+        public string DN { get; set; }
+
+        [XmlAttribute]
+        public string ClassName { get; set; }
+        [XmlAttribute]
+        public string DNS { get; set; }
+        public List<string> BindingInfo { get; set; }
+    }
+
+    [DebuggerDisplay("{DN} {ClassName} {DNS}")]
+    public class HealthCheckMSOL
+    {
+        [XmlAttribute]
+        public string Account { get; set; }
+        [XmlAttribute]
+        public string Identifier { get; set; }
+        [XmlAttribute]
+        public string Computer { get; set; }
+        [XmlAttribute]
+        public string Tenant { get; set; }
+        [XmlAttribute]
+        public string MSOLDN { get; set; }
+        [XmlAttribute]
+        public DateTime MSOLCreated { get; set; }
+        [XmlAttribute]
+        public DateTime MSOLLastLogon { get; set; }
+        [XmlAttribute]
+        public bool MSOLIsEnabled { get; set; }
+        [XmlAttribute]
+        public DateTime MSOLPwdLastSet { get; set; }
+        [XmlAttribute]
+        public DateTime ComputerPwdLastSet { get; set; }
+        [XmlAttribute]
+        public bool ComputerIsEnabled { get; set; }
+        [XmlAttribute]
+        public DateTime ComputerLastLogon { get; set; }
+        [XmlAttribute]
+        public DateTime ComputerCreated { get; set; }
+        [XmlAttribute]
+        public string ComputerDN { get; set; }
     }
 
     [DebuggerDisplay("{Name}")]
@@ -328,6 +375,26 @@ namespace PingCastle.Healthcheck
         public string Server { get; set; }
     }
 
+    [DebuggerDisplay("{GPOName}")]
+    public class GPPHardenedPath : IGPOReference
+    {
+        [XmlAttribute]
+        public string Key { get; set; }
+
+        [DefaultValue(null)]
+        public bool? RequireMutualAuthentication { get; set; }
+        [DefaultValue(null)]
+        public bool? RequireIntegrity { get; set; }
+        [DefaultValue(null)]
+        public bool? RequirePrivacy { get; set; }
+        
+        [XmlAttribute]
+        public string GPOName { get; set; }
+
+        [XmlAttribute]
+        public string GPOId { get; set; }
+    }
+
     [DebuggerDisplay("{Name}")]
     public class HealthcheckAccountDetailData
     {
@@ -568,6 +635,7 @@ namespace PingCastle.Healthcheck
         }
     }
 
+    [DebuggerDisplay("{Category} {RiskId} {Rationale}")]
     public class HealthcheckRiskRule : IRuleScore
     {
         public HealthcheckRiskRule()
@@ -661,7 +729,7 @@ namespace PingCastle.Healthcheck
         public HealthcheckOSVersionData(PingCastle.ADWS.ADItem x)
         {
             IsServer = x.OperatingSystem.Contains("Server");
-            IsLTSC = x.OperatingSystem.Contains("LTSC");
+            IsLTSC = x.OperatingSystem.Contains("LTSC") || x.OperatingSystem.Contains("LTSB");
             OSVersion = x.OperatingSystemVersion;
             data = new HealthcheckAccountData();
             data.DotNotRecordDetail = true;
@@ -772,6 +840,38 @@ namespace PingCastle.Healthcheck
 
         public int Value { get; set; }
     }
+
+    [DebuggerDisplay("{GPOName} {WSUSserver} {AUOptions} {NoAutoUpdate}")]
+    public class HealthcheckWSUSData : IGPOReference
+    {
+        public string GPOName { get; set; }
+
+        public string GPOId { get; set; }
+        [XmlAttribute]
+        [DefaultValue(null)]
+        public string WSUSserver { get; set; }
+        [DefaultValue(null)]
+        public byte[] WSUSserverCertificate { get; set; }
+        [DefaultValue(null)]
+        public List<string> WSUSserverSSLProtocol { get; set; }
+        [DefaultValue(null)]
+        public List<HealthcheckWSUSDataOption> Options { get; set; }
+        [XmlAttribute]
+        [DefaultValue(null)]
+        public string WSUSserverAlternate { get; set; }
+        [DefaultValue(null)]
+        public byte[] WSUSserverAlternateCertificate { get; set; }
+        [DefaultValue(null)]
+        public List<string> WSUSserverAlternateSSLProtocol { get; set; }
+    }
+    public class HealthcheckWSUSDataOption
+    {
+        [XmlAttribute]
+        public string Name { get; set; }
+        [XmlAttribute]
+        public int Value { get; set; }
+    }
+
     //public class HealthcheckSiteTopologyData
     //{
 
@@ -885,6 +985,10 @@ namespace PingCastle.Healthcheck
         public bool RODC { get; set; }
 
         public bool SYSVOLOverwrite { get; set; }
+
+        [XmlAttribute]
+        [DefaultValue(false)]
+        public bool AzureADKerberos { get; set; }
     }
 
     [XmlType("delegation")]
@@ -913,6 +1017,10 @@ namespace PingCastle.Healthcheck
         public bool InsecureUpdate { get; set; }
 
         public bool ZoneTransfert { get; set; }
+
+        [XmlAttribute]
+        [DefaultValue(false)]
+        public bool AUCreateChild { get; set; }
     }
 
     [XmlType("Dist")]
@@ -1117,17 +1225,9 @@ namespace PingCastle.Healthcheck
         public bool ShouldSerializePreWindows2000AuthenticatedUsers() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public bool PreWindows2000AuthenticatedUsers { get; set; }
 
-        public bool ShouldSerializeDsHeuristicsAnonymousAccess() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
-        public bool DsHeuristicsAnonymousAccess { get; set; }
-
-        public bool ShouldSerializeDsHeuristicsAdminSDExMaskModified() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
-        public bool DsHeuristicsAdminSDExMaskModified { get; set; }
-
-        public bool ShouldSerializeDsHeuristicsDoListObject() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
-        public bool DsHeuristicsDoListObject { get; set; }
-
-        public bool ShouldSerializeDsHeuristicsAllowAnonNSPI() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
-        public bool DsHeuristicsAllowAnonNSPI { get; set; }
+        [DefaultValue(null)]
+        [XmlAttribute]
+        public string DSHeuristics { get; set; }
 
         public bool ShouldSerializeUsingNTFRSForSYSVOL() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public bool UsingNTFRSForSYSVOL { get; set; }
@@ -1188,6 +1288,8 @@ namespace PingCastle.Healthcheck
         public bool ShouldSerializeAdminAccountName() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public string AdminAccountName { get; set; }
 
+        public bool GuestEnabled { get; set; }
+
         public bool ShouldSerializeGPPPassword() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<GPPPassword> GPPPassword { get; set; }
 
@@ -1206,6 +1308,8 @@ namespace PingCastle.Healthcheck
         public bool ShouldSerializeGPOAuditAdvanced() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
         public List<GPOAuditAdvancedData> GPOAuditAdvanced { get; set; }
 
+        public List<HealthcheckWSUSData> GPOWSUS { get; set; }
+
         public bool ShouldSerializeGPPPasswordPolicy() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<GPPSecurityPolicy> GPPPasswordPolicy { get; set; }
 
@@ -1223,6 +1327,9 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeGPOLocalMembership() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<GPOMembership> GPOLocalMembership { get; set; }
+
+        public bool ShouldSerializeGPOHardenedPath() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public List<GPPHardenedPath> GPOHardenedPath { get; set; }
 
         public bool ShouldSerializeTrustedCertificates() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthcheckCertificateData> TrustedCertificates { get; set; }
@@ -1304,6 +1411,16 @@ namespace PingCastle.Healthcheck
 
         public List<HealthcheckSchemaClassVulnerable> SchemaClassVulnerable { get; set; }
 
+        public List<HealthCheckServicePoint> ServicePoints { get; set; }
+        public List<HealthCheckMSOL> AzureADConnect { get; set; }
+
+        public bool JavaClassFound { get; set; }
+        public List<HealthcheckAccountDetailData> JavaClassFoundDetail { get; set; }
+
+        public string AzureADName { get; set; }
+        public string AzureADId { get; set; }
+        public string AzureADKerberosSid { get; set; }
+
         private DomainKey _domain;
         [IgnoreDataMember]
         [XmlIgnore]
@@ -1320,6 +1437,7 @@ namespace PingCastle.Healthcheck
         }
 
         private DomainKey _forest;
+
         [IgnoreDataMember]
         [XmlIgnore]
         public DomainKey Forest

@@ -112,6 +112,7 @@ namespace PingCastle.ADWS
                     ADItem aditem = null;
                     try
                     {
+                        OneRecord();
                         aditem = ADItem.Create(sr, nTSecurityDescriptor);
                     }
                     catch (Exception ex)

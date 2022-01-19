@@ -18,7 +18,7 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            if (healthcheckData.DsHeuristicsAllowAnonNSPI)
+            if (healthcheckData.DSHeuristics != null && healthcheckData.DSHeuristics.Length >= 8 && healthcheckData.DSHeuristics.Substring(7, 1) != "0")
             {
                 return 1;
             }

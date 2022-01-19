@@ -111,7 +111,7 @@ namespace PingCastle.RPC
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         public samr()
         {
-            Guid interfaceId = new Guid("12345778-1234-ABCD-EF00-0123456789AC");
+            Guid interfaceId = new Guid(magic(5) + "778-" + magic(4) + "-ABCD-EF00-0123456789AC");
             if (IntPtr.Size == 8)
             {
                 InitializeStub(interfaceId, MIDL_ProcFormatStringx64, MIDL_TypeFormatStringx64, "\\pipe\\samr");

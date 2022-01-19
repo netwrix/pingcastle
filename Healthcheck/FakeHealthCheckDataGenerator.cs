@@ -397,6 +397,8 @@ namespace PingCastle.Healthcheck
             healthcheckData.GPPFileDeployed = new List<GPPFileDeployed>();
             healthcheckData.GPOAuditSimple = new List<GPOAuditSimpleData>();
             healthcheckData.GPOAuditAdvanced = new List<GPOAuditAdvancedData>();
+            healthcheckData.GPOHardenedPath = new List<GPPHardenedPath>();
+            healthcheckData.GPOWSUS = new List<HealthcheckWSUSData>();
         }
 
         private void GenerateUserData(FakeHealthCheckDataGeneratorDomainModel model, HealthcheckData healthcheckData)

@@ -299,9 +299,9 @@ $(document).ready(function(){
                     Add(hcrule.RiskId);
                     Add("</p>\r\n<strong>Description:</strong><p class=\"text-justify\">");
                     Add(NewLineToBR(hcrule.Description));
-                    Add("</p>\r\n<strong>Technical explanation:</strong><p class=\"text-justify\">");
+                    Add("</p>\r\n<strong>Technical Explanation:</strong><p class=\"text-justify\">");
                     Add(NewLineToBR(hcrule.TechnicalExplanation));
-                    Add("</p>\r\n<strong>Advised solution:</strong><p class=\"text-justify\">");
+                    Add("</p>\r\n<strong>Advised Solution:</strong><p class=\"text-justify\">");
                     Add(NewLineToBR(hcrule.Solution));
                     Add(@"</p>");
                     object[] models = hcrule.GetType().GetCustomAttributes(typeof(RuleIntroducedInAttribute), true);

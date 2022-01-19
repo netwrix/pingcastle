@@ -49,8 +49,6 @@ namespace PingCastle.Scanners
             {"vncserver" , "Real VNC"},
             {"WebexService" , "Cisco WebEx"},
             {"Zoho Assist-Unattended Support" , "Zoho Assist"},
-            {"RManService", "Remote Utilities"},
-            {"SplashtopRemoteService", "Splashtop"},
         };
 
         static List<string> customService = new List<string>();

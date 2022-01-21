@@ -9,9 +9,9 @@ Ping Castle is a tool designed to assess quickly the Active Directory security l
 It does not aim at a perfect evaluation but rather as an efficiency compromise.
 
 ```
-  |:.      PingCastle (Version 2.5.2.0)
+  |:.      PingCastle (Version 2.10.1.0)
   |  #:.   Get Active Directory Security at 80% in 20% of the time
-  # @@  >  End of support: 31/07/2020
+  # @@  >  
   | @@@:
   : .#                                 Vincent LE TOUX (contact@pingcastle.com)
   .:                                                 https://www.pingcastle.com

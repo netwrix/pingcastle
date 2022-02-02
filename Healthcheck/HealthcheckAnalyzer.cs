@@ -879,7 +879,7 @@ namespace PingCastle.Healthcheck
                 return "OperatingSystem not set";
             }
             os = os.Replace('\u00A0', ' ');
-            if (Regex.Match(os, @"windows server(.*) 2000", RegexOptions.IgnoreCase).Success)
+            if (Regex.Match(os, @"windows(.*) 2000", RegexOptions.IgnoreCase).Success)
             {
                 return "Windows 2000";
             }

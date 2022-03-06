@@ -248,7 +248,17 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>The purpose is to ensure that every account having an SID History is part of an active migration.</value>
   </data>
   <data name="T_SIDHistoryUnknownDomain_Solution" xml:space="preserve">
-    <value>Each security descriptor of the domain (including file shares for example) should be reviewed to be rewritten with the new SID of the account. Then the SID History attribute should be removed. Please note that once the SID History has been removed, it cannot be added back again without doing a real migration. Hopefully hacking tools such as mimikatz can be used to undo a deletion with for example the lsadump::dcshadow attack.</value>
+    <value>Each security descriptor of the domain (including file shares for example) should be reviewed to be rewritten with the new SID of the account. Then the SID History attribute should be removed. 
+    
+    Please note that once the SID History has been removed, it cannot be added back again without doing a real migration. Hopefully hacking tools such as mimikatz can be used to undo a deletion with for example the lsadump::dcshadow attack.
+  
+To remove the SIDHistory from a user account, run:
+&lt;i&gt;Get-ADUser USERNAME -properties sidhistory | foreach {Set-ADUser $_ -remove @{sidhistory=$_.sidhistory.value}}&lt;/i&gt;
+For a group, run:
+&lt;i&gt;Get-ADGroup GROUPNAME -properties sidhistory | foreach {Set-ADGroup $_ -remove @{sidhistory=$_.sidhistory.value}}&lt;/i&gt;
+For all users in a OU:
+&lt;i&gt;Get-ADUser -SearchBase "OU=Accounts,DC=mydomain,DC=com" -Filter {sidhistory -like '*'} -properties sidhistory | foreach {Set-ADUser $_ -remove @{sidhistory=$_.sidhistory.value}}&lt;/i&gt;
+    </value>
   </data>
   <data name="T_SIDHistoryUnknownDomain_Rationale" xml:space="preserve">
     <value>{count} unknown domain(s) used in SIDHistory</value>
@@ -260,7 +270,15 @@ To change it you can edit the owner of an object using &lt;a href="https://docs.
     <value>The purpose is to ensure that accounts are not linked for more privileged accounts in the same domain</value>
   </data>
   <data name="T_SIDHistorySameDomain_Solution" xml:space="preserve">
-    <value>It is not possible to have this occurrence except if a user from domain A has been migrated to domain B and then migrated again to domain A. This should be strongly investigated as it may be linked to a compromise of the domain.</value>
+    <value>It is not possible to have this occurrence except if a user from domain A has been migrated to domain B and then migrated again to domain A. This should be strongly investigated as it may be linked to a compromise of the domain.
+    
+To remove the SIDHistory from a user account, run:
+&lt;i&gt;Get-ADUser USERNAME -properties sidhistory | foreach {Set-ADUser $_ -remove @{sidhistory=$_.sidhistory.value}}&lt;/i&gt;
+For a group, run:
+&lt;i&gt;Get-ADGroup GROUPNAME -properties sidhistory | foreach {Set-ADGroup $_ -remove @{sidhistory=$_.sidhistory.value}}&lt;/i&gt;
+For all users in a OU:
+&lt;i&gt;Get-ADUser -SearchBase "OU=Accounts,DC=mydomain,DC=com" -Filter {sidhistory -like '*'} -properties sidhistory | foreach {Set-ADUser $_ -remove @{sidhistory=$_.sidhistory.value}}&lt;/i&gt;
+    </value>
   </data>
   <data name="T_SIDHistorySameDomain_Rationale" xml:space="preserve">
     <value>Account(s) with SID History matching the domain = {count}</value>
@@ -883,7 +901,17 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
   </data>
   <data name="S_SIDHistory_Solution" xml:space="preserve">
     <value>To solve the security issue, you should remove all the SIDHistory attributes. To do so, you can list the objects having an SIDHistory attribute using the command: &lt;i&gt;get-ADObject -ldapfilter "(sidhistory=*)" -properties sidhistory&lt;/i&gt;. 
-Each security descriptor of the domain (including file shares for example) should be reviewed to be rewritten with the new SID of the account. Then, the attribute can be removed of these accounts using the migration tool or a PowerShell snippet &lt;i&gt;Remove-SIDHistory&lt;/i&gt; once the migration is completed. Please note that once the SID History has been removed, it cannot be added back again without doing a real migration. Hopefully hacking tools such as mimikatz can be used to undo a deletion with for example the lsadump::dcshadow attack.</value>
+Each security descriptor of the domain (including file shares for example) should be reviewed to be rewritten with the new SID of the account. Then, the attribute can be removed of these accounts using the migration tool or a PowerShell snippet &lt;i&gt;Remove-SIDHistory&lt;/i&gt; once the migration is completed.
+
+Please note that once the SID History has been removed, it cannot be added back again without doing a real migration. Hopefully hacking tools such as mimikatz can be used to undo a deletion with for example the lsadump::dcshadow attack.
+
+To remove the SIDHistory from a user account, run:
+&lt;i&gt;Get-ADUser USERNAME -properties sidhistory | foreach {Set-ADUser $_ -remove @{sidhistory=$_.sidhistory.value}}&lt;/i&gt;
+For a group, run:
+&lt;i&gt;Get-ADGroup GROUPNAME -properties sidhistory | foreach {Set-ADGroup $_ -remove @{sidhistory=$_.sidhistory.value}}&lt;/i&gt;
+For all users in a OU:
+&lt;i&gt;Get-ADUser -SearchBase "OU=Accounts,DC=mydomain,DC=com" -Filter {sidhistory -like '*'} -properties sidhistory | foreach {Set-ADUser $_ -remove @{sidhistory=$_.sidhistory.value}}&lt;/i&gt;
+</value>
   </data>
   <data name="S_SIDHistory_Rationale" xml:space="preserve">
     <value>{count} domain(s) used in SIDHistory</value>
@@ -1980,7 +2008,7 @@ SeManageVolumePrivilege can be used to reset the security descriptor on the C vo
   <data name="T_SIDFiltering_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href="#discovereddomains"&gt;Trusts section&lt;/a&gt;</value>
   </data>
-  <data name="T_SIDHistorySameDomain" xml:space="preserve">
+  <data name="T_SIDHistorySameDomain_ReportLocation" xml:space="preserve">
     <value>The SIDHistory detail can be found in &lt;a href="#useraccountanalysis"&gt;User information&lt;/a&gt; and &lt;a href="#computeraccountanalysis"&gt;Computer information&lt;/a&gt; and a quick summary in &lt;a href="#sidhistory"&gt;SID History&lt;/a&gt;</value>
   </data>
   <data name="T_SIDHistoryUnknownDomain_ReportLocation" xml:space="preserve">
@@ -3179,6 +3207,13 @@ Please note that at the time of writing, Microsoft supports it until Windows 202
   <data name="T_SIDHistoryDangerous_Solution" xml:space="preserve">
     <value>
       Identify the account, computer or group having these dangerous SID set in SID History, then clean it up by editing directly the SIDHistory attribute of the underlying AD object.
+      
+To remove the SIDHistory from a user account, run:
+&lt;i&gt;Get-ADUser USERNAME -properties sidhistory | foreach {Set-ADUser $_ -remove @{sidhistory=$_.sidhistory.value}}&lt;/i&gt;
+For a group, run:
+&lt;i&gt;Get-ADGroup GROUPNAME -properties sidhistory | foreach {Set-ADGroup $_ -remove @{sidhistory=$_.sidhistory.value}}&lt;/i&gt;
+For all users in a OU:
+&lt;i&gt;Get-ADUser -SearchBase "OU=Accounts,DC=mydomain,DC=com" -Filter {sidhistory -like '*'} -properties sidhistory | foreach {Set-ADUser $_ -remove @{sidhistory=$_.sidhistory.value}}&lt;/i&gt;
     </value>
   </data>
   <data name="T_SIDHistoryDangerous_TechnicalExplanation" xml:space="preserve">
@@ -3554,7 +3589,13 @@ https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dnsp/007efcd2-29
     <value>The detail can be found in &lt;a href="#admingroups"&gt;Admin Groups&lt;/a&gt;</value>
   </data>
   <data name="P_DNSAdmin_Solution" xml:space="preserve">
-    <value>You should remove the members of the DNS admin group and do a proper delegation to the specific DNS Zones.
+    <value>Rule update:
+The Path Tuesday of October 2021 fixed this vulnerability and assigned it the identifier CVE-2021-40469.
+If the patch has been applied, there is no additional mitigation to perform.
+
+This rule is transformed into an informative rule in PingCastle 2.10.1 and will be removed in future version of PingCastle.
+
+You should remove the members of the DNS admin group and do a proper delegation to the specific DNS Zones.
 
 First, grant only "Read Property", "List", "List object" and "Read permssions" to CN=MicrosoftDNS,CN=System to enable access to the RPC service.
 

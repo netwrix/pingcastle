@@ -22,7 +22,7 @@ namespace PingCastle.RPC
 
         [DllImport("Rpcrt4.dll", EntryPoint = "NdrClientCall2", CallingConvention = CallingConvention.Cdecl,
            CharSet = CharSet.Unicode, SetLastError = false)]
-        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr intptrServer, int flag, ref PingCastle.RPC.nrpc.NETLOGON_TRUSTED_DOMAIN_ARRAY output);
+        internal static extern IntPtr NdrClientCall2x64(IntPtr pMIDL_STUB_DESC, IntPtr formatString, IntPtr intptrServer, int flag, ref PingCastle.RPC.nrpc2.NETLOGON_TRUSTED_DOMAIN_ARRAY output);
 
         [DllImport("Rpcrt4.dll", EntryPoint = "NdrClientCall2", CallingConvention = CallingConvention.Cdecl,
            CharSet = CharSet.Unicode, SetLastError = false)]

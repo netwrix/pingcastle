@@ -10,9 +10,9 @@ using PingCastle.Rules;
 namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("P-DNSAdmin", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.ACLCheck)]
-    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
     [RuleIntroducedIn(2, 9)]
-    [RuleDurANSSI(1, "dnsadmins", "DnsAdmins group members")]
+    [RuleDurANSSI(4, "dnsadmins", "DnsAdmins group members")]
     [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
     public class HeatlcheckRulePrivilegedDNSAdmin : RuleBase<HealthcheckData>
     {

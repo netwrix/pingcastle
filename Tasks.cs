@@ -234,6 +234,11 @@ namespace PingCastle
                         {
                             var enduserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<HealthcheckData>();
                             enduserReportGenerator.GenerateReportFile(pingCastleReport, License, pingCastleReport.GetHumanReadableFileName());
+                            DisplayAdvancement("Export level is " + ExportLevel);
+                            if (ExportLevel != PingCastleReportDataExportLevel.Full)
+                            {
+                                DisplayAdvancement("Personal data will NOT be included in the .xml file (add --level Full to add it)");
+                            }
                             pingCastleReport.SetExportLevel(ExportLevel);
                             DataHelper<HealthcheckData>.SaveAsXml(pingCastleReport, pingCastleReport.GetMachineReadableFileName(), EncryptReport);
 
@@ -413,6 +418,11 @@ namespace PingCastle
                     var enduserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<T>();
                     htmlreports[domain] = enduserReportGenerator.GenerateReportFile(pingCastleReport, License, pingCastleReport.GetHumanReadableFileName());
                     DisplayAdvancement("Generating xml file for consolidation report" + (EncryptReport ? " (encrypted)" : ""));
+                    DisplayAdvancement("Export level is " + ExportLevel);
+                    if (ExportLevel != PingCastleReportDataExportLevel.Full)
+                    {
+                        DisplayAdvancement("Personal data will NOT be included in the .xml file (add --level Full to add it)");
+                    }
                     pingCastleReport.SetExportLevel(ExportLevel);
                     xmlreports[domain] = DataHelper<T>.SaveAsXml(pingCastleReport, pingCastleReport.GetMachineReadableFileName(), EncryptReport);
                     DisplayAdvancement("Done");

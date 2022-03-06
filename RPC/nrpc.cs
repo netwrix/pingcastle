@@ -38,7 +38,7 @@ namespace PingCastle.RPC
         DS_DOMAIN_DIRECT_INBOUND = 32,
     }
 
-    public class nrpc : rpcapi
+    public class nrpc2 : rpcapi
     {
 
         private static byte[] MIDL_ProcFormatStringx86 = new byte[] {
@@ -90,7 +90,7 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public nrpc(bool WillUseNullSession = true)
+        public nrpc2(bool WillUseNullSession = true)
         {
             Guid interfaceId = new Guid(magic(8) + "-" + magic(4) + "-ABCD-EF00-01234567CFFB");
             if (IntPtr.Size == 8)
@@ -105,7 +105,7 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        ~nrpc()
+        ~nrpc2()
         {
             freeStub();
         }

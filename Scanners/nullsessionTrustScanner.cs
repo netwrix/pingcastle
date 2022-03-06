@@ -40,7 +40,7 @@ namespace PingCastle.Scanners
         public void Export(string filename)
         {
             DisplayAdvancement("Starting");
-            nrpc session = new nrpc(); ;
+            nrpc2 session = new nrpc2(); ;
             DisplayAdvancement("Trusts obtained via null session");
             List<TrustedDomain> domains;
             int res = session.DsrEnumerateDomainTrusts(Server, 0x3F, out domains);

@@ -445,23 +445,27 @@ namespace PingCastle.Healthcheck
                 {
                     try
                     {
-                        // krbtgt
-                        if (x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountKrbtgtSid))
+                        if (x.ObjectSid != null)
                         {
-                            // krbtgt will be processed after - this avoid applying a filter on the object class
-                            return;
-                        }
-                        // admin account
-                        if (x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountAdministratorSid))
-                        {
-                            healthcheckData.AdminLastLoginDate = x.LastLogonTimestamp;
-                            healthcheckData.AdminAccountName = x.SAMAccountName;
-                        }
-                        if (x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountGuestSid))
-                        {
-                            if ((x.UserAccountControl & 0x00000002) == 0)
+                            // krbtgt
+                            if (x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountKrbtgtSid))
                             {
-                                healthcheckData.GuestEnabled = true;
+                                // krbtgt will be processed after - this avoid applying a filter on the object class
+                                return;
+                            }
+                            // admin account
+                            if (x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountAdministratorSid))
+                            {
+                                healthcheckData.AdminLastLoginDate = x.LastLogonTimestamp;
+                                healthcheckData.AdminAccountName = x.SAMAccountName;
+                            }
+                            if (x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountGuestSid))
+                            {
+                                // added a check to make sur useraccountcontrol is not zero (happens on DC)
+                                if (x.UserAccountControl != 0 && (x.UserAccountControl & 0x00000002) == 0)
+                                {
+                                    healthcheckData.GuestEnabled = true;
+                                }
                             }
                         }
                         // ignore trust account
@@ -495,18 +499,28 @@ namespace PingCastle.Healthcheck
                             }
                         }
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         Trace.WriteLine("Exception while working on " + x.DistinguishedName);
-                        throw;
+                        DisplayAdvancementWarning("Exception while working on " + x.DistinguishedName + "(" + ex.Message + ")");
+                        DisplayAdvancementWarning("Please contact support@pingcastle.com with a trace file to have this error fixed");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine(ex.StackTrace);
+                        Console.ResetColor();
+                        if (ex.InnerException != null)
+                        {
+                            Trace.WriteLine("Inner:");
+                            Trace.WriteLine(ex.InnerException.Message);
+                            Trace.WriteLine(ex.InnerException.StackTrace);
+                        }
                     }
                 };
 
             adws.Enumerate(() =>
-                {
-                    healthcheckData.UserAccountData = new HealthcheckAccountData();
-                    loginscript.Clear();
-                },
+            {
+                healthcheckData.UserAccountData = new HealthcheckAccountData();
+                loginscript.Clear();
+            },
                 domainInfo.DefaultNamingContext, userFilter, userProperties, callback, "SubTree");
 
             healthcheckData.LoginScript = new List<HealthcheckLoginScriptData>();
@@ -727,109 +741,127 @@ namespace PingCastle.Healthcheck
             WorkOnReturnedObjectByADWS callback =
                 (ADItem x) =>
                 {
-                    string os = GetOperatingSystem(x.OperatingSystem);
-                    if (!operatingSystems.ContainsKey(os))
+                    try
                     {
-                        operatingSystems[os] = new HealthcheckOSData(os);
-                        operatingSystems[os].data = new HealthcheckAccountData();
-                        operatingSystems[os].data.DotNotRecordDetail = true;
-                    }
-
-                    var proxy = new ProxyHealthcheckAccountData();
-                    proxy.Clients.Add(operatingSystems[os].data);
-                    proxy.Clients.Add(healthcheckData.ComputerAccountData);
-
-                    if (!string.IsNullOrEmpty(x.OperatingSystemVersion) && x.OperatingSystem != null && x.OperatingSystem.Contains("Windows"))
-                    {
-                        string key = (x.OperatingSystem.Contains("Server") ? "s" : "w") + "|" + x.OperatingSystemVersion;
-                        if (!operatingSystemVersion.ContainsKey(key))
+                        string os = GetOperatingSystem(x.OperatingSystem);
+                        if (!operatingSystems.ContainsKey(os))
                         {
-                            operatingSystemVersion[key] = new HealthcheckOSVersionData(x);
-                        }
-                        proxy.Clients.Add(operatingSystemVersion[key].data);
-                    }
-
-                    ProcessAccountData(proxy, x, true, healthcheckData.ListHoneyPot);
-                    // process only not disabled computers
-                    if ((x.UserAccountControl & 0x00000002) == 0)
-                    {
-                        // ignore honey pot accounts
-                        if (healthcheckData.ListHoneyPot != null)
-                        {
-                            foreach (var u in healthcheckData.ListHoneyPot)
-                            {
-                                if (string.Equals(u.Name, x.SAMAccountName, StringComparison.InvariantCultureIgnoreCase))
-                                    return;
-                            }
+                            operatingSystems[os] = new HealthcheckOSData(os);
+                            operatingSystems[os].data = new HealthcheckAccountData();
+                            operatingSystems[os].data.DotNotRecordDetail = true;
                         }
 
-                        // we consider DC as a computer in the special OU or having the primary group ID of DC or Enterprise DC
-                        // known problem: if the DC is a member (not primary group) & not located in the DC OU
-                        if (x.DistinguishedName.Contains("OU=Domain Controllers,DC=") || x.PrimaryGroupID == 516 || x.PrimaryGroupID == 521)
+                        var proxy = new ProxyHealthcheckAccountData();
+                        proxy.Clients.Add(operatingSystems[os].data);
+                        proxy.Clients.Add(healthcheckData.ComputerAccountData);
+
+                        if (!string.IsNullOrEmpty(x.OperatingSystemVersion) && x.OperatingSystem != null && x.OperatingSystem.Contains("Windows"))
                         {
-                            healthcheckData.NumberOfDC++;
-                            HealthcheckDomainController dc = new HealthcheckDomainController();
-                            dc.DCName = x.SAMAccountName.Replace("$", "");
-                            dc.CreationDate = x.WhenCreated;
-                            // last logon timestam can have a delta of 14 days
-                            dc.LastComputerLogonDate = x.LastLogonTimestamp;
-                            dc.DistinguishedName = x.DistinguishedName;
-                            dc.OperatingSystem = os;
-                            dc.PwdLastSet = x.PwdLastSet;
-                            if (x.PrimaryGroupID == 521) // RODC
+                            string key = (x.OperatingSystem.Contains("Server") ? "s" : "w") + "|" + x.OperatingSystemVersion;
+                            if (!operatingSystemVersion.ContainsKey(key))
                             {
-                                if ((x.UserAccountControl & 0x05001000) != 0x05001000)
-                                {
-                                    dc.RegistrationProblem = "InvalidUserAccount";
-                                }
+                                operatingSystemVersion[key] = new HealthcheckOSVersionData(x);
                             }
-                            else // Normal DC
-                            {
-                                if ((x.UserAccountControl & 0x00082000) != 0x00082000)
-                                {
-                                    dc.RegistrationProblem = "InvalidUserAccount";
-                                }
-                            }
-                            if (!string.IsNullOrEmpty(healthcheckData.AzureADKerberosSid))
-                            {
-                                if (string.Equals(x.ObjectSid.Value, healthcheckData.AzureADKerberosSid, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    dc.AzureADKerberos = true;
-                                }
-                            }
-                            healthcheckData.DomainControllers.Add(dc);
+                            proxy.Clients.Add(operatingSystemVersion[key].data);
                         }
-                        else
+
+                        ProcessAccountData(proxy, x, true, healthcheckData.ListHoneyPot);
+                        // process only not disabled computers
+                        if ((x.UserAccountControl & 0x00000002) == 0)
                         {
-                            if (!string.IsNullOrEmpty(x.OperatingSystem) && x.OperatingSystem.Contains("Server"))
+                            // ignore honey pot accounts
+                            if (healthcheckData.ListHoneyPot != null)
                             {
-                                // this checks excludes the DC because a special case is in place
-                                if (x.WhenCreated.AddDays(45) <= DateTime.Now && x.LastLogonTimestamp.AddDays(45) > DateTime.Now)
+                                foreach (var u in healthcheckData.ListHoneyPot)
                                 {
-                                    // computer active for at least 45 days
-                                    if (x.PwdLastSet.AddDays(45) < x.LastLogonTimestamp)
+                                    if (string.Equals(u.Name, x.SAMAccountName, StringComparison.InvariantCultureIgnoreCase))
+                                        return;
+                                }
+                            }
+
+                            // we consider DC as a computer in the special OU or having the primary group ID of DC or Enterprise DC
+                            // known problem: if the DC is a member (not primary group) & not located in the DC OU
+                            if (x.DistinguishedName.Contains("OU=Domain Controllers,DC=") || x.PrimaryGroupID == 516 || x.PrimaryGroupID == 521)
+                            {
+                                healthcheckData.NumberOfDC++;
+                                HealthcheckDomainController dc = new HealthcheckDomainController();
+                                dc.DCName = x.SAMAccountName.Replace("$", "");
+                                dc.CreationDate = x.WhenCreated;
+                                // last logon timestam can have a delta of 14 days
+                                dc.LastComputerLogonDate = x.LastLogonTimestamp;
+                                dc.DistinguishedName = x.DistinguishedName;
+                                dc.OperatingSystem = os;
+                                dc.PwdLastSet = x.PwdLastSet;
+                                if (x.PrimaryGroupID == 521) // RODC
+                                {
+                                    if ((x.UserAccountControl & 0x05001000) != 0x05001000)
                                     {
-                                        // computer password not changed
-                                        if (healthcheckData.ListComputerPwdNotChanged == null)
-                                            healthcheckData.ListComputerPwdNotChanged = new List<HealthcheckAccountDetailData>();
-                                        healthcheckData.ListComputerPwdNotChanged.Add(GetAccountDetail(x));
+                                        dc.RegistrationProblem = "InvalidUserAccount";
+                                    }
+                                }
+                                else // Normal DC
+                                {
+                                    if ((x.UserAccountControl & 0x00082000) != 0x00082000)
+                                    {
+                                        dc.RegistrationProblem = "InvalidUserAccount";
+                                    }
+                                }
+                                if (!string.IsNullOrEmpty(healthcheckData.AzureADKerberosSid))
+                                {
+                                    if (string.Equals(x.ObjectSid.Value, healthcheckData.AzureADKerberosSid, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        dc.AzureADKerberos = true;
+                                    }
+                                }
+                                healthcheckData.DomainControllers.Add(dc);
+                            }
+                            else
+                            {
+                                if (!string.IsNullOrEmpty(x.OperatingSystem) && x.OperatingSystem.Contains("Server"))
+                                {
+                                    // this checks excludes the DC because a special case is in place
+                                    if (x.WhenCreated.AddDays(45) <= DateTime.Now && x.LastLogonTimestamp.AddDays(45) > DateTime.Now)
+                                    {
+                                        // computer active for at least 45 days
+                                        if (x.PwdLastSet.AddDays(45) < x.LastLogonTimestamp)
+                                        {
+                                            // computer password not changed
+                                            if (healthcheckData.ListComputerPwdNotChanged == null)
+                                                healthcheckData.ListComputerPwdNotChanged = new List<HealthcheckAccountDetailData>();
+                                            healthcheckData.ListComputerPwdNotChanged.Add(GetAccountDetail(x));
+                                        }
                                     }
                                 }
                             }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.WriteLine("Exception while working on " + x.DistinguishedName);
+                        DisplayAdvancementWarning("Exception while working on " + x.DistinguishedName + "(" + ex.Message + ")");
+                        DisplayAdvancementWarning("Please contact support@pingcastle.com with a trace file to have this error fixed");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine(ex.StackTrace);
+                        Console.ResetColor();
+                        if (ex.InnerException != null)
+                        {
+                            Trace.WriteLine("Inner:");
+                            Trace.WriteLine(ex.InnerException.Message);
+                            Trace.WriteLine(ex.InnerException.StackTrace);
                         }
                     }
                 };
 
 
             adws.Enumerate(() =>
-                {
-                    healthcheckData.ComputerAccountData = new HealthcheckAccountData();
-                    healthcheckData.DomainControllers = new List<HealthcheckDomainController>();
-                    healthcheckData.OperatingSystem = new List<HealthcheckOSData>();
-                    healthcheckData.OperatingSystemVersion = new List<HealthcheckOSVersionData>();
-                    operatingSystems.Clear();
-                    operatingSystemVersion.Clear();
-                },
+            {
+                healthcheckData.ComputerAccountData = new HealthcheckAccountData();
+                healthcheckData.DomainControllers = new List<HealthcheckDomainController>();
+                healthcheckData.OperatingSystem = new List<HealthcheckOSData>();
+                healthcheckData.OperatingSystemVersion = new List<HealthcheckOSVersionData>();
+                operatingSystems.Clear();
+                operatingSystemVersion.Clear();
+            },
                 domainInfo.DefaultNamingContext, computerfilter, computerProperties, callback, "SubTree");
 
             foreach (string key in operatingSystems.Keys)
@@ -1954,7 +1986,7 @@ namespace PingCastle.Healthcheck
                         "pKIExtendedKeyUsage",
                         "nTSecurityDescriptor",
             };
-            
+
             healthcheckData.CertificateTemplates = new List<HealthCheckCertificateTemplate>();
             var sidCache = new Dictionary<string, string>();
             var list = GetTemplateList(domainInfo, adws);
@@ -2487,7 +2519,7 @@ namespace PingCastle.Healthcheck
                         }
 
                         ProcessWSUSData(reader, GPO);
-                        
+
                         for (int i = 1; ; i++)
                         {
                             string server = null;
@@ -2624,8 +2656,9 @@ namespace PingCastle.Healthcheck
             // https://docs.microsoft.com/de-de/security-updates/WindowsUpdateServices/18127499
 
             HealthcheckWSUSData data = null;
-            
-            Constructor<HealthcheckWSUSData> CreateIfNeeded = () => {
+
+            Constructor<HealthcheckWSUSData> CreateIfNeeded = () =>
+            {
                 if (data == null)
                 {
                     data = new HealthcheckWSUSData()
@@ -2640,7 +2673,7 @@ namespace PingCastle.Healthcheck
                     }
                 }
                 return data;
-            }; 
+            };
 
             string wsusserver;
             if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows\WindowsUpdate", "WUStatusServer", out wsusserver))
@@ -2681,7 +2714,7 @@ namespace PingCastle.Healthcheck
         private void GenerateWSUSData(ADDomainInfo domainInfo, ADWebService adws)
         {
             var cache = new Dictionary<string, KeyValuePair<List<string>, byte[]>>();
-            foreach(var gpo in healthcheckData.GPOWSUS)
+            foreach (var gpo in healthcheckData.GPOWSUS)
             {
                 if (!string.IsNullOrEmpty(gpo.WSUSserver))
                 {
@@ -2699,7 +2732,7 @@ namespace PingCastle.Healthcheck
                                 cache[key] = new KeyValuePair<List<string>, byte[]>(protocols, certificate);
                             }
                             gpo.WSUSserverSSLProtocol = cache[key].Key;
-                            gpo.WSUSserverCertificate = cache[key].Value;    
+                            gpo.WSUSserverCertificate = cache[key].Value;
                         }
                     }
                 }

@@ -9,12 +9,12 @@ Ping Castle is a tool designed to assess quickly the Active Directory security l
 It does not aim at a perfect evaluation but rather as an efficiency compromise.
 
 ```
-  |:.      PingCastle (Version 2.10.1.0)
-  |  #:.   Get Active Directory Security at 80% in 20% of the time
-  # @@  >  
-  | @@@:
-  : .#                                 Vincent LE TOUX (contact@pingcastle.com)
-  .:                                                 https://www.pingcastle.com
+  \==--O___      PingCastle (Version 2.11.0.0     07/08/2022 09:56:28)
+   \  / \  ¨¨>   Get Active Directory Security at 80% in 20% of the time
+    \/   \ ,'    End of support: 31/01/2024
+     O¨---O
+      \ ,'       Vincent LE TOUX (contact@pingcastle.com)
+       v         twitter: @mysmartlogon       https://www.pingcastle.com
 Using interactive mode.
 Do not forget that there are other command line switches like --help that you can use
 What you would like to do?

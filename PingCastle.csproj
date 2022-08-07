@@ -129,6 +129,13 @@
     <Compile Include="Data\HealthCheckBUEntityData.cs" />
     <Compile Include="Data\CompromiseGraphData.cs" />
     <Compile Include="Healthcheck\HoneyPotSettings.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyDCWebClient.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyCertTempNoSecurity.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleTrustAES.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyCertEnrollCB.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyCertEnrollHttp.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyDCLdapSign.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyDCLdapsCB.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyDnsZoneAUCreateChild.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyGuest.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteW10.cs" />
@@ -214,7 +221,13 @@
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDelegationKeyAdmin.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedExchangeAdminSDHolder.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedUnconstrainedDelegation.cs" />
+    <Compile Include="misc\NamedPipeTester.cs" />
+    <Compile Include="misc\ConnectionTester.cs" />
     <Compile Include="misc\DnsQuery.cs" />
+    <Compile Include="misc\ConnectionTesterHttp.cs" />
+    <Compile Include="misc\ConnectionTesterLdap.cs" />
+    <Compile Include="misc\JSONParser.cs" />
+    <Compile Include="misc\RestrictedToken.cs" />
     <Compile Include="misc\ROCAVulnerabilityTester.cs" />
     <Compile Include="misc\Subnet.cs" />
     <Compile Include="PingCastleException.cs" />
@@ -235,10 +248,10 @@
     <Compile Include="Report\ReportRiskControls.cs" />
     <Compile Include="RPC\dcom.cs" />
     <Compile Include="RPC\SSPI.cs" />
+    <Compile Include="Rules\CustomRulesSettings.cs" />
     <Compile Include="Rules\IRiskEvaluation.cs" />
     <Compile Include="Rules\IRuleScore.cs" />
     <Compile Include="Rules\RiskModelCategory.cs" />
-    <Compile Include="Rules\RiskModelObjective.cs" />
     <Compile Include="Rules\RiskRuleCategory.cs" />
     <Compile Include="Rules\RuleAttribute.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledDCSubnetMissing.cs" />
@@ -414,9 +427,6 @@
     <EmbeddedResource Include="template\responsivetemplate.html.gz" />
     <EmbeddedResource Include="template\vis.min.css.gz" />
     <EmbeddedResource Include="template\vis.min.js.gz" />
-    <EmbeddedResource Include="template\dataTables.bootstrap4.min.css.gz" />
-    <EmbeddedResource Include="template\dataTables.bootstrap4.min.js.gz" />
-    <EmbeddedResource Include="template\jquery.dataTables.min.js.gz" />
     <EmbeddedResource Include="template\bootstrap.min.css.gz" />
     <EmbeddedResource Include="template\bootstrap.min.js.gz" />
     <EmbeddedResource Include="template\jquery.min.js.gz" />
@@ -432,11 +442,17 @@
     <EmbeddedResource Include="template\ReportCompromiseGraph.js.gz" />
     <EmbeddedResource Include="template\ReportMapBuilder.js.gz" />
     <EmbeddedResource Include="template\ReportNetworkMap.js.gz" />
+    <EmbeddedResource Include="template\bootstrap-table.min.css.gz" />
+    <EmbeddedResource Include="template\bootstrap-table.min.js.gz" />
+    <EmbeddedResource Include="template\ReportBase.js.gz" />
+    <EmbeddedResource Include="template\bootstrap-table-export.min.js.gz" />
+    <EmbeddedResource Include="template\tableExport.min.js.gz" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="changelog.txt" />
     <Content Include="pingcastle.ico" />
     <Content Include="template\ReportBase.css" />
+    <Content Include="template\ReportBase.js" />
     <Content Include="template\ReportCompromiseGraph.css" />
     <Content Include="template\ReportCompromiseGraph.js" />
     <Content Include="template\ReportHealthCheckConsolidation.css" />
@@ -463,8 +479,20 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>SET PATH=%25PATH%25;"C:\Program Files (x86)\Windows Kits\8.0\bin\x86"
+SET SIGN_SHA256=signtool.exe sign  /d "PingCastle" /td sha256 /fd sha256 /n "Ping Castle SAS" 
+IF /I "$(COMPUTERNAME)" == "DESKTOP-QCK4J75" (
+@echo ================
+@echo signature
+@echo ================
+IF /I "$(ConfigurationName)" == "Release" (
+echo timestamp
+%25SIGN_SHA256%25  /tr http://timestamp.digicert.com "$(TargetPath)"
+)
+IF /I "$(ConfigurationName)" == "Debug" (
+%25SIGN_SHA256%25 "$(TargetPath)"
+)
+)</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>cd $(ProjectDir)\template

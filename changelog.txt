@@ -1,3 +1,37 @@
+2.11.0.0
+* fix: the rule S-OS-W10 was triggering even if there is no enabled Windows 10
+* added the rules A-DCLdapSign and A-DCLdapsChannelBinding
+* added the rules A-CertEnrollHttp and A-CertEnrollChannelBinding
+* if an api key is provided, test it at the beginning of the processing (instead of doing at the end)
+* enable custom rules processing for Pro / Enterprise versions
+* added the rule T-AlgsAES to check for trust algorithms
+* fix a problem when Users container has been removed
+* fix P-AdminLogin when administrator login date is in the future (can happen when reloading backups)
+* fix perform PKI tests only if the PKI is installed
+* reworked the rule set to be more performant
+* fix a problem when a OU used for PKI has been manually removed
+* fix S-PwdNeverExpires - HealthMailbox* accounts with a password change within 40 days are excluded
+* fix S-Inactive - change 6*31 days to 6 months. If a password change occured within 6 months (no login) the password is now considered as active
+* added for auditor licenses, a feature to have a dashboard for RC4 to AES migration in Kerberos
+* change the powershell command to check for S-DesEnabled
+* added SCCM listing
+* added the possibility to specify honeypot accounts by a DN (the setting is "distinguishedName")
+* migrate to bootstrap 5, popperjs 2 and bootstrap-table (instead of datatables)
+* added table export for licensed users
+* fix rules checking for external path location (server.domain.fqdn) when uri is based on IP instead of FQDN
+* fix the computation of constrained delegation with protocol transition (this impacts rule P-DelegationDCt2a4d)
+* added a note for P-AdminLogin about S4u2Self
+* added the rule A-CertTempNoSecurity
+* changed A-CertTempAnyone and other rules so the program considers that the group Domain Computers is like Everyone if ms-DS-MachineAccountQuota is non zero
+* added the rule A-DC-WebClient to hunt for WebClient service enabled on domain controllers
+* modifed P-Delegated to add HoneyPot account checks
+* fix change the evaluation order for Embedded systems (vs Winows 7) when reducing OS name into a short description
+* modify delegations gathering: filter entreprise domain controllers and check base of configuration partition
+
+2.10.1.1
+* for guest enablement, check if useraccountcontrol is not zero (can be the case when checked on a DC)
+* change maturity level for rule P-DNSAdmin, the score and the description
+
 2.10.1.0
 * fix more readable error message if the xml file is corrupted
 * fix a bug in P-DNSDelegation to avoid false positive when the computer is in another language than english

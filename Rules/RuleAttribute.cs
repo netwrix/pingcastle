@@ -5,6 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 
@@ -23,21 +24,6 @@ namespace PingCastle.Rules
         public string Id { get; private set; }
         public RiskRuleCategory Category { get; private set; }
         public RiskModelCategory Model { get; private set; }
-    }
-
-    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-    public class RuleObjectiveAttribute : Attribute
-    {
-        public RuleObjectiveAttribute(string Id, RiskRuleCategory Category, RiskModelObjective objective)
-        {
-            this.Id = Id;
-            this.Category = Category;
-            this.Objective = objective;
-        }
-
-        public string Id { get; private set; }
-        public RiskRuleCategory Category { get; private set; }
-        public RiskModelObjective Objective { get; private set; }
     }
 
     public interface IRuleMaturity
@@ -82,7 +68,6 @@ namespace PingCastle.Rules
         PerDiscover,
         PerDiscoverWithAMinimumOf,
         TriggerIfLessThan,
-        Objective,
     }
 
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
@@ -142,17 +127,61 @@ namespace PingCastle.Rules
                         return true;
                     }
                     return false;
-                case RuleComputationType.Objective:
-                    if (value != -1)
-                    {
-                        points = Score;
-                        return true;
-                    }
-                    points = 0;
-                    return true;
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        public static string GetComputationModelString(IEnumerable<RuleComputationAttribute> RuleComputation)
+        {
+            StringBuilder sb = new StringBuilder();
+            bool first = true;
+            foreach(var rule in RuleComputation)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    sb.Append("\r\nthen ");
+                }
+                switch (rule.ComputationType)
+                {
+                    case RuleComputationType.TriggerOnThreshold:
+                        sb.Append(rule.Score);
+                        sb.Append(" points if the occurence is greater than or equals than ");
+                        sb.Append(rule.Threshold);
+                        break;
+                    case RuleComputationType.TriggerOnPresence:
+                        if (rule.Score > 0)
+                        {
+                            sb.Append(rule.Score);
+                            sb.Append(" points if present");
+                        }
+                        else
+                        {
+                            sb.Append("Informative rule (0 point)");
+                        }
+                        break;
+                    case RuleComputationType.PerDiscover:
+                        sb.Append(rule.Score);
+                        sb.Append(" points per discovery");
+                        break;
+                    case RuleComputationType.PerDiscoverWithAMinimumOf:
+                        sb.Append(rule.Score);
+                        sb.Append(" points per discovery with a minimal of ");
+                        sb.Append(rule.Threshold);
+                        sb.Append(" points");
+                        break;
+                    case RuleComputationType.TriggerIfLessThan:
+                        sb.Append(rule.Score);
+                        sb.Append(" points if the occurence is strictly lower than ");
+                        sb.Append(rule.Threshold);
+                        break;
+                }
+            }
+            return sb.ToString();
         }
     }
 

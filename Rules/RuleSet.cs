@@ -14,33 +14,40 @@ namespace PingCastle.Rules
 {
     public class RuleSet<T> where T : IRiskEvaluation
     {
-        private static List<RuleBase<T>> _rules = null;
+        private static Dictionary<string, RuleBase<T>> _cachedRules = null;
 
         public IInfrastructureSettings InfrastructureSettings { get; set; }
 
-        public static List<RuleBase<T>> Rules
+        public static IEnumerable<RuleBase<T>> Rules
         {
             get
             {
-                if (_rules == null)
+                if (_cachedRules == null || _cachedRules.Count == 0)
                 {
-                    _rules = LoadRules();
+                    ReloadRules();
                 }
-                return _rules;
+                return _cachedRules.Values;
             }
         }
-        private static List<RuleBase<T>> LoadRules()
+
+        public static void ReloadRules()
+        {
+            _cachedRules = new Dictionary<string, RuleBase<T>>();
+            LoadRules(_cachedRules);
+        }
+
+        public static void LoadRules(Dictionary<string, RuleBase<T>> rules)
         {
             // important: to work with W2000, we cannot use GetType because it will instanciate .Net 3.0 class then load the missing assembly
             // the trick here is to check only the exported type and put as internal the class using .Net 3.0 functionalities
-            var output = new List<RuleBase<T>>();
             foreach (Type type in Assembly.GetAssembly(typeof(RuleSet<T>)).GetExportedTypes())
             {
                 if (type.IsSubclassOf(typeof(RuleBase<T>)) && !type.IsAbstract)
                 {
                     try
                     {
-                        output.Add((RuleBase<T>)Activator.CreateInstance(type));
+                        var a = (RuleBase<T>)Activator.CreateInstance(type);
+                        rules.Add(a.RiskId, a);
                     }
                     catch (Exception)
                     {
@@ -49,13 +56,53 @@ namespace PingCastle.Rules
                     }
                 }
             }
-            output.Sort((RuleBase<T> a, RuleBase<T> b)
-                =>
+        }
+
+        public static void LoadCustomRules()
+        {
+            // force the load of rules
+            var output = Rules;
+
+            try
             {
-                return string.Compare(a.RiskId, b.RiskId);
+                var customRules = CustomRulesSettings.GetCustomRulesSettings();
+                if (customRules.CustomRules != null)
+                {
+                    foreach (CustomRuleSettings rule in customRules.CustomRules)
+                    {
+                        var riskId = rule.RiskId;
+                        RuleBase<T> matchedRule = GetRuleFromID(riskId);
+                        if (matchedRule == null)
+                        {
+                            Trace.WriteLine("Rule computation does not match an existing ID (" + riskId + ")");
+                            continue;
+                        }
+                        if (rule.Computations != null)
+                        {
+                            matchedRule.RuleComputation.Clear();
+                            foreach (CustomRuleComputationSettings c in rule.Computations)
+                            {
+                                matchedRule.RuleComputation.Add(c.GetAttribute());
+                            }
+                        }
+                        if (rule.MaturityLevel != 0)
+                        {
+                            matchedRule.MaturityLevel = rule.MaturityLevel;
+                        }
+                    }
+                }
             }
-            );
-            return output;
+            catch (Exception ex)
+            {
+                Trace.WriteLine("Unable to load custom rules");
+                var e = ex;
+                while (e != null)
+                {
+                    Trace.WriteLine("Exception: " + ex.Message);
+                    Trace.WriteLine("StackTrace: " + ex.StackTrace);
+                    e = e.InnerException;
+                }
+            }
         }
 
         // when multiple reports are ran each after each other, internal state can be kept
@@ -201,26 +248,25 @@ namespace PingCastle.Rules
 
         public static string GetRuleDescription(string ruleid)
         {
-            foreach (var rule in Rules)
+            if (_cachedRules == null || _cachedRules.Count == 0)
             {
-                if (rule.RiskId == ruleid)
-                {
-                    return rule.Title;
-                }
+                ReloadRules();
             }
+            if (_cachedRules.ContainsKey(ruleid))
+                return _cachedRules[ruleid].Title;
             return String.Empty;
         }
 
         public static RuleBase<T> GetRuleFromID(string ruleid)
         {
-            foreach (var rule in Rules)
+            if (_cachedRules == null || _cachedRules.Count == 0)
             {
-                if (rule.RiskId == ruleid)
-                {
-                    return rule;
-                }
+                ReloadRules();
             }
+            if (_cachedRules.ContainsKey(ruleid))
+                return _cachedRules[ruleid];
             return null;
+
         }
     }
 }

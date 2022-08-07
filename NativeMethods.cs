@@ -471,7 +471,7 @@ namespace PingCastle
             }
         }
 
-        internal static string[] SplitArguments(string commandLine)
+        public static string[] SplitArguments(string commandLine)
         {
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {

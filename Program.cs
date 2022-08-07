@@ -94,6 +94,19 @@ namespace PingCastle
                 {
                     _serialNumber = args[++i];
                 }
+                else if (args[i].Equals("--out", StringComparison.InvariantCultureIgnoreCase) && i + 1 < args.Length)
+                {
+                    string filename = args[++i];
+                    var fi = new FileInfo(filename);
+                    if (!Directory.Exists(fi.DirectoryName))
+                    {
+                        Directory.CreateDirectory(fi.DirectoryName);
+                    }
+                    Stream stream = File.Open(filename, FileMode.Create, FileAccess.Write, FileShare.Read);
+                    StreamWriter writer = new StreamWriter(stream);
+                    writer.AutoFlush = true;
+                    Console.SetOut(writer);
+                }
             }
             Trace.WriteLine("Starting the license checking");
             try
@@ -114,6 +127,11 @@ namespace PingCastle
                 return;
             }
             Trace.WriteLine("License checked");
+            Trace.WriteLine("CustomerNotice: " + license.CustomerNotice);
+            Trace.WriteLine("DomainLimitation: " + license.DomainLimitation);
+            Trace.WriteLine("DomainNumberLimit: " + license.DomainNumberLimit);
+            Trace.WriteLine("Edition: " + license.Edition);
+            Trace.WriteLine("EndTime: " + license.EndTime);
             if (license.EndTime < DateTime.Now)
             {
                 WriteInRed("The program is unsupported since: " + license.EndTime.ToString("u") + ")");
@@ -131,12 +149,14 @@ namespace PingCastle
                 Console.WriteLine();
             }
             tasks.License = license;
-            ConsoleMenu.Header = @"|:.      PingCastle (Version " + version.ToString(4) + @"     " + ConsoleMenu.GetBuildDateTime(Assembly.GetExecutingAssembly()) + @")
-|  #:.   Get Active Directory Security at 80% in 20% of the time
-# @@  >  " + (license.EndTime < DateTime.MaxValue ? "End of support: " + license.EndTime.ToShortDateString() : "") + @"
-| @@@:   
-: .#                                 Vincent LE TOUX (contact@pingcastle.com)
-  .:       twitter: @mysmartlogon                    https://www.pingcastle.com";
+            LoadCustomRules(tasks);
+            ConsoleMenu.Header = @"  \==--O___      PingCastle (Version " + version.ToString(4) + @"     " + ConsoleMenu.GetBuildDateTime(Assembly.GetExecutingAssembly()) + @")
+   \  / \  ¨¨>   Get Active Directory Security at 80% in 20% of the time
+    \/   \ ,’    " + (license.EndTime < DateTime.MaxValue ? "End of support: " + license.EndTime.ToShortDateString() : "") + @"
+     O¨---O                                                     
+      \ ,'       Vincent LE TOUX (contact@pingcastle.com)
+       v         twitter: @mysmartlogon       https://www.pingcastle.com";
+
             if (!ParseCommandLine(args))
                 return;
             // Trace to file or console may be enabled here
@@ -207,7 +227,18 @@ namespace PingCastle
             tasks.CompleteTasks();
         }
 
-        const string basicEditionLicense = "PC2H4sIAAAAAAAEAO29B2AcSZYlJi9tynt/SvVK1+B0oQiAYBMk2JBAEOzBiM3mkuwdaUcjKasqgcplVmVdZhZAzO2dvPfee++999577733ujudTif33/8/XGZkAWz2zkrayZ4hgKrIHz9+fB8/In7NX+PX+DV+A/r/r/F7/nf/y/E/+m//mr82/drS/5/9GvWvkdN/6a9x+mvMfo2CPit+jerXWNLf1a9xTv++pL+Xv8bFr3Hya2S/RkPfltx279cY/xq7v8YO/btDf23T/19Q+5Z+ntPPmn5O6eeC/svprynByOjN9NdYE4z81wAaf9Cv8Wv8Gr/G7/Sn/jb/yh/67+R/SvL3/a9/4R/9F/9j//m/+uf+bqtf8J/8wskf80v+gu/+1v/e3/3yfzj9hf/ZF//HL/v9/vzf/S/O/ozf/2/9q17/y3/Qt36/v+Uf+11+q8e/8f/RFn/E3/vb/cPlT/1P//Cf9OPlP3H4Z/57v8bf/M9s/aK/47f6w7df/BG/8t/8U/6sp//Cf/pbfvVPfHr4t/yVP/hXfvvZr//X/zWXf0b7r/8rf9K/+Auyv+uf+XP+mfkf+ff+c7/L/wNcbrwUFAEAAA==";
+        private void LoadCustomRules(Tasks tasks)
+        {
+            if (string.IsNullOrEmpty(tasks.License.Edition))
+                return;
+            if (string.Equals(tasks.License.Edition, "Auditor", StringComparison.OrdinalIgnoreCase))
+                return;
+            if (string.Equals(tasks.License.Edition, "Basic", StringComparison.OrdinalIgnoreCase))
+                return;
+            PingCastle.Rules.RuleSet<HealthcheckData>.LoadCustomRules();
+        }
+
+        const string basicEditionLicense = "PC2H4sIAAAAAAAEAO29B2AcSZYlJi9tynt/SvVK1+B0oQiAYBMk2JBAEOzBiM3mkuwdaUcjKasqgcplVmVdZhZAzO2dvPfee++999577733ujudTif33/8/XGZkAWz2zkrayZ4hgKrIHz9+fB8/In7NX+PX+DV+A/r/r/F7/g/Lf+v1v/Nr/tr0a0v/f/Zr1L9GTv+lv8bprzH7NQr6rPg1ql9jSX9Xv8Y5/fuS/l7+Ghe/xsmvkf0aDX1bctu9X2P8a+zSf+NfY4f+2qb/v6D2Lf08p581/ZzSzwX9l9NfU4KR0Zvpr7EmGPmvATT+oF/j1/g13v4ad9v/4u3v9U//Yb/N63dH/9zv+efv/zX//B+789V/8A/8W//LP/zH/Bd/3r/375R/1l/30e/+3/5jv/Jn/vW//nf+K2Z/2x/5X/9Jv8G/+Dv/1b/GX/W73P2Nfot/+2//7PLXfra+8+bf/rt+3+rxu391/O/8M59//uDNb7T1WxV/3g8+evGn/eA3/D1f/o7/3m/86/4JJ3/ir/n295x99If/8p03f9r/8T81f96L32L92/6zv8uf/t/8rd/7D/8fnT6M7RQBAAA=";
         string _serialNumber;
         public string GetSerialNumber()
         {
@@ -232,6 +263,7 @@ namespace PingCastle
                 }
                 if (!String.IsNullOrEmpty(_serialNumber))
                 {
+                    Trace.WriteLine("Using the license defined in the config file");
                     try
                     {
                         var license = new ADHealthCheckingLicense(_serialNumber);
@@ -253,6 +285,7 @@ namespace PingCastle
                 }
             }
             // fault back to the default license:
+            Trace.WriteLine("Using the license inside the product");
             _serialNumber = basicEditionLicense;
             try
             {
@@ -548,6 +581,15 @@ namespace PingCastle
                                 WriteInRed("argument for --nslimit is not a valid value (typically: 5)");
                                 return false;
                             }
+                            break;
+                        case "--out":
+                            if (i + 1 >= args.Length)
+                            {
+                                WriteInRed("argument for --out is mandatory");
+                                return false;
+                            }
+                            i++;
+                            // argument processed at the beginning of the program
                             break;
                         case "--pagesize":
                             if (i + 1 >= args.Length)

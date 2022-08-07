@@ -86,12 +86,12 @@ namespace PingCastle
         public ADHealthCheckingLicense(string license, bool DoAKeyCheck)
         {
             if (String.IsNullOrEmpty(license))
-                throw new PingCastleException("No license has been provided");
+                throw new PingCastleException("No PingCastle license has been provided");
             _licKey = license;
             Trace.WriteLine("License: " + _licKey);
             if (!VerifyKey())
             {
-                throw new PingCastleException("the license couldn't validate");
+                throw new PingCastleException("The PingCastle license is not valid");
             }
         }
 
@@ -167,7 +167,7 @@ namespace PingCastle
                                 case 0:
                                     Trace.WriteLine("Signature");
                                     VerifySignature(data, ms2.ToArray());
-                                    if (Edition == "Pro" && DomainLimitation == null)
+                                    if (Edition == "Pro" && DomainNumberLimit == null)
                                         DomainNumberLimit = 1;
                                     return;
                                 case 1:

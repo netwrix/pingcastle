@@ -175,6 +175,8 @@ namespace PingCastle.ADWS
         public ActiveDirectorySecurity msDSAllowedToActOnBehalfOfOtherIdentity { get; set; }
         [ADAttributeAttribute("msDS-AllowedToDelegateTo", ADAttributeValueKind.StringArrayValue)]
         public string[] msDSAllowedToDelegateTo { get; set; }
+        [ADAttributeAttribute("msDS-Approx-Immed-Subordinates", ADAttributeValueKind.IntValue)]
+        public int msDSApproxImmedSubordinates { get; set; }
         [ADAttributeAttribute("mS-DS-CreatorSID", ADAttributeValueKind.SIDValue)]
         public SecurityIdentifier msDSCreatorSID { get; set; }
         [ADAttributeAttribute("msDS-EnabledFeature", ADAttributeValueKind.StringArrayValue)]
@@ -223,6 +225,12 @@ namespace PingCastle.ADWS
         public string msPKIRAApplicationPolicies { get; set; }
         [ADAttributeAttribute("msPKI-Template-Schema-Version", ADAttributeValueKind.IntValue)]
         public int msPKITemplateSchemaVersion { get; set; }
+        [ADAttributeAttribute("mSSMSCapabilities", ADAttributeValueKind.StringValue)]
+        public string mSSMSCapabilities { get; set; }
+        [ADAttributeAttribute("mSSMSMPName", ADAttributeValueKind.StringValue)]
+        public string mSSMSMPName { get; set; }
+        [ADAttributeAttribute("mSSMSVersion", ADAttributeValueKind.IntValue)]
+        public int mSSMSVersion { get; set; }
         [ADAttributeAttribute("msiFileList", ADAttributeValueKind.StringArrayValue)]
         public string[] msiFileList { get; set; }
         [ADAttributeAttribute("name", ADAttributeValueKind.StringValue)]

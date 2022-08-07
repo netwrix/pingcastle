@@ -22,13 +22,34 @@ namespace PingCastle.Healthcheck.Rules
             {
                 if (member.CanBeDelegated)
                 {
+                    bool trap = false;
+                    if (healthcheckData.ListHoneyPot != null)
+                    {
+                        foreach (var account in healthcheckData.ListHoneyPot)
+                        {
+                            if (account == null)
+                                continue;
+                            if (account.Name == member.Name || account.Name + "$" == member.Name)
+                            {
+                                trap = true;
+                                break;
+                            }
+                            if (account.DistinguishedName == member.DistinguishedName)
+                            {
+                                trap = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (trap)
+                        continue;
                     if (healthcheckData.SchemaVersion < 69)
                     {
                         adminCanBeDelegated++;
                     }
                     else if (!member.IsInProtectedUser)
                     {
-                        adminCanBeDelegated++;
+                        adminCanBeDelegated++;  
                     }
                 }
             }

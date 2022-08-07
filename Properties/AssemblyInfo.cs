@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Ping Castle")]
 [assembly: AssemblyProduct("Ping Castle")]
-[assembly: AssemblyCopyright("Copyright ©  2015-2021 Ping Castle")]
+[assembly: AssemblyCopyright("Copyright ©  2015-2022 Ping Castle")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -28,5 +28,5 @@ using System.Runtime.InteropServices;
 //      Numéro de build
 //      Révision
 //
-[assembly: AssemblyVersion("2.10.1.1")]
-[assembly: AssemblyFileVersion("2.10.1.1")]
+[assembly: AssemblyVersion("2.11.0.0")]
+[assembly: AssemblyFileVersion("2.11.0.0")]

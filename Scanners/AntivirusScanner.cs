@@ -25,6 +25,8 @@ namespace PingCastle.Scanners
             {"EPSecurityService", "Bitdefender Endpoint Security Service"},
             {"EPUpdateService", "Bitdefender Endpoint Update Service"},
 
+            {"CiscoAMP", "Cisco Secure endpoint"}, 
+
             {"CSFalconService", "CrowdStrike Falcon Sensor Service"},
 
             {"CylanceSvc", "Cylance"},

@@ -194,7 +194,7 @@ function ShowTooltip(target, x, y) {
         return element.start >= view.start && element.end <= view.end && (element.start != view.start || element.end != view.end) && element.start <= ip && ip <= element.end && sourceExcluded.indexOf(element.source) === -1;
     });
     tooltip.css({ top: y, left: x + 20 });
-    tooltip.attr('data-original-title', function (i, val) {
+    tooltip.attr('data-bs-original-title', function (i, val) {
         if (network.length == 0) return 'No network found';
         var data = 'Network:<br>';
         network.forEach(function (element) {
@@ -244,40 +244,56 @@ $('#bs-sectionDClist').on('shown.bs.tab', function () {
 
     $('#bs-sectionDClist').off();//to remove the binded event after initial rendering
 
-    $('#dc_list').DataTable({
-        'data': getData('DC'),
-        'columns': [
-            { 'data': 'source' },
-            { 'data': 'name' },
-            { 'data': 'ip' }
-        ]
+    $('#dc_list').bootstrapTable({
+        pagination: true,
+        search: true,
+        sortable: true,
+        columns: [
+            {
+                field: 'source',
+                sortable: true
+            },
+            {
+                field: 'name',
+                sortable: true
+            },
+            {
+                field: 'ip',
+                sortable: true
+            }],
+        data: getData('DC')
     });
 });
 $('#bs-sectionNetworklist').on('shown.bs.tab', function () {
 
     $('#bs-sectionNetworklist').off();//to remove the binded event after initial rendering
 
-    $('#network_list').DataTable({
-        'data': getData('Network'),
-        'columns': [
+    $('#network_list').bootstrapTable({
+        pagination: true,
+        search: true,
+        sortable: true,
+        columns: [
             {
-                'data': 'source'
+                field: 'source',
+                sortable: true
             },
             {
-                'data': 'name'
+                field: 'name',
+                sortable: true
             },
             {
-                'data': 'network'
+                field: 'network',
+                sortable: true
             },
             {
-                'data': 'description',
-                'defaultContent': ''
+                field: 'description',
+                sortable: true
             },
             {
-                'data': 'domainFQDN',
-                'defaultContent': ''
-            }
-        ]
+                field: 'domainFQDN',
+                sortable: true
+            }],
+        data: getData('Network')
     });
 });
 

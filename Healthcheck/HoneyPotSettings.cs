@@ -82,7 +82,7 @@ namespace PingCastle.Healthcheck
 
     public class SingleHoneyPotSettings : ConfigurationElement
     {
-        [ConfigurationProperty("samAccountName", IsKey = true, IsRequired = true)]
+        [ConfigurationProperty("samAccountName")]
         public string samAccountName
         {
             get
@@ -92,6 +92,19 @@ namespace PingCastle.Healthcheck
             set
             {
                 base["samAccountName"] = value;
+            }
+        }
+
+        [ConfigurationProperty("distinguishedName")]
+        public string distinguishedName
+        {
+            get
+            {
+                return base["distinguishedName"] as string;
+            }
+            set
+            {
+                base["distinguishedName"] = value;
             }
         }
     }

@@ -9,6 +9,7 @@ using PingCastle.Exports;
 using PingCastle.Healthcheck;
 using PingCastle.misc;
 using PingCastle.Report;
+using PingCastle.Rules;
 using PingCastle.Scanners;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using TinyJson;
 
 namespace PingCastle
 {
@@ -94,6 +96,7 @@ namespace PingCastle
                 () =>
                 {
                     HealthcheckAnalyzer hcroot = new HealthcheckAnalyzer();
+                    hcroot.limitHoneyPot = string.IsNullOrEmpty(License.Edition);
                     domains = hcroot.GetAllReachableDomains(Port, Credential);
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine("List of domains that will be queried");
@@ -122,6 +125,8 @@ namespace PingCastle
                             {
                                 Console.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] " + "Starting the analysis of " + domain);
                                 HealthcheckAnalyzer hc = new HealthcheckAnalyzer();
+                                hc.limitHoneyPot = string.IsNullOrEmpty(License.Edition);
+
                                 var data = hc.GenerateCartoReport(domain, Port, Credential, AnalyzeReachableDomains);
                                 consolidation.Add(data);
                                 Console.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] " + "Analysis of " + domain + " completed with success");
@@ -192,6 +197,12 @@ namespace PingCastle
 
         public bool AnalysisTask<T>() where T : IPingCastleReport
         {
+            if (!string.IsNullOrEmpty(apiEndpoint) && !string.IsNullOrEmpty(apiKey))
+            {
+                var ret = RetrieveSettingsViaAPI();
+                if (!ret)
+                    return false;
+            }
             string[] servers = Server.Split(',');
             foreach (string server in servers)
             {
@@ -232,7 +243,7 @@ namespace PingCastle
 
                         foreach (var pingCastleReport in hcconso)
                         {
-                            var enduserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<HealthcheckData>();
+                            var enduserReportGenerator = new ReportHealthCheckSingle();
                             enduserReportGenerator.GenerateReportFile(pingCastleReport, License, pingCastleReport.GetHumanReadableFileName());
                             DisplayAdvancement("Export level is " + ExportLevel);
                             if (ExportLevel != PingCastleReportDataExportLevel.Full)
@@ -284,22 +295,26 @@ namespace PingCastle
                     Console.WriteLine(display);
                     Console.WriteLine(new String('=', display.Length));
                     Console.ResetColor();
-                    PerformTheAnalysis<T>(domain);
+                    PerformTheAnalysis(domain);
                 }
 
             }
             else
             {
-                var data = PerformTheAnalysis<T>(server);
+                var data = PerformTheAnalysis(server);
                 var hcData = data as HealthcheckData;
                 // do additional exploration based on trust results ?
+                Trace.WriteLine("do additional exploration based on trust results ?");
                 if (hcData != null && (ExploreTerminalDomains || ExploreForestTrust))
                 {
+                    Trace.WriteLine("ExploreTerminalDomains is " + ExploreTerminalDomains);
+                    Trace.WriteLine("ExploreForestTrust is " + ExploreForestTrust);
                     if (hcData.Trusts != null)
                     {
                         List<string> domainToExamine = new List<string>();
                         foreach (var trust in hcData.Trusts)
                         {
+                            Trace.WriteLine("Examining " + trust.TrustPartner + " for additional exploration");
                             string attributes = TrustAnalyzer.GetTrustAttribute(trust.TrustAttributes);
                             string direction = TrustAnalyzer.GetTrustDirection(trust.TrustDirection);
                             if (direction.Contains("Inbound") || direction.Contains("Disabled"))
@@ -313,12 +328,15 @@ namespace PingCastle
                                 {
                                     if (!ShouldTheDomainBeNotExplored(trust.TrustPartner))
                                         domainToExamine.Add(trust.TrustPartner);
+                                    else
+                                        Trace.WriteLine("Domain " + trust.TrustPartner + " not to explore (direct domain)");
                                     if (trust.KnownDomains != null)
                                     {
                                         foreach (var di in trust.KnownDomains)
                                         {
                                             if (!ShouldTheDomainBeNotExplored(di.DnsName))
                                                 domainToExamine.Add(di.DnsName);
+                                            Trace.WriteLine("Domain " + di.DnsName + " not to explore (known domain)");
                                         }
                                     }
                                 }
@@ -329,22 +347,28 @@ namespace PingCastle
                                 {
                                     if (!ShouldTheDomainBeNotExplored(trust.TrustPartner))
                                         domainToExamine.Add(trust.TrustPartner);
+                                    else
+                                        Trace.WriteLine("Domain " + trust.TrustPartner + "not to explore (terminal domain)");
                                 }
                             }
                         }
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine("List of domains that will be queried");
+                        Trace.WriteLine("List of domains that will be queried");
                         Console.ResetColor();
                         foreach (var domain in domainToExamine)
                         {
                             Console.WriteLine(domain);
+                            Trace.WriteLine(domain);
                         }
+                        Trace.WriteLine("End selection");
                         foreach (string domain in domainToExamine)
                         {
-                            PerformTheAnalysis<T>(domain);
+                            PerformTheAnalysis(domain);
                         }
                     }
                 }
+                Trace.WriteLine("done additional exploration");
                 return hcData != null;
             }
             return true;
@@ -357,6 +381,7 @@ namespace PingCastle
                 () =>
                 {
                     HealthcheckAnalyzer hcroot = new HealthcheckAnalyzer();
+                    hcroot.limitHoneyPot = string.IsNullOrEmpty(License.Edition);
                     var reachableDomains = hcroot.GetAllReachableDomains(Port, Credential);
                     List<HealthcheckAnalyzer.ReachableDomainInfo> domainsfiltered = new List<HealthcheckAnalyzer.ReachableDomainInfo>();
                     Console.ForegroundColor = ConsoleColor.Yellow;
@@ -398,13 +423,14 @@ namespace PingCastle
             return false;
         }
 
-        T PerformTheAnalysis<T>(string server) where T : IPingCastleReport
+        HealthcheckData PerformTheAnalysis(string server)
         {
-            T pingCastleReport = default(T);
+            HealthcheckData pingCastleReport = null;
             bool status = StartTask("Perform analysis for " + server,
                 () =>
                 {
-                    var analyzer = PingCastleFactory.GetPingCastleAnalyzer<T>();
+                    var analyzer = new HealthcheckAnalyzer();
+                    analyzer.limitHoneyPot = string.IsNullOrEmpty(License.Edition);
                     pingCastleReport = analyzer.PerformAnalyze(new PingCastleAnalyzerParameters()
                     {
                         Server = server,
@@ -415,7 +441,7 @@ namespace PingCastle
                     });
                     string domain = pingCastleReport.Domain.DomainName;
                     DisplayAdvancement("Generating html report");
-                    var enduserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<T>();
+                    var enduserReportGenerator = new ReportHealthCheckSingle();
                     htmlreports[domain] = enduserReportGenerator.GenerateReportFile(pingCastleReport, License, pingCastleReport.GetHumanReadableFileName());
                     DisplayAdvancement("Generating xml file for consolidation report" + (EncryptReport ? " (encrypted)" : ""));
                     DisplayAdvancement("Export level is " + ExportLevel);
@@ -424,7 +450,7 @@ namespace PingCastle
                         DisplayAdvancement("Personal data will NOT be included in the .xml file (add --level Full to add it)");
                     }
                     pingCastleReport.SetExportLevel(ExportLevel);
-                    xmlreports[domain] = DataHelper<T>.SaveAsXml(pingCastleReport, pingCastleReport.GetMachineReadableFileName(), EncryptReport);
+                    xmlreports[domain] = DataHelper<HealthcheckData>.SaveAsXml(pingCastleReport, pingCastleReport.GetMachineReadableFileName(), EncryptReport);
                     DisplayAdvancement("Done");
                 });
             return pingCastleReport;
@@ -501,7 +527,7 @@ namespace PingCastle
                         }
                         var fi = new FileInfo(FileOrDirectory);
                         var healthcheckData = DataHelper<HealthcheckData>.LoadXml(FileOrDirectory);
-                        var endUserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<HealthcheckData>();
+                        var endUserReportGenerator = new ReportHealthCheckSingle();
                         endUserReportGenerator.GenerateReportFile(healthcheckData, License, healthcheckData.GetHumanReadableFileName());
                     }
                 );
@@ -604,14 +630,14 @@ namespace PingCastle
                         var consolidation = PingCastleReportHelper<HealthcheckData>.LoadXmls(FileOrDirectory, FilterReportDate);
                         if (consolidation.Count == 0)
                         {
-                            WriteInRed("No report has been found. Please generate one with PingCastle and the Healtch Check mode. The program will stop.");
+                            WriteInRed("No report has been found. Please generate one with PingCastle and the Health Check mode. The program will stop.");
                             return;
                         }
                         consolidation = PingCastleReportHelper<HealthcheckData>.TransformReportsToDemo(consolidation);
                         foreach (HealthcheckData data in consolidation)
                         {
                             string domain = data.DomainFQDN;
-                            var endUserReportGenerator = PingCastleFactory.GetEndUserReportGenerator<HealthcheckData>();
+                            var endUserReportGenerator = new ReportHealthCheckSingle();
                             string html = endUserReportGenerator.GenerateReportFile(data, License, Path.Combine(path, data.GetHumanReadableFileName()));
                             data.SetExportLevel(ExportLevel);
                             string xml = DataHelper<HealthcheckData>.SaveAsXml(data, Path.Combine(path, data.GetMachineReadableFileName()), EncryptReport);
@@ -634,6 +660,8 @@ namespace PingCastle
             else
             {
                 Trace.WriteLine("with proxy");
+                Trace.WriteLine("Using proxy:" + client.Proxy.GetProxy(new Uri(apiEndpoint)));
+                Trace.WriteLine("Is bypassed:" + client.Proxy.IsBypassed(new Uri(apiEndpoint)));
             }
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
             client.Headers.Add(HttpRequestHeader.ContentType, "application/json");
@@ -643,6 +671,31 @@ namespace PingCastle
             byte[] answer = null;
             try
             {
+                //https://docs.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype?view=netcore-3.1
+                // try enable TLS1.1
+                try
+                {
+                    System.Net.ServicePointManager.SecurityProtocol = (System.Net.SecurityProtocolType)(768 | (int)System.Net.ServicePointManager.SecurityProtocol);
+                }
+                catch
+                {
+                }
+                // try enable TLS1.2
+                try
+                {
+                    System.Net.ServicePointManager.SecurityProtocol = (System.Net.SecurityProtocolType)(3072 | (int)System.Net.ServicePointManager.SecurityProtocol);
+                }
+                catch
+                {
+                }
+                // try enable TLS1.3
+                try
+                {
+                    System.Net.ServicePointManager.SecurityProtocol = (System.Net.SecurityProtocolType)(12288 | (int)System.Net.ServicePointManager.SecurityProtocol);
+                }
+                catch
+                {
+                }
                 string location = Dns.GetHostEntry(Environment.MachineName).HostName;
                 Trace.WriteLine("location: " + location);
                 Trace.WriteLine("apikey: " + apiKey);
@@ -654,6 +707,12 @@ namespace PingCastle
             }
             catch (WebException ex)
             {
+                if (ex.Status == WebExceptionStatus.SecureChannelFailure)
+                {
+                    WriteInRed("If you require TLS 1.2 or 1.3 for API, be sure you have installed the Windows patch to support TLS 1.2 or 1.3");
+                    WriteInRed("See kb3140245 and KB4019276 for TLS 1.2");
+                    WriteInRed("Be sure also that .NET has been patched to handle the TLS version");
+                }
                 if (ex.Response != null)
                 {
                     var responseStream = ex.Response.GetResponseStream();
@@ -711,6 +770,157 @@ namespace PingCastle
                 throw;
             }
         }
+
+        public class CustomComputationRule
+        {
+            public string ComputationType { get; set; }
+            public int Score { get; set; }
+            public int Threshold { get; set; }
+            public int Order { get; set; }
+        }
+        public class CustomRule
+        {
+            public string RiskID { get; set; }
+            public int? MaturityLevel { get; set; }
+            public List<CustomComputationRule> Computation { get; set; }
+        }
+
+        public class AgentSettings
+        {
+            public string License { get; set; }
+            public string ExportLevel { get; set; }
+            public List<CustomRule> CustomRules { get; set; }
+        }
+
+        private void ProcessSettings(WebClient client)
+        {
+            Version version = Assembly.GetExecutingAssembly().GetName().Version;
+            client.Headers.Add(HttpRequestHeader.ContentType, "application/json");
+            client.Headers.Add(HttpRequestHeader.UserAgent, "PingCastle " + version.ToString(4));
+            try
+            {
+                string answer = client.DownloadString(apiEndpoint + "api/Agent/GetSettings");
+                Trace.WriteLine("answer:" + answer);
+                DisplayAdvancement("OK");
+
+                // TinyJson is extracted from https://github.com/zanders3/json
+                // MIT License
+                var deserializedResult = JSONParser.FromJson<AgentSettings>(answer);
+
+                // could also use this serializer, but starting .Net 4 only (not .net 3)
+                //var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+                //var deserializedResult = serializer.Deserialize<AgentSettings>(answer);
+
+                if (deserializedResult.License != null)
+                {
+                    try
+                    {
+                        var license = new ADHealthCheckingLicense(deserializedResult.License);
+                        if (license.EndTime > DateTime.Now)
+                            License = license;
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.WriteLine(ex.Message);
+                    }
+                }
+                if (!string.IsNullOrEmpty(deserializedResult.ExportLevel))
+                {
+                    try
+                    {
+                        // enum parsed as string to avoid a problem is a newer version of the enum is sent over the wire
+                        ExportLevel = (PingCastleReportDataExportLevel)Enum.Parse(typeof(PingCastleReportDataExportLevel), deserializedResult.ExportLevel);
+                    }
+                    catch (Exception)
+                    {
+                        Trace.WriteLine("Unable to parse the level [" + deserializedResult.ExportLevel + "] to one of the predefined value (" + String.Join(",", Enum.GetNames(typeof(PingCastleReportDataExportLevel))) + ")");
+                    }
+                }
+                if (deserializedResult.CustomRules != null && deserializedResult.CustomRules.Count != 0)
+                {
+                    if (string.IsNullOrEmpty(License.Edition) || License.Edition == "Auditor")
+                    {
+                        Trace.WriteLine("Custom rules not allowed");
+                    }
+                    else
+                    {
+                        foreach (var rule in deserializedResult.CustomRules)
+                        {
+                            var hcrule = RuleSet<HealthcheckData>.GetRuleFromID(rule.RiskID);
+                            if (hcrule == null)
+                            {
+                                Trace.WriteLine("Rule " + rule.RiskID + " ignored because not found");
+                                continue;
+                            }
+                            if (rule.MaturityLevel != null)
+                            {
+                                hcrule.MaturityLevel = (int)rule.MaturityLevel;
+                            }
+                            if (rule.Computation != null && rule.Computation.Count > 0)
+                            {
+                                var computations = new List<RuleComputationAttribute>();
+                                foreach (var c in rule.Computation)
+                                {
+                                    RuleComputationType type;
+                                    try
+                                    {
+                                        // enum parsed as string to avoid a problem is a newer version of the enum is sent over the wire
+                                        type = (RuleComputationType)Enum.Parse(typeof(RuleComputationType), c.ComputationType);
+                                    }
+                                    catch (Exception)
+                                    {
+                                        Trace.WriteLine("Unable to parse the RuleComputationType [" + c.ComputationType + "] to one of the predefined value (" + String.Join(",", Enum.GetNames(typeof(RuleComputationType))) + ")");
+                                        computations.Clear();
+                                        break;
+                                    }
+                                    computations.Add(new RuleComputationAttribute(type, c.Score, c.Threshold, c.Order));
+                                }
+                                if (computations.Count > 0)
+                                {
+                                    hcrule.RuleComputation.Clear();
+                                    hcrule.RuleComputation.AddRange(computations);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (WebException ex)
+            {
+                if (ex.Status == WebExceptionStatus.ProtocolError && ex.Response != null)
+                {
+                    var resp = (HttpWebResponse)ex.Response;
+                    if (resp.StatusCode == HttpStatusCode.NotFound) // HTTP 404
+                    {
+                        Trace.WriteLine("GetSettings page not found");
+                        DisplayAdvancement("Not found");
+                        return;
+                    }
+                }
+                Trace.WriteLine("Status: " + ex.Status);
+                Trace.WriteLine("Message: " + ex.Message);
+                if (ex.Response != null)
+                {
+                    var responseStream = ex.Response.GetResponseStream();
+                    if (responseStream != null)
+                    {
+                        using (var reader = new StreamReader(responseStream))
+                        {
+                            string responseText = reader.ReadToEnd();
+                            if (string.IsNullOrEmpty(responseText))
+                                responseText = ex.Message;
+                            throw new PingCastleException(responseText);
+                        }
+                    }
+                }
+                else
+                {
+                    Trace.WriteLine("WebException response null");
+                }
+                throw;
+            }
+        }
+
         void SendViaAPI(IEnumerable<KeyValuePair<string, string>> xmlreports)
         {
             StartTask("Send via API",
@@ -750,6 +960,45 @@ namespace PingCastle
                             }
                         }
                     });
+        }
+
+        bool RetrieveSettingsViaAPI()
+        {
+            bool ret = true;
+            StartTask("Retrieve Settings via API",
+                    () =>
+                    {
+                        if (!apiEndpoint.EndsWith("/"))
+                            apiEndpoint += "/";
+                        Trace.WriteLine("apiendpoint: " + apiEndpoint);
+                        using (WebClient client = new WebClient())
+                        {
+                            try
+                            {
+                                SendViaAPIGetJwtToken(client);
+                                DisplayAdvancement("API Login OK");
+                            }
+                            catch (UnauthorizedAccessException ex)
+                            {
+                                WriteInRed("Login failed (" + ex.Message + ")");
+                                ret = false;
+                                return;
+                            }
+                            try
+                            {
+                                ProcessSettings(client);
+                            }
+                            catch (Exception ex)
+                            {
+                                Trace.WriteLine("Exception:");
+                                Trace.WriteLine(ex.GetType());
+                                Trace.WriteLine(ex.Message);
+                                Trace.WriteLine(ex.StackTrace);
+                                DisplayException(null, ex);
+                            }
+                        }
+                    });
+            return ret;
         }
 
         void SendEmail(string email, List<string> domains, List<Attachment> Files)

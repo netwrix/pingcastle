@@ -67,25 +67,7 @@ namespace PingCastle
             }
             throw new NotImplementedException("No file pattern known for type " + typeof(T));
         }
-
-        public static IPingCastleReportUser<T> GetEndUserReportGenerator<T>() where T : IPingCastleReport
-        {
-            if (typeof(T) == typeof(HealthcheckData))
-            {
-                return (IPingCastleReportUser<T>)new ReportHealthCheckSingle();
-            }
-            return GetImplementation<IPingCastleReportUser<T>>();
-        }
-
-        public static IPingCastleAnalyzer<T> GetPingCastleAnalyzer<T>() where T : IPingCastleReport
-        {
-            if (typeof(T) == typeof(HealthcheckData))
-            {
-                return (IPingCastleAnalyzer<T>)new HealthcheckAnalyzer();
-            }
-            return GetImplementation<IPingCastleAnalyzer<T>>();
-        }
-
+       
         static T GetImplementation<T>()
         {
             foreach (Type type in Assembly.GetAssembly(typeof(PingCastleFactory)).GetExportedTypes())

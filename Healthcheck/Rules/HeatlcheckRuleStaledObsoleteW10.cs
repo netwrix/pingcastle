@@ -26,6 +26,9 @@ namespace PingCastle.Healthcheck.Rules
             {
                 if (!osVersion.IsServer)
                 {
+                    if (osVersion.data.NumberEnabled == 0)
+                        continue;
+
                     Regex re = new Regex("(?<major>\\d+).(?<minor>\\d+) \\((?<release>\\d+)\\)");
                     var m = re.Match(osVersion.OSVersion);
                     if (!m.Success)

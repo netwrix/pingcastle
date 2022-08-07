@@ -1,4 +1,6 @@
-﻿//
+﻿using System;
+using System.Diagnostics;
+//
 // Copyright (c) Ping Castle. All rights reserved.
 // https://www.pingcastle.com
 //
@@ -26,6 +28,11 @@ namespace PingCastle.template
                 reader = new StreamReader(gzip);
                 html = reader.ReadToEnd();
             }
+            catch(Exception)
+            {
+                Trace.WriteLine("Unable to load " + resourceName);
+                throw;
+            }
             finally
             {
                 if (reader != null)
@@ -50,6 +57,26 @@ namespace PingCastle.template
             return LoadTemplate(typeof(TemplateManager).Namespace + ".bootstrap.min.js.gz");
         }
 
+        public static string LoadBootstrapTableCss()
+        {
+            return LoadTemplate(typeof(TemplateManager).Namespace + ".bootstrap-table.min.css.gz");
+        }
+
+        public static string LoadBootstrapTableJs()
+        {
+            return LoadTemplate(typeof(TemplateManager).Namespace + ".bootstrap-table.min.js.gz");
+        }
+
+        public static string LoadBootstrapTableExportJs()
+        {
+            return LoadTemplate(typeof(TemplateManager).Namespace + ".bootstrap-table-export.min.js.gz");
+        }
+
+        public static string LoadTableExportJs()
+        {
+            return LoadTemplate(typeof(TemplateManager).Namespace + ".tableExport.min.js.gz");
+        }
+
         public static string LoadPopperJs()
         {
             return LoadTemplate(typeof(TemplateManager).Namespace + ".popper.min.js.gz");
@@ -69,25 +96,15 @@ namespace PingCastle.template
         {
             return LoadTemplate(typeof(TemplateManager).Namespace + ".vis.min.css.gz");
         }
-
-        public static string LoadDatatableJs()
-        {
-            return LoadTemplate(typeof(TemplateManager).Namespace + ".dataTables.bootstrap4.min.js.gz");
-        }
-
-        public static string LoadDatatableCss()
-        {
-            return LoadTemplate(typeof(TemplateManager).Namespace + ".dataTables.bootstrap4.min.css.gz");
-        }
-
-        public static string LoadJqueryDatatableJs()
-        {
-            return LoadTemplate(typeof(TemplateManager).Namespace + ".jquery.dataTables.min.js.gz");
-        }
-
+       
         public static string LoadReportBaseCss()
         {
             return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportBase.css.gz");
+        }
+
+        public static string LoadReportBaseJs()
+        {
+            return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportBase.js.gz");
         }
 
         public static string LoadReportRiskControlsCss()

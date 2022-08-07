@@ -65,6 +65,7 @@ function ProcessTemplate
 
 ProcessTemplate -File responsivetemplate.html
 ProcessTemplate -File ReportBase.css
+ProcessTemplate -File ReportBase.js
 ProcessTemplate -File ReportCompromiseGraph.css
 ProcessTemplate -File ReportHealthCheckConsolidation.css
 ProcessTemplate -File ReportHealthCheckRules.css

@@ -21,7 +21,11 @@ namespace PingCastle.Healthcheck.Rules
             {
                 return 100;
             }
-            return (int)(healthcheckData.GenerationDate - healthcheckData.AdminLastLoginDate).TotalDays;
+            var days = (int)(healthcheckData.GenerationDate - healthcheckData.AdminLastLoginDate).TotalDays;
+            // admin login date in the future - can happens when reloading backups
+            if (days < 0)
+                return 100;
+            return days;
         }
     }
 }

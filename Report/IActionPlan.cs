@@ -11,4 +11,9 @@ namespace PingCastle.Report
 
         void GenerateDetailledActionPlan(StringBuilder sb, HealthcheckRiskRule rule, Rules.RuleBase<HealthcheckData> hcrule, string d);
     }
+
+    public interface IActionPlanConsolidation : IActionPlan
+    {
+        void LoadDomain(HealthcheckData data);
+    }
 }

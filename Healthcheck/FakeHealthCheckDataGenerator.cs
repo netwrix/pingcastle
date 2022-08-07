@@ -424,7 +424,7 @@ namespace PingCastle.Healthcheck
                 // trusted to authenticate
                 x.UserAccountControl += BoolOnChance(2) * 0x80000;
                 x.PrimaryGroupID = 515 + BoolOnChance(1);
-                HealthcheckAnalyzer.ProcessAccountData(healthcheckData.UserAccountData, x, false);
+                HealthcheckAnalyzer.ProcessAccountData(healthcheckData.UserAccountData, x, false, default(DateTime));
 
             }
             healthcheckData.LoginScript = new List<HealthcheckLoginScriptData>();
@@ -453,7 +453,7 @@ namespace PingCastle.Healthcheck
                 // trusted to authenticate
                 x.UserAccountControl += BoolOnChance(2) * 0x80000;
                 x.PrimaryGroupID = 515 + BoolOnChance(1);
-                HealthcheckAnalyzer.ProcessAccountData(healthcheckData.ComputerAccountData, x, true);
+                HealthcheckAnalyzer.ProcessAccountData(healthcheckData.ComputerAccountData, x, true, default(DateTime));
             }
             healthcheckData.LoginScript = new List<HealthcheckLoginScriptData>();
 

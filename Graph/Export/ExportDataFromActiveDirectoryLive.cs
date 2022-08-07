@@ -101,11 +101,18 @@ namespace PingCastle.Graph.Export
                     objectReference.Objects[CompromiseGraphDataTypology.PrivilegedAccount].Add(new GraphSingleObject(x.ObjectSid.Value, GraphObjectReference.DnsAdministrators, CompromiseGraphDataObjectRisk.Medium));
                     dnsAdminFound = true;
                 };
-            // we do a one level search just case the group is in the default position
-            adws.Enumerate("CN=Users," + domainInfo.DefaultNamingContext, "(&(objectClass=group)(description=DNS Administrators Group))", properties, callback, "OneLevel");
-            if (!dnsAdminFound)
+            try
             {
-                adws.Enumerate("CN=Users," + domainInfo.DefaultNamingContext, "(&(objectClass=group)(sAMAccountName=DNSAdmins))", properties, callback, "OneLevel");
+                // we do a one level search just case the group is in the default position
+                adws.Enumerate("CN=Users," + domainInfo.DefaultNamingContext, "(&(objectClass=group)(description=DNS Administrators Group))", properties, callback, "OneLevel");
+                if (!dnsAdminFound)
+                {
+                    adws.Enumerate("CN=Users," + domainInfo.DefaultNamingContext, "(&(objectClass=group)(sAMAccountName=DNSAdmins))", properties, callback, "OneLevel");
+                }
+            }
+            catch(Exception)
+            {
+                // trap silently the exception if the users container has been removed
             }
             if (!dnsAdminFound)
             {
@@ -163,7 +170,7 @@ namespace PingCastle.Graph.Export
                             if (!map[spn[1]].Contains(sid))
                                 map[spn[1]].Add(sid);
                         }
-                        if ((aditem.UserAccountControl & 0x80000) != 0)
+                        if ((aditem.UserAccountControl & 0x1000000) != 0)
                         {
                             protocolTransitionSid.Add(aditem.ObjectSid.Value);
                         }

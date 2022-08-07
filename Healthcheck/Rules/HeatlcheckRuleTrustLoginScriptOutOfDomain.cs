@@ -7,6 +7,7 @@
 using PingCastle.Rules;
 using System;
 using System.Diagnostics;
+using System.Net;
 
 namespace PingCastle.Healthcheck.Rules
 {
@@ -53,8 +54,16 @@ namespace PingCastle.Healthcheck.Rules
                     Trace.WriteLine("The url is not absolute: " + uristring);
                     return null;
                 }
+                // try to find url matching server.domain.fqdn
                 if (uri.IsUnc && uri.Host.Contains("."))
                 {
+                    IPAddress a;
+                    // exclude IP Address
+                    if (IPAddress.TryParse(uri.Host, out a))
+                    {
+                        return null;
+                    }
+
                     string server = uri.Host;
                     if (server.EndsWith(healthcheckData.DomainFQDN, StringComparison.InvariantCultureIgnoreCase)
                         || server.EndsWith(healthcheckData.ForestFQDN, StringComparison.InvariantCultureIgnoreCase))

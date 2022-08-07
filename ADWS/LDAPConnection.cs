@@ -140,6 +140,12 @@ namespace PingCastle.ADWS
                     Trace.WriteLine("Translating DirectoryServicesCOMException to UnauthorizedAccessException");
                     throw new UnauthorizedAccessException(ex.Message);
                 }
+                if (ex.ErrorCode == -2147016656)
+                {
+                    // no such object
+                    Trace.WriteLine(ex.Message);
+                    return;
+                }
                 throw;
             }
         }

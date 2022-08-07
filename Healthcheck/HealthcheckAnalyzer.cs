@@ -42,6 +42,8 @@ namespace PingCastle.Healthcheck
         private const string LatinUpperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private const string LatinLowerCase = "abcdefghijklmnopqrstuvwxyz";
 
+        public bool limitHoneyPot = true;
+
         public HealthcheckAnalyzer()
         {
             if (Environment.OSVersion.Version.Major < 6)
@@ -93,6 +95,14 @@ namespace PingCastle.Healthcheck
             LoadHoneyPotData();
             ADDomainInfo domainInfo = null;
             DisplayAdvancement("Getting domain information (" + parameters.Server + ")");
+            if (RestrictedToken.IsUsingRestrictedToken)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("Warning: the program is running under a restricted token.");
+                Console.WriteLine("That means that the software does not have the same rights than the current user to query the Active Directory. Some information will be missing such as creation date or DNS zones.");
+                Console.WriteLine("To solve this problem, run the program elevated, aka as administrator");
+                Console.ResetColor();
+            }
             using (ADWebService adws = new ADWebService(parameters.Server, parameters.Port, parameters.Credential))
             {
                 domainInfo = adws.DomainInfo;
@@ -104,6 +114,8 @@ namespace PingCastle.Healthcheck
                 }
                 DisplayAdvancement("Gathering general data");
                 GenerateGeneralData(domainInfo, adws);
+                CheckMsDsMachineAccountQuota(domainInfo, adws);
+
                 DisplayAdvancement("Gathering user data");
                 GenerateUserData(domainInfo, adws);
                 GenerateGroupSidHistoryData(domainInfo, adws);
@@ -125,6 +137,8 @@ namespace PingCastle.Healthcheck
                 GeneratePSOData(domainInfo, adws);
                 DisplayAdvancement("Gathering pki data");
                 GeneratePKIData(domainInfo, adws);
+                DisplayAdvancement("Gathering sccm data");
+                GenerateSCCMData(domainInfo, adws);
                 DisplayAdvancement("Gathering anomaly data");
                 GenerateAnomalies(domainInfo, adws);
                 DisplayAdvancement("Gathering dns data");
@@ -166,14 +180,14 @@ namespace PingCastle.Healthcheck
             var s = HoneyPotSettings.GetEncryptionSettings();
             if (s == null)
                 return;
-            if (s.HoneyPots.Count > 25)
+            if (s.HoneyPots.Count > 25 && limitHoneyPot)
             {
                 throw new PingCastleException("You entered more than 25 HoneyPots in the configuration. Honey Pots should not be used as a way to setup exceptions to rules");
             }
             healthcheckData.ListHoneyPot = new List<HealthcheckAccountDetailData>();
             foreach (SingleHoneyPotSettings h in s.HoneyPots)
             {
-                healthcheckData.ListHoneyPot.Add(new HealthcheckAccountDetailData() { Name = h.samAccountName });
+                healthcheckData.ListHoneyPot.Add(new HealthcheckAccountDetailData() { Name = h.samAccountName, DistinguishedName = h.distinguishedName });
             }
         }
 
@@ -238,29 +252,47 @@ namespace PingCastle.Healthcheck
                 // if we are here that means that ADWS works
                 ReachableDomainInfo rdi = new ReachableDomainInfo(domainToExplore);
                 if (!domainlist.Contains(rdi))
+                {
+                    Trace.WriteLine("Adding " + domainToExplore + " as user input");
                     domainlist.Add(rdi);
+                }
                 if (domainInfo.ForestName != domainInfo.DomainName)
+                {
                     forestToExplore = domainInfo.ForestName;
+                    Trace.WriteLine("Changing forest to explore: " + forestToExplore);
+                }
                 WorkOnReturnedObjectByADWS callback =
                 (ADItem x) =>
                 {
+                    Trace.WriteLine("* Examining trust " + x.TrustPartner);
                     // inbound trust
                     if (x.TrustDirection == 2)
+                    {
+                        Trace.WriteLine("Ignoring inbound trust");
                         return;
+                    }
                     rdi = new ReachableDomainInfo(x.TrustPartner);
                     if (!domainlist.Contains(rdi))
+                    {
+                        Trace.WriteLine("Adding " + x.TrustPartner + " as direct target");
                         domainlist.Add(rdi);
+                    }
                     if (x.msDSTrustForestTrustInfo != null)
                     {
                         foreach (HealthCheckTrustDomainInfoData di in x.msDSTrustForestTrustInfo)
                         {
+                            Trace.WriteLine("msDSTrustForestTrustInfo constains " + di.DnsName);
                             rdi = new ReachableDomainInfo(di.DnsName);
                             if (!domainlist.Contains(rdi))
+                            {
+                                Trace.WriteLine("Adding " + di.DnsName + " as msDSTrustForestTrustInfo target");
                                 domainlist.Add(rdi);
+                            }
                         }
                     }
                 };
                 adws.Enumerate(domainInfo.DefaultNamingContext, "(ObjectCategory=trustedDomain)", properties, callback);
+                Trace.WriteLine("Done");
             }
             catch (Exception ex)
             {
@@ -345,6 +377,31 @@ namespace PingCastle.Healthcheck
                                                 }
                                             }
                                         }, "Base");
+
+            if (healthcheckData.DomainFunctionalLevel >= 2)
+            {
+                string[] propertiesEstimate = new string[] { "msDS-Approx-Immed-Subordinates" };
+                int count = 0;
+                adws.Enumerate(domainInfo.DefaultNamingContext,
+                                        "(|(objectClass=container)(objectClass=organizationalunit))",
+                                        propertiesEstimate, (ADItem aditem) =>
+                                            {
+                                                count += aditem.msDSApproxImmedSubordinates;
+                                            }
+                );
+                if (count > 0)
+                {
+                    DisplayAdvancement("This domain contains approximatively " + count + " objects");
+                }
+            }
+
+            adws.Enumerate(domainInfo.DefaultNamingContext,
+                                       "(objectSid=" + ADConnection.EncodeSidToString(domainInfo.DomainSid + "-" + 521) + ")",
+                                        new string[] { "distinguishedName", "whenCreated" }, (ADItem aditem) =>
+                                        {
+                                            healthcheckData.DCWin2008Install = aditem.WhenCreated;
+                                        });
+
             GetAzureInfo(domainInfo, adws);
 
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
@@ -428,6 +485,7 @@ namespace PingCastle.Healthcheck
                         "pwdLastSet",
                         "sAMAccountName",
                         "scriptPath",
+                        "servicePrincipalName",
                         "sIDHistory",
                         "userAccountControl",
                         "whenCreated",
@@ -473,7 +531,7 @@ namespace PingCastle.Healthcheck
                         {
                             return;
                         }
-                        ProcessAccountData(healthcheckData.UserAccountData, x, false, healthcheckData.ListHoneyPot);
+                        ProcessAccountData(healthcheckData.UserAccountData, x, false, healthcheckData.DCWin2008Install, healthcheckData.ListHoneyPot);
                         // only enabled accounts and no guest account
                         if ((x.UserAccountControl & 0x00000002) == 0)
                         {
@@ -517,10 +575,10 @@ namespace PingCastle.Healthcheck
                 };
 
             adws.Enumerate(() =>
-            {
-                healthcheckData.UserAccountData = new HealthcheckAccountData();
-                loginscript.Clear();
-            },
+                {
+                    healthcheckData.UserAccountData = new HealthcheckAccountData();
+                    loginscript.Clear();
+                },
                 domainInfo.DefaultNamingContext, userFilter, userProperties, callback, "SubTree");
 
             healthcheckData.LoginScript = new List<HealthcheckLoginScriptData>();
@@ -596,7 +654,7 @@ namespace PingCastle.Healthcheck
             return output;
         }
 
-        public static void ProcessAccountData(IAddAccountData data, ADItem x, bool computerCheck, List<HealthcheckAccountDetailData> ListHoneyPot = null)
+        public static void ProcessAccountData(IAddAccountData data, ADItem x, bool computerCheck, DateTime DCWin2008Install, List<HealthcheckAccountDetailData> ListHoneyPot = null)
         {
             // see https://msdn.microsoft.com/fr-fr/library/windows/desktop/ms680832%28v=vs.85%29.aspx for the flag
             if (!string.IsNullOrEmpty(x.SAMAccountName) && ListHoneyPot != null && ListHoneyPot.Count > 0)
@@ -604,6 +662,15 @@ namespace PingCastle.Healthcheck
                 foreach (var h in ListHoneyPot)
                 {
                     if (string.Equals(h.Name, x.SAMAccountName, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        // ignore the account
+                        h.Name = x.SAMAccountName;
+                        h.CreationDate = x.WhenCreated;
+                        h.DistinguishedName = x.DistinguishedName;
+                        h.LastLogonDate = x.LastLogonTimestamp;
+                        return;
+                    }
+                    if (string.Equals(h.DistinguishedName, x.DistinguishedName, StringComparison.InvariantCultureIgnoreCase))
                     {
                         // ignore the account
                         h.Name = x.SAMAccountName;
@@ -629,8 +696,10 @@ namespace PingCastle.Healthcheck
             {
                 data.AddWithoutDetail("Enabled");
 
-                if (x.WhenCreated.AddDays(6 * 31) > DateTime.Now || x.LastLogonTimestamp.AddDays(6 * 31) > DateTime.Now)
+                if (x.WhenCreated.AddMonths(6) > DateTime.Now || x.LastLogonTimestamp.AddMonths(6) > DateTime.Now || x.PwdLastSet.AddMonths(6) > DateTime.Now)
+                {
                     data.AddWithoutDetail("Active");
+                }
                 else
                 {
                     data.AddDetail("Inactive", GetAccountDetail(x));
@@ -645,7 +714,16 @@ namespace PingCastle.Healthcheck
                 }
                 if ((x.UserAccountControl & 0x00010000) != 0)
                 {
-                    data.AddDetail("PwdNeverExpires", GetAccountDetail(x));
+                    // see https://techcommunity.microsoft.com/t5/exchange-team-blog/exchange-2013-2016-monitoring-mailboxes/ba-p/611004?msclkid=bd3898eeb18f11ecb0ad418f45f9d755
+                    // exception for exchange accounts whose password is changed regularly
+                    if (x.SAMAccountName.StartsWith("HealthMailbox", StringComparison.OrdinalIgnoreCase) && x.PwdLastSet.AddDays(40) > DateTime.Now)
+                    {
+
+                    }
+                    else
+                    {
+                        data.AddDetail("PwdNeverExpires", GetAccountDetail(x));
+                    }
                 }
                 if ((x.UserAccountControl & 0x00000020) != 0)
                 {
@@ -697,6 +775,20 @@ namespace PingCastle.Healthcheck
                 {
                     data.AddDetail("ReversibleEncryption", GetAccountDetail(x));
                 }
+                if (DCWin2008Install != default(DateTime))
+                {
+                    if ((x.PwdLastSet > new DateTime(1900, 1, 1) && DCWin2008Install > x.PwdLastSet) || (x.PwdLastSet <= new DateTime(1900, 1, 1) && x.WhenCreated.AddHours(1) < DCWin2008Install))
+                    {
+                        data.AddDetail("NotAesEnabled", GetAccountDetail(x));
+                    }
+                    else if (x.ServicePrincipalName != null && x.ServicePrincipalName.Length > 0 && !string.IsNullOrEmpty(x.ServicePrincipalName[0]))
+                    {
+                        if ((x.msDSSupportedEncryptionTypes & (8 + 16)) == 0)
+                        {
+                            data.AddDetail("NotAesEnabled", GetAccountDetail(x));
+                        }
+                    }
+                }
 
             }
 
@@ -726,6 +818,7 @@ namespace PingCastle.Healthcheck
                         "primaryGroupID",
                         "pwdLastSet",
                         "sAMAccountName",
+                        "servicePrincipalName",
                         "sIDHistory",
                         "userAccountControl",
                         "whenCreated",
@@ -765,7 +858,7 @@ namespace PingCastle.Healthcheck
                             proxy.Clients.Add(operatingSystemVersion[key].data);
                         }
 
-                        ProcessAccountData(proxy, x, true, healthcheckData.ListHoneyPot);
+                        ProcessAccountData(proxy, x, true, healthcheckData.DCWin2008Install, healthcheckData.ListHoneyPot);
                         // process only not disabled computers
                         if ((x.UserAccountControl & 0x00000002) == 0)
                         {
@@ -775,6 +868,8 @@ namespace PingCastle.Healthcheck
                                 foreach (var u in healthcheckData.ListHoneyPot)
                                 {
                                     if (string.Equals(u.Name, x.SAMAccountName, StringComparison.InvariantCultureIgnoreCase))
+                                        return;
+                                    if (string.Equals(u.DistinguishedName, x.DistinguishedName, StringComparison.InvariantCultureIgnoreCase))
                                         return;
                                 }
                             }
@@ -854,14 +949,14 @@ namespace PingCastle.Healthcheck
 
 
             adws.Enumerate(() =>
-            {
-                healthcheckData.ComputerAccountData = new HealthcheckAccountData();
-                healthcheckData.DomainControllers = new List<HealthcheckDomainController>();
-                healthcheckData.OperatingSystem = new List<HealthcheckOSData>();
-                healthcheckData.OperatingSystemVersion = new List<HealthcheckOSVersionData>();
-                operatingSystems.Clear();
-                operatingSystemVersion.Clear();
-            },
+                {
+                    healthcheckData.ComputerAccountData = new HealthcheckAccountData();
+                    healthcheckData.DomainControllers = new List<HealthcheckDomainController>();
+                    healthcheckData.OperatingSystem = new List<HealthcheckOSData>();
+                    healthcheckData.OperatingSystemVersion = new List<HealthcheckOSVersionData>();
+                    operatingSystems.Clear();
+                    operatingSystemVersion.Clear();
+                },
                 domainInfo.DefaultNamingContext, computerfilter, computerProperties, callback, "SubTree");
 
             foreach (string key in operatingSystems.Keys)
@@ -939,6 +1034,10 @@ namespace PingCastle.Healthcheck
             {
                 return "Windows 2022";
             }
+            if (Regex.Match(os, @"windows(.*) Embedded", RegexOptions.IgnoreCase).Success)
+            {
+                return "Windows Embedded";
+            }
             if (Regex.Match(os, @"windows(.*) 7", RegexOptions.IgnoreCase).Success)
             {
                 return "Windows 7";
@@ -946,10 +1045,6 @@ namespace PingCastle.Healthcheck
             if (Regex.Match(os, @"windows(.*) 8", RegexOptions.IgnoreCase).Success)
             {
                 return "Windows 8";
-            }
-            if (Regex.Match(os, @"windows(.*) Embedded", RegexOptions.IgnoreCase).Success)
-            {
-                return "Windows Embedded";
             }
             if (Regex.Match(os, @"windows(.*) XP", RegexOptions.IgnoreCase).Success)
             {
@@ -988,6 +1083,7 @@ namespace PingCastle.Healthcheck
                         "whenCreated",
                         "whenChanged",
                         "msDS-TrustForestTrustInfo",
+                        "msDS-SupportedEncryptionTypes",
             };
             DomainLocator dl = new DomainLocator(domainInfo.DnsHostName);
 
@@ -1001,6 +1097,7 @@ namespace PingCastle.Healthcheck
                     trust.TrustDirection = x.TrustDirection;
                     trust.TrustType = x.TrustType;
                     trust.CreationDate = x.WhenCreated;
+                    trust.msDSSupportedEncryptionTypes = x.msDSSupportedEncryptionTypes;
                     // if a trust is active, the password is changed every 30 days
                     // so the object will be changed
                     trust.IsActive = (x.WhenChanged.AddDays(40) > DateTime.Now);
@@ -1128,6 +1225,7 @@ namespace PingCastle.Healthcheck
             string[] AzureAccountproperties = new string[] {
                         "distinguishedName",
                         "securityIdentifier",
+                        "msDS-SupportedEncryptionTypes",
                         "pwdLastSet",
                         "replPropertyMetaData",
                         "whenCreated",
@@ -1140,7 +1238,7 @@ namespace PingCastle.Healthcheck
                         {
                             d = x.PwdLastSet;
                         }
-                        else
+                        else////////////
                         {
                             if (d < x.ReplPropertyMetaData[0x9005A].LastOriginatingChange)
                             {
@@ -1148,6 +1246,7 @@ namespace PingCastle.Healthcheck
                                 healthcheckData.AzureADSSOVersion = x.ReplPropertyMetaData[0x9005A].Version;
                             }
                         }
+                        healthcheckData.AzureADSSOEncryptionType = x.msDSSupportedEncryptionTypes;
                         healthcheckData.AzureADSSOLastPwdChange = d;
                     };
 
@@ -1515,6 +1614,8 @@ namespace PingCastle.Healthcheck
                     healthcheckData.Delegations.Clear();
                 },
                 domainInfo.DefaultNamingContext, "(|(objectCategory=organizationalUnit)(objectCategory=container)(objectCategory=domain)(objectCategory=buitinDomain))", properties, callback, "SubTree");
+
+            adws.Enumerate(domainInfo.ConfigurationNamingContext, "(objectCategory=configuration)", properties, callback, "Base");
         }
 
         // removed unexpire password because permissions given to authenticated users at the root of the domain
@@ -1605,6 +1706,9 @@ namespace PingCastle.Healthcheck
                     continue;
                 // build in admin
                 if (si.Value == "S-1-5-32-544")
+                    continue;
+                // ENTERPRISE_DOMAIN_CONTROLLERS
+                if (si.Value == "S-1-5-9")
                     continue;
 
                 if (si.IsWellKnown(WellKnownSidType.AccountDomainAdminsSid))
@@ -1937,8 +2041,22 @@ namespace PingCastle.Healthcheck
             string test = domainInfo.ConfigurationNamingContext.Replace(domainInfo.DefaultNamingContext, "");
             if (!test.Contains("DC="))
             {
-                GenerateNTLMStoreData(domainInfo, adws);
-                GenerateCertificateTemplateData(domainInfo, adws);
+                bool PKIInstalled = false;
+                WorkOnReturnedObjectByADWS callback =
+                (ADItem x) =>
+                {
+                    PKIInstalled = true;
+                };
+
+                string[] properties = new string[] { "distinguishedName" };
+                adws.Enumerate(domainInfo.ConfigurationNamingContext, "(distinguishedName=CN=Public Key Services,CN=Services," + domainInfo.ConfigurationNamingContext + ")", properties, callback);
+
+                if (PKIInstalled)
+                {
+                    GenerateNTLMStoreData(domainInfo, adws);
+                    GenerateCertificateTemplateData(domainInfo, adws);
+                    GenerateADCSEnrollmentServerData(domainInfo, adws);
+                }
             }
         }
 
@@ -1967,7 +2085,7 @@ namespace PingCastle.Healthcheck
                     }
                 };
 
-            adws.Enumerate("CN=Enrollment Services,CN=Public Key Services,CN=Services," + domainInfo.ConfigurationNamingContext, "(objectClass=pKIEnrollmentService)", properties, callback);
+            adws.Enumerate("CN=Public Key Services,CN=Services," + domainInfo.ConfigurationNamingContext, "(objectClass=pKIEnrollmentService)", properties, callback);
             return output;
         }
 
@@ -2005,6 +2123,7 @@ namespace PingCastle.Healthcheck
                     ct.Flags = x.Flags;
                     ct.OID = x.msPKICertTemplateOID;
                     ct.CAManagerApproval = (x.msPKIEnrollmentFlag & 2) != 0;
+                    ct.NoSecurityExtension = (x.msPKIEnrollmentFlag & 0x80000) != 0;
                     if ((x.msPKICertificateNameFlag & 1) != 0)
                     {
                         ct.EnrolleeSupplies += 1;
@@ -2086,7 +2205,7 @@ namespace PingCastle.Healthcheck
                     ct.EnrollmentAgentTemplate = EKU.Contains("1.3.6.1.4.1.311.20.2.1");
                 };
 
-            adws.Enumerate("CN=Certificate Templates,CN=Public Key Services,CN=Services," + domainInfo.ConfigurationNamingContext, "(objectClass=pKICertificateTemplate)", properties, callback);
+            adws.Enumerate("CN=Public Key Services,CN=Services," + domainInfo.ConfigurationNamingContext, "(objectClass=pKICertificateTemplate)", properties, callback);
         }
 
         private void GenerateNTLMStoreData(ADDomainInfo domainInfo, ADWebService adws)
@@ -2116,6 +2235,135 @@ namespace PingCastle.Healthcheck
 
         }
 
+        private void GenerateADCSEnrollmentServerData(ADDomainInfo domainInfo, ADWebService adws)
+        {
+
+            healthcheckData.CertificateEnrollments = new List<HealthCheckCertificateEnrollment>();
+
+            string[] properties = new string[] {
+                        "dNSHostName",
+                        "name"
+            };
+            WorkOnReturnedObjectByADWS callback =
+                (ADItem x) =>
+                {
+                    if (!string.IsNullOrEmpty(x.DNSHostName))
+                    {
+                        GenerateADCSEnrollmentServerTests(adws, x.DNSHostName, x.Name);
+                    }
+                };
+
+
+            adws.Enumerate("CN=Public Key Services,CN=Services," + domainInfo.ConfigurationNamingContext, "(objectClass=pKIEnrollmentService)", properties, callback);
+        }
+
+        private void GenerateADCSEnrollmentServerTests(ADWebService adws, string dnsHostName, string CAName)
+        {
+            var enrollmentServer = new HealthCheckCertificateEnrollment();
+            enrollmentServer.Name = dnsHostName;
+            healthcheckData.CertificateEnrollments.Add(enrollmentServer);
+
+            var uri = new Uri("https://" + dnsHostName + "/certsrv/certrqxt.asp");
+
+            byte[] certificate;
+            var protocols = new List<string>();
+            GenerateTLSInfo(uri.Host, uri.Port, protocols, out certificate);
+
+            enrollmentServer.SSLProtocol = protocols;
+
+            if (DoesComputerMatchDns(dnsHostName))
+            {
+                Trace.WriteLine("Test ignored because tested on the server itself");
+                return;
+            }
+            // web enrollment
+            // https access
+            // channel binding
+            var result = ConnectionTester.TestExtendedAuthentication(uri, adws.Credential);
+
+            if (result == ConnectionTesterStatus.ChannelBindingDisabled)
+            {
+                enrollmentServer.WebEnrollmentChannelBindingDisabled = true;
+                enrollmentServer.WebEnrollmentHttps = true;
+            }
+            else if (result == ConnectionTesterStatus.ChannelBindingEnabled)
+            {
+                enrollmentServer.WebEnrollmentHttps = true;
+            }
+            // http access
+            uri = new Uri("http://" + dnsHostName + "/certsrv/certrqxt.asp");
+            result = ConnectionTester.TestConnection(uri, adws.Credential);
+            if (result == ConnectionTesterStatus.AuthenticationSuccessfull)
+            {
+                enrollmentServer.WebEnrollmentHttp = true;
+
+            }
+            // CES
+            // https access
+            // channel binding
+            uri = new Uri("https://" + dnsHostName + "/" + CAName + "_CES_Kerberos/service.svc");
+
+            result = ConnectionTester.TestExtendedAuthentication(uri, adws.Credential);
+            if (result == ConnectionTesterStatus.ChannelBindingDisabled)
+            {
+                enrollmentServer.CESHttps = true;
+                enrollmentServer.CESChannelBindingDisabled = true;
+            }
+            else if (result == ConnectionTesterStatus.ChannelBindingEnabled)
+            {
+                enrollmentServer.CESHttps = true;
+            }
+
+            // http access
+            uri = new Uri("http://" + dnsHostName + "/" + CAName + "_CES_Kerberos/service.svc");
+            result = ConnectionTester.TestConnection(uri, adws.Credential);
+            if (result == ConnectionTesterStatus.AuthenticationSuccessfull)
+            {
+                enrollmentServer.CESHttp = true;
+
+            }
+
+        }
+
+        void GenerateSCCMData(ADDomainInfo domainInfo, ADWebService adws)
+        {
+            string[] propertiesSchema = new string[] {
+                        "distinguishedName",
+                        "whenCreated",
+            };
+
+            adws.Enumerate(domainInfo.SchemaNamingContext, "(name=MS-SMS-MP-Name)", propertiesSchema,
+                (ADItem aditem) =>
+                {
+                    healthcheckData.SCCMInstalled = aditem.WhenCreated;
+                }
+                , "OneLevel");
+
+            if (healthcheckData.SCCMInstalled == DateTime.MinValue)
+            {
+                return;
+            }
+
+            healthcheckData.SCCMServers = new List<HealthCheckSCCMServer>();
+
+            string[] properties = new string[] {
+                        "distinguishedName",
+                        "mSSMSCapabilities",
+                        "mSSMSMPName",
+                        "mSSMSVersion",
+            };
+            WorkOnReturnedObjectByADWS callback =
+                (ADItem x) =>
+                {
+                    var sccm = new HealthCheckSCCMServer();
+                    sccm.Name = x.DistinguishedName;
+                    sccm.Capabilities = x.mSSMSCapabilities;
+                    sccm.MPName = x.mSSMSMPName;
+                    sccm.Version = x.mSSMSVersion;
+                    healthcheckData.SCCMServers.Add(sccm);
+                };
+            adws.Enumerate("CN=System Management,CN=System," + domainInfo.DefaultNamingContext, "(objectClass=mSSMSManagementPoint)", properties, callback);
+        }
 
         private void GenerateMsiData(ADDomainInfo domainInfo, ADWebService adws, Dictionary<string, GPO> GPOList)
         {
@@ -2876,6 +3124,17 @@ namespace PingCastle.Healthcheck
                     return new KeyValuePair<SecurityIdentifier, string>(sid, sid.Value);
                 }
             }
+            else if (healthcheckData.MachineAccountQuota > 0 && sid.IsWellKnown(WellKnownSidType.AccountComputersSid))
+            {
+                try
+                {
+                    return new KeyValuePair<SecurityIdentifier, string>(sid, ((NTAccount)sid.Translate(typeof(NTAccount))).Value);
+                }
+                catch (Exception)
+                {
+                    return new KeyValuePair<SecurityIdentifier, string>(sid, sid.Value);
+                }
+            }
             return null;
         }
 
@@ -3557,6 +3816,10 @@ namespace PingCastle.Healthcheck
             {
                 AddGPOLsaPolicy(GPO, "EnableSecuritySignature", 0);
             }
+            else if (line.StartsWith(@"MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters\SupportedEncryptionTypes=4,", StringComparison.InvariantCultureIgnoreCase))
+            {
+                AddGPOLsaPolicy(GPO, "SupportedEncryptionTypes", (int)uint.Parse(line.Split(',')[1]));
+            }
         }
 
         private void AddGPOLsaPolicy(GPO GPO, string setting, int value)
@@ -3907,8 +4170,6 @@ namespace PingCastle.Healthcheck
 
             CheckSIDHistoryAuditingGroupPresent(domainInfo, adws);
 
-            CheckMsDsMachineAccountQuota(domainInfo, adws);
-
             CheckDCOwners(domainInfo, adws);
 
             CheckPrivExchange(domainInfo, adws);
@@ -4074,6 +4335,8 @@ namespace PingCastle.Healthcheck
                             foreach (var u in healthcheckData.ListHoneyPot)
                             {
                                 if (string.Equals(u.Name, x.SAMAccountName, StringComparison.InvariantCultureIgnoreCase))
+                                    return;
+                                if (string.Equals(u.DistinguishedName, x.DistinguishedName, StringComparison.InvariantCultureIgnoreCase))
                                     return;
                             }
                         }
@@ -4524,8 +4787,17 @@ namespace PingCastle.Healthcheck
                             Trace.WriteLine("[" + threadId + "] Working on spooler " + dns);
                             DC.RemoteSpoolerDetected = SpoolerScanner.CheckIfTheSpoolerIsActive(dns);
                         }
-                        Trace.WriteLine("[" + threadId + "] Working on smb ssl " + dns);
-                        GenerateTLSConnectionInfo(dns, DC);
+                        if (DC.SMB1SecurityMode != SMBSecurityModeEnum.NotTested && DC.SMB2SecurityMode != SMBSecurityModeEnum.NotTested)
+                        {
+                            if (NamedPipeTester.IsRemotePipeAccessible(dns, NamedPipeTester.WebClientPipeName))
+                            {
+                                DC.WebClientEnabled = true;
+                            }
+                        }
+                        Trace.WriteLine("[" + threadId + "] Working on ldap ssl " + dns);
+                        GenerateTLSConnectionInfo(dns, DC, adws.Credential);
+                        Trace.WriteLine("[" + threadId + "] Working on ldap signing requirements " + dns);
+                        GenerateLDAPSigningRequirementInfo(dns, DC, adws.Credential);
                         Trace.WriteLine("[" + threadId + "] Done for " + dns);
                     }
                 };
@@ -4580,12 +4852,46 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private void GenerateTLSConnectionInfo(string dns, HealthcheckDomainController DC)
+        private void GenerateTLSConnectionInfo(string dns, HealthcheckDomainController DC, NetworkCredential credentials)
         {
             DC.LDAPSProtocols = new List<string>();
             byte[] certificate;
             GenerateTLSInfo(dns, 636, DC.LDAPSProtocols, out certificate);
             DC.LDAPCertificate = certificate;
+            if (DC.LDAPSProtocols.Count > 0)
+            {
+                if (DoesComputerMatchDns(dns))
+                {
+                    Trace.WriteLine("Test ignored because tested on the DC itself");
+                    return;
+                }
+
+                var result = ConnectionTester.TestExtendedAuthentication(new Uri("ldaps://" + dns), credentials);
+                if (result == ConnectionTesterStatus.ChannelBindingDisabled)
+                {
+                    DC.ChannelBindingDisabled = true;
+                }
+            }
+        }
+
+        private void GenerateLDAPSigningRequirementInfo(string dns, HealthcheckDomainController DC, NetworkCredential credentials)
+        {
+            if (DoesComputerMatchDns(dns))
+            {
+                Trace.WriteLine("Test ignored because tested on the DC itself");
+                return;
+            }
+            var result = ConnectionTester.TestSignatureRequiredEnabled(new Uri("ldaps://" + dns), credentials);
+            if (result == ConnectionTesterStatus.SignatureNotRequired)
+            {
+                DC.LdapServerSigningRequirementDisabled = true;
+            }
+        }
+
+        bool DoesComputerMatchDns(string Dns)
+        {
+            string hostName = System.Net.Dns.GetHostEntry("LocalHost").HostName;
+            return string.Equals(hostName, Dns, StringComparison.OrdinalIgnoreCase);
         }
 
         private void GenerateTLSInfo(string dns, int port, List<string> protocols, out byte[] certificate)

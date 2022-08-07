@@ -61,6 +61,55 @@ namespace PingCastle.Healthcheck
         [XmlAttribute]
         public bool HasAuthenticationEku { get; set; }
         public List<HealthcheckDelegationData> Delegations { get; set; }
+
+        [XmlAttribute]
+        public bool NoSecurityExtension { get; set; }
+    }
+
+    [DebuggerDisplay("{Name}")]
+    public class HealthCheckCertificateEnrollment
+    {
+        [XmlAttribute]
+        public string Name { get; set; }
+
+        [XmlAttribute]
+        public string OID { get; set; }
+
+        public List<string> SSLProtocol { get; set; }
+
+        [XmlAttribute]
+        public bool WebEnrollmentHttps { get; set; }
+
+        [XmlAttribute]
+        public bool WebEnrollmentHttp { get; set; }
+
+        [XmlAttribute]
+        public bool WebEnrollmentChannelBindingDisabled { get; set; }
+
+        [XmlAttribute]
+        public bool CESHttp { get; set; }
+
+        [XmlAttribute]
+        public bool CESHttps { get; set; }
+
+        [XmlAttribute]
+        public bool CESChannelBindingDisabled { get; set; }
+
+    }
+
+    [DebuggerDisplay("{Name}")]
+    public class HealthCheckSCCMServer
+    {
+        [XmlAttribute]
+        public string Name { get; set; }
+
+        public string Capabilities { get; set; }
+
+        [XmlAttribute]
+        public string MPName { get; set; }
+
+        [XmlAttribute]
+        public int Version { get; set; }
     }
 
     [DebuggerDisplay("{DN} {ClassName} {DNS}")]
@@ -268,6 +317,8 @@ namespace PingCastle.Healthcheck
 
         public string NetBiosName { get; set; }
 
+        public int msDSSupportedEncryptionTypes { get; set; }
+
         public List<HealthCheckTrustDomainInfoData> KnownDomains { get; set; }
 
         private DomainKey _domain;
@@ -284,7 +335,6 @@ namespace PingCastle.Healthcheck
                 return _domain;
             }
         }
-
     }
 
     [DebuggerDisplay("{GPOName} {UserName}")]
@@ -457,6 +507,7 @@ namespace PingCastle.Healthcheck
             NumberActive += x.NumberActive;
             NumberBadPrimaryGroup += x.NumberBadPrimaryGroup;
             NumberDesEnabled += x.NumberDesEnabled;
+            NumberNotAesEnabled += x.NumberNotAesEnabled;
             NumberDisabled += x.NumberDisabled;
             NumberEnabled += x.NumberEnabled;
             NumberInactive += x.NumberInactive;
@@ -523,6 +574,11 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeListDesEnabled() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> ListDesEnabled { get; set; }
+
+        public int NumberNotAesEnabled { get; set; }
+
+        public bool ShouldSerializeListNotAesEnabled() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
+        public List<HealthcheckAccountDetailData> ListNotAesEnabled { get; set; }
 
         public int NumberTrustedToAuthenticateForDelegation { get; set; }
 
@@ -961,6 +1017,10 @@ namespace PingCastle.Healthcheck
 
         public List<string> LDAPSProtocols { get; set; }
 
+        public bool ChannelBindingDisabled { get; set; }
+
+        public bool LdapServerSigningRequirementDisabled { get; set; }
+
         public DateTime PwdLastSet { get; set; }
 
         public string RegistrationProblem { get; set; }
@@ -989,6 +1049,10 @@ namespace PingCastle.Healthcheck
         [XmlAttribute]
         [DefaultValue(false)]
         public bool AzureADKerberos { get; set; }
+
+        [XmlAttribute]
+        [DefaultValue(false)]
+        public bool WebClientEnabled { get; set; }
     }
 
     [XmlType("delegation")]
@@ -1192,6 +1256,7 @@ namespace PingCastle.Healthcheck
         public int SchemaVersion { get; set; }
         public int SchemaInternalVersion { get; set; }
         public bool IsRecycleBinEnabled { get; set; }
+        public DateTime DCWin2008Install { get; set; }
 
         public DateTime SchemaLastChanged { get; set; }
         public int NumberOfDC { get; set; }
@@ -1270,6 +1335,9 @@ namespace PingCastle.Healthcheck
         public bool ShouldSerializeLAPSInstalled() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public DateTime LAPSInstalled { get; set; }
 
+        public bool ShouldSerializeSCCMInstalled() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public DateTime SCCMInstalled { get; set; }
+
         public bool ShouldSerializeListLAPSJoinedComputersToReview() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthcheckAccountDetailData> ListLAPSJoinedComputersToReview { get; set; }
 
@@ -1337,6 +1405,12 @@ namespace PingCastle.Healthcheck
         public bool ShouldSerializeCertificateTemplates() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthCheckCertificateTemplate> CertificateTemplates { get; set; }
 
+        public bool ShouldSerializeCertificateEnrollments() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public List<HealthCheckCertificateEnrollment> CertificateEnrollments { get; set; }
+
+        public bool ShouldSerializeSCCMServers() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public List<HealthCheckSCCMServer> SCCMServers { get; set; }
+
         public bool ShouldSerializePrivilegedGroups() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
         public List<HealthCheckGroupData> PrivilegedGroups { get; set; }
 
@@ -1402,6 +1476,9 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeAzureADSSOVersion() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public int AzureADSSOVersion { get; set; }
+
+        public bool ShouldSerializeAzureADSSOEncryptionType() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public int AzureADSSOEncryptionType { get; set; }
 
         public bool ShouldSerializePrivilegedDistributionLastLogon() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthcheckPwdDistributionData> PrivilegedDistributionLastLogon { get; set; }
@@ -1519,5 +1596,6 @@ namespace PingCastle.Healthcheck
         }
 
         public CompromiseGraphData ControlPaths { get; set; }
+
     }
 }

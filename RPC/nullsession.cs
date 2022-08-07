@@ -128,7 +128,7 @@ namespace PingCastle.RPC
             Trace.WriteLine("EnumerateAccountUsingSamr");
             int UserEnumerated = 0;
             IntPtr ServerHandle = IntPtr.Zero;
-            samr sam = new samr();
+            samr2 sam = new samr2();
             sam.RPCTimeOut = this.RPCTimeOut;
             Int32 returnCode;
             returnCode = sam.SamrConnect(Server, out ServerHandle, 0x20030);

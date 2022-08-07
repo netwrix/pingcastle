@@ -48,6 +48,12 @@ namespace PingCastle.Healthcheck.Rules
                                 if (account.Name == user.Name || account.Name + "$" == user.Name)
                                 {
                                     trap = true;
+                                    break;
+                                }
+                                if (account.DistinguishedName == user.DistinguishedName)
+                                {
+                                    trap = true;
+                                    break;
                                 }
                             }
                         }

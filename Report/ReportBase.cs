@@ -41,8 +41,19 @@ namespace PingCastle.Report
             AdditionInfoDelegate = additionInfoDelegate;
         }
 
-        private List<string> CSSToAdd = new List<string> { TemplateManager.LoadBootstrapCss() };
-        private List<string> JSToAdd = new List<string> { TemplateManager.LoadJqueryJs(), TemplateManager.LoadPopperJs(), TemplateManager.LoadBootstrapJs() };
+        private List<string> CSSToAdd = new List<string> { 
+            TemplateManager.LoadBootstrapCss(),
+            TemplateManager.LoadBootstrapTableCss(),
+            TemplateManager.LoadReportBaseCss(),
+        };
+
+        private List<string> JSToAdd = new List<string> { 
+            TemplateManager.LoadJqueryJs(), 
+            TemplateManager.LoadPopperJs(), 
+            TemplateManager.LoadBootstrapJs(),
+            TemplateManager.LoadBootstrapTableJs(),
+            TemplateManager.LoadReportBaseJs(),
+        };
 
         public string GenerateReportFile(string filename)
         {
@@ -151,6 +162,30 @@ namespace PingCastle.Report
 
         }
 
+        protected void AddLink(string link)
+        {
+            sb.Append("<a href=\"");
+            sb.Append(link);
+            sb.Append("\">");
+            sb.Append(link);
+            sb.Append("</a>");
+        }
+
+        protected void AddListStart()
+        {
+            Add(@"<ul><li>");
+        }
+
+        protected void AddListContinue()
+        {
+            Add(@"</li><li>");
+        }
+
+        protected void AddListEnd()
+        {
+            Add(@"</li></ul>");
+        }
+
         protected void AddLine(string text)
         {
             sb.AppendLine(text);
@@ -220,7 +255,10 @@ namespace PingCastle.Report
             {
                 Add(" nopaging");
             }
-            Add(@"""");
+            else
+            {
+                Add(@""" data-toggle=""table"" data-pagination=""true"" data-search=""true"" data-show-export=""true""");
+            }
             if (!string.IsNullOrEmpty(ariaLabel))
             {
                 Add(" aria-label=\"");
@@ -274,14 +312,18 @@ namespace PingCastle.Report
             Add(@"</tr>");
         }
 
-        protected void AddBeginTooltip(bool wide = false)
+        protected void AddBeginTooltip(bool wide = false, bool html = false)
         {
-            Add(@"&nbsp;<i class=""info-mark d-print-none"" data-placement=""bottom"" data-toggle=""tooltip""");
+            Add(@"&nbsp;<i class=""info-mark d-print-none has-tooltip"" data-bs-placement=""bottom"" data1-bs-toggle=""tooltip""");
             if (wide)
             {
-                Add(@" data-template=""<div class='tooltip' role='tooltip'><div class='arrow'></div><div class='tooltip-inner tooltip-wide'></div></div>"" ");
+                Add(@" data-bs-template=""<div class='tooltip' role='tooltip'><div class='tooltip-arrow'></div><div class='tooltip-inner tooltip-wide'></div></div>"" ");
             }
-            Add(@" title="""" data-original-title=""");
+            if (html)
+            {
+                Add(@" data-bs-html=""true"" ");
+            }
+            Add(@" title="""" data-bs-original-title=""");
         }
 
         protected void AddEndTooltip()
@@ -289,14 +331,14 @@ namespace PingCastle.Report
             Add(@""">?</i>");
         }
 
-        protected void AddHeaderText(string text, string tooltip, bool widetooltip)
+        protected void AddHeaderText(string text, string tooltip, bool widetooltip, bool html = false)
         {
-            AddHeaderText(text, tooltip, 0, 0, widetooltip);
+            AddHeaderText(text, tooltip, 0, 0, widetooltip, html);
         }
 
-        protected void AddHeaderText(string text, string tooltip = null, int rowspan = 0, int colspan = 0, bool widetooltip = false)
+        protected void AddHeaderText(string text, string tooltip = null, int rowspan = 0, int colspan = 0, bool widetooltip = false, bool html = false)
         {
-            Add("<th");
+            Add(@"<th  data-sortable=""true"" ");
             if (rowspan != 0)
             {
                 Add(@" rowspan=""");
@@ -313,7 +355,7 @@ namespace PingCastle.Report
             AddEncoded(text);
             if (!string.IsNullOrEmpty(tooltip))
             {
-                AddBeginTooltip(widetooltip);
+                AddBeginTooltip(widetooltip, html);
                 // important: not encoded to pass html formatting
                 Add(tooltip);
                 AddEndTooltip();
@@ -458,9 +500,7 @@ namespace PingCastle.Report
 				<h4 class=""modal-title"">");
             AddEncoded(title);
             Add(@"</h4>
-					<button type=""button"" class=""close"" data-dismiss=""modal"" aria-label=""Close"">
-						<span aria-hidden=""true"">&times;</span>
-					</button>
+					<button type=""button"" class=""btn-close"" data-bs-dismiss=""modal"" aria-label=""Close""></button>
 			</div>
 			<div class=""modal-body");
             if (modalType == ShowModalType.FullScreen)
@@ -481,7 +521,7 @@ namespace PingCastle.Report
                 Add(" modal-full-screen-footer");
             }
             Add(@""">
-				<button type=""button"" class=""btn btn-secondary"" data-dismiss=""modal"">Close</button>
+				<button type=""button"" class=""btn btn-secondary"" data-bs-dismiss=""modal"">Close</button>
 			</div>
 		</div>
 	</div>
@@ -531,7 +571,7 @@ namespace PingCastle.Report
             Add(brandLogo);
             Add(@""" />
 		</a>
-		<button class=""navbar-toggler"" type=""button"" data-toggle=""collapse"" data-target=""#navbarToggler"" aria-controls=""navbarToggler"" aria-expanded=""false"" aria-label=""Toggle navigation"">
+		<button class=""navbar-toggler"" type=""button"" data-bs-toggle=""collapse"" data-bs-target=""#navbarToggler"" aria-controls=""navbarToggler"" aria-expanded=""false"" aria-label=""Toggle navigation"">
 			<span class=""navbar-toggler-icon""></span>
 		</button>
 
@@ -555,7 +595,7 @@ namespace PingCastle.Report
 					</a>
 				</li>
 				<li class=""nav-item"">
-					<a class=""nav-link p-3"" role=""button"" href=""#modalAbout"" data-toggle=""modal"">About</a>
+					<a class=""nav-link p-3"" role=""button"" href=""#modalAbout"" data-bs-toggle=""modal"">About</a>
 				</li>
 			</ul>
 		</div>
@@ -630,6 +670,36 @@ namespace PingCastle.Report
             return Convert.ToBase64String(bytes).Replace("=", "");
         }
 
+        protected void GenerateAbout()
+        {
+            GenerateAbout(@"<p><strong>Generated by <a href=""https://www.pingcastle.com"">Ping Castle</a> all rights reserved</strong></p>
+<p>Options:</p>
+<div class='form-check'>
+  <input class='form-check-input' type='checkbox' value='' id='optionWideScreen'>
+  <label class='form-check-label' for='optionWideScreen'>
+    Enable wide mode
+  </label>
+</div>
+<div class='form-check'>
+  <input class='form-check-input' type='checkbox' value='' id='optionPagination'>
+  <label class='form-check-label' for='optionPagination'>
+    Remove pagination in tables
+  </label>
+</div>
+<div class='form-check'>
+  <input class='form-check-input' type='checkbox' value='' id='optionExpand'>
+  <label class='form-check-label' for='optionExpand'>
+    Expand all collpsed items
+  </label>
+</div>
+<p>Open source components:</p>
+<ul>
+<li><a href=""https://getbootstrap.com/"">Bootstrap</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
+<li><a href=""https://bootstrap-table.com/"">Bootstrap Table </a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
+<li><a href=""https://popper.js.org/"">Popper.js</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
+<li><a href=""https://jquery.org"">JQuery</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
+</ul>");
+        }
         protected void GenerateAbout(string aboutString)
         {
             Add(@"
@@ -640,9 +710,7 @@ namespace PingCastle.Report
         <div class=""modal-content"">
             <div class=""modal-header"">
                 <h4 class=""modal-title"">About</h4>
-                <button type=""button"" class=""close"" data-dismiss=""modal"" aria-label=""Close"">
-                    <span aria-hidden=""true"">&times;</span>
-                </button>
+                <button type=""button"" class=""btn-close"" data-bs-dismiss=""modal"" aria-label=""Close""></button>
             </div>
             <div class=""modal-body"">
                 <div class=""row"">
@@ -654,7 +722,7 @@ namespace PingCastle.Report
                 </div>
             </div>
             <div class=""modal-footer"">
-                <button type=""button"" class=""btn btn-secondary"" data-dismiss=""modal"">Close</button>
+                <button type=""button"" class=""btn btn-secondary"" data-bs-dismiss=""modal"">Close</button>
             </div>
         </div>
 
@@ -675,7 +743,7 @@ namespace PingCastle.Report
 			<div class=""starter-template"">
 				<div class=""card mb-4"">
 					<div class=""card-header"">
-						<h1 class=""card-title""><a data-toggle=""collapse"" aria-expanded=""true"" href=""#panel" + id + @""">" + title + @"</a></h1>
+						<h1 class=""card-title""><a data-bs-toggle=""collapse"" aria-expanded=""true"" href=""#panel" + id + @""">" + title + @"</a></h1>
 					</div>
 					<div class=""card-body collapse show"" id=""panel" + id + @""">
 ");
@@ -737,7 +805,7 @@ namespace PingCastle.Report
         {
             GenerateAccordionDetail(id, dataParent, title, 
                 () => {
-                    Add(@"<i class=""float-right"">[");
+                    Add(@"<i class=""float-end"">[");
                     Add((int)itemCount);
                     Add(@"]</i>");
                 },content);
@@ -752,7 +820,7 @@ namespace PingCastle.Report
             AddAnchor("anchor" + id);
             Add(@"
       <span class=""card-title mb-0"">
-        <button class=""btn btn-link"" data-toggle=""collapse"" data-target=""#");
+        <button class=""btn btn-link"" data-bs-toggle=""collapse"" data-bs-target=""#");
             Add(id);
             Add(@""" aria-expanded=""false"" aria-controls=""");
             Add(id);
@@ -799,7 +867,7 @@ namespace PingCastle.Report
             Add(@""" class=""nav-link ");
             if (isActive)
                 Add(@"active");
-            Add(@""" role=""tab"" data-toggle=""tab""");
+            Add(@""" role=""tab"" data-bs-toggle=""tab""");
             Add(@" id=""bs-");
             Add(id);
             Add(@"""");
@@ -1160,6 +1228,8 @@ namespace PingCastle.Report
                     return @"<a href=""https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_group_policy_settings?view=powershell-6"">Powershell: Turn on Powershell Script Block logging</a>";
                 case "srvsvcsessioninfo":
                     return @"<a href=""https://github.com/p0w3rsh3ll/NetCease"">Hardening Net Session Enumeration</a>";
+                case "supportedencryptiontypes":
+                    return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-security-configure-encryption-types-allowed-for-kerberos"">Network security: Configure encryption types allowed for Kerberos</a>";
             }
             return property;
         }
@@ -1227,6 +1297,9 @@ namespace PingCastle.Report
                         Add(@"<span class=""ticked"">Enabled</span>");
                     }
                     break;
+                case "supportedencryptiontypes":
+                    Add(SupportedEncryptionTypeToString(value));
+                    break;
                 default:
                     if (value == 0)
                     {
@@ -1239,6 +1312,37 @@ namespace PingCastle.Report
                     break;
             }
             Add("</td>");
+        }
+
+        protected string SupportedEncryptionTypeToString(int msDSSupportedEncryptionTypes)
+        {
+            // see https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-kile/6cfc7b50-11ed-4b4d-846d-6f08f0812919
+            List<string> algs = new List<string>();
+            if ((msDSSupportedEncryptionTypes & 1) != 0)
+            {
+                algs.Add(@"<span class=""unticked"">DES-CBC-CRC</span>");
+            }
+            if ((msDSSupportedEncryptionTypes & 2) != 0)
+            {
+                algs.Add(@"<span class=""unticked"">DES-CBC-MD5</span>");
+            }
+            if ((msDSSupportedEncryptionTypes & 4) != 0)
+            {
+                algs.Add("RC4-HMAC");
+            }
+            if ((msDSSupportedEncryptionTypes & 8) != 0)
+            {
+                algs.Add(@"<span class=""ticked"">AES128-CTS-HMAC-SHA1-96</span>");
+            }
+            if ((msDSSupportedEncryptionTypes & 16) != 0)
+            {
+                algs.Add(@"<span class=""ticked"">AES256-CTS-HMAC-SHA1-96</span>");
+            }
+            if ((msDSSupportedEncryptionTypes & ~(1+2+4+8+16)) != 0)
+            {
+                algs.Add(@"Future encryption");
+            }
+            return string.Join(", ", algs.ToArray());
         }
 
         protected void GenerateGauge(int percentage)
@@ -1274,7 +1378,7 @@ namespace PingCastle.Report
             Add(rightY.ToString(nfi));
         }
 
-        protected string PrintDomain(DomainKey key)
+        protected string PrintDomain(DomainKey key, string risk)
         {
             string label = key.DomainName;
             if (String.IsNullOrEmpty(label))
@@ -1286,7 +1390,7 @@ namespace PingCastle.Report
             }
             if (GetUrlCallback == null)
                 return label;
-            string htmlData = GetUrlCallback(key, label);
+            string htmlData = GetUrlCallback(key, label, risk);
             if (String.IsNullOrEmpty(htmlData))
                 return label;
             return htmlData;

@@ -582,11 +582,11 @@ For LmCompatibilityLevel the setting is located in: Network security: LAN Manage
   </data>
   <data name="A_Krbtgt_Solution" xml:space="preserve">
     <value>The password of the krbtgt account should be changed twice to invalidate the golden ticket attack.
-&lt;b&gt;Beware: two changes of the krbtgt password not replicated to domain controllers can break these domain controllers&lt;/b&gt; You should wait at least 10 hours between each krbtgt password change.
+&lt;b&gt;Beware: two changes of the krbtgt password not replicated to domain controllers can break these domain controllers&lt;/b&gt; You should wait at least 10 hours between each krbtgt password change (this is the duration of a ticket life).
 
 There are several possibilities to change the krbtgt password.
 First, a &lt;a href="https://github.com/microsoft/New-KrbtgtKeys.ps1/blob/master/New-KrbtgtKeys.ps1"&gt;Microsoft script&lt;/a&gt; can be run in order to guarantee the correct replication of these secrets. Unfortunately this script supports only English operating systems.
-Second, a more manual way is to essentially reset the password manually once, then to wait 3 days, then to reset it again. This is the safest way as it ensures the password is no longer usable by the Golden ticket attack.
+Second, a more manual way is to essentially reset the password manually once, then to wait 3 days (this is a replication safety delay), then to reset it again. This is the safest way as it ensures the password is no longer usable by the Golden ticket attack.
    </value>
   </data>
   <data name="A_Krbtgt_Rationale" xml:space="preserve">
@@ -651,7 +651,9 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that all Administrator Accounts have the configuration flag "this account is sensitive and cannot be delegated" (and are not member of the built-in group "Protected Users" when your domain functional level is at least Windows Server 2012 R2).</value>
   </data>
   <data name="P_Delegated_Solution" xml:space="preserve">
-    <value>To correct the situation, you should make sure that all your Administrator Accounts has the check-box "This account is sensitive and cannot be delegated" active or add your Administrator Accounts to the built-in group "Protected Users" if your domain functional level is at least Windows Server 2012 R2 (some functionalities may not work properly afterwards, you should check the &lt;a href="https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/how-to-configure-protected-accounts"&gt;official documentation&lt;/a&gt;). Please note that there is a section below in this report named "Admin Groups" which give more information.</value>
+    <value>To correct the situation, you should make sure that all your Administrator Accounts has the check-box "This account is sensitive and cannot be delegated" active or add your Administrator Accounts to the built-in group "Protected Users" if your domain functional level is at least Windows Server 2012 R2 (some functionalities may not work properly afterwards, you should check the &lt;a href="https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/how-to-configure-protected-accounts"&gt;official documentation&lt;/a&gt;).
+	If you want to enable the check-box "This account is sensitive and cannot be delegated" but this is not possible because the box is not present (typically for GMSA account), you can add the flag manually by adding the number 1048576 to the attribute useraccountcontrol of the account.
+	Please note that there is a section below in this report named "Admin Groups" which give more information.</value>
   </data>
   <data name="P_Delegated_Rationale" xml:space="preserve">
     <value>Presence of Admin accounts which do not have the flag "this account is sensitive and cannot be delegated": {count}</value>
@@ -690,6 +692,10 @@ Second, a more manual way is to essentially reset the password manually once, th
   To track where the administrator account has been used for the last time, we recommend to extract the attribute LastLogon of the administrator account on ALL domain controllers.
   It can be done with tools such as ADSIEdit or ADExplorer.
   Then, for each domain controller, extract the events 4624 at the date matching the LastLogon date. You will identify the computer and the process at the origin of the logon event.
+  
+  If the LastLogon attribute is older for ALL domain controllers than the LastLogonTimestamp, the LastLogonTimestamp attribute (that PingCastle relies on) may be updated by the kerberos S4u2Self mechanism.
+  You have to use replication metadata info to find which DC updated this attribute and look for 4769 and 4624 events on this DC.
+  Read the page referenced in the documentation section for more information.
   
   Please note that PingCastle relies on the attribute LastLogonTimestamp to perform this check. The LastLogonTimestamp attribute is replicated but has a latency of a maximum of 14 days, while LastLogon is updated at each logon and is more accurate but not replicated.
     </value>
@@ -853,7 +859,7 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
     <value>The purpose is to verify that no weak encryption algorithm such as DES is used as crypto algorithm.</value>
   </data>
   <data name="S_DesEnabled_Solution" xml:space="preserve">
-    <value>It is recommended to disable DES as an encryption algorithm in the user configuration dialog or in the "msDSSupportedEncryptionTypes" attribute at LDAP level. It has to be disabled in the property of an account by unchecking the box "Use Kerberos DES encryption for this account". You can also detect which accounts support Kerberos DES encryption by running: Get-ADUser -Filter {UserAccountControl -band 0x200000}.</value>
+    <value>It is recommended to disable DES as an encryption algorithm in the user configuration dialog or in the "msDSSupportedEncryptionTypes" attribute at LDAP level. It has to be disabled in the property of an account by unchecking the box "Use Kerberos DES encryption for this account". You can also detect which accounts support Kerberos DES encryption by running: &lt;i&gt;Get-ADObject -Filter {UserAccountControl -band 0x200000 -or msDs-supportedEncryptionTypes -band 3}&lt;/i&gt;.</value>
   </data>
   <data name="S_DesEnabled_Rationale" xml:space="preserve">
     <value>Presence of Des Enabled account = {count}</value>
@@ -1402,7 +1408,8 @@ https://github.com/PSSecTools/Krbtgt</value>
     https://www.ssi.gouv.fr/guide/cryptographie-les-regles-du-rgs/</value>
   </data>
   <data name="P_AdminLogin_Documentation" xml:space="preserve">
-    <value>https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/implementing-least-privilege-administrative-models</value>
+    <value>https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/implementing-least-privilege-administrative-models
+https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/how-lastlogontimestamp-is-updated-with-kerberos-s4u2self/ba-p/257135</value>
   </data>
   <data name="P_AdminNum_Documentation" xml:space="preserve">
     <value>https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/implementing-least-privilege-administrative-models</value>
@@ -2454,7 +2461,7 @@ https://support.microsoft.com/en-us/help/4490425/updates-to-tgt-delegation-acros
     <value>The purpose is to ensure that the password of admin accounts cannot be retrieved using the kerberoast attack.</value>
   </data>
   <data name="P_Kerberoasting_Solution" xml:space="preserve">
-    <value>If the account is a service account, the service should be removed from the privileged group or have a process to change it at a regular basis.
+    <value>If the account is a service account, the service should be removed from the privileged group or have a process to change its password at a regular basis.
 If the user is a person, the SPN attribute of the account should be removed.</value>
   </data>
   <data name="P_Kerberoasting_Rationale" xml:space="preserve">
@@ -2486,10 +2493,10 @@ Please note that this program ignores service accounts that had their password c
   </data>
   <data name="P_DNSDelegation_Solution" xml:space="preserve">
     <value>Rule update:
-The Path Tuesday of October 2021 fixed this vulnerability and assigned it the identifier CVE-2021-40469.
+The Patch Tuesday of October 2021 fixed this vulnerability and assigned it the identifier CVE-2021-40469.
 If the patch has been applied, there is no additional mitigation to perform.
 
-This rule is transformed into an informative rule in PingCastle 2.10.1 and will be removed in future version of PingCastle.
+This rule is transformed into an informative rule in PingCastle 2.10.1 and will be removed in future versions of PingCastle.
       
       You should remove the explicit write delegation located in the CN=MicrosoftDNS,CN=System container and do a proper delegation.
     First, grant only "Read Property", "List", "List object" and "Read permssions" to CN=MicrosoftDNS,CN=System to enable access to the RPC service.
@@ -2546,12 +2553,13 @@ The setting is located in Computer Policy -&gt; Computer Configuration -&gt; Win
     <value>The Credential Manger is a vault where credentials are being stored.
 This privilege can be used to retrieve the secret data.
 
-Please note that, as today, there is no public POC published to exploit this privilege and no supported API needing that privilege.
+A POC to exploit this privilege is available in the document link below.
     </value>
   </data>
   <data name="P_TrustedCredManAccessPrivilege_Documentation" xml:space="preserve">
     <value>https://docs.microsoft.com/en-us/windows/win32/secauthn/credentials-management
-https://docs.microsoft.com/en-us/windows/win32/secauthn/authentication-functions#credentials-management-functions</value>
+https://github.com/daem0nc0re/PrivFu#privilegedoperations
+https://github.com/daem0nc0re/PrivFu/blob/main/PrivilegedOperations/SeTrustedCredManAccessPrivilegePoC/SeTrustedCredManAccessPrivilegePoC.cs</value>
   </data>
   <data name="P_TrustedCredManAccessPrivilege_Title" xml:space="preserve">
     <value>Check if there is the privilege Access Credential Manager as a trusted caller user right has been explicitly granted.</value>
@@ -3297,7 +3305,7 @@ PARTIAL_SECRETS_ACCOUNT (0x04000000) | TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION (0
     <value>Check if all DC are well registered.</value>
   </data>
   <data name="P_DelegationDCa2d2_Description" xml:space="preserve">
-    <value>The purpose is to ensure that no contrained delegations are applied to DC</value>
+    <value>The purpose is to ensure that no constrained delegations are applied to DC</value>
   </data>
   <data name="P_DelegationDCa2d2_Detail" xml:space="preserve">
     <value>Domain controller: {0} Delegate: {1} Identifier: {2}</value>
@@ -3306,7 +3314,7 @@ PARTIAL_SECRETS_ACCOUNT (0x04000000) | TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION (0
     <value />
   </data>
   <data name="P_DelegationDCa2d2_Rationale" xml:space="preserve">
-    <value>Number of DC with a contrained delegation: {count}</value>
+    <value>Number of DC with a constrained delegation: {count}</value>
   </data>
   <data name="P_DelegationDCa2d2_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href="#domaincontrollersection"&gt;Domain controllers&lt;/a&gt;</value>
@@ -3328,7 +3336,7 @@ PARTIAL_SECRETS_ACCOUNT (0x04000000) | TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION (0
     <value>Check if all DC have no constrained delegation.</value>
   </data>
   <data name="P_DelegationDCt2a4d_Description" xml:space="preserve">
-    <value>The purpose is to ensure that no contrained delegations with protocol transition are applied to DC</value>
+    <value>The purpose is to ensure that no constrained delegations with protocol transition are applied to DC</value>
   </data>
   <data name="P_DelegationDCt2a4d_Detail" xml:space="preserve">
     <value>Domain controller: {0} Delegate: {1} Identifier: {2}</value>
@@ -3337,7 +3345,7 @@ PARTIAL_SECRETS_ACCOUNT (0x04000000) | TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION (0
     <value />
   </data>
   <data name="P_DelegationDCt2a4d_Rationale" xml:space="preserve">
-    <value>Number of DC with a contrained delegation with protocol transition: {count}</value>
+    <value>Number of DC with a constrained delegation with protocol transition: {count}</value>
   </data>
   <data name="P_DelegationDCt2a4d_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href="#domaincontrollersection"&gt;Domain controllers&lt;/a&gt;</value>
@@ -3381,7 +3389,7 @@ PARTIAL_SECRETS_ACCOUNT (0x04000000) | TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION (0
     </value>
   </data>
   <data name="P_DelegationDCsourcedeleg_TechnicalExplanation" xml:space="preserve">
-    <value>Resource based contrained delegation are a new feature of Windows 2012 which tries to handle the limitation of Constrained delegations.
+    <value>Resource based constrained delegation are a new feature of Windows 2012 which tries to handle the limitation of Constrained delegations.
     This delegation is defined by setting the msDS-AllowedToDelegateToattribute attribute either using the GUI or a PowerShell command.
 </value>
   </data>
@@ -3593,7 +3601,7 @@ https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dnsp/007efcd2-29
 The Path Tuesday of October 2021 fixed this vulnerability and assigned it the identifier CVE-2021-40469.
 If the patch has been applied, there is no additional mitigation to perform.
 
-This rule is transformed into an informative rule in PingCastle 2.10.1 and will be removed in future version of PingCastle.
+This rule is transformed into an informative rule in PingCastle 2.10.1 and will be removed in future versions of PingCastle.
 
 You should remove the members of the DNS admin group and do a proper delegation to the specific DNS Zones.
 
@@ -3961,7 +3969,9 @@ https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-a
     <value>A certificate template is an object whose definition serves as a base to issue certificates.
     If a user has the right to edit it, it can manually change obscure attributes such as msPKI-Certificate-Name-Flag.
     Doing so will enable him to provide the subject of the certificate and thus having a certificate on behalf other users such as admins.
-  It can be used to impersonate them and take control of the domain</value>
+  It can be used to impersonate them and take control of the domain
+  
+Note: the program considers that the group Domain Computers is like Everyone if ms-DS-MachineAccountQuota is non zero.</value>
   </data>
   <data name="A_CertTempAnyone_Title" xml:space="preserve">
     <value>Check if certificate templates can be edited by everyone.</value>
@@ -4393,17 +4403,17 @@ This setting has been introduced to overwrite the mitigation of the vulnerabilit
   <data name="A_DsHeuristicsDoNotVerifyUniqueness_Title" xml:space="preserve">
     <value>Check if the UPN and SPN uniqueness check has been disabled</value>
   </data>
-	<data name="A_DsHeuristicsLDAPSecurity_Description" xml:space="preserve">
+  <data name="A_DsHeuristicsLDAPSecurity_Description" xml:space="preserve">
     <value>The purpose is to identify domains having mitigation for CVE-2021-42291 not set to enabled</value>
   </data>
-	<data name="A_DsHeuristicsLDAPSecurity_Documentation" xml:space="preserve">
+  <data name="A_DsHeuristicsLDAPSecurity_Documentation" xml:space="preserve">
     <value>https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/e5899be4-862e-496f-9a38-33950617d2c5
 https://support.microsoft.com/en-au/topic/kb5008383-active-directory-permissions-updates-cve-2021-42291-536d5555-ffba-4248-a60e-d6cbc849cde1</value>
   </data>
-	<data name="A_DsHeuristicsLDAPSecurity_Rationale" xml:space="preserve">
+  <data name="A_DsHeuristicsLDAPSecurity_Rationale" xml:space="preserve">
     <value>DsHeuristics has not been set to enable the mitigation for CVE-2021-42291</value>
   </data>
-	<data name="A_DsHeuristicsLDAPSecurity_Solution" xml:space="preserve">
+  <data name="A_DsHeuristicsLDAPSecurity_Solution" xml:space="preserve">
     <value>The easiest and fastest way to correct this issue is to &lt;b&gt;replace the 28th and 29th character of the DsHeuristics attribute&lt;/b&gt;.
     The value of LDAPAddAutZVerifications and LDAPOwnerModify should be set to 1.
     
@@ -4413,7 +4423,7 @@ https://support.microsoft.com/en-au/topic/kb5008383-active-directory-permissions
     Typically if the DsHeuristics is empty, the expected new value is 00000000010000000002000000011
     </value>
   </data>
-	<data name="A_DsHeuristicsLDAPSecurity_TechnicalExplanation" xml:space="preserve">
+  <data name="A_DsHeuristicsLDAPSecurity_TechnicalExplanation" xml:space="preserve">
     <value>The way an Active Directory behaves can be controlled via the attribute &lt;i&gt;DsHeuristics&lt;/i&gt; of &lt;i&gt;CN=Directory Service,CN=Windows NT,CN=Services,CN=Configuration&lt;/i&gt;.
     A parameter stored in its attribute and whose value is &lt;i&gt;LDAPAddAutZVerifications&lt;/i&gt; and &lt;i&gt;LDAPOwnerModify&lt;/i&gt; can be set to modify the mitigatation of CVE-2021-42291.
 The KB5008383 has introduced changes to default security descriptor of Computer containers to add audit and limit computer creation without being admin.
@@ -4430,10 +4440,10 @@ For the expected values:
   <data name="A_DsHeuristicsLDAPSecurity_Detail" xml:space="preserve">
     <value>Setting: {0} Position: {1} Value: {2}</value>
   </data>
-	<data name="A_DsHeuristicsLDAPSecurity_Title" xml:space="preserve">
+  <data name="A_DsHeuristicsLDAPSecurity_Title" xml:space="preserve">
     <value>Check if the mitigation for CVE-2021-42291 has been enabled</value>
   </data>
-    <data name="S_OS_Win8_Description" xml:space="preserve">
+  <data name="S_OS_Win8_Description" xml:space="preserve">
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 8 for the workstations within the domain</value>
   </data>
   <data name="S_OS_Win8_Documentation" xml:space="preserve">
@@ -4512,5 +4522,284 @@ The best mitigation is to create the DNS records manually as part as the domain 
   </data>
   <data name="A_DnsZoneAUCreateChild_Title" xml:space="preserve">
     <value>Check if Authenticated Users can create DNS records</value>
+  </data>
+  <data name="A_DCLdapsChannelBinding_Description" xml:space="preserve">
+    <value>The purpose is to check if the Channel Binding feature of LDAPS is enforced</value>
+  </data>
+  <data name="A_DCLdapsChannelBinding_Documentation" xml:space="preserve">
+    <value>https://support.microsoft.com/en-us/topic/use-the-ldapenforcechannelbinding-registry-entry-to-make-ldap-authentication-over-ssl-tls-more-secure-e9ecfa27-5e57-8519-6ba3-d2c06b21812e
+https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/ldap-channel-binding-and-ldap-signing-requirements-march-2020/ba-p/921536/page/4
+https://oxfordcomputergroup.com/resources/ldap-channel-binding-signing-requirements/
+https://github.com/zyn3rgy/LdapRelayScan
+https://access.redhat.com/articles/4661861
+http://gary-nebbett.blogspot.com/2020/01/ldap-channel-binding.html</value>
+  </data>
+  <data name="A_DCLdapsChannelBinding_Rationale" xml:space="preserve">
+    <value>Channel binding is not enabled for all DC for LDAPS</value>
+  </data>
+  <data name="A_DCLdapsChannelBinding_Solution" xml:space="preserve">
+    <value>You have to make sure that ALL LDAPS clients are compatible with Channel Binding.
+All supported Windows have been updated since march 2020 to take this into account and also most of the Unix clients (see the RedHat bulletin link below).
+
+You can start auditing via Registry, on each Domain Controller
+Reg Add HKLM\SYSTEM\CurrentControlSet\Services\NTDS\Diagnostics /v "16 LDAP Interface Events" /t REG_DWORD /d 2 
+Then monitoring the events 3039, 3040.
+
+Once it has been verified that all clients are compatible, Channel Binding can be enforced:
+create the key LdapEnforceChannelBinding in HKLM\SYSTEM\CurrentControlSet\Services\NTDS\Parameters and set its value to 1 or 2
+    </value>
+  </data>
+  <data name="A_DCLdapsChannelBinding_TechnicalExplanation" xml:space="preserve">
+    <value>LDAPS (at the opposite of LDAP) does not allow message signature because this protection is made by the TLS layer.
+As a consequence, forged LDAP packets can be relayed in a TLS tunnel, thus becoming LDAPS and without any protection against relay.
+
+To avoid this attack, a feature named Channel Binding exists. It consists of passing to the authentication layer a property of the TLS channel (typically a hash of the server certificate) to bind the outer channel (TLS) and the inner channel (LDAP).
+This protection is also called "Extended Protection".
+
+PingCastle is testing if this binding is in place by performing a LDAPS authentication with Channel Binding enabled and disabled.
+False positives may exists if the PingCastle program is run on the server tested that's why if PingCastle is run on a DC, the DC will not be tested.
+</value>
+  </data>
+  <data name="A_DCLdapsChannelBinding_Detail" xml:space="preserve">
+    <value>Domain controller: {0}</value>
+  </data>
+  <data name="A_DCLdapsChannelBinding_Title" xml:space="preserve">
+    <value>Check if the Channel Binding is enabled for LDAPS</value>
+  </data>
+  <data name="A_DCLdapSign_Description" xml:space="preserve">
+    <value>The purpose is to check if signing is really required for LDAP</value>
+  </data>
+  <data name="A_DCLdapSign_Documentation" xml:space="preserve">
+    <value>https://docs.microsoft.com/en-US/troubleshoot/windows-server/identity/enable-ldap-signing-in-windows-server
+https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/ldap-channel-binding-and-ldap-signing-requirements-march-2020/ba-p/921536/page/4
+https://github.com/zyn3rgy/LdapRelayScan</value>
+  </data>
+  <data name="A_DCLdapSign_Rationale" xml:space="preserve">
+    <value>A LDAP authentication without signature enforcement was allowed</value>
+  </data>
+  <data name="A_DCLdapSign_Solution" xml:space="preserve">
+    <value>You have to make sure that ALL LDAP clients are compatible with LDAP signature.
+All supported Windows since Windows XP this into account and also most of the Unix clients.
+
+You have to follow the Microsoft article quoted in reference to enable LDAP signing.
+This includes auditing the clients which are not compatible and how to enforce this policy.</value>
+  </data>
+  <data name="A_DCLdapSign_TechnicalExplanation" xml:space="preserve">
+    <value>If the the request for signature of each LDAP request is not enforced, a man in the middle can be performed on an LDAP connection.
+For example to add a user to the admin group.
+    
+This test is made by ignoring the local computer security policies.
+Signature enforcement is done by setting the flag ISC_REQ_INTEGRITY when initializig the Negotiate / NTLM / Kerberos authentication.
+The opposite test is made with the flag ISC_REQ_NO_INTEGRITY set.
+    
+PingCastle is testing if this setting is in place by performing a LDAP authentication with and without signature enforcement.
+False positives may exists if the PingCastle program is run on the server tested that's why if PingCastle is run on a DC, the DC will not be tested.
+</value>
+  </data>
+  <data name="A_DCLdapSign_Detail" xml:space="preserve">
+    <value>Domain controller: {0}</value>
+  </data>
+  <data name="A_DCLdapSign_Title" xml:space="preserve">
+    <value>Check if signing is really required for LDAP</value>
+  </data>
+  <data name="A_CertEnrollHttp_Description" xml:space="preserve">
+    <value>The purpose is to check if HTTP can be used to access the certificate enrollment interface</value>
+  </data>
+  <data name="A_CertEnrollHttp_Documentation" xml:space="preserve">
+    <value>https://support.microsoft.com/en-us/topic/kb5005413-mitigating-ntlm-relay-attacks-on-active-directory-certificate-services-ad-cs-3612b773-4043-4aa9-b23d-b87910cd3429
+https://dirkjanm.io/ntlm-relaying-to-ad-certificate-services/
+https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-directory-environment/
+https://www.vkernel.ro/blog/installing-and-configuring-cep-and-ces-for-certificate-enrolling-on-non-domain-joined-computers</value>
+  </data>
+  <data name="A_CertEnrollHttp_Rationale" xml:space="preserve">
+    <value>The certificate enrollment interface is accessible by HTTP</value>
+  </data>
+  <data name="A_CertEnrollHttp_Solution" xml:space="preserve">
+    <value>The access to certificate enrollment with HTTP should be disabled.
+    
+This can be achieved by opening the IIS console on the enrollment server.
+If the service quoted in detail is WebEnrollment, the url is certsrv, else it is ending by CES_Keberos.
+
+In the Binding setting (link at the right), keep the https binding and remove the http binding.
+See the KB5005413 whose link is in reference for more information.
+    
+Note: By default, the CES service is not accessible by HTTP.
+  </value>
+  </data>
+  <data name="A_CertEnrollHttp_TechnicalExplanation" xml:space="preserve">
+    <value>The Windows PKI, also named Active Directory Certificate Services (ADCS), can be used to request certificates.
+Two services can be used: Certification Authority Web Enrollement (WebEnrollment) and Certificate Enrollment Web Service (CES).
+The certificates provided by these services can be used with kerberos to login.
+    
+Because this service can deliver certificates for Domain Controller, it can be considered as part of Tier 1.
+As a legacy service, the mechanisms to prohibit credential relay are not enforced by default.
+If an attacker is able to relay privileged credentials (for example with the PetitPotam attack), it can be used to take control of the domain.
+        
+PingCastle is looking for enrollment servers registered in the Active Directory (pKIEnrollmentService objects).
+It then connect to the special page http://xxx/certsrv/certrqxt.asp and http://xxx/yyy_CES_Kerberos/services.svc and try to access the page with authentication.
+    
+If the authentication succeed and no error is returned,the program considers that the interface is accessible.
+    
+False positives may exists if the PingCastle program is run on the server tested that's why if PingCastle is run on the server, the server will not be tested.
+</value>
+  </data>
+  <data name="A_CertEnrollHttp_Detail" xml:space="preserve">
+    <value>Server: {0} Service: {1}</value>
+  </data>
+  <data name="A_CertEnrollHttp_Title" xml:space="preserve">
+    <value>Check if certificate enrollment can be done with HTTP</value>
+  </data>
+  <data name="A_CertEnrollChannelBinding_Description" xml:space="preserve">
+    <value>The purpose is to check if the Extended protection for HTTPS access to the certificate enrollment interface is in place</value>
+  </data>
+  <data name="A_CertEnrollChannelBinding_Documentation" xml:space="preserve">
+    <value>https://support.microsoft.com/en-us/topic/kb5005413-mitigating-ntlm-relay-attacks-on-active-directory-certificate-services-ad-cs-3612b773-4043-4aa9-b23d-b87910cd3429
+https://dirkjanm.io/ntlm-relaying-to-ad-certificate-services/
+https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-directory-environment/</value>
+  </data>
+  <data name="A_CertEnrollChannelBinding_Rationale" xml:space="preserve">
+    <value>Channel Binding is not enforced for the HTTPS certificate enrollment interface</value>
+  </data>
+  <data name="A_CertEnrollChannelBinding_Solution" xml:space="preserve">
+    <value>The Extended Protection for Authentication (EPA, also called Channel Binding) should be activated on the enrollment server.
+    
+    This can be achieved by opening the IIS console on the enrollment server.
+    In the Authentcation settings, open the Advanced Settings for the Windows Authentication.
+    Set Extended Protection as Required.
+    
+    Do this operation for the Certification Authority Web Enrollement (WebEnrollment) and Certificate Enrollment Web Service (CES).
+    
+    See the KB5005413 whose link is below for more information. This KB also suggest to restrict the authentication to Kerberos only.
+  </value>
+  </data>
+  <data name="A_CertEnrollChannelBinding_TechnicalExplanation" xml:space="preserve">
+    <value>The Windows PKI, also named Active Directory Certificate Services (ADCS), can be used to request certificates.
+Two services can be used: Certification Authority Web Enrollement (WebEnrollment) and Certificate Enrollment Web Service (CES).
+The certificates provided by these services can be used with kerberos to login.
+    
+ Because this service can deliver certificates for Domain Controller, it can be considered as part of Tier 1.
+As a legacy service, the mechanisms to prohibit credential relay are not enforced by default.
+If an attacker is able to relay privileged credentials (for example with the PetitPotam attack), it can be used to take control of the domain.
+    
+To avoid this attack with HTTPS, a feature named Channel Binding exists. It consists of passing to the authentication layer a property of the TLS channel (typically a hash of the server certificate) to bind the outer channel (TLS) and the inner channel (HTTP).
+This protection is also called "Extended Protection". See rfc5929 for more details.
+    
+PingCastle is looking for enrollment servers registered in the Active Directory.
+It then connect to the special page https://xxx/certsrv/certrqxt.asp and https://xxx/yyy_CES_Kerberos/service.svc
+An authentication is attempted with and without Channel Binding.
+    
+False positives may exists if the PingCastle program is run on the server tested that's why if PingCastle is run on the server, the server will not be tested.
+</value>
+  </data>
+  <data name="A_CertEnrollChannelBinding_Detail" xml:space="preserve">
+    <value>Server: {0} Service: {1}</value>
+  </data>
+  <data name="A_CertEnrollChannelBinding_Title" xml:space="preserve">
+    <value>Check if Extended Protection is in place for certificate requests</value>
+  </data>
+  <data name="T_AlgsAES_Description" xml:space="preserve">
+    <value>The purpose is to check if AES can be used with kerberos on trusts</value>
+  </data>
+  <data name="T_AlgsAES_Documentation" xml:space="preserve">
+    <value>https://techcommunity.microsoft.com/t5/itops-talk-blog/tough-questions-answered-can-i-disable-rc4-etype-for-kerberos-on/ba-p/382718
+https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-kile/6cfc7b50-11ed-4b4d-846d-6f08f0812919
+https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/decrypting-the-selection-of-supported-kerberos-encryption-types/ba-p/1628797</value>
+  </data>
+  <data name="T_AlgsAES_Rationale" xml:space="preserve">
+    <value>AES is not enabled on all trusts</value>
+  </data>
+  <data name="T_AlgsAES_Solution" xml:space="preserve">
+    <value>Enable AES on the domain.
+    
+    Beware: there is a checkbox in the trust properties named "The other domain supports Kerberos AES Encryption".
+    If you enable this setting, AES will be enabled but RC4 will also be disabled.
+    
+    The recommended way is to enable both RC4 and AES as a transition. It can be done by running the command:
+    &lt;i&gt;ksetup /setenctypeattr mytrust.com RC4-HMAC-MD5 AES128-CTS-HMAC-SHA1-96 AES256-CTS-HMAC-SHA1-96&lt;/i&gt;
+    
+      This way, the attribute msDS-SupportedEncryptionTypes of the trust will be modified to support both RC4 and AES.
+  </value>
+  </data>
+  <data name="T_AlgsAES_TechnicalExplanation" xml:space="preserve">
+    <value>By default, RC4 is used as the signature algorithm on kerberos tickets.
+    If AES is enabled on a domain and AES is not enabled on trust, AES tickets will not be usable on the trust. The kerberos tickets sent to the trust will fail or the trusted domain will fallback to NTLM.
+    
+    The encryption algorithms allowed for a trust are stored in an attribute named msDS-SupportedEncryptionTypes.
+    If this attribute is not set (or has a value of zero), RC4 will be applied by default.
+    Else, it defines the algorithm to use for kerberos signature.
+</value>
+  </data>
+  <data name="T_AlgsAES_Detail" xml:space="preserve">
+    <value>Trust: {0} Reason: {1}</value>
+  </data>
+  <data name="T_AlgsAES_Title" xml:space="preserve">
+    <value>Check if AES is enabled on trusts</value>
+  </data>
+  <data name="A_CertTempNoSecurity_Description" xml:space="preserve">
+    <value>The purpose of this rule is to ensure that no certificate request templates allow users to control the subject</value>
+  </data>
+  <data name="A_CertTempNoSecurity_Detail" xml:space="preserve">
+    <value>Name: {0}</value>
+  </data>
+  <data name="A_CertTempNoSecurity_Documentation" xml:space="preserve">
+    <value>https://research.ifcr.dk/certifried-active-directory-domain-privilege-escalation-cve-2022-26923-9e098fe298f4
+https://msrc.microsoft.com/update-guide/vulnerability/CVE-2022-26931</value>
+  </data>
+  <data name="A_CertTempNoSecurity_Rationale" xml:space="preserve">
+    <value>At least one certificate template has the flag CT_FLAG_NO_SECURITY_EXTENSION set</value>
+  </data>
+  <data name="A_CertTempNoSecurity_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#certificatetemplates"&gt;Certificate Templates&lt;/a&gt;</value>
+  </data>
+  <data name="A_CertTempNoSecurity_Solution" xml:space="preserve">
+    <value>Edit the certificate template object and specifically the attribute msPKI-Enrollment-Flag.
+     Unset the flag CT_FLAG_NO_SECURITY_EXTENSION (0x80000) aka substract the value 524288 from the attribute msPKI-Enrollment-Flag.
+    </value>
+  </data>
+  <data name="A_CertTempNoSecurity_TechnicalExplanation" xml:space="preserve">
+    <value>Certificate requests are tracked by UPN and dnsHost name for computers.
+    Usually, editing dnsHost change the value of the attribute servicePrincipalName and duplications are prohibited.
+  But there is no constraint on the dnsHost attribute and a controlled change of this attribute (without changing the SPN) can lead to duplicates.
+An attacker can then change the DNS of a compromise host to the DC DNS and request a certificate on behalf the DC, thus impersonating it and controlling the domain.</value>
+  </data>
+  <data name="A_CertTempNoSecurity_Title" xml:space="preserve">
+    <value>Check if authentication certificate templates disallow the tracking of the certificate requester</value>
+  </data>
+  <data name="A_DC_WebClient_Title" xml:space="preserve">
+    <value>Ensure that the WebClient client cannot be abused to force a DC connection to a http server</value>
+  </data>
+  <data name="A_DC_WebClient_Description" xml:space="preserve">
+    <value>The purpose is to ensure that DC cannot connect with normal command line to a http server</value>
+  </data>
+  <data name="A_DC_WebClient_Solution" xml:space="preserve">
+    <value>If the WebClient service is in official use (typically from backup applications), disable the service.</value>
+  </data>
+  <data name="A_DC_WebClient_Rationale" xml:space="preserve">
+    <value>The WebClient service which allows WebDAV communication is enabled on {count} DC</value>
+  </data>
+  <data name="A_DC_WebClient_TechnicalExplanation" xml:space="preserve">
+    <value>By default, Windows computers supports only UNC paths (aka \\server\path).
+    The WebDAV protocol, implemented with HTTP, enables files on webserver to be managed as on a classic file share.
+    The role of the WebClient service is to provide as a native API call a service to manage files located on a WebDAV server (http urls).
+    If the WebClient service is active, command line tools and service can access files on a webserver without any specifc action.
+ 
+
+    When forced authentication attacks are being used (Print Spooler, PetitPotam, ...) and if this service is in use, the DC can connect to webservers.
+    An attacker can abuse this service to bypass classic detection rules but this does not represent a vulnerability by itself.
+
+    It is not expected that Domain Controllers access WebDAV services but please note that some backup software are known to use cloud connection and thus, requires it.
+    This is why this rule is classify as informative.
+    
+    Also please note that WebClient can be remotely started using a 'Search Connector' file. See the detail in the link below.
+    </value>
+  </data>
+  <data name="A_DC_WebClient_Detail" xml:space="preserve">
+    <value>Domain controller: {0}</value>
+  </data>
+  <data name="A_DC_WebClient_Documentation" xml:space="preserve">
+    <value>https://gist.github.com/gladiatx0r/1ffe59031d42c08603a3bde0ff678feb#rpc-to-rce-steps</value>
+  </data>
+  <data name="A_DC_WebClient_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#domaincontrollersection"&gt;Domain controllers&lt;/a&gt;</value>
   </data>
 </root>

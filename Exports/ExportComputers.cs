@@ -55,7 +55,7 @@ namespace PingCastle.Exports
                         (ADItem x) =>
                         {
                             var d = new AddData();
-                            HealthcheckAnalyzer.ProcessAccountData(d, x, false);
+                            HealthcheckAnalyzer.ProcessAccountData(d, x, false, default(DateTime));
                             if ((++export % 500) == 0)
                             {
                                 DisplayAdvancement("Exported: " + export);

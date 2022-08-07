@@ -20,7 +20,7 @@ namespace PingCastle.RPC
         public string Name;
     }
 
-    public class samr : rpcapi
+    public class samr2 : rpcapi
     {
 
         private static byte[] MIDL_ProcFormatStringx86 = new byte[] {
@@ -109,7 +109,7 @@ namespace PingCastle.RPC
         };
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public samr()
+        public samr2()
         {
             Guid interfaceId = new Guid(magic(5) + "778-" + magic(4) + "-ABCD-EF00-0123456789AC");
             if (IntPtr.Size == 8)
@@ -124,7 +124,7 @@ namespace PingCastle.RPC
         }
 
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        ~samr()
+        ~samr2()
         {
             freeStub();
         }

@@ -105,7 +105,7 @@ namespace PingCastle.Report
         {
             Add(@"
 		<div class=""row d-print-none""><div class=""col-lg-12"">
-			<a data-toggle=""collapse"" data-target=""#riskModel"">
+			<a data-bs-toggle=""collapse"" data-bs-target=""#riskModel"">
 				<h2>Risk model</h2>
 			</a>
 		</div></div>
@@ -201,8 +201,8 @@ namespace PingCastle.Report
                                 tooltipdetail += "<small  class='text-muted'>" + ReportHelper.Encode(hcrule.ReportLocation) + "</small><br>";
                             }
                         }
-                        line += "<td class=\"model_cell " + tdclass + "\"><div class=\"div_model\" placement=\"auto right\" data-toggle=\"popover\" title=\"" +
-                            tooltip + "\" data-html=\"true\" data-content=\"" +
+                        line += "<td class=\"model_cell " + tdclass + "\"><div class=\"div_model\" placement=\"auto right\" data-bs-toggle=\"popover\" title=\"" +
+                            tooltip + "\" data-bs-html=\"true\" data-bs-content=\"" +
                             (String.IsNullOrEmpty(tooltipdetail) ? "No rule matched" : "<p>" + tooltipdetail + "</p>") + "\"><span class=\"small\">" + modelstring + "</span></div></td>";
                     }
                     else
@@ -232,7 +232,7 @@ namespace PingCastle.Report
         {
             Add(@"
 		<div class=""row""><div class=""col-lg-12 mt-2"">
-			<a data-toggle=""collapse"" data-target=""#" + id + @""">
+			<a data-bs-toggle=""collapse"" data-bs-target=""#" + id + @""">
 				<h2>");
             Add(title);
             Add(@" [");
@@ -331,7 +331,7 @@ namespace PingCastle.Report
                 {
                     if (rule.Points == 0)
                     {
-                        Add(@"<i class=""float-right""><span class='float-right'>Informative rule</span>");
+                        Add(@"<i class=""float-end""><span class='float-end'>Informative rule</span>");
                         if (ActionPlanOrchestrator != null)
                         {
                             ActionPlanOrchestrator.GenerateMainActionPlan(sb, rule, hcrule);
@@ -340,7 +340,7 @@ namespace PingCastle.Report
                     }
                     else
                     {
-                        Add(@"<i class=""float-right""><span class='float-right'>+ ");
+                        Add(@"<i class=""float-end""><span class='float-end'>+ ");
                         Add(rule.Points);
                         Add(@" Point(s)</span>");
                         if (ActionPlanOrchestrator != null)

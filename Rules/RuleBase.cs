@@ -23,7 +23,6 @@ namespace PingCastle.Rules
         public string Documentation { get; private set; }
         public RiskRuleCategory Category { get; set; }
         public RiskModelCategory Model { get; set; }
-        public RiskModelObjective Objective { get; set; }
         private string DetailRationale;
         protected string DetailFormatString;
         // used to provide a location of the data in the report (aka a link to the report)
@@ -34,7 +33,7 @@ namespace PingCastle.Rules
 
         public List<string> Details { get; set; }
 
-        public int MaturityLevel { get; private set; }
+        public int MaturityLevel { get; set; }
 
         public IInfrastructureSettings InfrastructureSettings { get; set; }
 
@@ -78,18 +77,7 @@ namespace PingCastle.Rules
             }
             else
             {
-                models = GetType().GetCustomAttributes(typeof(RuleObjectiveAttribute), true);
-                if (models != null && models.Length != 0)
-                {
-                    RuleObjectiveAttribute model = (RuleObjectiveAttribute)models[0];
-                    Category = model.Category;
-                    Objective = model.Objective;
-                    RiskId = model.Id;
-                }
-                else
-                {
-                    throw new NotImplementedException();
-                }
+                throw new NotImplementedException();
             }
             string resourceKey;
             resourceKey = RiskId.Replace('-', '_').Replace('$', '_');
@@ -209,48 +197,7 @@ namespace PingCastle.Rules
 
         public string GetComputationModelString()
         {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < RuleComputation.Count; i++)
-            {
-                if (i > 0)
-                    sb.Append("\r\nthen ");
-                var rule = RuleComputation[i];
-                switch (rule.ComputationType)
-                {
-                    case RuleComputationType.TriggerOnThreshold:
-                        sb.Append(rule.Score);
-                        sb.Append(" points if the occurence is greater than or equals than ");
-                        sb.Append(rule.Threshold);
-                        break;
-                    case RuleComputationType.TriggerOnPresence:
-                        if (rule.Score > 0)
-                        {
-                            sb.Append(rule.Score);
-                            sb.Append(" points if present");
-                        }
-                        else
-                        {
-                            sb.Append("Informative rule (0 point)");
-                        }
-                        break;
-                    case RuleComputationType.PerDiscover:
-                        sb.Append(rule.Score);
-                        sb.Append(" points per discovery");
-                        break;
-                    case RuleComputationType.PerDiscoverWithAMinimumOf:
-                        sb.Append(rule.Score);
-                        sb.Append(" points per discovery with a minimal of ");
-                        sb.Append(rule.Threshold);
-                        sb.Append(" points");
-                        break;
-                    case RuleComputationType.TriggerIfLessThan:
-                        sb.Append(rule.Score);
-                        sb.Append(" points if the occurence is strictly lower than ");
-                        sb.Append(rule.Threshold);
-                        break;
-                }
-            }
-            return sb.ToString();
+            return RuleComputationAttribute.GetComputationModelString(RuleComputation);
         }
     }
 }

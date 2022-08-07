@@ -308,8 +308,11 @@ $("[id^='mcg-']").on('hide.bs.modal', function (event) {
     }
 });
 
-$( document ).ready(function() {
-    $('[data-toggle="tooltip"]').tooltip({html: true, container: 'body'});
+document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
 
     var hash = location.hash.replace('#','');
     if(hash != '' && hash.startsWith('mcg-') ){

@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.DirectoryServices.ActiveDirectory;
 using System.IO;
 using System.Net;
+using System.Runtime.Serialization;
 using System.Security.Permissions;
 using System.ServiceModel;
 using System.Text;
@@ -396,6 +397,24 @@ namespace PingCastle.ADWS
 					var stringValue = Convert.ToString(stringWriter);
 					Trace.WriteLine("Detail:");
 					Trace.WriteLine(stringValue);
+                    var detail = messageFault.GetDetail<schemas.microsoft.com._2008._1.ActiveDirectory.FaultDetail>();
+                    // non existing object - do not throw an exception if the object does not exist
+                    if (detail != null && detail.DirectoryError != null)
+                    {
+                        var de = detail.DirectoryError;
+                        foreach (var node in detail.DirectoryError.Nodes)
+                        {
+                            if (node.Name == "Win32ErrorCode")
+                            {
+                                string error = node.InnerText;
+                                if (error == "8240")
+                                {
+                                    return;
+                                }
+                                break;
+                            }
+                        }
+                    }
 					throw new PingCastleException("An ADWS exception occured (fault:" + ex.Message + ";reason:" + ex.Reason + ").\r\nADWS is a faster protocol than LDAP but bound to a default 30 minutes limitation. If this error persists, we recommand to force the LDAP protocol. Run PingCastle with the following switches: --protocol LDAPOnly --interactive");
 				}
 				Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "]Pull successful");

@@ -270,8 +270,12 @@ if (!FullNodeMap)
 {
     data = reshape(data);
 }
-if (data.nodes.length > 0)
-    $('#loadingModal').modal('show');
+
+var loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+
+if (data.nodes.length > 0) {
+    loadingModal.show();
+}
 
 network = carto(data,!FullNodeMap);
 
@@ -286,6 +290,6 @@ network.once('stabilizationIterationsDone', function () {
     progressBar.css('width', percentVal + '%').attr('aria-valuenow', percentVal + '%').text(percentVal + '%');
     // really clean the dom element
     setTimeout(function () {
-        $('#loadingModal').modal('hide')
+        loadingModal.hide();
     }, 100);
 });

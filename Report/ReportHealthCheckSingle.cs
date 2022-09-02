@@ -1979,12 +1979,12 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddBeginTable("Summary of group");
                 AddHeaderText("Group or user account", "The graph represents the objects which can take control of this group or user account.");
                 AddHeaderText("Priority", "Indicates relatively to other objects the importance of this object when establishing a remediation plan. This importance is computed based on the impact and the easiness to proceed.");
-                AddHeaderText("Number of users member of the group", "Indicates the number of local user accounts. Foreign users or groups are excluded.");
-                AddHeaderText("Number of computer member of the group", "Indicates the number of local user accounts. Foreign users or groups are excluded.");
-                AddHeaderText("Number of object having indirect control", "Indicates the number of local user accounts. Foreign users or groups are excluded.");
-                AddHeaderText("Number of unresolved members (removed?)", "Indicates the number of local user accounts. Foreign users or groups are excluded.");
-                AddHeaderText("Link with other domains");
-                AddHeaderText("Detail");
+                AddHeaderText("Users member", "Indicates the number of local user accounts that are members of this group. Foreign users or groups are excluded.");
+                AddHeaderText("Computer member of the group", "Indicates the number of local computer accounts that are members of this group. Foreign users or groups are excluded.");
+                AddHeaderText("Indirect control", "Indicates the number of local user or computer accounts that have indirect control over this object. Foreign users or groups are excluded.");
+                AddHeaderText("Unresolved members", "Indicates the number of unresolved user or computer accounts. These accounts have most probably been deleted. Foreign users or groups are excluded.");
+                AddHeaderText("Links", "Indicates the number of links with foreign domains aka foreign user or computer accounts.");
+                AddHeaderText("Detail", "If available, open a modal which displays all the objects and their permissions in a map. This enables a quick understanding on how the figures have been collected.");
                 AddBeginTableData();
                 foreach (var i in line.Keys)
                 {

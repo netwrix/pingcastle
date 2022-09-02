@@ -254,39 +254,30 @@ namespace PingCastle.Graph.Export
                     continue;
 
                 RelationType restrictedObject = RelationType.container_hierarchy;
+
                 if ((accessrule.ObjectFlags & ObjectAceFlags.ObjectAceTypePresent) != 0)
                 {
-                    switch (accessrule.ObjectType.ToString().ToLowerInvariant())
+                    restrictedObject = GetRestrictedToRelation(accessrule.ObjectType.ToString().ToLowerInvariant());
+                    if (restrictedObject == RelationType.container_hierarchy)
                     {
-                        case "4828cc14-1437-45bc-9b07-ad6f015e5f28": // inetorg
-                        case "bf967aba-0de6-11d0-a285-00aa003049e2": // user
-                            restrictedObject = RelationType.RestrictedToUser;
-                            break;
-                        case "bf967a86-0de6-11d0-a285-00aa003049e2":
-                            restrictedObject = RelationType.RestrictedToComputer;
-                            break;
-                        case "bf967aa5-0de6-11d0-a285-00aa003049e2":
-                            restrictedObject = RelationType.RestrictedToOU;
-                            break;
-                        case "bf967a9c-0de6-11d0-a285-00aa003049e2":
-                            restrictedObject = RelationType.RestrictedToGroup;
-                            break;
-                        case "ce206244-5827-4a86-ba1c-1c0c386c1b64":
-                        case "7b8b558a-93a5-4af7-adca-c017e67f1057":
-                            restrictedObject = RelationType.RestrictedToMsaOrGmsa;
-                            break;
-                        case "f30e3bc2-9ff0-11d1-b603-0000f80367c1":
-                            restrictedObject = RelationType.RestrictedToGpo;
-                            break;
-                        default:
-                            continue;
+                        continue;
+                    }
+                }
+                if ((accessrule.ObjectFlags & ObjectAceFlags.InheritedObjectAceTypePresent) != 0)
+                {
+                    restrictedObject = GetRestrictedToRelation(accessrule.InheritedObjectType.ToString().ToLowerInvariant());
+                    if (restrictedObject == RelationType.container_hierarchy)
+                    {
+                        continue;
                     }
                 }
 
+                bool set = false;
                 // ADS_RIGHT_GENERIC_ALL
                 if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.GenericAll))
                 {
                     IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.GEN_RIGHT_ALL);
+                    set = true;
                 }
                 else
                 {
@@ -294,16 +285,19 @@ namespace PingCastle.Graph.Export
                     if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.GenericWrite))
                     {
                         IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.GEN_RIGHT_WRITE);
+                        set = true;
                     }
                     // ADS_RIGHT_WRITE_DAC
                     if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.WriteDacl))
                     {
                         IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.ADS_RIGHT_WRITE_DAC);
+                        set = true;
                     }
                     // ADS_RIGHT_WRITE_OWNER
                     if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.WriteOwner))
                     {
                         IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.ADS_RIGHT_WRITE_OWNER);
+                        set = true;
                     }
                     if (accessrule.ObjectFlags == ObjectAceFlags.None)
                     {
@@ -311,16 +305,19 @@ namespace PingCastle.Graph.Export
                         if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.ExtendedRight))
                         {
                             IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.EXT_RIGHT_ALL);
+                            set = true;
                         }
                         // ADS_RIGHT_DS_SELF
                         if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.Self))
                         {
                             IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.VAL_WRITE_ALL);
+                            set = true;
                         }
                         // ADS_RIGHT_DS_WRITE_PROP
                         if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.WriteProperty))
                         {
                             IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.WRITE_PROP_ALL);
+                            set = true;
                         }
                     }
                     else if ((accessrule.ObjectFlags & ObjectAceFlags.ObjectAceTypePresent) == ObjectAceFlags.ObjectAceTypePresent)
@@ -333,6 +330,7 @@ namespace PingCastle.Graph.Export
                                 if (extendedright.Key == accessrule.ObjectType)
                                 {
                                     IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, extendedright.Value);
+                                    set = true;
                                 }
                             }
                         }
@@ -344,6 +342,7 @@ namespace PingCastle.Graph.Export
                                 if (validatewrite.Key == accessrule.ObjectType)
                                 {
                                     IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, validatewrite.Value);
+                                    set = true;
                                 }
                             }
                         }
@@ -355,6 +354,7 @@ namespace PingCastle.Graph.Export
                                 if (controlproperty.Key == accessrule.ObjectType)
                                 {
                                     IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, controlproperty.Value);
+                                    set = true;
                                 }
                             }
                             foreach (KeyValuePair<Guid, RelationType> controlpropertyset in GuidsControlPropertiesSets)
@@ -362,6 +362,7 @@ namespace PingCastle.Graph.Export
                                 if (controlpropertyset.Key == accessrule.ObjectType)
                                 {
                                     IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, controlpropertyset.Value);
+                                    set = true;
                                 }
                             }
                         }
@@ -372,12 +373,13 @@ namespace PingCastle.Graph.Export
                                 if (controlproperty.Key == accessrule.ObjectType)
                                 {
                                     IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, controlproperty.Value);
+                                    set = true;
                                 }
                             }
                         }
                     }
                 }
-                if (restrictedObject != RelationType.container_hierarchy && relationToAdd.ContainsKey(accessrule.IdentityReference.Value))
+                if (set && restrictedObject != RelationType.container_hierarchy && relationToAdd.ContainsKey(accessrule.IdentityReference.Value))
                 {
                     IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, restrictedObject);
                 }
@@ -391,6 +393,28 @@ namespace PingCastle.Graph.Export
             }
         }
 
+        public static RelationType GetRestrictedToRelation(string objectType)
+        {
+            switch (objectType)
+            {
+                case "4828cc14-1437-45bc-9b07-ad6f015e5f28": // inetorg
+                case "bf967aba-0de6-11d0-a285-00aa003049e2": // user
+                    return RelationType.RestrictedToUser;
+                case "bf967a86-0de6-11d0-a285-00aa003049e2":
+                    return RelationType.RestrictedToComputer;
+                case "bf967aa5-0de6-11d0-a285-00aa003049e2":
+                    return RelationType.RestrictedToOU;
+                case "bf967a9c-0de6-11d0-a285-00aa003049e2":
+                    return RelationType.RestrictedToGroup;
+                case "ce206244-5827-4a86-ba1c-1c0c386c1b64":
+                case "7b8b558a-93a5-4af7-adca-c017e67f1057":
+                    return RelationType.RestrictedToMsaOrGmsa;
+                case "f30e3bc2-9ff0-11d1-b603-0000f80367c1":
+                    return RelationType.RestrictedToGpo;
+                default:
+                    return RelationType.container_hierarchy;
+            }
+        }
 
         private void InsertGPORelation(ADItem aditem)
         {

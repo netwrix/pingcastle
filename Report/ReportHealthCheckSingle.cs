@@ -2007,7 +2007,18 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         private void GenerateSummary(int index, SingleCompromiseGraphData data)
         {
             AddBeginRow();
-            AddCellText(data.Description);
+            if (data.Nodes == null || data.Nodes.Count == 0)
+            {
+                AddCellText(data.Description);
+            }
+            else
+            {
+                Add(@"<td><a href=""#mcg-");
+                Add(GenerateModalId(data.Description));
+                Add(@""" data-bs-toggle=""modal"">");
+                AddEncoded(data.Description);
+                Add(@"</a></td>");
+            }
             AddCellText(ReportHelper.GetEnumDescription(data.ObjectRisk));
             bool isAGroup = true;
             foreach (var node in data.Nodes)

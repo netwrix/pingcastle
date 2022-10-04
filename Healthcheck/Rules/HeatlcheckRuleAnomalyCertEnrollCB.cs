@@ -29,7 +29,7 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         AddRawDetail(ce.Name, "WebEnrollment");
                     }
-                    if (ce.CESHttps)
+                    if (ce.CESChannelBindingDisabled)
                     {
                         AddRawDetail(ce.Name, "CES");
                     }

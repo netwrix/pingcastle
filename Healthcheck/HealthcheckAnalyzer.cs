@@ -4881,7 +4881,7 @@ namespace PingCastle.Healthcheck
                 Trace.WriteLine("Test ignored because tested on the DC itself");
                 return;
             }
-            var result = ConnectionTester.TestSignatureRequiredEnabled(new Uri("ldaps://" + dns), credentials);
+            var result = ConnectionTester.TestSignatureRequiredEnabled(new Uri("ldap://" + dns), credentials);
             if (result == ConnectionTesterStatus.SignatureNotRequired)
             {
                 DC.LdapServerSigningRequirementDisabled = true;

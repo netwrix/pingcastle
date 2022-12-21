@@ -61,6 +61,8 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+            if (gpo.Count == 0)
+                return healthcheckData.MachineAccountQuota;
             var applied = new Dictionary<string, Dictionary<int, bool>>();
             foreach (var v in gpo.Keys)
             {

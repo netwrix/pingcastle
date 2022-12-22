@@ -27,7 +27,7 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     if (data.DangerousSID)
                     {
-                        count++;
+                        count += data.Count;
                         AddRawDetail(data.FriendlyName);
                     }
                 }
@@ -39,7 +39,7 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     if (data.DangerousSID)
                     {
-                        count++;
+                        count += data.Count;
                         AddRawDetail(data.FriendlyName);
                     }
                 }

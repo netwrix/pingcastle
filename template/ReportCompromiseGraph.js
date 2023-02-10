@@ -1,16 +1,4 @@
 
-function getData(dataSelect) {
-    try {
-        var inlineJsonElement = document.querySelector(
-            'script[type="application/json"][data-pingcastle-selector="' + dataSelect + '"]'
-        );
-        var data = JSON.parse(inlineJsonElement.textContent);
-        return data;
-    } catch (err) {
-        console.error('Couldn t read JSON data from ' + dataSelect, err);
-    }
-}
-
 var relationDescription = null;
 
 function cartocp(data, id) {
@@ -316,6 +304,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var hash = location.hash.replace('#','');
     if(hash != '' && hash.startsWith('mcg-') ){
-        $('#' + hash).modal('show');
+        var modalDialog = new bootstrap.Modal(document.getElementById('hash'));
+        modalDialog.show();
     }
 });

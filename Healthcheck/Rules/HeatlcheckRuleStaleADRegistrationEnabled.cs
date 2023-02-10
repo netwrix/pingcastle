@@ -61,6 +61,9 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+            // note: according to https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/add-workstations-to-domain if not GPO sets SeMachineAccountPrivilege it is assigned by DC to authenticated users.
+            if (gpo.Count == 0)
+                return healthcheckData.MachineAccountQuota;
             var applied = new Dictionary<string, Dictionary<int, bool>>();
             foreach (var v in gpo.Keys)
             {

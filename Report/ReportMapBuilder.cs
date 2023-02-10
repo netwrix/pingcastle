@@ -35,7 +35,7 @@ namespace PingCastle.Report
 
         public GraphLogging Log { get; set; }
 
-        public MigrationChecker migrationChecker { get; set; }
+        public IMigrationChecker migrationChecker { get; set; }
 
         public string CenterDomainForSimpliedGraph { get; set; }
 
@@ -137,7 +137,7 @@ namespace PingCastle.Report
 
         #region json file
 
-        public string GenerateJsonFileFull(MigrationChecker migrationChecker)
+        public string GenerateJsonFileFull(IMigrationChecker migrationChecker)
         {
             Dictionary<int, int> idconversiontable = new Dictionary<int, int>();
             StringBuilder sb = new StringBuilder();
@@ -477,7 +477,7 @@ namespace PingCastle.Report
         }
 
 
-        public string GenerateJsonFileChordDiagram(MigrationChecker migrationChecker)
+        public string GenerateJsonFileChordDiagram(IMigrationChecker migrationChecker)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("[");

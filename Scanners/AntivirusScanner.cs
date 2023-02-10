@@ -122,8 +122,12 @@ namespace PingCastle.Scanners
             return "Computer\tService Found\tDescription";
         }
 
-        public override Program.DisplayState QueryForAdditionalParameterInInteractiveMode()
+        public override DisplayState QueryForAdditionalParameterInInteractiveMode()
         {
+            var state = base.QueryForAdditionalParameterInInteractiveMode();
+            if (state != DisplayState.Run)
+                return state;
+
             string input = null;
             customService.Clear();
             do
@@ -146,7 +150,7 @@ Or just press enter to use the default.";
                     break;
                 }
             } while (true);
-            return base.QueryForAdditionalParameterInInteractiveMode();
+            return DisplayState.Run;
         }
 
         protected override string GetCsvData(string computer)

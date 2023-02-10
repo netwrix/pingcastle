@@ -19,5 +19,7 @@ namespace PingCastle.Data
         string GetHumanReadableFileName();
         string GetMachineReadableFileName();
         void SetExportLevel(PingCastleReportDataExportLevel level);
+        void SetIntegrity();
+        void CheckIntegrity();
     }
 }

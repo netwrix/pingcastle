@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace PingCastle.Healthcheck
 {
-    public interface MigrationChecker
+    public interface IMigrationChecker
     {
         bool IsMigrationTrust(DateTime evaluationDate, DomainKey source, DomainKey destination);
     }

@@ -29,6 +29,8 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     if (user.IsExternal)
                         continue;
+                    if (!user.IsEnabled)
+                        continue;
                     if (!user.IsInProtectedUser)
                     {
                         if (!users.Contains(user.Name))

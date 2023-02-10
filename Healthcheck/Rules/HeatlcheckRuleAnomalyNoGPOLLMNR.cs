@@ -40,10 +40,6 @@ namespace PingCastle.Healthcheck.Rules
                         if (property.Property == "EnableMulticast")
                         {
                             found = true;
-                            if (property.Value == 1)
-                            {
-                                AddRawDetail(policy.GPOName);
-                            }
                         }
                     }
                 }

@@ -26,19 +26,31 @@ namespace PingCastle.Report
         protected string ReportID;
         protected string PingCastleEnterpriseBaseUrl = "https://www.pingcastle.com/reports/";
 
-        protected GetUrlDelegate GetUrlCallback;
+        protected GetUrlDelegateDomain GetUrlCallbackDomain;
+        protected GetUrlDelegateAzureAD GetUrlCallbackAzureAD;
         protected GetAdditionInfoDelegate AdditionInfoDelegate;
+        protected AddHtmlToTabSection TabDelegate;
 
         public HasDomainAmbigousNameDelegate HasDomainAmbigousName { get; set; }
 
-        public void SetUrlDisplayDelegate(GetUrlDelegate uRLDelegate)
+        public void SetUrlDisplayDelegate(GetUrlDelegateDomain uRLDelegate)
         {
-            GetUrlCallback = uRLDelegate;
+            GetUrlCallbackDomain = uRLDelegate;
+        }
+
+        public void SetUrlDisplayDelegate(GetUrlDelegateAzureAD uRLDelegate)
+        {
+            GetUrlCallbackAzureAD = uRLDelegate;
         }
 
         public void SetAdditionalInfoDelegate(GetAdditionInfoDelegate additionInfoDelegate)
         {
             AdditionInfoDelegate = additionInfoDelegate;
+        }
+
+        public void SetHtmlToTabSectionDelegate(AddHtmlToTabSection tabDelegate)
+        {
+            TabDelegate = tabDelegate;
         }
 
         private List<string> CSSToAdd = new List<string> { 
@@ -148,12 +160,14 @@ namespace PingCastle.Report
 
         protected void AddStyle(string style)
         {
-            CSSToAdd.Add(style);
+            if (!CSSToAdd.Contains(style))
+                CSSToAdd.Add(style);
         }
 
         protected void AddScript(string script)
         {
-            JSToAdd.Add(script);
+            if (!JSToAdd.Contains(script))
+                JSToAdd.Add(script);
         }
 
 
@@ -230,6 +244,44 @@ namespace PingCastle.Report
         {
             sb.Append(date.ToString("u"));
         }
+        protected void DescribeBegin()
+        {
+            Add(@"<dl class='row'>");
+        }
+
+        protected void DescribeLabel(string label, string id = null)
+        {
+            Add(@"<dt class='col-sm-3'");
+            if (!string.IsNullOrEmpty(id))
+            {
+                Add(" id='label_");
+                Add(id);
+                Add("'");
+            }
+            Add(">");
+            AddEncoded(label);
+            Add("</dt>");
+        }
+
+        protected void DescribeValue(string value, string id)
+        {
+            Add(@"<dd class='col-sm-9'");
+            if (!string.IsNullOrEmpty(id))
+            {
+                Add(" id='label_");
+                Add(id);
+                Add("'");
+            }
+            Add(">");
+            AddEncoded(value);
+            Add("</dd>");
+        }
+
+        protected void DescribeEnd()
+        {
+            Add(@"</dl>");
+        }
+
 
         protected void AddAnchor(string label)
         {
@@ -245,7 +297,7 @@ namespace PingCastle.Report
             Add("</p></div></div>");
         }
 
-        protected void AddBeginTable(string ariaLabel, bool SimpleTable = false)
+        protected void AddBeginTable(string ariaLabel, bool SimpleTable = false, string id = null)
         {
             Add(@"
 		<div class=""row"">
@@ -257,7 +309,13 @@ namespace PingCastle.Report
             }
             else
             {
-                Add(@""" data-toggle=""table"" data-pagination=""true"" data-search=""true"" data-show-export=""true""");
+                Add(@""" data-toggle=""table"" data-pagination=""true"" data-search=""true"" data-show-export=""true"" data-page-list=""[10,25,50,100,200,All]""");
+            }
+            if (!string.IsNullOrEmpty(id))
+            {
+                Add(" id=\"");
+                AddEncoded(id);
+                Add("\"");
             }
             if (!string.IsNullOrEmpty(ariaLabel))
             {
@@ -336,7 +394,15 @@ namespace PingCastle.Report
             AddHeaderText(text, tooltip, 0, 0, widetooltip, html);
         }
 
-        protected void AddHeaderText(string text, string tooltip = null, int rowspan = 0, int colspan = 0, bool widetooltip = false, bool html = false)
+        protected void AddHeaderText(string text,
+            string tooltip = null,
+            int rowspan = 0,
+            int colspan = 0,
+            bool widetooltip = false,
+            bool html = false,
+            string datafield = null,
+            string dataformatter = null
+            )
         {
             Add(@"<th  data-sortable=""true"" ");
             if (rowspan != 0)
@@ -351,6 +417,18 @@ namespace PingCastle.Report
                 Add(colspan);
                 Add(@"""");
             }
+            if (!string.IsNullOrEmpty(datafield))
+            {
+                Add(" data-field='");
+                Add(datafield);
+                Add("'");
+            }
+            if (!string.IsNullOrEmpty(dataformatter))
+            {
+                Add(" data-formatter='");
+                Add(dataformatter);
+                Add("'");
+            }
             Add(@">");
             AddEncoded(text);
             if (!string.IsNullOrEmpty(tooltip))
@@ -363,7 +441,7 @@ namespace PingCastle.Report
             Add("</th>");
         }
 
-        protected void AddCellText(string text, bool highlight = false, bool IsGood = false)
+        protected void AddCellText(string text = null, bool highlight = false, bool IsGood = false)
         {
             Add("<td class='text'>");
             if (footerMode)
@@ -459,6 +537,18 @@ namespace PingCastle.Report
             if (footerMode)
                 Add("</b>");
             Add(@"</td>");
+        }
+
+        protected void AddCellBool(bool? value, bool highlight = false, bool IsGood = false)
+        {
+            if (value != null)
+            {
+                AddCellText(value.Value.ToString(), highlight, IsGood);
+            }
+            else
+            {
+                AddCellText();
+            }
         }
 
         protected enum ShowModalType
@@ -741,9 +831,9 @@ namespace PingCastle.Report
 	<div class=""row"">
 		<div class=""col-lg-12"">
 			<div class=""starter-template"">
-				<div class=""card mb-4"">
-					<div class=""card-header"">
-						<h1 class=""card-title""><a data-bs-toggle=""collapse"" aria-expanded=""true"" href=""#panel" + id + @""">" + title + @"</a></h1>
+				<div class=""card border-pc-orange mb-4 mt-4 lead fs-6"">
+					<div class=""card-header h3 text-white bg-pc-orange fw-bold"">
+						<a class=""sectionheader text-white""data-bs-toggle=""collapse"" aria-expanded=""true"" href=""#panel" + id + @""">" + title + @"</a>
 					</div>
 					<div class=""card-body collapse show"" id=""panel" + id + @""">
 ");
@@ -803,12 +893,13 @@ namespace PingCastle.Report
 
         protected void GenerateAccordionDetailForDetail(string id, string dataParent, string title, int itemCount, GenerateContentDelegate content)
         {
-            GenerateAccordionDetail(id, dataParent, title, 
-                () => {
+            GenerateAccordionDetail(id, dataParent, title,
+                () =>
+                {
                     Add(@"<i class=""float-end"">[");
                     Add((int)itemCount);
                     Add(@"]</i>");
-                },content);
+                }, content);
         }
 
         protected void GenerateAccordionDetail(string id, string dataParent, string title, GenerateContentDelegate header, GenerateContentDelegate content)
@@ -898,6 +989,10 @@ namespace PingCastle.Report
             Add(@"</h1>
 		</div></div>
 ");
+            if (TabDelegate != null)
+            {
+                Add(TabDelegate(title));
+            }
             generateContent();
             Add(@"
 			</div>
@@ -1035,7 +1130,9 @@ namespace PingCastle.Report
                             case 18363: return "Windows Server 2019 1909";
                             case 19041: return "Windows Server 2019 2004";
                             case 19042: return "Windows Server 2019 20H2";
-                            default: return "Windows Server 2019 (Build " + release + ")";
+                            // https://learn.microsoft.com/en-us/windows-server/get-started/windows-server-release-info
+                            case 20348: return "Windows Server 2022";
+                            default: return "Windows Server 2022 (Build " + release + ")";
                         }
                     }
                 }
@@ -1075,11 +1172,13 @@ namespace PingCastle.Report
                     string w;
                     switch (release)
                     {
+                        case 22621: w = "Windows 11 22H2"; break;
                         case 22000: w = "Windows 11 21H2"; break;
                         case 22449:
                         case 22518:
                         case 21996: w = "Windows 11 Dev (" + release + ")"; break;
                         case 20185: w = "Windows 10 21H1 Dev"; break;
+                        case 19045: w = "Windows 10 22H2"; break;
                         case 19044: w = "Windows 10 21H2"; break;
                         case 19043: w = "Windows 10 21H1"; break;
                         case 19042: w = "Windows 10 20H2"; break;
@@ -1105,7 +1204,7 @@ namespace PingCastle.Report
                                 w = "Windows 10 (Build " + release + ")"; break;
                             }
                     }
-                    return w + (osVersion.IsLTSC ? " (LTSC)": null);
+                    return w + (osVersion.IsLTSC ? " (LTSC)" : null);
                 }
             }
             return "Unknown (" + osVersion.OSVersion + (osVersion.IsServer ? " (Server)" : null) + ")";
@@ -1338,7 +1437,7 @@ namespace PingCastle.Report
             {
                 algs.Add(@"<span class=""ticked"">AES256-CTS-HMAC-SHA1-96</span>");
             }
-            if ((msDSSupportedEncryptionTypes & ~(1+2+4+8+16)) != 0)
+            if ((msDSSupportedEncryptionTypes & ~(1 + 2 + 4 + 8 + 16)) != 0)
             {
                 algs.Add(@"Future encryption");
             }
@@ -1388,9 +1487,9 @@ namespace PingCastle.Report
                 else
                     label = key.DomainSID;
             }
-            if (GetUrlCallback == null)
+            if (GetUrlCallbackDomain == null)
                 return label;
-            string htmlData = GetUrlCallback(key, label, risk);
+            string htmlData = GetUrlCallbackDomain(key, label, risk);
             if (String.IsNullOrEmpty(htmlData))
                 return label;
             return htmlData;

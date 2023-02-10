@@ -8,8 +8,11 @@ using PingCastle.Data;
 using PingCastle.Healthcheck;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Resources;
 using System.Text;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace PingCastle.Rules
 {
@@ -35,6 +38,7 @@ namespace PingCastle.Rules
 
         public int MaturityLevel { get; set; }
 
+        [XmlIgnore]
         public IInfrastructureSettings InfrastructureSettings { get; set; }
 
         // return count if not null or rely on details.count
@@ -179,6 +183,23 @@ namespace PingCastle.Rules
                     hasTheRuleMatched = true;
                     Points = points;
                     UpdateLabelsAfterMatch((int)valueReturnedByAnalysis, computation);
+                    break;
+                }
+            }
+            return hasTheRuleMatched;
+        }
+
+        public bool ReAnalyzePartialDetails(int count)
+        {
+            bool hasTheRuleMatched = false;
+            foreach (var computation in RuleComputation)
+            {
+                int points = 0;
+                if (computation.HasMatch(count, ref points))
+                {
+                    hasTheRuleMatched = true;
+                    Points = points;
+                    UpdateLabelsAfterMatch(count, computation);
                     break;
                 }
             }

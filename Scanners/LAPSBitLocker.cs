@@ -14,15 +14,11 @@ namespace PingCastle.Scanners
         public string Name { get { return "laps_bitlocker"; } }
         public string Description { get { return "Check on the AD if LAPS and/or BitLocker has been enabled for all computers on the domain."; } }
 
-        public string Server { get; private set; }
-        public int Port { get; private set; }
-        public NetworkCredential Credential { get; private set; }
+        RuntimeSettings Settings;
 
-        public void Initialize(string server, int port, NetworkCredential credential)
+        public void Initialize(RuntimeSettings settings)
         {
-            Server = server;
-            Port = port;
-            Credential = credential;
+            Settings = settings;
         }
 
         private class Computer
@@ -42,7 +38,7 @@ namespace PingCastle.Scanners
         {
             ADDomainInfo domainInfo = null;
 
-            using (ADWebService adws = new ADWebService(Server, Port, Credential))
+            using (ADWebService adws = new ADWebService(Settings.Server, Settings.Port, Settings.Credential))
             {
                 domainInfo = adws.DomainInfo;
 
@@ -129,9 +125,9 @@ namespace PingCastle.Scanners
             Trace.WriteLine(value);
         }
 
-        public Program.DisplayState QueryForAdditionalParameterInInteractiveMode()
+        public DisplayState QueryForAdditionalParameterInInteractiveMode()
         {
-            return Program.DisplayState.AskForServer;
+            return Settings.EnsureDataCompleted("Server");
         }
 
 

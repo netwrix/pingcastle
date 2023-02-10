@@ -24,7 +24,7 @@ namespace PingCastle.Exports
         public override void Export(string filename)
         {
             ADDomainInfo domainInfo = null;
-            using (ADWebService adws = new ADWebService(Server, Port, Credential))
+            using (ADWebService adws = new ADWebService(Settings.Server, Settings.Port, Settings.Credential))
             {
                 domainInfo = adws.DomainInfo;
 

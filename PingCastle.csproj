@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PingCastle</RootNamespace>
     <AssemblyName>PingCastle</AssemblyName>
-    <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <IsWebBootstrapper>false</IsWebBootstrapper>
@@ -38,6 +38,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>0436</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -48,6 +49,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>0436</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
@@ -67,6 +69,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -76,18 +79,27 @@
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.Protocols" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ADWS\IADConnection.cs" />
@@ -97,6 +109,69 @@
     <Compile Include="Bot\Bot.cs" />
     <Compile Include="Bot\BotData.cs" />
     <Compile Include="Bot\BotStream.cs" />
+    <Compile Include="Cloud\Analyzer\Analyzer.cs" />
+    <Compile Include="Cloud\Common\HttpClientHelper.cs" />
+    <Compile Include="Cloud\Common\JsonSerialization.cs" />
+    <Compile Include="Cloud\Constants.cs" />
+    <Compile Include="Cloud\Credentials\CertificateBuilder.cs" />
+    <Compile Include="Cloud\Credentials\CertificateCredential.cs" />
+    <Compile Include="Cloud\Credentials\CredentialBase.cs" />
+    <Compile Include="Cloud\Credentials\IAzureCredential.cs" />
+    <Compile Include="Cloud\Credentials\PRTCredential.cs" />
+    <Compile Include="Cloud\Credentials\UserCredential.cs" />
+    <Compile Include="Cloud\Data\AzureADKey.cs" />
+    <Compile Include="Cloud\Data\HealthCheckCloudData.cs" />
+    <Compile Include="Cloud\Export\ExportAsGuest.cs" />
+    <Compile Include="Cloud\Logs\LoggingHandler.cs" />
+    <Compile Include="Cloud\Logs\SazGenerator.cs" />
+    <Compile Include="Cloud\PingCastleCloudException.cs" />
+    <Compile Include="Cloud\PublicServices\OpenIDConfiguration.cs" />
+    <Compile Include="Cloud\PublicServices\PublicService.cs" />
+    <Compile Include="Cloud\PublicServices\TenantBrandingInfo.cs" />
+    <Compile Include="Cloud\PublicServices\UserRealmCT.cs" />
+    <Compile Include="Cloud\PublicServices\UserRealmCTRequest.cs" />
+    <Compile Include="Cloud\PublicServices\UserRealmSRF.cs" />
+    <Compile Include="Cloud\PublicServices\UserRealmV1.cs" />
+    <Compile Include="Cloud\PublicServices\UserRealmV2.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledOldNtlm.cs" />
+    <Compile Include="Report\ReportCloudCompared.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteFunctionalLevel4.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteFunctionalLevel3.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteFunctionalLevel1.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDisplaySpecifier.cs" />
+    <Compile Include="RuntimeSettings.cs" />
+    <Compile Include="Report\ReportCloud.cs" />
+    <Compile Include="Cloud\RESTServices\AzureServiceAttribute.cs" />
+    <Compile Include="Cloud\RESTServices\Azure\AzureADConnectApi.cs" />
+    <Compile Include="Cloud\RESTServices\Azure\GraphAPI.cs" />
+    <Compile Include="Cloud\RESTServices\Azure\ManagementApi.cs" />
+    <Compile Include="Cloud\RESTServices\Azure\MicrosoftGraph.cs" />
+    <Compile Include="Cloud\RESTServices\Azure\ProvisioningApi.cs" />
+    <Compile Include="Cloud\RESTServices\ClientIDs.cs" />
+    <Compile Include="Cloud\RESTServices\EndPointAttribute.cs" />
+    <Compile Include="Cloud\RESTServices\IAzureService.cs" />
+    <Compile Include="Cloud\RESTServices\O365\O365Api.cs" />
+    <Compile Include="Cloud\RESTServices\RESTClientBase.cs" />
+    <Compile Include="Cloud\Rules\ADConnectVersion.cs" />
+    <Compile Include="Cloud\Rules\ADConnectVersion1.cs" />
+    <Compile Include="Cloud\Rules\GuestUserAccessRestriction1.cs" />
+    <Compile Include="Cloud\Rules\GuestUserAccessRestriction2.cs" />
+    <Compile Include="Cloud\Rules\UserConsentCompanyData.cs" />
+    <Compile Include="Cloud\Rules\UserRegisterApplications.cs" />
+    <Compile Include="Cloud\Tokens\ChallengeResponse.cs" />
+    <Compile Include="Cloud\Tokens\CookieManager.cs" />
+    <Compile Include="Cloud\Tokens\JwtHeader.cs" />
+    <Compile Include="Cloud\Tokens\JwtPayload.cs" />
+    <Compile Include="Cloud\Tokens\JwtToken.cs" />
+    <Compile Include="Cloud\Tokens\Token.cs" />
+    <Compile Include="Cloud\Tokens\TokenCache.cs" />
+    <Compile Include="Cloud\Tokens\TokenFactory.cs" />
+    <Compile Include="Cloud\UI\AuthenticationDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Cloud\UI\AuthenticationDialog.Designer.cs">
+      <DependentUpon>AuthenticationDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="ConsoleMenu.cs" />
     <Compile Include="Data\IPingCastleReport.cs" />
     <Compile Include="Data\IPingCastleReportGenerator.cs" />
@@ -129,6 +204,8 @@
     <Compile Include="Data\HealthCheckBUEntityData.cs" />
     <Compile Include="Data\CompromiseGraphData.cs" />
     <Compile Include="Healthcheck\HoneyPotSettings.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledKerberosArmoring.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledKerberosArmoringDC.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyDCWebClient.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyCertTempNoSecurity.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleTrustAES.cs" />
@@ -421,6 +498,10 @@
     <None Include="ADWS\wsdl\wsman.xsd">
       <SubType>Designer</SubType>
     </None>
+    <EmbeddedResource Include="Cloud\Rules\RuleDescription.resx" />
+    <EmbeddedResource Include="Cloud\UI\AuthenticationDialog.resx">
+      <DependentUpon>AuthenticationDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Healthcheck\Rules\RuleDescription.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -447,12 +528,14 @@
     <EmbeddedResource Include="template\ReportBase.js.gz" />
     <EmbeddedResource Include="template\bootstrap-table-export.min.js.gz" />
     <EmbeddedResource Include="template\tableExport.min.js.gz" />
+    <EmbeddedResource Include="template\ReportCloudMain.js.gz" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="changelog.txt" />
     <Content Include="pingcastle.ico" />
     <Content Include="template\ReportBase.css" />
     <Content Include="template\ReportBase.js" />
+    <Content Include="template\ReportCloudMain.js" />
     <Content Include="template\ReportCompromiseGraph.css" />
     <Content Include="template\ReportCompromiseGraph.js" />
     <Content Include="template\ReportHealthCheckConsolidation.css" />

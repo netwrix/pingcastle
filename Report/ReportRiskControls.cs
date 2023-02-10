@@ -26,12 +26,12 @@ namespace PingCastle.Report
             GenerateSubSection("Indicators");
             Add(@"
 		<div class=""row"">
-			<div class=""col-md-4"">
+			<div class=""col-md-4 col-sm-6"">
 				<div class=""chart-gauge"">");
             GenerateGauge(data.GlobalScore);
             Add(@"</div>
 			</div>
-			<div class=""col-md-8"">
+			<div class=""col-md-8 col-sm-6"">
 					<p class=""lead"">Domain Risk Level: ");
             Add(data.GlobalScore.ToString());
             Add(@" / 100</p>");
@@ -292,18 +292,18 @@ namespace PingCastle.Report
             return count;
         }
 
-        protected void GenerateSubIndicator(string category, int globalScore, int score, string explanation)
+        protected void GenerateSubIndicatorHeader(string category, int globalScore, int score, string explanation)
         {
 
             Add(@"
-			<div class=""col-lg-12"">
+			<div class="""">
 				<div class=""row"">
-					<div class="" col-lg-3 col-md-4 col-xs-8 col-sm-9"">
+					<div class="" col-lg-3 col-md-4 col-xs-6 col-sm-6"">
 						<div class=""chart-gauge"">");
             GenerateGauge(score);
             Add(@"</div>
 					</div>
-					<div class=""col-lg-9 col-md-8 col-xs-8 col-sm-9"">
+					<div class=""col-lg-9 col-md-8 col-xs-6 col-sm-6"">
 					");
             Add((score == globalScore ? "<strong>" : ""));
             Add(@"<p>");

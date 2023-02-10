@@ -11,6 +11,9 @@ using PingCastle.Graph.Reporting;
 using PingCastle.Healthcheck;
 using PingCastle.Report;
 using PingCastle.Scanners;
+using PingCastle.Cloud.Common;
+using PingCastle.Cloud.RESTServices.Azure;
+using PingCastle.Cloud.Tokens;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -24,24 +27,41 @@ using System.Text.RegularExpressions;
 
 namespace PingCastle
 {
+    enum PossibleTasks
+    {
+        GenerateKey,
+        Scanner,
+        Export,
+        Carto,
+        Bot,
+        ADHealthCheck,
+        ADConso,
+        HCRules,
+        Regen,
+        Reload,
+        DemoReport,
+        UploadAllRports,
+        FakeReport,
+        CloudHealthCheck,
+        ExportRulesXml,
+    }
+
     [LicenseProvider(typeof(PingCastle.ADHealthCheckingLicenseProvider))]
     public class Program : IPingCastleLicenseInfo
     {
-        bool PerformHealthCheckReport = false;
-        bool PerformHealthCheckConsolidation = false;
-        bool PerformGenerateKey = false;
-        bool PerformCarto = false;
-        bool PerformUploadAllReport;
-        bool PerformHCRules = false;
-        private bool PerformRegenerateReport;
-        private bool PerformHealthCheckReloadReport;
-        bool PerformHealthCheckGenerateDemoReports;
-        bool PerformScanner = false;
-        bool PerformGenerateFakeReport = false;
-        bool PerformBot = false;
-        bool PerformExport = false;
-        Tasks tasks = new Tasks();
+        
+        Dictionary<PossibleTasks, Func<bool>> actions;
+        Dictionary<PossibleTasks, string[]> requiredSettings;
+        List<PossibleTasks> requestedActions = new List<PossibleTasks>();
 
+        RuntimeSettings settings;
+        Tasks tasks;
+
+        public Program()
+        {
+            settings = new RuntimeSettings();
+            tasks = new Tasks(settings);
+        }
 
         public static void Main(string[] args)
         {
@@ -52,7 +72,9 @@ namespace PingCastle
                 Trace.WriteLine("Running on dotnet:" + Environment.Version);
                 Program program = new Program();
                 program.Run(args);
-                if (program.tasks.InteractiveMode)
+                // dispose the http logger
+                HttpClientHelper.EnableLoging(null);
+                if (program.settings.InteractiveMode)
                 {
                     Console.WriteLine("=============================================================================");
                     Console.WriteLine("Program launched in interactive mode - press any key to terminate the program");
@@ -62,6 +84,8 @@ namespace PingCastle
             }
             catch (Exception ex)
             {
+                // dispose the http logger
+                HttpClientHelper.EnableLoging(null);
                 Tasks.DisplayException("main program", ex);
             }
         }
@@ -74,7 +98,7 @@ namespace PingCastle
         static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             // hook required for "System.Runtime.Serialization.ContractNamespaceAttribute"
-            var name = new AssemblyName(args.Name);    
+            var name = new AssemblyName(args.Name);
             Trace.WriteLine("Needing assembly " + name + " unknown (" + args.Name + ")");
             return null;
         }
@@ -149,6 +173,40 @@ namespace PingCastle
                 Console.WriteLine();
             }
             tasks.License = license;
+
+            actions = new Dictionary<PossibleTasks, Func<bool>>
+            {
+                {PossibleTasks.GenerateKey,              tasks.GenerateKeyTask},
+                {PossibleTasks.Scanner,                  tasks.ScannerTask},
+                {PossibleTasks.Export,                   tasks.ExportTask},
+                {PossibleTasks.Carto,                    tasks.CartoTask},
+                //{PossibleTasks.Bot,                      tasks.BotTask},
+                {PossibleTasks.ADHealthCheck,            tasks.AnalysisTask<HealthcheckData>},
+                {PossibleTasks.ADConso,                  tasks.ConsolidationTask<HealthcheckData>},
+                {PossibleTasks.HCRules,                  tasks.HealthCheckRulesTask},
+                {PossibleTasks.Regen,                    tasks.RegenerateHtmlTask},
+                {PossibleTasks.Reload,                   tasks.ReloadXmlReport},
+                {PossibleTasks.DemoReport,               tasks.GenerateDemoReportTask},
+                {PossibleTasks.UploadAllRports,          tasks.UploadAllReportInCurrentDirectory},
+                {PossibleTasks.FakeReport,               tasks.GenerateFakeReport},
+                {PossibleTasks.CloudHealthCheck,         tasks.AnalyzeTask},
+                {PossibleTasks.ExportRulesXml,           tasks.GenerateRuleList},
+            };
+
+            requiredSettings = new Dictionary<PossibleTasks, string[]>
+            {
+                {PossibleTasks.ADHealthCheck,                  new string[] {"Server"}},
+                {PossibleTasks.ADConso,                  new string[] {"Directory"}},
+                //{PossibleTasks.Scanner,                  new string[] {"Server"}},
+                //{PossibleTasks.Export,                  new string[] {"Server"}},
+                {PossibleTasks.Carto,                  new string[] {"Server"}},
+                {PossibleTasks.Regen,                  new string[] {"File"}},
+                {PossibleTasks.Reload,                  new string[] {"File"}},
+                {PossibleTasks.UploadAllRports,                  new string[] {"Directory"}},
+                {PossibleTasks.FakeReport,                  new string[] {"Directory"}},
+                {PossibleTasks.CloudHealthCheck,        new string[] {"AzureADCredential"}},
+            };
+
             LoadCustomRules(tasks);
             ConsoleMenu.Header = @"  \==--O___      PingCastle (Version " + version.ToString(4) + @"     " + ConsoleMenu.GetBuildDateTime(Assembly.GetExecutingAssembly()) + @")
    \  / \  ¨¨>   Get Active Directory Security at 80% in 20% of the time
@@ -163,7 +221,7 @@ namespace PingCastle
             Trace.WriteLine("[New run]" + DateTime.Now.ToString("u"));
             Trace.WriteLine("PingCastle version " + version.ToString(4));
             Trace.WriteLine("Running on dotnet:" + Environment.Version);
-            if (!String.IsNullOrEmpty(license.DomainLimitation) && !Tasks.compareStringWithWildcard(license.DomainLimitation, tasks.Server))
+            if (!String.IsNullOrEmpty(license.DomainLimitation) && !Tasks.compareStringWithWildcard(license.DomainLimitation, settings.Server))
             {
                 WriteInRed("Limitations applies to the --server argument (" + license.DomainLimitation + ")");
                 return;
@@ -172,60 +230,19 @@ namespace PingCastle
             {
                 Console.WriteLine(license.CustomerNotice);
             }
-            if (PerformGenerateKey)
+
+
+            if (!settings.CheckArgs())
+                return;
+
+            foreach (var a in requestedActions)
             {
-                if (!tasks.GenerateKeyTask()) return;
-            }
-            if (PerformScanner)
-            {
-                if (!tasks.ScannerTask()) return;
-            }
-            if (PerformExport)
-            {
-                if (!tasks.ExportTask()) return;
-            }
-            if (PerformCarto)
-            {
-                if (!tasks.CartoTask(PerformHealthCheckGenerateDemoReports)) return;
-            }
-            if (PerformBot)
-            {
-                if (!tasks.BotTask()) return;
-            }
-            if (PerformHealthCheckReport)
-            {
-                if (!tasks.AnalysisTask<HealthcheckData>()) return;
-            }
-            if (PerformHealthCheckConsolidation || (PerformHealthCheckReport && tasks.Server == "*" && tasks.InteractiveMode))
-            {
-                if (!tasks.ConsolidationTask<HealthcheckData>()) return;
-            }
-            if (PerformHCRules)
-            {
-                if (!tasks.HealthCheckRulesTask()) return;
-            }
-            if (PerformRegenerateReport)
-            {
-                if (!tasks.RegenerateHtmlTask()) return;
-            }
-            if (PerformHealthCheckReloadReport)
-            {
-                if (!tasks.ReloadXmlReport()) return;
-            }
-            if (PerformHealthCheckGenerateDemoReports && !PerformCarto)
-            {
-                if (!tasks.GenerateDemoReportTask()) return;
-            }
-            if (PerformUploadAllReport)
-            {
-                if (!tasks.UploadAllReportInCurrentDirectory()) return;
-            }
-            if (PerformGenerateFakeReport)
-            {
-                if (!tasks.GenerateFakeReport()) return;
+                var r = actions[a].Invoke();
+                if (!r) return;
             }
             tasks.CompleteTasks();
         }
+
 
         private void LoadCustomRules(Tasks tasks)
         {
@@ -306,17 +323,9 @@ namespace PingCastle
             Console.ResetColor();
         }
 
-        private string GetCurrentDomain()
-        {
-            return IPGlobalProperties.GetIPGlobalProperties().DomainName;
-        }
-
         // parse command line arguments
         private bool ParseCommandLine(string[] args)
         {
-            string user = null;
-            string userdomain = null;
-            string password = null;
             bool delayedInteractiveMode = false;
             if (args.Length == 0)
             {
@@ -336,10 +345,10 @@ namespace PingCastle
                                 WriteInRed("argument for --api-endpoint is mandatory");
                                 return false;
                             }
-                            tasks.apiEndpoint = args[++i];
+                            settings.apiEndpoint = args[++i];
                             {
                                 Uri res;
-                                if (!Uri.TryCreate(tasks.apiEndpoint, UriKind.Absolute, out res))
+                                if (!Uri.TryCreate(settings.apiEndpoint, UriKind.Absolute, out res))
                                 {
                                     WriteInRed("unable to convert api-endpoint into an URI");
                                     return false;
@@ -352,7 +361,10 @@ namespace PingCastle
                                 WriteInRed("argument for --api-key is mandatory");
                                 return false;
                             }
-                            tasks.apiKey = args[++i];
+                            settings.apiKey = args[++i];
+                            break;
+                        case "--azuread":
+                            requestedActions.Add(PossibleTasks.CloudHealthCheck);
                             break;
                         case "--bot":
                             if (i + 1 >= args.Length)
@@ -360,11 +372,19 @@ namespace PingCastle
                                 WriteInRed("argument for --bot is mandatory");
                                 return false;
                             }
-                            tasks.botPipe = args[++i];
-                            PerformBot = true;
+                            settings.botPipe = args[++i];
+                            requestedActions.Add(PossibleTasks.Bot);
                             break;
                         case "--carto":
-                            PerformCarto = true;
+                            requestedActions.Add(PossibleTasks.Carto);
+                            break;
+                        case "--clientid":
+                            if (i + 1 >= args.Length)
+                            {
+                                WriteInRed("argument for --clientid is mandatory");
+                                return false;
+                            }
+                            settings.clientid = args[++i];
                             break;
                         case "--center-on":
                             if (i + 1 >= args.Length)
@@ -372,7 +392,7 @@ namespace PingCastle
                                 WriteInRed("argument for --center-on is mandatory");
                                 return false;
                             }
-                            tasks.CenterDomainForSimpliedGraph = args[++i];
+                            settings.CenterDomainForSimpliedGraph = args[++i];
                             break;
                         case "--datefile":
                             HealthcheckData.UseDateInFileName();
@@ -380,10 +400,16 @@ namespace PingCastle
                         case "--debug-license":
                             break;
                         case "--demo-reports":
-                            PerformHealthCheckGenerateDemoReports = true;
+                            requestedActions.Add(PossibleTasks.DemoReport);
+                            break;
+                        case "--doNotTestSMBv1":
+                            SmbScanner.DoNotTestSMBv1 = true;
                             break;
                         case "--encrypt":
-                            tasks.EncryptReport = true;
+                            settings.EncryptReport = true;
+                            break;
+                        case "--export-rules":
+                            requestedActions.Add(PossibleTasks.ExportRulesXml);
                             break;
                         case "--foreigndomain":
                             if (i + 1 >= args.Length)
@@ -394,10 +420,10 @@ namespace PingCastle
                             ForeignUsersScanner.EnumInboundSid = args[++i];
                             break;
                         case "--explore-trust":
-                            tasks.ExploreTerminalDomains = true;
+                            settings.ExploreTerminalDomains = true;
                             break;
                         case "--explore-forest-trust":
-                            tasks.ExploreForestTrust = true;
+                            settings.ExploreForestTrust = true;
                             break;
                         case "--explore-exception":
                             if (i + 1 >= args.Length)
@@ -405,7 +431,7 @@ namespace PingCastle
                                 WriteInRed("argument for --explore-exception is mandatory");
                                 return false;
                             }
-                            tasks.DomainToNotExplore = new List<string>(args[++i].Split(','));
+                            settings.DomainToNotExplore = new List<string>(args[++i].Split(','));
                             break;
                         case "--export":
                             if (i + 1 >= args.Length)
@@ -428,9 +454,10 @@ namespace PingCastle
                                         list += name;
                                     }
                                     WriteInRed("Unsupported exportname - available scanners are:" + list);
+
                                 }
-                                tasks.Export = exports[exportname];
-                                PerformExport = true;
+                                settings.Export = exports[exportname];
+                                requestedActions.Add(PossibleTasks.Export);
                             }
                             break;
                         case "--filter-date":
@@ -439,38 +466,41 @@ namespace PingCastle
                                 WriteInRed("argument for --filter-date is mandatory");
                                 return false;
                             }
-                            if (!DateTime.TryParse(args[++i], out tasks.FilterReportDate))
+                            DateTime date;
+                            if (!DateTime.TryParse(args[++i], out date))
                             {
                                 WriteInRed("Unable to parse the date \"" + args[i] + "\" - try entering 2016-01-01");
                                 return false;
                             }
+                            settings.FilterReportDate = date;
                             break;
                         case "--regen-report":
-                            PerformRegenerateReport = true;
+                            requestedActions.Add(PossibleTasks.Regen);
                             if (i + 1 >= args.Length)
                             {
                                 WriteInRed("argument for --regen-report is mandatory");
                                 return false;
                             }
-                            tasks.FileOrDirectory = args[++i];
+                            settings.InputFile = args[++i];
                             break;
                         case "--generate-fake-reports":
-                            PerformGenerateFakeReport = true;
+                            requestedActions.Add(PossibleTasks.FakeReport);
                             break;
                         case "--generate-key":
-                            PerformGenerateKey = true;
+                            requestedActions.Add(PossibleTasks.GenerateKey);
                             break;
                         case "--healthcheck":
-                            PerformHealthCheckReport = true;
+                            requestedActions.Add(PossibleTasks.ADHealthCheck);
                             break;
                         case "--hc-conso":
-                            PerformHealthCheckConsolidation = true;
+                            requestedActions.Add(PossibleTasks.ADConso);
                             break;
                         case "--help":
                             DisplayHelp();
                             return false;
                         case "--I-swear-I-paid-win7-support":
-                            Healthcheck.Rules.HeatlcheckRuleStaledObsoleteWin7.IPaidSupport = true;
+                            //Healthcheck.Rules.HeatlcheckRuleStaledObsoleteWin7.IPaidSupport = true;
+                            Console.WriteLine("Sorry Extended support for Win7 is not available anymmore.\n--I-swear-I-paid-win7-support is ignored");
                             break;
                         case "--I-swear-I-paid-win8-support":
                             Healthcheck.Rules.HeatlcheckRuleStaledObsoleteWin8.IPaidSupportWin8 = true;
@@ -498,7 +528,7 @@ namespace PingCastle
                             i++;
                             break;
                         case "--log":
-                            EnableLogFile();
+                            Tasks.EnableLogFile();
                             break;
                         case "--log-console":
                             EnableLogConsole();
@@ -568,7 +598,7 @@ namespace PingCastle
                                 WriteInRed("argument for --notifyMail is mandatory");
                                 return false;
                             }
-                            tasks.mailNotification = args[++i];
+                            settings.mailNotification = args[++i];
                             break;
                         case "--nslimit":
                             if (i + 1 >= args.Length)
@@ -603,13 +633,33 @@ namespace PingCastle
                                 return false;
                             }
                             break;
+                        case "--p12-file":
+                            if (i + 1 >= args.Length)
+                            {
+                                WriteInRed("argument for --p12-file is mandatory");
+                                return false;
+                            }
+                            settings.p12file = args[++i];
+                            break;
+                        case "--p12-pass":
+                            if (i + 1 >= args.Length)
+                            {
+                                WriteInRed("argument for --p12-pass is mandatory");
+                                return false;
+                            }
+                            settings.p12passSet = true;
+                            settings.p12pass = args[++i];
+                            break;
                         case "--password":
                             if (i + 1 >= args.Length)
                             {
                                 WriteInRed("argument for --password is mandatory");
                                 return false;
                             }
-                            password = args[++i];
+                            var p = args[++i];
+                            settings.Password = new System.Security.SecureString();
+                            foreach (var c in p.ToCharArray())
+                                settings.Password.AppendChar(c);
                             break;
                         case "--port":
                             if (i + 1 >= args.Length)
@@ -617,11 +667,21 @@ namespace PingCastle
                                 WriteInRed("argument for --port is mandatory");
                                 return false;
                             }
-                            if (!int.TryParse(args[++i], out tasks.Port))
+                            int port;
+                            if (!int.TryParse(args[++i], out port))
                             {
                                 WriteInRed("argument for --port is not a valid value (typically: 9389)");
                                 return false;
                             }
+                            settings.Port = port;
+                            break;
+                        case "--private-key":
+                            if (i + 1 >= args.Length)
+                            {
+                                WriteInRed("argument for --private-key is mandatory");
+                                return false;
+                            }
+                            settings.privateKey = args[++i];
                             break;
                         case "--protocol":
                             if (i + 1 >= args.Length)
@@ -657,10 +717,10 @@ namespace PingCastle
                             }
                             break;
                         case "--reachable":
-                            tasks.AnalyzeReachableDomains = true;
+                            settings.AnalyzeReachableDomains = true;
                             break;
                         case "--rules":
-                            PerformHCRules = true;
+                            requestedActions.Add(PossibleTasks.HCRules);
                             break;
                         case "--scanner":
                             if (i + 1 >= args.Length)
@@ -683,10 +743,14 @@ namespace PingCastle
                                         list += name;
                                     }
                                     WriteInRed("Unsupported scannername - available scanners are:" + list);
+                                    return false;
                                 }
-                                tasks.Scanner = scanners[scannername];
-                                PerformScanner = true;
+                                settings.Scanner = scanners[scannername];
+                                requestedActions.Add(PossibleTasks.Scanner);
                             }
+                            break;
+                        case "--scmode-all":
+                            ScannerBase.ScanningMode = 1;
                             break;
                         case "--scmode-single":
                             ScannerBase.ScanningMode = 2;
@@ -707,7 +771,7 @@ namespace PingCastle
                                 WriteInRed("argument for --scmode-file is mandatory");
                                 return false;
                             }
-                            tasks.FileOrDirectory = args[++i];
+                            settings.InputFile = args[++i];
                             break;
                         case "--sendxmlTo":
                         case "--sendXmlTo":
@@ -716,7 +780,7 @@ namespace PingCastle
                                 WriteInRed("argument for --sendXmlTo is mandatory");
                                 return false;
                             }
-                            tasks.sendXmlTo = args[++i];
+                            settings.sendXmlTo = args[++i];
                             break;
                         case "--sendhtmlto":
                         case "--sendHtmlTo":
@@ -725,7 +789,7 @@ namespace PingCastle
                                 WriteInRed("argument for --sendHtmlTo is mandatory");
                                 return false;
                             }
-                            tasks.sendHtmlTo = args[++i];
+                            settings.sendHtmlTo = args[++i];
                             break;
                         case "--sendallto":
                         case "--sendAllTo":
@@ -734,7 +798,7 @@ namespace PingCastle
                                 WriteInRed("argument for --sendAllTo is mandatory");
                                 return false;
                             }
-                            tasks.sendAllTo = args[++i];
+                            settings.sendAllTo = args[++i];
                             break;
                         case "--server":
                             if (i + 1 >= args.Length)
@@ -742,20 +806,20 @@ namespace PingCastle
                                 WriteInRed("argument for --server is mandatory");
                                 return false;
                             }
-                            tasks.Server = args[++i];
+                            settings.Server = args[++i];
                             break;
                         case "--skip-null-session":
                             HealthcheckAnalyzer.SkipNullSession = true;
                             break;
                         case "--reload-report":
                         case "--slim-report":
-                            PerformHealthCheckReloadReport = true;
+                            requestedActions.Add(PossibleTasks.Reload);
                             if (i + 1 >= args.Length)
                             {
                                 WriteInRed("argument for --slim-report is mandatory");
                                 return false;
                             }
-                            tasks.FileOrDirectory = args[++i];
+                            settings.InputFile = args[++i];
                             break;
                         case "--smtplogin":
                             if (i + 1 >= args.Length)
@@ -763,7 +827,7 @@ namespace PingCastle
                                 WriteInRed("argument for --smtplogin is mandatory");
                                 return false;
                             }
-                            tasks.smtpLogin = args[++i];
+                            settings.smtpLogin = args[++i];
                             break;
                         case "--smtppass":
                             if (i + 1 >= args.Length)
@@ -771,13 +835,29 @@ namespace PingCastle
                                 WriteInRed("argument for --smtppass is mandatory");
                                 return false;
                             }
-                            tasks.smtpPassword = args[++i];
+                            settings.smtpPassword = args[++i];
                             break;
                         case "--smtptls":
-                            tasks.smtpTls = true;
+                            settings.smtpTls = true;
+                            break;
+                        case "--tenantid":
+                            if (i + 1 >= args.Length)
+                            {
+                                WriteInRed("argument for --tenantid is mandatory");
+                                return false;
+                            }
+                            settings.tenantid = args[++i];
+                            break;
+                        case "--thumbprint":
+                            if (i + 1 >= args.Length)
+                            {
+                                WriteInRed("argument for --thumbprint is mandatory");
+                                return false;
+                            }
+                            settings.thumbprint = args[++i];
                             break;
                         case "--upload-all-reports":
-                            PerformUploadAllReport = true;
+                            requestedActions.Add(PossibleTasks.UploadAllRports);
                             break;
                         case "--user":
                             if (i + 1 >= args.Length)
@@ -789,13 +869,13 @@ namespace PingCastle
                             if (args[i].Contains("\\"))
                             {
                                 int pos = args[i].IndexOf('\\');
-                                userdomain = args[i].Substring(0, pos);
-                                user = args[i].Substring(pos + 1);
+                                settings.Userdomain = args[i].Substring(0, pos);
+                                settings.User = args[i].Substring(pos + 1);
                             }
                             else
                             {
-                                user = args[i];
-                                if (!user.Contains("@"))
+                                settings.User = args[i];
+                                if (!settings.User.Contains("@"))
                                 {
                                     Console.ForegroundColor = ConsoleColor.Yellow;
                                     Console.WriteLine("Beware: the user is not on the form domain\\user or user@domain.com. Most likely the GPO part will trigger an access denied error.");
@@ -803,13 +883,16 @@ namespace PingCastle
                                 }
                             }
                             break;
+                        case "--use-prt":
+                            settings.usePrt = true;
+                            break;
                         case "--webdirectory":
                             if (i + 1 >= args.Length)
                             {
                                 WriteInRed("argument for --webdirectory is mandatory");
                                 return false;
                             }
-                            tasks.sharepointdirectory = args[++i];
+                            settings.sharepointdirectory = args[++i];
                             break;
                         case "--webuser":
                             if (i + 1 >= args.Length)
@@ -817,7 +900,7 @@ namespace PingCastle
                                 WriteInRed("argument for --webuser is mandatory");
                                 return false;
                             }
-                            tasks.sharepointuser = args[++i];
+                            settings.sharepointuser = args[++i];
                             break;
                         case "--webpassword":
                             if (i + 1 >= args.Length)
@@ -825,7 +908,7 @@ namespace PingCastle
                                 WriteInRed("argument for --webpassword is mandatory");
                                 return false;
                             }
-                            tasks.sharepointpassword = args[++i];
+                            settings.sharepointpassword = args[++i];
                             break;
                         case "--xmls":
                             if (i + 1 >= args.Length)
@@ -833,7 +916,7 @@ namespace PingCastle
                                 WriteInRed("argument for --xmls is mandatory");
                                 return false;
                             }
-                            tasks.FileOrDirectory = args[++i];
+                            settings.InputFile = args[++i];
                             break;
                         default:
                             WriteInRed("unknow argument: " + args[i]);
@@ -843,17 +926,9 @@ namespace PingCastle
                 }
                 Trace.WriteLine("After parsing arguments");
             }
-            if (!PerformHealthCheckReport && !PerformHealthCheckConsolidation
-                && !PerformRegenerateReport && !PerformHealthCheckReloadReport && !delayedInteractiveMode
-                && !PerformScanner
-                && !PerformGenerateKey && !PerformHealthCheckGenerateDemoReports && !PerformCarto
-                && !PerformUploadAllReport
-                && !PerformHCRules
-                && !PerformGenerateFakeReport
-                && !PerformBot
-                && !PerformExport)
+            if (requestedActions.Count == 0 && !delayedInteractiveMode)
             {
-                WriteInRed("You must choose at least one value among --healthcheck --hc-conso --advanced-export --advanced-report --nullsession --carto");
+                WriteInRed("You must choose at least one value among --healthcheck --azuread --hc-conso --advanced-export --advanced-report --nullsession --carto");
                 DisplayHelp();
                 return false;
             }
@@ -862,57 +937,23 @@ namespace PingCastle
             {
                 RunInteractiveMode();
             }
-            if (PerformHealthCheckReport || PerformScanner || PerformExport)
+            foreach (var action in requestedActions)
             {
-                if (String.IsNullOrEmpty(tasks.Server))
+                if (requiredSettings.ContainsKey(action))
                 {
-                    tasks.Server = GetCurrentDomain();
-                    if (String.IsNullOrEmpty(tasks.Server))
+                    var r = requiredSettings[action];
+                    if (r.Length > 0)
                     {
-                        WriteInRed("This computer is not connected to a domain. The program couldn't guess the domain or server to connect.");
-                        WriteInRed("Please run again this program with the flag --server <my.domain.com> or --server <mydomaincontroller.my.domain.com>");
-                        DisplayHelp();
-                        return false;
-                    }
-                }
-                if (user != null)
-                {
-                    if (password == null)
-                        password = AskCredential();
-                    if (String.IsNullOrEmpty(userdomain))
-                    {
-                        tasks.Credential = new NetworkCredential(user, password);
-                    }
-                    else
-                    {
-                        tasks.Credential = new NetworkCredential(user, password, userdomain);
-                    }
-                }
-            }
-            if (PerformHealthCheckConsolidation)
-            {
-                if (String.IsNullOrEmpty(tasks.FileOrDirectory))
-                {
-                    tasks.FileOrDirectory = Directory.GetCurrentDirectory();
-                }
-                else
-                {
-                    if (!Directory.Exists(tasks.FileOrDirectory))
-                    {
-                        WriteInRed("The path specified by --xmls isn't a directory");
-                        DisplayHelp();
-                        return false;
+                        var state = settings.EnsureDataCompleted(r);
+                        if (state != DisplayState.Run)
+                        {
+                            DisplayHelp();
+                            return false;
+                        }
                     }
                 }
             }
             return true;
-        }
-
-        private void EnableLogFile()
-        {
-            Trace.AutoFlush = true;
-            TextWriterTraceListener listener = new TextWriterTraceListener("trace.log");
-            Trace.Listeners.Add(listener);
         }
 
         private void EnableLogConsole()
@@ -922,59 +963,63 @@ namespace PingCastle
             Trace.Listeners.Add(listener);
         }
 
-        private string AskCredential()
+        // interactive interface
+        private bool RunInteractiveMode()
         {
-            StringBuilder builder = new StringBuilder();
-            Console.WriteLine("Enter password: ");
-            ConsoleKeyInfo nextKey = Console.ReadKey(true);
+            settings.InteractiveMode = true;
+            Stack<DisplayState> states = new Stack<DisplayState>();
+            var state = DisplayState.MainMenu;
 
-            while (nextKey.Key != ConsoleKey.Enter)
+            states.Push(state);
+            while (states.Count > 0 && states.Peek() != DisplayState.Run)
             {
-                if (nextKey.Key == ConsoleKey.Backspace)
+                switch (state)
                 {
-                    if (builder.Length > 0)
-                    {
-                        builder.Remove(builder.Length - 1, 1);
-                        // erase the last * as well
-                        Console.Write(nextKey.KeyChar);
-                        Console.Write(" ");
-                        Console.Write(nextKey.KeyChar);
-                    }
+                    case DisplayState.MainMenu:
+                        state = DisplayMainMenu();
+                        break;
+                    case DisplayState.ScannerMenu:
+                        state = settings.DisplayScannerMenu();
+                        break;
+                    case DisplayState.AvancedMenu:
+                        state = DisplayAdvancedMenu();
+                        break;
+                    case DisplayState.ProtocolMenu:
+                        state = DisplayProtocolMenu();
+                        break;
+                    case DisplayState.ExportMenu:
+                        state = settings.DisplayExportMenu();
+                        break;
+                    default:
+                        // defensive programming
+                        if (state != DisplayState.Exit)
+                        {
+                            Console.WriteLine("No implementation of state " + state);
+                            state = DisplayState.Exit;
+                        }
+                        break;
+                }
+                if (state == DisplayState.Exit)
+                {
+                    states.Pop();
+                    if (states.Count > 0)
+                        state = states.Peek();
                 }
                 else
                 {
-                    builder.Append(nextKey.KeyChar);
-                    Console.Write("*");
+                    states.Push(state);
                 }
-                nextKey = Console.ReadKey(true);
             }
-            Console.WriteLine();
-            return builder.ToString();
-        }
-
-        public enum DisplayState
-        {
-            Exit,
-            MainMenu,
-            ScannerMenu,
-            AskForServer,
-            Run,
-            AvancedMenu,
-            AskForScannerParameter,
-            ProtocolMenu,
-            AskForFile,
-            ExportMenu,
+            return (states.Count > 0);
         }
 
         DisplayState DisplayMainMenu()
         {
-            PerformHealthCheckReport = false;
-            PerformCarto = false;
-            PerformHealthCheckConsolidation = false;
-            PerformScanner = false;
+            requestedActions.Clear();
 
             List<ConsoleMenuItem> choices = new List<ConsoleMenuItem>() {
                 new ConsoleMenuItem("healthcheck","Score the risk of a domain", "This is the main functionnality of PingCastle. In a matter of minutes, it produces a report which will give you an overview of your Active Directory security. This report can be generated on other domains by using the existing trust links."),
+                new ConsoleMenuItem("azuread","Score the risk of AzureAD", "This is the main functionnality of PingCastle. In a matter of minutes, it produces a report which will give you an overview of your AzureAD security."),
                 new ConsoleMenuItem("conso","Aggregate multiple reports into a single one", "With many healthcheck reports, you can get a single report for a whole scope. Maps will be generated."),
                 new ConsoleMenuItem("carto","Build a map of all interconnected domains", "It combines the healthcheck reports that would be run on all trusted domains and then the conso option. But lighter and then faster."),
                 new ConsoleMenuItem("scanner","Perform specific security checks on workstations", "You can know your local admins, if Bitlocker is properly configured, discover unprotect shares, ... A menu will be shown to select the right scanner."),
@@ -993,128 +1038,30 @@ namespace PingCastle
             {
                 default:
                 case "healthcheck":
-                    PerformHealthCheckReport = true;
-                    return DisplayState.AskForServer;
+                    requestedActions.Add(PossibleTasks.ADHealthCheck);
+                    return DisplayState.Run;
+                case "azuread":
+                    requestedActions.Add(PossibleTasks.CloudHealthCheck);
+                    return DisplayState.Run;
                 case "carto":
-                    PerformCarto = true;
-                    return DisplayState.AskForServer;
+                    requestedActions.Add(PossibleTasks.Carto);
+                    return DisplayState.Run;
                 case "conso":
-                    PerformHealthCheckConsolidation = true;
+                    requestedActions.Add(PossibleTasks.ADConso);
                     return DisplayState.Run;
                 case "scanner":
-                    PerformScanner = true;
+                    requestedActions.Add(PossibleTasks.Scanner);
                     return DisplayState.ScannerMenu;
                 case "export":
-                    PerformExport = true;
+                    requestedActions.Add(PossibleTasks.Export);
                     return DisplayState.ExportMenu;
                 case "advanced":
                     return DisplayState.AvancedMenu;
             }
         }
 
-        DisplayState DisplayScannerMenu()
-        {
-            var scanners = PingCastleFactory.GetAllScanners();
-
-            var choices = new List<ConsoleMenuItem>();
-            foreach (var scanner in scanners)
-            {
-                Type scannerType = scanner.Value;
-                IScanner iscanner = PingCastleFactory.LoadScanner(scannerType);
-                string description = iscanner.Description;
-                choices.Add(new ConsoleMenuItem(scanner.Key, description));
-            }
-            choices.Sort((ConsoleMenuItem a, ConsoleMenuItem b)
-                =>
-                {
-                    return String.Compare(a.Choice, b.Choice);
-                }
-            );
-            ConsoleMenu.Notice = "WARNING: Checking a lot of workstations may raise security alerts.";
-            ConsoleMenu.Title = "Select a scanner";
-            ConsoleMenu.Information = "What scanner whould you like to run ?";
-            int choice = ConsoleMenu.SelectMenuCompact(choices, 1);
-            if (choice == 0)
-            {
-                PerformScanner = false;
-                return DisplayState.Exit;
-            }
-            tasks.Scanner = scanners[choices[choice - 1].Choice];
-            return DisplayState.AskForScannerParameter;
-        }
-
-        DisplayState DisplayExportMenu()
-        {
-            var exports = PingCastleFactory.GetAllExport();
-
-            var choices = new List<ConsoleMenuItem>();
-            foreach (var export in exports)
-            {
-                Type exportType = export.Value;
-                IExport iexport = PingCastleFactory.LoadExport(exportType);
-                string description = iexport.Description;
-                choices.Add(new ConsoleMenuItem(export.Key, description));
-            }
-            choices.Sort((ConsoleMenuItem a, ConsoleMenuItem b)
-                =>
-            {
-                return String.Compare(a.Choice, b.Choice);
-            }
-            );
-            ConsoleMenu.Title = "Select an export";
-            ConsoleMenu.Information = "What export whould you like to run ?";
-            int choice = ConsoleMenu.SelectMenu(choices, 1);
-            if (choice == 0)
-            {
-                PerformExport = false;
-                return DisplayState.Exit;
-            }
-            tasks.Export = exports[choices[choice - 1].Choice];
-            return DisplayState.AskForServer;
-        }
-
-        DisplayState DisplayAskForScannerParameter()
-        {
-            IScanner iscannerAddParam = PingCastleFactory.LoadScanner(tasks.Scanner);
-            return iscannerAddParam.QueryForAdditionalParameterInInteractiveMode();
-        }
-
-        DisplayState DisplayAskServer()
-        {
-            string defaultDomain = tasks.Server;
-            if (String.IsNullOrEmpty(defaultDomain))
-                defaultDomain = GetCurrentDomain();
-            while (true)
-            {
-                if (!String.IsNullOrEmpty(defaultDomain) || string.Equals(defaultDomain, "(None)", StringComparison.OrdinalIgnoreCase))
-                {
-                    ConsoleMenu.Information = "Please specify the domain or server to investigate (default:" + defaultDomain + ")";
-                }
-                else
-                {
-                    ConsoleMenu.Information = "Please specify the domain or server to investigate:";
-                }
-                ConsoleMenu.Title = "Select a domain or server";
-                tasks.Server = ConsoleMenu.AskForString();
-                if (String.IsNullOrEmpty(tasks.Server))
-                {
-                    tasks.Server = defaultDomain;
-                }
-                if (!String.IsNullOrEmpty(tasks.Server))
-                {
-                    break;
-                }
-            }
-            return DisplayState.Run;
-        }
-
         DisplayState DisplayAdvancedMenu()
         {
-            PerformGenerateKey = false;
-            PerformHealthCheckReloadReport = false;
-            PerformRegenerateReport = false;
-            PerformHCRules = false;
-
             List<ConsoleMenuItem> choices = new List<ConsoleMenuItem>() {
                 new ConsoleMenuItem("protocol","Change the protocol used to query the AD (LDAP, ADWS, ...)"),
                 new ConsoleMenuItem("hcrules","Generate a report containing all rules applied by PingCastle"),
@@ -1137,20 +1084,20 @@ namespace PingCastle
                 case "protocol":
                     return DisplayState.ProtocolMenu;
                 case "hcrules":
-                    PerformHCRules = true;
+                    requestedActions.Add(PossibleTasks.HCRules);
                     return DisplayState.Run;
                 case "generatekey":
-                    PerformGenerateKey = true;
+                    requestedActions.Add(PossibleTasks.GenerateKey);
                     return DisplayState.Run;
                 case "decrypt":
-                    PerformHealthCheckReloadReport = true;
-                    return DisplayState.AskForFile;
+                    requestedActions.Add(PossibleTasks.Reload);
+                    return DisplayState.Run;
                 case "regenerate":
-                    PerformRegenerateReport = true;
-                    return DisplayState.AskForFile;
+                    requestedActions.Add(PossibleTasks.Regen);
+                    return DisplayState.Run;
                 case "log":
                     if (Trace.Listeners.Count <= 1)
-                        EnableLogFile();
+                        Tasks.EnableLogFile();
                     return DisplayState.Exit;
                 case "noenumlimit":
                     ReportHealthCheckSingle.MaxNumberUsersInHtmlReport = int.MaxValue;
@@ -1185,81 +1132,6 @@ namespace PingCastle
             return DisplayState.Exit;
         }
 
-        DisplayState DisplayAskForFile()
-        {
-            string file = null;
-            while (String.IsNullOrEmpty(file) || !File.Exists(file))
-            {
-                ConsoleMenu.Title = "Select an existing file";
-                ConsoleMenu.Information = "Please specify the file to open.";
-                file = ConsoleMenu.AskForString();
-                ConsoleMenu.Notice = "The file " + file + " was not found";
-            }
-            tasks.FileOrDirectory = file;
-            tasks.EncryptReport = false;
-            if (string.IsNullOrEmpty(tasks.Server))
-                tasks.Server = "ignore";
-            return DisplayState.Run;
-        }
-
-        // interactive interface
-        private bool RunInteractiveMode()
-        {
-            tasks.InteractiveMode = true;
-            Stack<DisplayState> states = new Stack<DisplayState>();
-            var state = DisplayState.MainMenu;
-
-            states.Push(state);
-            while (states.Count > 0 && states.Peek() != DisplayState.Run)
-            {
-                switch (state)
-                {
-                    case DisplayState.MainMenu:
-                        state = DisplayMainMenu();
-                        break;
-                    case DisplayState.ScannerMenu:
-                        state = DisplayScannerMenu();
-                        break;
-                    case DisplayState.AskForServer:
-                        state = DisplayAskServer();
-                        break;
-                    case DisplayState.AskForScannerParameter:
-                        state = DisplayAskForScannerParameter();
-                        break;
-                    case DisplayState.AvancedMenu:
-                        state = DisplayAdvancedMenu();
-                        break;
-                    case DisplayState.AskForFile:
-                        state = DisplayAskForFile();
-                        break;
-                    case DisplayState.ProtocolMenu:
-                        state = DisplayProtocolMenu();
-                        break;
-                    case DisplayState.ExportMenu:
-                        state = DisplayExportMenu();
-                        break;
-                    default:
-                        // defensive programming
-                        if (state != DisplayState.Exit)
-                        {
-                            Console.WriteLine("No implementation of state " + state);
-                            state = DisplayState.Exit;
-                        }
-                        break;
-                }
-                if (state == DisplayState.Exit)
-                {
-                    states.Pop();
-                    if (states.Count > 0)
-                        state = states.Peek();
-                }
-                else
-                {
-                    states.Push(state);
-                }
-            }
-            return (states.Count > 0);
-        }
 
         private static void DisplayHelp()
         {
@@ -1269,6 +1141,8 @@ namespace PingCastle
             Console.WriteLine("  --log               : generate a log file");
             Console.WriteLine("  --log-console       : add log to the console");
             Console.WriteLine("  --log-samba <option>: enable samba login (example: 10)");
+            Console.WriteLine("  --api-endpoint <>   : to upload report via api call eg: http://server");
+            Console.WriteLine("  --api-key  <key>    : and using the api key as registered");
             Console.WriteLine("");
             Console.WriteLine("Common options when connecting to the AD");
             Console.WriteLine("  --server <server>   : use this server (default: current domain controller)");
@@ -1284,8 +1158,6 @@ namespace PingCastle
             Console.WriteLine("  --carto             : perform a quick cartography with domains surrounding");
             Console.WriteLine("");
             Console.WriteLine("  --healthcheck       : perform the healthcheck (step1)");
-            Console.WriteLine("    --api-endpoint <> : upload report via api call eg: http://server");
-            Console.WriteLine("    --api-key  <key>  : and using the api key as registered");
             Console.WriteLine("    --explore-trust   : on domains of a forest, after the healthcheck, do the hc on all trusted domains except domains of the forest and forest trusts");
             Console.WriteLine("    --explore-forest-trust : on root domain of a forest, after the healthcheck, do the hc on all forest trusts discovered");
             Console.WriteLine("    --explore-trust and --explore-forest-trust can be run together");
@@ -1336,6 +1208,7 @@ namespace PingCastle
             Console.WriteLine("                        the absence of this switch on an encrypted report will produce a decrypted report");
             Console.WriteLine("");
             Console.WriteLine("  --scanner <type>    : perform a scan on one of all computers of the domain (using --server)");
+            Console.WriteLine("");
             var scanner = PingCastleFactory.GetAllScanners();
             var scannerNames = new List<string>(scanner.Keys);
             scannerNames.Sort();
@@ -1349,6 +1222,7 @@ namespace PingCastle
                 Console.WriteLine(iscanner.Description);
             }
             Console.WriteLine("  options for scanners:");
+            Console.WriteLine("    --scmode-all      : scan all computers (default)");
             Console.WriteLine("    --scmode-single   : force scanner to check one single computer");
             Console.WriteLine("    --scmode-workstation : force scanner to check workstations");
             Console.WriteLine("    --scmode-server   : force scanner to check servers");
@@ -1372,11 +1246,28 @@ namespace PingCastle
                 Console.WriteLine(iexport.Description);
             }
             Console.WriteLine("");
+            Console.WriteLine("Common options when connecting to AzureAD");
+            Console.WriteLine("     --tenantid xx: specify the tenant id to use. Requiered for cert auth");
+            Console.WriteLine("Authentication");
+            Console.WriteLine("  --use-prt          : use prt to log on");
+            Console.WriteLine("");
+            Console.WriteLine("Certificate authentication");
+            Console.WriteLine("   --clientid xxx : specify the client id to which the certificate is associated");
+            Console.WriteLine("   With private key");
+            Console.WriteLine("     --thumbprint xxx : specify the thumprint of the certificate configured");
+            Console.WriteLine("     --private-key xxx : specify the key file to use (PKCS8)");
+            Console.WriteLine("");
+            Console.WriteLine("   With P12");
+            Console.WriteLine("     --p12-file xxx : specify the P12 file to use");
+            Console.WriteLine("     --p12-pass xxx : specify the password to use");
+            Console.WriteLine("");
             Console.WriteLine("  --upload-all-reports: use the API to upload all reports in the current directory");
             Console.WriteLine("    --api-endpoint <> : upload report via api call eg: http://server");
             Console.WriteLine("    --api-key  <key>  : and using the api key as registered");
             Console.WriteLine("                        Note: do not forget to set --level Full to send all the information available");
             Console.WriteLine("");
+            Console.WriteLine("  --export-rules : export all rule in a single xml file");
+
 
         }
     }

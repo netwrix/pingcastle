@@ -21,20 +21,16 @@ namespace PingCastle.Scanners
         public string Name { get { return "nullsession-trust"; } }
         public string Description { get { return "Dump the trusts of a domain via null session if possible"; } }
 
-        public string Server { get; private set; }
-        public int Port { get; private set; }
-        public NetworkCredential Credential { get; private set; }
+        RuntimeSettings Settings;
 
-        public void Initialize(string server, int port, NetworkCredential credential)
+        public void Initialize(RuntimeSettings settings)
         {
-            Server = server;
-            Port = port;
-            Credential = credential;
+            Settings = settings;
         }
 
-        public Program.DisplayState QueryForAdditionalParameterInInteractiveMode()
+        public DisplayState QueryForAdditionalParameterInInteractiveMode()
         {
-            return Program.DisplayState.AskForServer;
+            return Settings.EnsureDataCompleted("Server");
         }
 
         public void Export(string filename)
@@ -43,7 +39,7 @@ namespace PingCastle.Scanners
             nrpc3 session = new nrpc3(); ;
             DisplayAdvancement("Trusts obtained via null session");
             List<TrustedDomain> domains;
-            int res = session.DsrEnumerateDomainTrusts(Server, 0x3F, out domains);
+            int res = session.DsrEnumerateDomainTrusts(Settings.Server, 0x3F, out domains);
             if (res != 0)
             {
                 DisplayAdvancement("Error " + res + " (" + new Win32Exception(res).Message + ")");

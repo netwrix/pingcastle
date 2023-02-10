@@ -139,6 +139,8 @@ namespace PingCastle.Healthcheck
                 GeneratePKIData(domainInfo, adws);
                 DisplayAdvancement("Gathering sccm data");
                 GenerateSCCMData(domainInfo, adws);
+                DisplayAdvancement("Gathering exchange data");
+                GenerateExchangeInfo(domainInfo, adws);
                 DisplayAdvancement("Gathering anomaly data");
                 GenerateAnomalies(domainInfo, adws);
                 DisplayAdvancement("Gathering dns data");
@@ -410,6 +412,7 @@ namespace PingCastle.Healthcheck
             healthcheckData.EngineVersion += " Beta";
 #endif
             healthcheckData.Level = PingCastleReportDataExportLevel.Full;
+
         }
 
         private void GetAzureInfo(ADDomainInfo domainInfo, ADWebService adws)
@@ -2244,17 +2247,58 @@ namespace PingCastle.Healthcheck
                         "dNSHostName",
                         "name"
             };
+            List<ADItem> results = new List<ADItem>();
             WorkOnReturnedObjectByADWS callback =
                 (ADItem x) =>
                 {
                     if (!string.IsNullOrEmpty(x.DNSHostName))
                     {
-                        GenerateADCSEnrollmentServerTests(adws, x.DNSHostName, x.Name);
+                        results.Add(x);
                     }
                 };
 
 
             adws.Enumerate("CN=Public Key Services,CN=Services," + domainInfo.ConfigurationNamingContext, "(objectClass=pKIEnrollmentService)", properties, callback);
+
+
+            BlockingQueue<ADItem> queue = new BlockingQueue<ADItem>(200);
+            int numberOfThread = 20;
+            Thread[] threads = new Thread[numberOfThread];
+            ParameterizedThreadStart threadFunction = (object input) =>
+            {
+                int ThreadId = (int)input;
+                for (; ; )
+                {
+                    ADItem x = null;
+                    if (!queue.Dequeue(out x))
+                    {
+                        Trace.WriteLine("[" + ThreadId + "] stop");
+                        break;
+                    }
+                    Trace.WriteLine("[" + ThreadId + "] working on " + x.DNSHostName + " - " + x.Name);
+                    GenerateADCSEnrollmentServerTests(adws, x.DNSHostName, x.Name);
+                }
+            };
+
+            // Consumers
+            for (int i = 0; i < numberOfThread; i++)
+            {
+                threads[i] = new Thread(threadFunction);
+                threads[i].Start(i);
+            }
+
+            foreach (var x in results)
+            {
+                queue.Enqueue(x);
+            }
+
+            queue.Quit();
+            Trace.WriteLine("adcs test completed. Waiting for worker thread to complete");
+            for (int i = 0; i < numberOfThread; i++)
+            {
+                threads[i].Join();
+            }
+            Trace.WriteLine("Done adcs test");
         }
 
         private void GenerateADCSEnrollmentServerTests(ADWebService adws, string dnsHostName, string CAName)
@@ -2267,7 +2311,9 @@ namespace PingCastle.Healthcheck
 
             byte[] certificate;
             var protocols = new List<string>();
+            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 1 starts");
             GenerateTLSInfo(uri.Host, uri.Port, protocols, out certificate);
+            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 2 done for TLS");
 
             enrollmentServer.SSLProtocol = protocols;
 
@@ -2280,7 +2326,7 @@ namespace PingCastle.Healthcheck
             // https access
             // channel binding
             var result = ConnectionTester.TestExtendedAuthentication(uri, adws.Credential);
-
+            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 3 done for TestExtendedAuthentication" );
             if (result == ConnectionTesterStatus.ChannelBindingDisabled)
             {
                 enrollmentServer.WebEnrollmentChannelBindingDisabled = true;
@@ -2293,6 +2339,7 @@ namespace PingCastle.Healthcheck
             // http access
             uri = new Uri("http://" + dnsHostName + "/certsrv/certrqxt.asp");
             result = ConnectionTester.TestConnection(uri, adws.Credential);
+            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 4 done for TestConnection");
             if (result == ConnectionTesterStatus.AuthenticationSuccessfull)
             {
                 enrollmentServer.WebEnrollmentHttp = true;
@@ -2301,9 +2348,10 @@ namespace PingCastle.Healthcheck
             // CES
             // https access
             // channel binding
-            uri = new Uri("https://" + dnsHostName + "/" + CAName + "_CES_Kerberos/service.svc");
+            uri = new Uri("https://" + dnsHostName + "/" + System.Net.WebUtility.UrlEncode(CAName) + "_CES_Kerberos/service.svc");
 
             result = ConnectionTester.TestExtendedAuthentication(uri, adws.Credential);
+            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 5 done for TestExtendedAuthentication");
             if (result == ConnectionTesterStatus.ChannelBindingDisabled)
             {
                 enrollmentServer.CESHttps = true;
@@ -2315,14 +2363,14 @@ namespace PingCastle.Healthcheck
             }
 
             // http access
-            uri = new Uri("http://" + dnsHostName + "/" + CAName + "_CES_Kerberos/service.svc");
+            uri = new Uri("http://" + dnsHostName + "/" + System.Net.WebUtility.UrlEncode(CAName) + "_CES_Kerberos/service.svc");
             result = ConnectionTester.TestConnection(uri, adws.Credential);
+            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 6 done for TestConnection");
             if (result == ConnectionTesterStatus.AuthenticationSuccessfull)
             {
                 enrollmentServer.CESHttp = true;
 
             }
-
         }
 
         void GenerateSCCMData(ADDomainInfo domainInfo, ADWebService adws)
@@ -2364,6 +2412,43 @@ namespace PingCastle.Healthcheck
                 };
             adws.Enumerate("CN=System Management,CN=System," + domainInfo.DefaultNamingContext, "(objectClass=mSSMSManagementPoint)", properties, callback);
         }
+
+
+        private void GenerateExchangeInfo(ADDomainInfo domainInfo, ADWebService adws)
+        {
+
+            adws.Enumerate(domainInfo.SchemaNamingContext,
+                                       "(cn=ms-Exch-Schema-Version-Pt)",
+                                        new string[] { "rangeUpper", "whenCreated" }, (ADItem aditem) =>
+                                        {
+                                            healthcheckData.ExchangeInstall = aditem.WhenCreated;
+                                            healthcheckData.ExchangeSchemaVersion = aditem.RangeUpper;
+                                        });
+
+
+            healthcheckData.ExchangeServers = new List<HealthcheckExchangeServer>();
+            if (healthcheckData.ExchangeSchemaVersion > 0)
+            {
+                adws.Enumerate(domainInfo.ConfigurationNamingContext,
+                                           "(objectCategory=msExchExchangeServer)",
+                                            new string[] { "distinguishedName", "msExchCurrentServerRoles", "msExchComponentStates", "msExchInternetWebProxy", "serialNumber", "whenCreated", "whenChanged", "name" },
+                                            (ADItem aditem) =>
+                                            {
+                                                healthcheckData.ExchangeInstall = aditem.WhenCreated;
+                                                healthcheckData.ExchangeServers.Add(new HealthcheckExchangeServer
+                                                {
+                                                    Name = aditem.Name,
+                                                    CreationDate = aditem.WhenCreated,
+                                                    ChangedDate = aditem.WhenChanged,
+                                                    ServerRoles = aditem.msExchCurrentServerRoles,
+                                                    ComponentStates = aditem.msExchComponentStates,
+                                                    InternetWebProxy = aditem.msExchInternetWebProxy,
+                                                    SerialNumber = aditem.serialNumber,
+                                                });
+                                            });
+            }
+        }
+
 
         private void GenerateMsiData(ADDomainInfo domainInfo, ADWebService adws, Dictionary<string, GPO> GPOList)
         {
@@ -2670,6 +2755,59 @@ namespace PingCastle.Healthcheck
                                 SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
                             }
                             SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("EnableMulticast", intvalue));
+                        }
+                        if (reader.IsValueSetIntAsStringValue(@"Software\Microsoft\Windows\CurrentVersion\Policies\System\KDC\Parameters", "EnableCbacAndArmor", out intvalue) && intvalue > 1)
+                        {
+                            if (reader.IsValueSetIntAsStringValue(@"Software\Microsoft\Windows\CurrentVersion\Policies\System\KDC\Parameters", "CbacAndArmorLevel", out intvalue))
+                            {
+                                GPPSecurityPolicy SecurityPolicy = null;
+                                foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
+                                {
+                                    if (policy.GPOId == GPO.InternalName)
+                                    {
+                                        SecurityPolicy = policy;
+                                        break;
+                                    }
+                                }
+                                if (SecurityPolicy == null)
+                                {
+                                    SecurityPolicy = new GPPSecurityPolicy();
+                                    SecurityPolicy.GPOName = GPO.DisplayName;
+                                    SecurityPolicy.GPOId = GPO.InternalName;
+
+                                    lock (healthcheckData.GPOLsaPolicy)
+                                    {
+                                        healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
+                                    }
+                                    SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
+                                }
+                                SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("CbacAndArmorLevel", intvalue));
+                            }
+                        }
+                        if (reader.IsValueSetIntAsStringValue(@"Software\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters", "EnableCbacAndArmor", out intvalue))
+                        {
+                            GPPSecurityPolicy SecurityPolicy = null;
+                            foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
+                            {
+                                if (policy.GPOId == GPO.InternalName)
+                                {
+                                    SecurityPolicy = policy;
+                                    break;
+                                }
+                            }
+                            if (SecurityPolicy == null)
+                            {
+                                SecurityPolicy = new GPPSecurityPolicy();
+                                SecurityPolicy.GPOName = GPO.DisplayName;
+                                SecurityPolicy.GPOId = GPO.InternalName;
+
+                                lock (healthcheckData.GPOLsaPolicy)
+                                {
+                                    healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
+                                }
+                                SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
+                            }
+                            SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("EnableCbacAndArmor", intvalue));
                         }
                         if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows\PowerShell\ModuleLogging", "EnableModuleLogging", out intvalue))
                         {
@@ -3786,8 +3924,8 @@ namespace PingCastle.Healthcheck
                                     continue;
                                 if (lsasetting == "LimitBlankPasswordUse" && value == 1)
                                     continue;
-                                if (lsasetting == "LmCompatibilityLevel" && (value == 3 || value == 5))
-                                    continue;
+                                //if (lsasetting == "LmCompatibilityLevel" && (value == 3 || value == 5))
+                                //    continue;
                                 if (lsasetting == "NoLMHash" && value == 1)
                                     continue;
                                 if (lsasetting == "RestrictAnonymous" && value >= 1)
@@ -4183,6 +4321,8 @@ namespace PingCastle.Healthcheck
             CheckJavaTrustedData(domainInfo, adws);
 
             CheckServicePointData(domainInfo, adws);
+
+            CheckDisplaySpecifier(domainInfo, adws);
         }
 
         private void CheckKrbtgtPwdChange(ADDomainInfo domainInfo, ADWebService adws)
@@ -4707,6 +4847,42 @@ namespace PingCastle.Healthcheck
             adws.Enumerate(domainInfo.ConfigurationNamingContext, filter, properties, callback);
         }
 
+
+        private void CheckDisplaySpecifier(ADDomainInfo domainInfo, ADWebService adws)
+        {
+            healthcheckData.DisplaySpecifier = new List<HealthCheckDisplaySpecifier>();
+            string[] properties = new string[] {
+                        "distinguishedName",
+                        "adminContextMenu",
+                        "whenChanged",
+                };
+            WorkOnReturnedObjectByADWS callback =
+            (ADItem x) =>
+            {
+                if (x.AdminContextMenu != null)
+                {
+                    foreach (var entry in x.AdminContextMenu)
+                    {
+                        if (string.IsNullOrEmpty(entry))
+                            continue;
+                        var e = entry.Split(',');
+                        if (e.Length < 3)
+                            continue;
+                        var path = e[2];
+                        if (!path.Contains("\\\\"))
+                            continue;
+                        healthcheckData.DisplaySpecifier.Add(new HealthCheckDisplaySpecifier
+                        {
+                            DN = x.DistinguishedName,
+                            AdminContextMenu = entry,
+                            WhenChanged = x.WhenChanged,
+                        });
+                    }
+                }
+            };
+            adws.Enumerate("CN=DisplaySpecifiers," + domainInfo.ConfigurationNamingContext, "(objectCategory=displaySpecifier)", properties, callback);
+        }
+
         private void GenerateDomainControllerData(ADDomainInfo domainInfo, ADWebService adws)
         {
             Trace.WriteLine("GenerateDomainControllerData");
@@ -4881,7 +5057,7 @@ namespace PingCastle.Healthcheck
                 Trace.WriteLine("Test ignored because tested on the DC itself");
                 return;
             }
-            var result = ConnectionTester.TestSignatureRequiredEnabled(new Uri("ldaps://" + dns), credentials);
+            var result = ConnectionTester.TestSignatureRequiredEnabled(new Uri("ldap://" + dns), credentials);
             if (result == ConnectionTesterStatus.SignatureNotRequired)
             {
                 DC.LdapServerSigningRequirementDisabled = true;
@@ -5297,14 +5473,31 @@ namespace PingCastle.Healthcheck
 
         private void GenerateDnsData(ADDomainInfo domainInfo, ADWebService adws)
         {
-            if (!domainInfo.NamingContexts.Contains("DC=DomainDnsZones," + domainInfo.DefaultNamingContext))
+            healthcheckData.DnsZones = new List<HealthcheckDnsZones>();
+
+            if (domainInfo.NamingContexts.Contains("DC=DomainDnsZones," + domainInfo.DefaultNamingContext))
+            {
+                var dn = "CN=MicrosoftDNS,DC=DomainDnsZones," + domainInfo.DefaultNamingContext;
+                GenerateDnsData(domainInfo, adws, dn);
+            }
+            else
             {
                 Trace.WriteLine("No naming context for DC=DomainDnsZones," + domainInfo.DefaultNamingContext);
-                return;
             }
+            GenerateDnsData(domainInfo, adws, domainInfo.DefaultNamingContext);
 
-            healthcheckData.DnsZones = new List<HealthcheckDnsZones>();
-            var dn = "CN=MicrosoftDNS,DC=DomainDnsZones," + domainInfo.DefaultNamingContext;
+            foreach (var zone in healthcheckData.DnsZones)
+            {
+                if (string.Equals(zone.name, domainInfo.DomainName, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (DnsQuery.IsZoneTransfertActive(zone.name))
+                        zone.ZoneTransfert = true;
+                    break;
+                }
+            }
+        }
+        private void GenerateDnsData(ADDomainInfo domainInfo, ADWebService adws, string dn)
+        {
             try
             {
                 adws.Enumerate(dn, "(objectClass=dnsZone)", new string[] { "distinguishedName", "dnsProperty", "name", "nTSecurityDescriptor" },
@@ -5312,14 +5505,17 @@ namespace PingCastle.Healthcheck
                     {
                         var o = new HealthcheckDnsZones();
                         o.name = x.Name;
-                        foreach (var p in x.dnsProperty)
+                        if (x.dnsProperty != null)
                         {
-                            if (p.PropertyId == ADItem.DnsPropertyId.DSPROPERTY_ZONE_ALLOW_UPDATE)
+                            foreach (var p in x.dnsProperty)
                             {
-                                if (p.Data.Length == 1 && p.Data[0] == 1)
+                                if (p.PropertyId == ADItem.DnsPropertyId.DSPROPERTY_ZONE_ALLOW_UPDATE)
                                 {
-                                    o.InsecureUpdate = true;
-                                    break;
+                                    if (p.Data.Length == 1 && p.Data[0] == 1)
+                                    {
+                                        o.InsecureUpdate = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -5350,15 +5546,6 @@ namespace PingCastle.Healthcheck
                 Trace.WriteLine("Unable to get Dns Data");
                 Trace.WriteLine(ex.Message);
                 Trace.WriteLine(ex.StackTrace);
-            }
-            foreach (var zone in healthcheckData.DnsZones)
-            {
-                if (string.Equals(zone.name, domainInfo.DomainName, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (DnsQuery.IsZoneTransfertActive(zone.name))
-                        zone.ZoneTransfert = true;
-                    break;
-                }
             }
         }
     }

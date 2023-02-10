@@ -29,7 +29,7 @@ namespace PingCastle.Scanners
         {
             StringBuilder sb = new StringBuilder();
             string header = null;
-            NullSessionTester session = new NullSessionTester(Server,
+            NullSessionTester session = new NullSessionTester(Settings.Server,
                             (NTAccount server) =>
                             {
                                 if (sb.Length != 0)

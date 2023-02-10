@@ -440,7 +440,8 @@ For all users in a OU:
     <value>The purpose is to identify domains which allow access without any account because of a Pre-Windows 2000 compatibility</value>
   </data>
   <data name="A_PreWin2000Anonymous_Solution" xml:space="preserve">
-    <value>Remove the "Everyone" and "Anonymous" from the PreWin2000 group while making sure that the group "Authenticated Users" is present, then reboot each DC</value>
+    <value>Remove the "Everyone" and "Anonymous" from the PreWin2000 group while making sure that the group "Authenticated Users" is present, then reboot each DC.
+    Note: removing the group "Authenticated Users" (and not keep it like advised here) is an advanced recommendation quoted in the rule A-PreWin2000AuthenticatedUsers</value>
   </data>
   <data name="A_PreWin2000Anonymous_Rationale" xml:space="preserve">
     <value>The group Everyone and/or Anonymous is present in the Pre-Windows 2000 group.</value>
@@ -585,7 +586,7 @@ For LmCompatibilityLevel the setting is located in: Network security: LAN Manage
 &lt;b&gt;Beware: two changes of the krbtgt password not replicated to domain controllers can break these domain controllers&lt;/b&gt; You should wait at least 10 hours between each krbtgt password change (this is the duration of a ticket life).
 
 There are several possibilities to change the krbtgt password.
-First, a &lt;a href="https://github.com/microsoft/New-KrbtgtKeys.ps1/blob/master/New-KrbtgtKeys.ps1"&gt;Microsoft script&lt;/a&gt; can be run in order to guarantee the correct replication of these secrets. Unfortunately this script supports only English operating systems.
+First, a &lt;a href="https://github.com/microsoft/New-KrbtgtKeys.ps1/blob/master/New-KrbtgtKeys.ps1"&gt;Microsoft script&lt;/a&gt; can be run in order to guarantee the correct replication of these secrets.
 Second, a more manual way is to essentially reset the password manually once, then to wait 3 days (this is a replication safety delay), then to reset it again. This is the safest way as it ensures the password is no longer usable by the Golden ticket attack.
    </value>
   </data>
@@ -1214,7 +1215,9 @@ It is possible to verify the results provided by the PingCastle solution by usin
     <value>In the case where a delegation has been created where the account can't be translated to a NT account, it means that the delegation is actually from another domain or that the user has been deleted. </value>
   </data>
   <data name="S_ADRegistration_TechnicalExplanation" xml:space="preserve">
-    <value>By default, a basic user can register up to 10 computers within the domain. This default configuration represents a security issue as basic users shouldn't be able to create such accounts and this task should be handled by administrators.</value>
+    <value>By default, a basic user can register up to 10 computers within the domain. This default configuration represents a security issue as basic users shouldn't be able to create such accounts and this task should be handled by administrators.
+    
+    Note: this program checks also the GPO for SeMachineAccountPrivilege assignment. This assignment can be used to restrict the impact of the key ms-DS-MachineAccountQuota.</value>
   </data>
   <data name="S_C_Inactive_TechnicalExplanation" xml:space="preserve">
     <value>Inactive computers often stay in the network because of weaknesses in the decommissioning process. These stale computer accounts can be used as backdoors and therefore represents a possible security breach. </value>
@@ -1291,7 +1294,7 @@ It is possible to verify the results provided by the PingCastle solution by usin
     <value>A Downlevel trust is a special kind of trust compatible with NT4. The kind of trust can be displayed in the "Active Directory Domains and Trusts" tool.</value>
   </data>
   <data name="T_Inactive_TechnicalExplanation" xml:space="preserve">
-    <value>When a trust is active, it is using a shared secret to communicate to a domain. This secret is hold in a special account whose name is the remote domain name. This password is changed every month and as consequence the whenChanged attribute of this account is changed. When there is no modification of the whenChanged attribute, it can be guessed that the secret has not being changed and that there was either a problem with the remote domain or that the remote domain does not exist anymore.</value>
+    <value>When a trust is active, it is using a shared secret to communicate to a domain. This secret is hold in a special account whose name is the remote domain name. This password is changed every month and as consequence the whenChanged attribute of this account is changed. When there is no modification of the whenChanged attribute, it can be guessed that the secret has not been changed and that there was either a problem with the remote domain or that the remote domain does not exist anymore.</value>
   </data>
   <data name="T_ScriptOutOfDomain_TechnicalExplanation" xml:space="preserve">
     <value>Login script can be stored in any file share available in the network and that includes trusted domains shares. If a login script is located in a compromise domain, it can be used to compromise other domains.</value>
@@ -2953,7 +2956,7 @@ https://keychest.net/roca</value>
     This rule checks for certificates having a key under 2048 bits which is considered as having a lower level of security and under 3072 bits for certificates valid after 2030.</value>
   </data>
   <data name="A_WeakRSARootCert2_Title" xml:space="preserve">
-    <value>Check for Certificates using a relatively weak signing algorithm (RSA between 1024 bits and 2048)</value>
+    <value>Check for Certificates using a relatively weak signing algorithm (RSA between 1024 bits and 2048 or expires after 2030)</value>
   </data>
   <data name="A_DsHeuristicsAllowAnonNSPI_Description" xml:space="preserve">
     <value>The purpose is to identify domains having the NSPI protocol exposed without any required account</value>
@@ -3412,7 +3415,7 @@ PARTIAL_SECRETS_ACCOUNT (0x04000000) | TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION (0
     <value>The pre-Windows 2000 compatible access group grants access to some RPC calls which should not be available to users or computers.</value>
   </data>
   <data name="A_PreWin2000Other_Title" xml:space="preserve">
-    <value>Check that the "Pre-Windows 2000 Compatible Access" group has not being modified from its default</value>
+    <value>Check that the "Pre-Windows 2000 Compatible Access" group has not been modified from its default</value>
   </data>
   <data name="P_ProtectedUsers_Description" xml:space="preserve">
     <value>The purpose is to ensure that all privileged accounts are in the Protected User security group</value>
@@ -4085,26 +4088,26 @@ https://www.gradenegger.eu/?p=1132</value>
     <value>Check that the "Pre-Windows 2000 Compatible Access" group does not contain "Authenticated Users"</value>
   </data>
   <data name="S_OS_W10_Description" xml:space="preserve">
-    <value>The purpose is to ensure that there is no use of non-supported version of Windows 10 within the domain</value>
+    <value>The purpose is to ensure that there is no use of non-supported version of Windows 10 or Windows 11 within the domain</value>
   </data>
   <data name="S_OS_W10_Documentation" xml:space="preserve">
     <value>https://docs.microsoft.com/en-us/windows/release-health/release-information</value>
   </data>
   <data name="S_OS_W10_Rationale" xml:space="preserve">
-    <value>Presence of non-supported version of Windows 10 = {count}</value>
+    <value>Presence of non-supported version of Windows 10 or Windows 11 = {count}</value>
   </data>
   <data name="S_OS_W10_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href="#operatingsystems"&gt;Operating Systems&lt;/a&gt;</value>
   </data>
   <data name="S_OS_W10_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the Windows 10 to a more recent version.
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows 10*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the Windows 10 or Windows 11 to a more recent version.
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows 1*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_W10_TechnicalExplanation" xml:space="preserve">
-    <value>Some versions of Windows 10 OS is no longer supported, and may be vulnerable to exploits that are not patched anymore.</value>
+    <value>Some versions of Windows 10 and Windows 11 OS is no longer supported, and may be vulnerable to exploits that are not patched anymore.</value>
   </data>
   <data name="S_OS_W10_Title" xml:space="preserve">
-    <value>Obsolete OS (Windows 10)</value>
+    <value>Obsolete OS (Windows 10 or Windows 11)</value>
   </data>
   <data name="S_OS_W10_Detail" xml:space="preserve">
     <value>Version: {0}  Number: {1} Active: {2}</value>
@@ -4368,8 +4371,8 @@ PingCastle is able to check the SSL version if SSL is exposed.
 Please note that PingCastle is using the native .Net SSL stack to perform this test. .Net begins to ignore these weak protocols starting the version 4.7 of the framework and as a consequence, PingCasle may miss some weak protocol detection.
 
 To test these protocol, you can use openssl with the following commands:
-openssl s_client -connect dc.domain.local:636 -ssl2
-openssl s_client -connect dc.domain.local:636 -ssl3
+openssl s_client -connect dc.domain.local:8531 -ssl2
+openssl s_client -connect dc.domain.local:8531 -ssl3
     </value>
   </data>
   <data name="A_WSUS_SslProtocol_Documentation" xml:space="preserve">
@@ -4378,7 +4381,7 @@ https://support.microsoft.com/en-us/help/187498/how-to-disable-pct-1-0-ssl-2-0-s
 https://adsecurity.org/?p=376</value>
   </data>
   <data name="A_WSUS_SslProtocol_Title" xml:space="preserve">
-    <value>Check if LDAPS is used with weak SSL protocol.</value>
+    <value>Check if WSUS is used with weak SSL protocol.</value>
   </data>
   <data name="A_WSUS_SslProtocol_ReportLocation" xml:space="preserve">
      <value>The detail can be found in the &lt;a href="#WSUSsettings"&gt;WSUS settings&lt;/a&gt; section.</value>
@@ -4631,7 +4634,7 @@ Note: By default, the CES service is not accessible by HTTP.
 Two services can be used: Certification Authority Web Enrollement (WebEnrollment) and Certificate Enrollment Web Service (CES).
 The certificates provided by these services can be used with kerberos to login.
     
-Because this service can deliver certificates for Domain Controller, it can be considered as part of Tier 1.
+Because this service can deliver certificates for Domain Controller, it can be considered as part of Tier 0.
 As a legacy service, the mechanisms to prohibit credential relay are not enforced by default.
 If an attacker is able to relay privileged credentials (for example with the PetitPotam attack), it can be used to take control of the domain.
         
@@ -4677,7 +4680,7 @@ https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-a
 Two services can be used: Certification Authority Web Enrollement (WebEnrollment) and Certificate Enrollment Web Service (CES).
 The certificates provided by these services can be used with kerberos to login.
     
- Because this service can deliver certificates for Domain Controller, it can be considered as part of Tier 1.
+ Because this service can deliver certificates for Domain Controller, it can be considered as part of Tier 0.
 As a legacy service, the mechanisms to prohibit credential relay are not enforced by default.
 If an attacker is able to relay privileged credentials (for example with the PetitPotam attack), it can be used to take control of the domain.
     
@@ -4801,5 +4804,259 @@ An attacker can then change the DNS of a compromise host to the DC DNS and reque
   </data>
   <data name="A_DC_WebClient_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href="#domaincontrollersection"&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="S_KerberosArmoringDC_Title" xml:space="preserve">
+    <value>Ensure that DC supports kerberos armoring when functional level is at least Windows 2012</value>
+  </data>
+  <data name="S_KerberosArmoringDC_Description" xml:space="preserve">
+    <value>The purpose is to ensure that DC supports kerberos armoring when functional level is at least Windows 2012</value>
+  </data>
+  <data name="S_KerberosArmoringDC_Solution" xml:space="preserve">
+    <value>To enable kerberos armoring for domain controllers, edit the GPO and go to Computer Configuration > Administrative Templates > System > KDC
+    then enable the policy "KDC support for claims, compound authentication and Kerberos armoring".
+  The policy should be set to at least "Supported".
+  
+The safest settings is "Fail authentication requests when Kerberos armoring is not available" but it should be enabled only if the clients support kerberos armoring.</value>
+  </data>
+  <data name="S_KerberosArmoringDC_Rationale" xml:space="preserve">
+    <value>The Kerberos Armoring is not enabled on DC and the functional level is at least Windows 2012</value>
+  </data>
+  <data name="S_KerberosArmoringDC_TechnicalExplanation" xml:space="preserve">
+    <value>Kerberos Armoring is an optimization of the kerberos protocol. It avoids the preauthentication steps thus prohibiting preauthentication attacks;
+    It is supported only starting Windows 2012 DC and Windows 8 workstations.
+    If kerberos armoring is requested for other operating systems (such as Windows 7 or Linux), the kerberos authentication protocol may refuse to work.
+    </value>
+  </data>
+  <data name="S_KerberosArmoringDC_Detail" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="S_KerberosArmoringDC_Documentation" xml:space="preserve">
+    <value>https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/hh831747(v=ws.11)
+    https://pupuweb.com/solved-how-enable-kerberos-armoring-eap-fast-ad/</value>
+  </data>
+  <data name="S_KerberosArmoringDC_ReportLocation" xml:space="preserve">
+    <value>If activated, the detail can be found in &lt;a href="#lsasettings"&gt;Security settings&lt;/a&gt;</value>
+  </data>
+  <data name="S_KerberosArmoring_Title" xml:space="preserve">
+    <value>Ensure that clients supports kerberos armoring when functional level is at least Windows 2012</value>
+  </data>
+  <data name="S_KerberosArmoring_Description" xml:space="preserve">
+    <value>The purpose is to ensure that clients supports kerberos armoring when functional level is at least Windows 2012</value>
+  </data>
+  <data name="S_KerberosArmoring_Solution" xml:space="preserve">
+    <value>To enable kerberos armoring for client, edit the GPO and go to Computer Configuration > Administrative Templates > System > Kerberos
+    then enable the policy "Kerberos client support for claims, compound authentication and Kerberos armoring".</value>
+  </data>
+  <data name="S_KerberosArmoring_Rationale" xml:space="preserve">
+    <value>The Kerberos Armoring is not enabled on client and the functional level is at least Windows 2012</value>
+  </data>
+  <data name="S_KerberosArmoring_TechnicalExplanation" xml:space="preserve">
+    <value>Kerberos Armoring is an optimization of the kerberos protocol. It avoids the preauthentication steps thus prohibiting preauthentication attacks;
+    It is supported only starting Windows 2012 DC and Windows 8 workstations.
+    If kerberos armoring is requested for other operating systems (such as Windows 7 or Linux), the kerberos authentication protocol may refuse to work.
+    </value>
+  </data>
+  <data name="S_KerberosArmoring_Detail" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="S_KerberosArmoring_Documentation" xml:space="preserve">
+    <value>https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/hh831747(v=ws.11)
+    https://pupuweb.com/solved-how-enable-kerberos-armoring-eap-fast-ad/</value>
+  </data>
+  <data name="S_KerberosArmoring_ReportLocation" xml:space="preserve">
+    <value>If activated, the detail can be found in &lt;a href="#lsasettings"&gt;Security settings&lt;/a&gt;</value>
+  </data>
+  <data name="P_DisplaySpecifier_Title" xml:space="preserve">
+    <value>Ensure that custom Display Specifiers are stored in sysvol</value>
+  </data>
+  <data name="P_DisplaySpecifier_Description" xml:space="preserve">
+    <value>The purpose is to ensure that scripts used for the customization of admin UI are stored safely</value>
+  </data>
+  <data name="P_DisplaySpecifier_Solution" xml:space="preserve">
+    <value>The scripts identified by this rule should be moved to the sysvol and properly secured.</value>
+  </data>
+  <data name="P_DisplaySpecifier_Rationale" xml:space="preserve">
+    <value>DisplaySpecifier scripts have been identified and they are not stored in the sysvol directory.</value>
+  </data>
+  <data name="P_DisplaySpecifier_TechnicalExplanation" xml:space="preserve">
+    <value>DisplaySpecifier are Active Directory objects stored in the DisplaySpecifier container of the Configuration naming context.
+    They are used to customize the user interface.
+    Specifically the attribute adminContextMenu is used to customize administration actions, where COM objects or scripts can be called.
+    If the script is stored outside the SYSVOL directory, it can be used to execute custom actions and it is ran under the administrator context.
+    </value>
+  </data>
+  <data name="P_DisplaySpecifier_Detail" xml:space="preserve">
+    <value>DN: {0} Path: {1} Changed: {2}</value>
+  </data>
+  <data name="P_DisplaySpecifier_Documentation" xml:space="preserve">
+    <value>https://www.semperis.com/blog/active-directory-security-abusing-display-specifiers/
+https://learn.microsoft.com/en-us/windows/win32/ad/display-specifiers</value>
+  </data>
+  <data name="P_DisplaySpecifier_ReportLocation" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="S_FunctionalLevel1_Title" xml:space="preserve">
+    <value>Ensure that the functional level of the domain and the forest enable to use the latest security features</value>
+  </data>
+  <data name="S_FunctionalLevel1_Description" xml:space="preserve">
+    <value>The purpose is check the functional level of the domain and the forest and ensure it is set to the latest secure version</value>
+  </data>
+  <data name="S_FunctionalLevel1_Solution" xml:space="preserve">
+    <value>You have to raise the functional level of the domain or the forest (see the details to know if the domain and/or forest is concerned).
+    The recommended level is the functional level 7 (Windows 2016 / 2019 / 2022)
+    
+    To upgrade the functional level, a requirement is that all domain controllers are running the right version.
+    Also, functional level needs to be upgraded level by level.
+    </value>
+  </data>
+  <data name="S_FunctionalLevel1_Rationale" xml:space="preserve">
+    <value>The functional level is below Windows 2008 R2.</value>
+  </data>
+  <data name="S_FunctionalLevel1_TechnicalExplanation" xml:space="preserve">
+    <value>
+Each functional level brings new security features:
+*  functional level Windows 2003: brings forest trusts and read-only domain controller (RODC) support;
+*  functional level Windows 2008: brings support for modern cryptographic algorithms such as AES and DFS for SYSVOL share replication;
+*  functional level Windows 2008R2: brings support for Active Directory Recycle Bin (protects objects against accidental deletion);
+*  functional level Windows 2012: brings advanced Kerberos features, such as compound authentication and claims support;
+*  functional level Windows 2012R2: brings numerous new security features such as authentication policies, authentication policy silos and the Protected users group;
+*  functional level Windows 2016 / 2019 / 2022: brings an upgraded smart card logon security and Privileged Identity Management (PIM) trust relationships between forests.
+    </value>
+  </data>
+  <data name="S_FunctionalLevel1_Detail" xml:space="preserve">
+    <value>Type: {0} Level: {1}</value>
+  </data>
+  <data name="S_FunctionalLevel1_Documentation" xml:space="preserve">
+    <value>https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/active-directory-functional-levels
+https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/identifying-your-functional-level-upgrade
+https://learn.microsoft.com/en-us/troubleshoot/windows-server/identity/raise-active-directory-domain-forest-functional-levels</value>
+  </data>
+  <data name="S_FunctionalLevel1_ReportLocation" xml:space="preserve">
+    <value>The functional levels are indicated in &lt;a href="#domaininformation"&gt;Domain Information&lt;/a&gt;</value>
+  </data>
+  <data name="S_FunctionalLevel3_Title" xml:space="preserve">
+    <value>Ensure that the functional level of the domain and the forest enable to use the latest security features</value>
+  </data>
+  <data name="S_FunctionalLevel3_Description" xml:space="preserve">
+    <value>The purpose is check the functional level of the domain and the forest and ensure it is set to the latest secure version</value>
+  </data>
+  <data name="S_FunctionalLevel3_Solution" xml:space="preserve">
+    <value>You have to raise the functional level of the domain or the forest (see the details to know if the domain and/or forest is concerned).
+    The recommended level is the functional level 7 (Windows 2016 / 2019 / 2022)
+    
+    To upgrade the functional level, a requirement is that all domain controllers are running the right version.
+    Also, functional level needs to be upgraded level by level.
+    </value>
+  </data>
+  <data name="S_FunctionalLevel3_Rationale" xml:space="preserve">
+    <value>The functional level is below Windows 2012 R2.</value>
+  </data>
+  <data name="S_FunctionalLevel3_TechnicalExplanation" xml:space="preserve">
+    <value>
+Each functional level brings new security features:
+*  functional level Windows 2003: brings forest trusts and read-only domain controller (RODC) support;
+*  functional level Windows 2008: brings support for modern cryptographic algorithms such as AES and DFS for SYSVOL share replication;
+*  functional level Windows 2008R2: brings support for Active Directory Recycle Bin (protects objects against accidental deletion);
+*  functional level Windows 2012: brings advanced Kerberos features, such as compound authentication and claims support;
+*  functional level Windows 2012R2: brings numerous new security features such as authentication policies, authentication policy silos and the Protected users group;
+*  functional level Windows 2016 / 2019 / 2022: brings an upgraded smart card logon security and Privileged Identity Management (PIM) trust relationships between forests.
+    </value>
+  </data>
+  <data name="S_FunctionalLevel3_Detail" xml:space="preserve">
+    <value>Type: {0} Level: {1}</value>
+  </data>
+  <data name="S_FunctionalLevel3_Documentation" xml:space="preserve">
+    <value>https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/active-directory-functional-levels
+https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/identifying-your-functional-level-upgrade
+https://learn.microsoft.com/en-us/troubleshoot/windows-server/identity/raise-active-directory-domain-forest-functional-levels</value>
+  </data>
+  <data name="S_FunctionalLevel3_ReportLocation" xml:space="preserve">
+    <value>The functional levels are indicated in &lt;a href="#domaininformation"&gt;Domain Information&lt;/a&gt;</value>
+  </data>
+  <data name="S_FunctionalLevel4_Title" xml:space="preserve">
+    <value>Ensure that the functional level of the domain and the forest enable to use the latest security features</value>
+  </data>
+  <data name="S_FunctionalLevel4_Description" xml:space="preserve">
+    <value>The purpose is check the functional level of the domain and the forest and ensure it is set to the latest secure version</value>
+  </data>
+  <data name="S_FunctionalLevel4_Solution" xml:space="preserve">
+    <value>You have to raise the functional level of the domain or the forest (see the details to know if the domain and/or forest is concerned).
+    The recommended level is the functional level 7 (Windows 2016 / 2019 / 2022)
+    
+    To upgrade the functional level, a requirement is that all domain controllers are running the right version.
+    Also, functional level needs to be upgraded level by level.
+    </value>
+  </data>
+  <data name="S_FunctionalLevel4_Rationale" xml:space="preserve">
+    <value>The functional level is below Windows 2016.</value>
+  </data>
+  <data name="S_FunctionalLevel4_TechnicalExplanation" xml:space="preserve">
+    <value>
+Each functional level brings new security features:
+*  functional level Windows 2003: brings forest trusts and read-only domain controller (RODC) support;
+*  functional level Windows 2008: brings support for modern cryptographic algorithms such as AES and DFS for SYSVOL share replication;
+*  functional level Windows 2008R2: brings support for Active Directory Recycle Bin (protects objects against accidental deletion);
+*  functional level Windows 2012: brings advanced Kerberos features, such as compound authentication and claims support;
+*  functional level Windows 2012R2: brings numerous new security features such as authentication policies, authentication policy silos and the Protected users group;
+*  functional level Windows 2016 / 2019 / 2022: brings an upgraded smart card logon security and Privileged Identity Management (PIM) trust relationships between forests.
+    </value>
+  </data>
+  <data name="S_FunctionalLevel4_Detail" xml:space="preserve">
+    <value>Type: {0} Level: {1}</value>
+  </data>
+  <data name="S_FunctionalLevel4_Documentation" xml:space="preserve">
+    <value>https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/active-directory-functional-levels
+https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/identifying-your-functional-level-upgrade
+https://learn.microsoft.com/en-us/troubleshoot/windows-server/identity/raise-active-directory-domain-forest-functional-levels</value>
+  </data>
+  <data name="S_FunctionalLevel4_ReportLocation" xml:space="preserve">
+    <value>The functional levels are indicated in &lt;a href="#domaininformation"&gt;Domain Information&lt;/a&gt;</value>
+  </data>
+  <data name="S_OldNtlm_Title" xml:space="preserve">
+    <value>Ensure that the NTLMv1 and old LM protocols are banned</value>
+  </data>
+  <data name="S_OldNtlm_Description" xml:space="preserve">
+    <value>The purpose is to check if NTLMv1 or LM can be used by DC</value>
+  </data>
+  <data name="S_OldNtlm_Solution" xml:space="preserve">
+    <value>After an audit of NTLMv1 usage (see the links below), you need to raise the LAN Manager Authentication Level to "Send NTLMv2 response only. Refuse LM &amp; NTLM".
+    This can be done by editing the policy "Network security: LAN Manager authentication level" which can be accessed in Computer Configuration\Windows Settings\Security Settings\Local Policies\Security Options
+    The policy will be applied after a computer reboot.
+    
+    As an alternative, the well known script Get-NtlmV1LogonEvents.ps1 can be used to search for NTLMv1 logon events.
+    
+    Beware that you may break software which is not compatible with Ntlmv2 such as old Linux stack or old Windows before Windows Vista.
+    But please note that Ntlmv2 can be activited on all Windows starting Windows 95 and other operating systems.
+    </value>
+  </data>
+  <data name="S_OldNtlm_Rationale" xml:space="preserve">
+    <value>The LAN Manager Authentication Level allows the use of NTLMv1 or LM.</value>
+  </data>
+  <data name="S_OldNtlm_TechnicalExplanation" xml:space="preserve">
+    <value>NTLMv1 is an old protocol which is known to be vulnerable to cryptographic attacks.
+    It is typically used when an hacker sniff the network and tries to retrieve NTLM hashes which can then be used to impersonate users.
+    
+    This attack can be combined with Coerced authentication attacks - an hacker forces the DC to connect to a controlled host.
+    In this case, NTLMv1 can be specified so the hacker can retrieve the NTLM hash of the DC, impersonates it and then take control of the domain.
+    This attack is still possible with NTLMv2 but this is more difficult.
+    
+    Windows have default security settings regarding LM/NTLM. Windows XP: Send LM &amp; NTLM responses, Windows 2003: Send NTLM response only, Vista/2008: Win7/2008 R2: Send NTLMv2 response only.
+    
+    However Domain Controllers are relaxed settings to accept the connection of older operating systems.
+    That means that by default, NTLMv1 is accepted on domain controllers.
+    If no GPO defines the LAN Manager Authentication Level, the DC fallback to the non secure default.
+    </value>
+  </data>
+  <data name="S_OldNtlm_Detail" xml:space="preserve">
+    <value>GPO: {0} Value: {1}</value>
+  </data>
+  <data name="S_OldNtlm_Documentation" xml:space="preserve">
+    <value>https://learn.microsoft.com/en-us/troubleshoot/windows-server/windows-security/audit-domain-controller-ntlmv1
+https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-security-restrict-ntlm-ntlm-authentication-in-this-domain
+https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-security-lan-manager-authentication-level
+https://learn.microsoft.com/en-us/troubleshoot/windows-client/windows-security/enable-ntlm-2-authentication</value>
+  </data>
+  <data name="S_OldNtlm_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#lsasettings"&gt;Security settings&lt;/a&gt;</value>
   </data>
 </root>

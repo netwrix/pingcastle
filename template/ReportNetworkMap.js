@@ -1,16 +1,3 @@
-
-function getData(dataSelect) {
-    try {
-        var inlineJsonElement = document.querySelector(
-            'script[type="application/json"][data-pingcastle-selector="' + dataSelect + '"]'
-        );
-        var data = JSON.parse(inlineJsonElement.textContent);
-        return data;
-    } catch (err) {
-        console.error('Couldn t read JSON data from ' + dataSelect, err);
-    }
-}
-
 function xy2d(order, x, y) {
     var d = 0;
     for (var s = order / 2; s > 0; s /= 2) {

@@ -19,13 +19,16 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            foreach (var file in healthcheckData.GPPFileDeployed)
+            if (healthcheckData.GPPFileDeployed != null)
             {
-                if (file.Delegation != null)
+                foreach (var file in healthcheckData.GPPFileDeployed)
                 {
-                    foreach (var delegation in file.Delegation)
+                    if (file.Delegation != null)
                     {
-                        AddRawDetail(file.GPOName, file.Type, file.FileName, delegation.Account, delegation.Right);
+                        foreach (var delegation in file.Delegation)
+                        {
+                            AddRawDetail(file.GPOName, file.Type, file.FileName, delegation.Account, delegation.Right);
+                        }
                     }
                 }
             }

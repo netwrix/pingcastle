@@ -553,7 +553,7 @@ namespace PingCastle.Healthcheck
             return GetSIDFilteringStatus(null);
         }
 
-        public string GetSIDFilteringStatus(MigrationChecker migrationChecker)
+        public string GetSIDFilteringStatus(IMigrationChecker migrationChecker)
         {
             if (migrationChecker != null)
             {
@@ -565,7 +565,7 @@ namespace PingCastle.Healthcheck
             return TrustAnalyzer.GetSIDFiltering(TrustDirection, TrustAttributes);
         }
 
-        public bool IsEquivalentToReverseEdge(MigrationChecker migrationChecker)
+        public bool IsEquivalentToReverseEdge(IMigrationChecker migrationChecker)
         {
             if (TrustDirection != 3)
                 return false;

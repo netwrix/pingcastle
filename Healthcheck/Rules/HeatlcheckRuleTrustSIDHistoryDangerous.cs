@@ -19,7 +19,6 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            int count = 0;
             if (healthcheckData.UserAccountData != null && healthcheckData.UserAccountData.ListDomainSidHistory != null
                 && healthcheckData.UserAccountData.ListDomainSidHistory.Count > 0)
             {
@@ -42,7 +41,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
-            return count;
+            return null;
         }
     }
 }

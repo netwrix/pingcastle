@@ -7,9 +7,10 @@ namespace PingCastle.Exports
 {
     public interface IExport
     {
-        void Initialize(string server, int port, NetworkCredential credential);
+        void Initialize(RuntimeSettings settings);
         void Export(string filename);
         string Name { get; }
         string Description { get; }
+        DisplayState QueryForAdditionalParameterInInteractiveMode();
     }
 }

@@ -45,7 +45,7 @@ namespace PingCastle.Healthcheck.Rules
                                 Trace.WriteLine("Modulus len = " + rsaparams.Modulus.Length * 8);
                                 AddRawDetail(data.Source, cert.Subject, rsaparams.Modulus.Length * 8, cert.NotAfter.ToString("u"));
                             }
-                            else if (rsaparams.Modulus.Length * 8 < 3072 && cert.NotAfter > new DateTime(2030, 01, 01))
+                            else if (rsaparams.Modulus.Length * 8 < 3072 && cert.NotAfter > new DateTime(2031, 01, 01))
                             {
                                 Trace.WriteLine("Modulus len = " + rsaparams.Modulus.Length * 8);
                                 AddRawDetail(data.Source, cert.Subject, rsaparams.Modulus.Length * 8, cert.NotAfter.ToString("u"));

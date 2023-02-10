@@ -79,12 +79,15 @@ namespace PingCastle.Scanners
 
     public class SmbScanner : ScannerBase
     {
+        public static bool DoNotTestSMBv1;
 
         public static bool SupportSMB1(string server, out SMBSecurityModeEnum securityMode)
         {
             securityMode = SMBSecurityModeEnum.NotTested;
             try
             {
+                if (DoNotTestSMBv1)
+                    return false;
                 return Smb1Protocol.DoesServerSupportDialect(server, "NT LM 0.12", out securityMode);
             }
             catch (Exception)

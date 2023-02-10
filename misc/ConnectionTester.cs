@@ -149,7 +149,7 @@ namespace PingCastle.misc
             Trace.WriteLine("Testing " + uri);
 
             Trace.WriteLine("testing WITH signature required: ");
-            var WithSignature = Test(uri, true);
+            var WithSignature = Test(uri, false);
             Trace.WriteLine(WithSignature.ToString());
 
             if (WithSignature != ConnectionTesterStatus.AuthenticationSuccessfull)
@@ -158,7 +158,7 @@ namespace PingCastle.misc
             }
 
             Trace.WriteLine("testing WITHOUT signature required: ");
-            var WithoutSignature = Test(uri, false);
+            var WithoutSignature = Test(uri, true);
             Trace.WriteLine(WithoutSignature.ToString());
 
             if (WithoutSignature != ConnectionTesterStatus.AuthenticationSuccessfull && WithoutSignature != ConnectionTesterStatus.AuthenticationFailure)
@@ -191,7 +191,7 @@ namespace PingCastle.misc
                     tcpclient.SendTimeout = 1000;
                     tcpclient.ReceiveTimeout = 1000;
 
-                    if (uri.Scheme.EndsWith("s") )
+                    if (uri.Scheme.EndsWith("s"))
                     {
                         using (SslStream sslStream = new SslStream(tcpclient.GetStream(), false, AcceptEveryServerCertificate, null))
                         {
@@ -294,7 +294,9 @@ namespace PingCastle.misc
         {
             var incomingBytes = incomingBlob == null ? null : Convert.ToBase64String(incomingBlob);
 
-            var Response = Convert.FromBase64String((string)NTAuthentication_GetOutgoingBlob.Invoke(NTAuthentication, new object[] { incomingBytes }));
+            var t = (string)NTAuthentication_GetOutgoingBlob.Invoke(NTAuthentication, new object[] { incomingBytes });
+
+            var Response = Convert.FromBase64String(t);
 
             int offset = GetNTLMSSPOffset(Response);
             if (offset > 0)
@@ -313,9 +315,24 @@ namespace PingCastle.misc
             return Response;
         }
 
+        bool InitDisableSigning;
+        ChannelBinding InitchannelBinding;
+
         protected void InitializeNTAuthentication(bool DisableSigning = false, ChannelBinding channelBinding = null)
         {
-            NTAuthentication = NTAuthentication_Ctor.Invoke(new object[] { false, package, Credential == null ? CredentialCache.DefaultCredentials : Credential, null, (DisableSigning ? 0x800000 : 0x10000), channelBinding });
+            InitDisableSigning = DisableSigning;
+            InitchannelBinding = channelBinding;
+            Reinit();
+        }
+
+        protected void Reinit()
+        {
+            // from SSPI.h
+            const int ISC_REQ_NO_INTEGRITY = 0x00800000;
+            const int ISC_REQ_INTEGRITY = 0x00010000;
+            // these flags are transformed into System.Net.ContextFlags enum
+
+            NTAuthentication = NTAuthentication_Ctor.Invoke(new object[] { false, package, Credential == null ? CredentialCache.DefaultCredentials : Credential, null, (InitDisableSigning ? ISC_REQ_NO_INTEGRITY : ISC_REQ_INTEGRITY), InitchannelBinding });
         }
     }
 }

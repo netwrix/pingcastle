@@ -26,6 +26,8 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     if (user.IsExternal)
                         continue;
+                    if (!user.IsEnabled)
+                        continue;
                     if (user.Created.AddDays(3 * 365) < DateTime.Now && user.PwdLastSet.AddDays(3 * 365) < DateTime.Now)
                     {
                         if (!users.ContainsKey(user.DistinguishedName))

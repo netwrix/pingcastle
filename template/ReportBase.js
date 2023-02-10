@@ -30,6 +30,14 @@ $('#optionWideScreen').change(function () {
 
 });
 
+window.addEventListener('beforeprint', function () {
+    $('table').bootstrapTable('togglePagination');
+});
+
+window.addEventListener('afterprint', function () {
+    $('table').bootstrapTable('togglePagination');
+});
+
 $('#optionPagination').change(function () {
     $('table').bootstrapTable('togglePagination');
 });
@@ -41,3 +49,39 @@ $('#optionExpand').change(function () {
         $('.collapse-cancelled').addClass("collapse").removeClass("collapse-cancelled");
     }
 });
+
+function noHtmlSorter(a, b) {
+    return strip(a).localeCompare(strip(b));
+}
+
+function noHtmlSearch(data, text) {
+    if (!text) {
+        return data;
+    }
+    return data.filter(function (row) {
+        return Object.entries(row).some(([key, value]) => {
+            return (strip(value).indexOf(text) > -1);
+        });
+    });
+}
+
+function strip(html) {
+    // Create a new div element
+    var temporalDivEl = document.createElement("div");
+    // Set HTML content using provider
+    temporalDivEl.innerHTML = html;
+    // Get the text property of the element (browser support)
+    return temporalDivEl.textContent || temporalDivEl.innerText || "";
+}
+
+function getData(dataSelect) {
+    try {
+        var inlineJsonElement = document.querySelector(
+            'script[type="application/json"][data-pingcastle-selector="' + dataSelect + '"]'
+        );
+        var data = JSON.parse(inlineJsonElement.textContent);
+        return data;
+    } catch (err) {
+        console.error('Couldn t read JSON data from ' + dataSelect, err);
+    }
+}

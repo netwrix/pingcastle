@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+using PingCastle.Cloud.Data;
 using PingCastle.Data;
 using PingCastle.Graph.Database;
 using PingCastle.Healthcheck;
@@ -17,6 +18,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
 
 namespace PingCastle.Report
 {
@@ -173,7 +175,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
 
             var d = ReportBenchmark.GetData(Report, _license);
-            Add(@"<form action='");
+            Add(@"<form class='d-print-none' action='");
             Add(ReportBenchmark.GetDestination());
             Add("' method='POST'>");
 
@@ -182,11 +184,18 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddHiddenValue(item.Key, item.Value);
             }
             Add(@"<button type='submit' class='btn btn-default'>Compare with statistics</button></form>");
-            AddParagraph("<a href='#' data-bs-toggle='modal' data-bs-target='#privacyNoticeStatistics'>Privacy notice</a>");
+            AddParagraph("<a href='#' data-bs-toggle='modal' data-bs-target='#privacyNoticeStatistics' class='d-print-none'>Privacy notice</a>");
         }
 
         protected void GenerateContent()
         {
+            if (Report.version >= new Version(3, 0) && !string.IsNullOrEmpty(_license.Edition) && _license.Edition != "Basic")
+            {
+                if (!Report.IntegrityVerified)
+                {
+                    Add(@"<div class=""alert alert-warning""><p>PingCastle has detected that the report has been modified before being uploaded to the application.</p></div>");
+                }
+            }
             GenerateSection("Active Directory Indicators", () =>
             {
                 AddParagraph("This section focuses on the core security indicators.<br>Locate the sub-process determining the score and fix some rules in that area to get a score improvement.");
@@ -199,22 +208,22 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
             GenerateSection("Stale Objects", () =>
             {
-                GenerateSubIndicator("Stale Objects", Report.GlobalScore, Report.StaleObjectsScore, "It is about operations related to user or computer objects");
+                GenerateSubIndicatorHeader("Stale Objects", Report.GlobalScore, Report.StaleObjectsScore, "It is about operations related to user or computer objects");
                 GenerateIndicatorPanel("DetailStale", "Stale Objects rule details", RiskRuleCategory.StaleObjects, Report.RiskRules, Report.applicableRules);
             });
             GenerateSection("Privileged Accounts", () =>
             {
-                GenerateSubIndicator("Privileged Accounts", Report.GlobalScore, Report.PrivilegiedGroupScore, "It is about administrators of the Active Directory");
+                GenerateSubIndicatorHeader("Privileged Accounts", Report.GlobalScore, Report.PrivilegiedGroupScore, "It is about administrators of the Active Directory");
                 GenerateIndicatorPanel("DetailPrivileged", "Privileged Accounts rule details", RiskRuleCategory.PrivilegedAccounts, Report.RiskRules, Report.applicableRules);
             });
             GenerateSection("Trusts", () =>
             {
-                GenerateSubIndicator("Trusts", Report.GlobalScore, Report.TrustScore, "It is about links between two Active Directories");
+                GenerateSubIndicatorHeader("Trusts", Report.GlobalScore, Report.TrustScore, "It is about links between two Active Directories");
                 GenerateIndicatorPanel("DetailTrusts", "Trusts rule details", RiskRuleCategory.Trusts, Report.RiskRules, Report.applicableRules);
             });
             GenerateSection("Anomalies analysis", () =>
             {
-                GenerateSubIndicator("Anomalies", Report.GlobalScore, Report.AnomalyScore, "It is about specific security control points");
+                GenerateSubIndicatorHeader("Anomalies", Report.GlobalScore, Report.AnomalyScore, "It is about specific security control points");
                 GenerateIndicatorPanel("DetailAnomalies", "Anomalies rule details", RiskRuleCategory.Anomalies, Report.RiskRules, Report.applicableRules);
             });
             GenerateSection("Domain Information", GenerateDomainInformation);
@@ -846,7 +855,26 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddHeaderText("Kerberos Enabled");
                     AddBeginTableData();
                     AddBeginRow();
-                    AddCellText(Report.AzureADName);
+                    Add(@"<td class='text'>");
+                    string html = string.Empty;
+                    if (GetUrlCallbackAzureAD != null)
+                    {
+                        html = GetUrlCallbackAzureAD(AzureADKey.Create(Report.AzureADName, Report.AzureADId), Report.AzureADName, null);
+                    }
+                    if (string.IsNullOrEmpty(html))
+                    {
+                        AddEncoded(Report.AzureADName);
+                        AddBeginTooltip(html: true);
+                        Add("TenantID: ");
+                        AddEncoded(Report.AzureADId);
+                        AddEndTooltip();
+                    }
+                    else
+                    {
+                        Add(html);
+                    }
+                    Add(@"</td>");
+
                     AddCellText(Report.AzureADId);
                     AddCellText(string.IsNullOrEmpty(Report.AzureADKerberosSid) ? "FALSE" : "TRUE");
                     AddEndRow();
@@ -877,7 +905,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddHeaderText("Nb Password not Req.", "Indicates the number of enabled accounts which have a flag set in useraccountcontrol allowing empty passwords.");
                 AddHeaderText("Nb Des enabled.", "Indicates the number of enabled accounts allowing the unsafe DES algorithm for authentication.");
             }
-            AddHeaderText("Nb unconstrained delegations", "Indicates the number of enabled accounts having been granted the right to impersonate any users without any restrictions.");
+            AddHeaderText("Nb unconstrained delegations", "Indicates the number of enabled accounts having been granted the right to impersonate any users without any restrictions. PingCastle checks if the flag TRUSTED_FOR_DELEGATION is present in the useraccountcontrol attribute.");
             AddHeaderText("Nb Reversible password", "Indicates the number of enabled accounts whose password can be retrieved in clear text using hacking tools.");
         }
 
@@ -1079,7 +1107,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     }
                     if (data.ListNotAesEnabled != null && data.ListNotAesEnabled.Count > 0)
                     {
-                        GenerateListAccountDetail(accordion, "sectionnotaesenabled" + root, "Objects which is fully not compatible with AES for Kerberos ", data.ListNotAesEnabled);
+                        GenerateListAccountDetail(accordion, "sectionnotaesenabled" + root, "Objects where last password change is before install of the first AES compatible DC (not supporting AES in kerberos)", data.ListNotAesEnabled);
                     }
                     if (data.ListTrustedToAuthenticateForDelegation != null && data.ListTrustedToAuthenticateForDelegation.Count > 0)
                     {
@@ -1875,13 +1903,13 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 AddBeginRow();
                 Add("<td class='text'>");
-                if (GetUrlCallback == null)
+                if (GetUrlCallbackDomain == null)
                 {
                     AddEncoded(header.FQDN);
                 }
                 else
                 {
-                    Add(GetUrlCallback(header.Domain, !string.IsNullOrEmpty(header.FQDN) ? header.FQDN : header.Netbios, null));
+                    Add(GetUrlCallbackDomain(header.Domain, !string.IsNullOrEmpty(header.FQDN) ? header.FQDN : header.Netbios, null));
                 }
                 Add("</td>");
                 AddCellText(header.Netbios);
@@ -2527,10 +2555,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 }
                 AddBeginRow();
                 Add(@"<td class='text'>");
-                if (GetUrlCallback == null)
+                if (GetUrlCallbackDomain == null)
                 {
                     AddEncoded(trust.TrustPartner);
-                    AddBeginTooltip(html:true);
+                    AddBeginTooltip(html: true);
                     Add("SID: ");
                     Add(sid);
                     Add("<br>Netbios: ");
@@ -2539,7 +2567,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 }
                 else
                 {
-                    Add(GetUrlCallback(trust.Domain, trust.TrustPartner, null));
+                    Add(GetUrlCallbackDomain(trust.Domain, trust.TrustPartner, null));
                 }
                 Add(@"</td>");
                 AddCellText(TrustAnalyzer.GetTrustType(trust.TrustType));
@@ -2592,22 +2620,22 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     AddBeginRow();
                     Add(@"<td class='text'>");
-                    if (GetUrlCallback == null)
+                    if (GetUrlCallbackDomain == null)
                     {
                         AddEncoded(di.DnsName);
                     }
                     else
                     {
-                        Add(GetUrlCallback(di.Domain, di.DnsName, null));
+                        Add(GetUrlCallbackDomain(di.Domain, di.DnsName, null));
                     }
                     Add(@"</td><td class='text'>");
-                    if (GetUrlCallback == null)
+                    if (GetUrlCallbackDomain == null)
                     {
                         AddEncoded(trust.TrustPartner);
                     }
                     else
                     {
-                        Add(GetUrlCallback(trust.Domain, trust.TrustPartner, null));
+                        Add(GetUrlCallbackDomain(trust.Domain, trust.TrustPartner, null));
                     }
                     Add(@"</td><td class='text'>");
                     AddEncoded(di.NetbiosName);
@@ -2630,13 +2658,13 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     AddBeginRow();
                     Add(@"<td class='text'>");
-                    if (GetUrlCallback == null)
+                    if (GetUrlCallbackDomain == null)
                     {
                         AddEncoded(di.DnsName);
                     }
                     else
                     {
-                        Add(GetUrlCallback(di.Domain, di.DnsName, null));
+                        Add(GetUrlCallbackDomain(di.Domain, di.DnsName, null));
                     }
                     Add(@"</td>");
                     AddCellText("Unknown");
@@ -2654,7 +2682,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddParagraph("The account AZUREADSSOACC is used under the hood to provide SSO functionalities with AzureAD.");
                 Add(@"
 		<div class=""row""><div class=""col-lg-12"">
-<p>The password of the AZUREADSSOACC account should be changed twice every 40 days using this <a href=""https://itpro-tips.com/wp-content/uploads/files/TechnetGallery/Azure-AD-SSO-Key-Rollover-d2f1604a.zip"">script</a></p>
+<p>The password of the AZUREADSSOACC account should be changed twice every 40 days. You can check this <a href=""https://github.com/MicrosoftDocs/azure-docs/blob/main/articles/active-directory/hybrid/how-to-connect-sso-faq.yml"">documentation</a> to have the procedure.</p>
 <p>You can use the version gathered using replication metadata from two reports to guess the frequency of the password change or if the two consecutive resets has been done. Version starts at 1.</p>
 <p><strong>AZUREADSSOACC password last changed: </strong> " + Report.AzureADSSOLastPwdChange.ToString("u") + @"
 <strong>version: </strong> " + Report.AzureADSSOVersion + @"
@@ -2670,6 +2698,11 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
         void AddGPOName(IGPOReference GPO)
         {
+            if (GPO == null)
+            {
+                AddCellText("[null GPO]");
+                return;
+            }
             Add(@"<td class='text'>");
             AddEncoded(GPO.GPOName);
             if (!string.IsNullOrEmpty(GPO.GPOId))
@@ -2677,9 +2710,15 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 if (!Report.GPOInfoDic.ContainsKey(GPO.GPOId))
                 {
                     Add(@" <span class=""font-weight-light"">[Disabled]</span>");
+                    Add("</td>");
                     return;
                 }
                 var refGPO = Report.GPOInfoDic[GPO.GPOId];
+                if (refGPO == null)
+                {
+                    Add("[null GPO]</td>");
+                    return;
+                }
                 if (refGPO.IsDisabled)
                 {
                     Add(@" <span class=""font-weight-light"">[Disabled]</span>");
@@ -2703,7 +2742,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 else
                 {
                     Add(@" <span class=""font-weight-light"">[Not&nbsp;linked]</span>");
-                    AddBeginTooltip(html:true);
+                    AddBeginTooltip(html: true);
                     Add("<div class='text-start'>Technical id:<br>");
                     AddEncoded(GPO.GPOId);
                     Add("</div>");
@@ -2718,6 +2757,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         {
             GenerateAzureADConnect();
             GenerateWSUS();
+            GenerateExchange();
+            GenerateSCCM();
             GenerateServicePoints();
             if (Report.version >= new Version(2, 11))
             {
@@ -2798,6 +2839,183 @@ Here are the settings found in GPO.");
             }
         }
 
+        string ExchangeSchemaToString(int version)
+        {
+            switch (version)
+            {
+                case 17003:
+                    return "Exchange 2019 CU12";
+                case 17002:
+                    return "Exchange 2019 CU8";
+                case 17001:
+                    return "Exchange 2019 CU2";
+                case 17000:
+                    return "Exchange 2019 RTM";
+                case 15334:
+                    return "Exchange 2016 CU21";
+                case 15333:
+                    return "Exchange 2016 CU19";
+                case 15332:
+                    return "Exchange 2016 CU7";
+                case 15330:
+                    return "Exchange 2016 CU6";
+                case 15326:
+                    return "Exchange 2016 CU3";
+                case 15325:
+                    return "Exchange 2016 CU2";
+                case 15323:
+                    return "Exchange 2016 CU1";
+                case 15317:
+                    return "Exchange 2016 RTM";
+                case 15312:
+                    return "Exchange 2013 CU7";
+                case 15303:
+                    return "Exchange 2013 CU6";
+                case 15300:
+                    return "Exchange 2013 CU5";
+                case 15292:
+                    return "Exchange 2013 SP1 (CU4)";
+                case 15283:
+                    return "Exchange 2013 CU3";
+                case 15281:
+                    return "Exchange 2013 CU2";
+                case 15254:
+                    return "Exchange 2013 CU1";
+                case 15137:
+                    return "Exchange 2013 RTM";
+                case 14734:
+                    return "Exchange 2010 SP3";
+                case 14732:
+                    return "Exchange 2010 SP2";
+                case 14726:
+                    return "Exchange 2010 SP1";
+                case 14625:
+                    return "Exchange 2007 SP3";
+                case 14622:
+                    return "Exchange 2007 SP2";
+                case 11116:
+                    return "Exchange 2007 SP1";
+                case 10637:
+                    return "Exchange 2007 RTM";
+                case 6870:
+                    return "Exchange 2003 RTM";
+                case 4406:
+                    return "Exchange 2000 SP2";
+                case 4397:
+                    return "Exchange 2000 RTM";
+                default:
+                    return "Unknown (" + version + ") - check out https://www.alitajran.com/exchange-schema-versions/";
+            }
+        }
+
+        private void GenerateExchange()
+        {
+            if (Report.version >= new Version(2, 11, 1))
+            {
+                GenerateSubSection("Exchange settings", "Exchangesettings");
+                AddParagraph(@"Echange is the mail server of Microsoft. Because it is deeply integrated into the Active Directory, it is a component to be monitored");
+                AddParagraph("PingCaslte is checking objects of type msExchExchangeServer and the schema to provide the information below.");
+                if (Report.ExchangeInstall != default(DateTime))
+                {
+                    Add("Since recent version, Exchange allows information to be stored in the Active Directory Schema to perform offline configuration. It is a copy of some information stored locally on the servers");
+                    Add(@"
+		<div class=""row""><div class=""col-lg-12"">
+<p><strong>Exchange schema installation:</strong> " + Report.ExchangeInstall.ToString("u") + @"</p>
+		</div></div>
+");
+                }
+                if (Report.ExchangeSchemaVersion > 0)
+                {
+                    Add(@"
+		<div class=""row""><div class=""col-lg-12"">
+<p><strong>The Exchange schema version is :</strong> " + ExchangeSchemaToString(Report.ExchangeSchemaVersion) + @"</p>
+		</div></div>
+");
+                }
+                AddBeginTable("Exchange servers");
+                AddHeaderText("Name");
+                AddHeaderText("In service date");
+                AddHeaderText("Version");
+                AddHeaderText("Proxy");
+                AddBeginTableData();
+                if (Report.ExchangeServers != null)
+                {
+                    foreach (var a in Report.ExchangeServers)
+                    {
+                        AddBeginRow();
+                        AddCellText(a.Name);
+                        AddCellDate(a.CreationDate);
+                        AddCellText(a.SerialNumber);
+                        AddCellText(a.InternetWebProxy);
+                        AddEndRow();
+                    }
+                }
+                AddEndTable();
+            }
+        }
+
+        private void GenerateSCCM()
+        {
+            if (Report.version >= new Version(2, 11, 0))
+            {
+                GenerateSubSection("SCCM settings", "SCCMsettings");
+                AddParagraph(@"SCCM or its more recent name Microsoft Endpoint Manager is the Microsoft tool to manage the workstations and servers. It is used typically to deploy packages.");
+                AddParagraph("PingCaslte is checking objects of type mSSMSManagementPoint and the schema to provide the information below.");
+                if (Report.SCCMInstalled != default(DateTime))
+                {
+                    Add(@"
+		<div class=""row""><div class=""col-lg-12"">
+<p><strong>SCCM has been installed for the first time at:</strong> " + Report.SCCMInstalled.ToString("u") + @"</p>
+		</div></div>
+");
+                }
+
+                AddBeginTable("SCCM servers");
+                AddHeaderText("Name");
+                AddHeaderText("Version");
+                AddHeaderText("Client operational version");
+                AddHeaderText("AAD TenantID");
+                AddHeaderText("AAD TenantName");
+                AddBeginTableData();
+                if (Report.SCCMServers != null)
+                {
+                    foreach (var a in Report.SCCMServers)
+                    {
+                        string version = null;
+                        string tenantID = null;
+                        string tenantName = null;
+                        if (!string.IsNullOrEmpty(a.Capabilities))
+                        {
+                            XmlDocument doc = new XmlDocument();
+                            doc.LoadXml(a.Capabilities);
+                            var node = doc.SelectSingleNode(@"//ClientOperationalSettings/Version");
+                            if (node != null)
+                                version = node.InnerText;
+
+                            node = doc.SelectSingleNode(@"//ClientOperationalSettings/AADConfig/Tenants/Tenant");
+                            if (node != null)
+                            {
+                                foreach (XmlAttribute b in node.Attributes)
+                                {
+                                    if (b.Name == "ID")
+                                        tenantID = b.Value;
+                                    else if (b.Name == "Name")
+                                        tenantName = b.Value;
+                                }
+                            }
+                        }
+                        AddBeginRow();
+                        AddCellText(a.MPName);
+                        AddCellNum(a.Version);
+                        AddCellText(version);
+                        AddCellText(tenantID);
+                        AddCellText(tenantName);
+                        AddEndRow();
+                    }
+                }
+                AddEndTable();
+            }
+        }
 
         private void GenerateServicePoints()
         {
@@ -2964,10 +3182,10 @@ Here are the settings found in GPO.");
 
                     AddBeginRow();
                     Add(@"<td class='text'>");
-                    if (GetUrlCallback == null)
+                    if (GetUrlCallbackDomain == null)
                     {
                         AddEncoded(trust.TrustPartner);
-                        AddBeginTooltip(html:true);
+                        AddBeginTooltip(html: true);
                         Add("SID: ");
                         Add(sid);
                         Add("<br>Netbios: ");
@@ -2976,7 +3194,7 @@ Here are the settings found in GPO.");
                     }
                     else
                     {
-                        Add(GetUrlCallback(trust.Domain, trust.TrustPartner, null));
+                        Add(GetUrlCallbackDomain(trust.Domain, trust.TrustPartner, null));
                     }
                     Add(@"</td>");
                     AddCellDate(trust.CreationDate);
@@ -3057,6 +3275,7 @@ Here are the settings found in GPO.");
             AddParagraph("Here is the list of domain GPO altering the kerberos algorithms");
 
             OK = true;
+            bool found = false;
 
             AddBeginTable("Trusts list for AES");
             AddHeaderText("Policy Name");
@@ -3070,6 +3289,7 @@ Here are the settings found in GPO.");
                 {
                     if (property.Property == "SupportedEncryptionTypes")
                     {
+                        found = true;
                         AddBeginRow();
                         AddGPOName(policy);
                         AddLsaSettingsValue(property.Property, property.Value);
@@ -3084,7 +3304,7 @@ Here are the settings found in GPO.");
                             OK = false;
                         }
                         var rc4compatible = (property.Value & (4)) != 0;
-                        if (aescompatible)
+                        if (rc4compatible)
                         {
                             AddCellText("Yes");
                         }
@@ -3098,6 +3318,10 @@ Here are the settings found in GPO.");
             }
             AddEndTable();
             Add("<p>" + (OK ? "<span class='ticked'>OK</span>" : "<span class='unticked'>Not OK</span>") + @"</p>");
+            if (!found)
+            {
+                AddParagraph("Beware that no GPO supporting AES / RC4 have been found and if the supported algorithm is not defined in the master, AES will not be enabled by default");
+            }
         }
 
         #endregion infrastructure
@@ -3310,17 +3534,17 @@ Hackers can then perform a reconnaissance of the environement with only a networ
                     GenerateSubSection("Smart Card and Password", "smartcardmandatorywithnopasswordchange");
                     Add(@"
 		<div class=""row""><div class=""col-lg-12"">
-<p>This control detects users which use only smart card and whose password hash has not been changed for at least 40 days.
+<p>This control detects users which use only smart card and whose password hash has not been changed for at least 90 days.
 Indeed, once the smart card required check is activated in the user account properties, a random password hash is set.
 But this hash is not changed anymore like for users having a password whose change is controlled by password policies.
 As a consequence, a capture of the hash using a memory attack tool can lead to a compromission of this account unlimited in time.
 The best practice is to reset these passwords on a regular basis or to uncheck and check again the &quot;require smart card&quot; property to force a hash change.</p>
-			<p><strong>Users with smart card and having their password unchanged since at least 40 days:</strong> " +
+			<p><strong>Users with smart card and having their password unchanged since at least 90 days:</strong> " +
         (Report.SmartCardNotOK == null ? 0 : Report.SmartCardNotOK.Count)
         + @"</p>
 		</div></div>
 ");
-                    GenerateAccordion("anomalysmartcard", () => GenerateListAccountDetail("anomalysmartcard", "smartcard", "Smart card and Password >40 days List", Report.SmartCardNotOK));
+                    GenerateAccordion("anomalysmartcard", () => GenerateListAccountDetail("anomalysmartcard", "smartcard", "Smart card and Password >90 days List", Report.SmartCardNotOK));
                 }
 
                 // logon script

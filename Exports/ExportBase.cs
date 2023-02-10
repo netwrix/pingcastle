@@ -9,23 +9,20 @@ namespace PingCastle.Exports
 {
     public abstract class ExportBase : IExport
     {
-        protected NetworkCredential Credential { get; set; }
-
-        protected int Port { get; set; }
-
-        protected string Server { get; set; }
-
         public abstract string Name { get; }
         public abstract string Description { get; }
 
-        public void Initialize(string server, int port, NetworkCredential credential)
+        protected RuntimeSettings Settings;
+
+        public void Initialize(RuntimeSettings settings)
         {
-            Server = server;
-            Port = port;
-            Credential = credential;
+            Settings = settings;
         }
 
-
+        public DisplayState QueryForAdditionalParameterInInteractiveMode()
+        {
+            return Settings.EnsureDataCompleted("Server");
+        }
 
         public abstract void Export(string filename);
 

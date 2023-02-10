@@ -75,3 +75,4 @@ ProcessTemplate -File ReportRiskControls.css
 ProcessTemplate -File ReportMapBuilder.js
 ProcessTemplate -File ReportNetworkMap.js
 ProcessTemplate -File ReportCompromiseGraph.js
+ProcessTemplate -File ReportCloudMain.js

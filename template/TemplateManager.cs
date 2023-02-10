@@ -107,6 +107,11 @@ namespace PingCastle.template
             return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportBase.js.gz");
         }
 
+        public static string LoadReportCloudMainJs()
+        {
+            return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportCloudMain.js.gz");
+        }
+
         public static string LoadReportRiskControlsCss()
         {
             return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportRiskControls.css.gz");

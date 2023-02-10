@@ -17,34 +17,28 @@ namespace PingCastle.Scanners
 {
     abstract public class ScannerBase : IScanner
     {
-        protected NetworkCredential Credential { get; set; }
-
-        protected int Port { get; set; }
-
-        protected string Server { get; set; }
-
         public abstract string Name { get; }
         public abstract string Description { get; }
 
+        protected RuntimeSettings Settings;
+
         public static int ScanningMode { get; set; }
 
-        public void Initialize(string server, int port, NetworkCredential credential)
+        public void Initialize(RuntimeSettings settings)
         {
-            Server = server;
-            Port = port;
-            Credential = credential;
+            Settings = settings;
         }
-
-        public string FileOrDirectory { get; set; }
 
         private static object _syncRoot = new object();
 
         abstract protected string GetCsvHeader();
         abstract protected string GetCsvData(string computer);
 
-        public virtual Program.DisplayState QueryForAdditionalParameterInInteractiveMode()
+        public virtual DisplayState QueryForAdditionalParameterInInteractiveMode()
         {
-            var choices = new List<ConsoleMenuItem>(){
+            if (ScanningMode == 0)
+            {
+                var choices = new List<ConsoleMenuItem>(){
                 new ConsoleMenuItem("all","This is a domain. Scan all computers."),
                 new ConsoleMenuItem("one","This is a computer. Scan only this computer."),
                 new ConsoleMenuItem("workstation","Scan all computers except servers."),
@@ -52,15 +46,16 @@ namespace PingCastle.Scanners
                 new ConsoleMenuItem("domaincontrollers","Scan all domain controllers."),
                 new ConsoleMenuItem("file","Import items from a file (one computer per line)."),
             };
-            ConsoleMenu.Title = "Select the scanning mode";
-            ConsoleMenu.Information = "This scanner can collect all the active computers from a domain and scan them one by one automatically. Or scan only one computer";
-            int choice = ConsoleMenu.SelectMenu(choices);
-            if (choice == 0)
-                return Program.DisplayState.Exit;
-            ScanningMode = choice;
-            if (choice == 6)
-                return Program.DisplayState.AskForFile;
-            return Program.DisplayState.AskForServer;
+                ConsoleMenu.Title = "Select the scanning mode";
+                ConsoleMenu.Information = "This scanner can collect all the active computers from a domain and scan them one by one automatically. Or scan only one computer";
+                int choice = ConsoleMenu.SelectMenu(choices);
+                if (choice == 0)
+                    return DisplayState.Exit;
+                ScanningMode = choice;
+            }
+            if (ScanningMode == 6)
+                return Settings.EnsureDataCompleted("File");
+            return Settings.EnsureDataCompleted("Server");
         }
 
         public void Export(string filename)
@@ -72,8 +67,8 @@ namespace PingCastle.Scanners
             }
             try
             {
-                IPAddress[] ipaddresses = Dns.GetHostAddresses(Server);
-                DisplayAdvancement("Scanning " + Server + " (" + ipaddresses[0].ToString() + ")");
+                IPAddress[] ipaddresses = Dns.GetHostAddresses(Settings.Server);
+                DisplayAdvancement("Scanning " + Settings.Server + " (" + ipaddresses[0].ToString() + ")");
             }
             catch (Exception)
             {
@@ -83,7 +78,7 @@ namespace PingCastle.Scanners
             using (StreamWriter sw = File.CreateText(filename))
             {
                 sw.WriteLine(GetCsvHeader());
-                sw.WriteLine(GetCsvData(Server));
+                sw.WriteLine(GetCsvData(Settings.Server));
             }
             DisplayAdvancement("Done");
         }
@@ -190,13 +185,13 @@ namespace PingCastle.Scanners
         {
             if (ScanningMode == 6)
             {
-                DisplayAdvancement("Loading " + FileOrDirectory);
-                return new List<string>(File.ReadAllLines(FileOrDirectory));
+                DisplayAdvancement("Loading " + Settings.InputFile);
+                return new List<string>(File.ReadAllLines(Settings.InputFile));
             }
             ADDomainInfo domainInfo = null;
 
             List<string> computers = new List<string>();
-            using (ADWebService adws = new ADWebService(Server, Port, Credential))
+            using (ADWebService adws = new ADWebService(Settings.Server, Settings.Port, Settings.Credential))
             {
                 domainInfo = adws.DomainInfo;
                 string[] properties = new string[] { "dNSHostName", "primaryGroupID" };

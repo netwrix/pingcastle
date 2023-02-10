@@ -13,10 +13,10 @@ namespace PingCastle.Scanners
             return "Computer\tISVulnerable";
         }
 
-        public override Program.DisplayState QueryForAdditionalParameterInInteractiveMode()
+        public override DisplayState QueryForAdditionalParameterInInteractiveMode()
         {
             ScanningMode = 5;
-            return Program.DisplayState.AskForServer;
+            return Settings.EnsureDataCompleted("Server");
         }
 
         protected override string GetCsvData(string computer)

@@ -79,14 +79,19 @@ namespace PingCastle.misc
                     }
 
                     Response = GetAuthenticationRequest(headers, package);
-                    if (Response == null && package == "Negotiate")
-                    {
-                        Trace.WriteLine("Testing NTLM");
-                        package = "NTLM";
-                        Response = GetAuthenticationRequest(headers, package);
-                    }
                     if (Response == null)
-                        return ConnectionTesterStatus.AuthenticationFailure;
+                    {
+                        if (i == 0 && headers.Contains("WWW-Authenticate: NTLM"))
+                        {
+                            Trace.WriteLine("Reinit to NTLM");
+                            package = "NTLM";
+                            Reinit();
+                        }
+                        else
+                        {
+                            return ConnectionTesterStatus.AuthenticationFailure;
+                        }
+                    }
                 }
 
 

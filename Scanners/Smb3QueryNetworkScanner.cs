@@ -26,7 +26,7 @@ namespace PingCastle.Scanners
             StringBuilder sb = new StringBuilder();
             DisplayAdvancement(computer, "Connecting to SMB3");
 
-            var o = Smb2ProtocolTest.GetFCTL_QUERY_NETWORK_INFO(computer, Credential);
+            var o = Smb2ProtocolTest.GetFCTL_QUERY_NETWORK_INFO(computer, Settings.Credential);
             if (o == null)
             {
                 sb.Append(computer);

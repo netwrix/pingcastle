@@ -22,21 +22,21 @@ namespace PingCastle.Scanners
         public string Name { get { return "foreignusers"; } }
         public string Description { get { return "Use trusts to enumerate users located in domain denied such as bastion or domains too far away."; } }
 
-        public string Server { get; private set; }
-        public int Port { get; private set; }
-        public NetworkCredential Credential { get; private set; }
-
         public static string EnumInboundSid { get; set; }
 
-        public void Initialize(string server, int port, NetworkCredential credential)
+        RuntimeSettings Settings;
+
+        public void Initialize(RuntimeSettings settings)
         {
-            Server = server;
-            Port = port;
-            Credential = credential;
+            Settings = settings;
         }
 
-        public Program.DisplayState QueryForAdditionalParameterInInteractiveMode()
+        public DisplayState QueryForAdditionalParameterInInteractiveMode()
         {
+            var state = Settings.EnsureDataCompleted("Server");
+            if (state != DisplayState.Run)
+                return state;
+
             do
             {
                 ConsoleMenu.Title = "Select the targeted domain";
@@ -52,7 +52,8 @@ Example of FQDN: bastion.local";
                 ConsoleMenu.Notice = "The SID of FQDN cannot be empty";
             } while (String.IsNullOrEmpty(EnumInboundSid));
             ConsoleMenu.Notice = null;
-            return Program.DisplayState.AskForServer;
+
+            return DisplayState.Run;
         }
 
         public void Export(string filename)
@@ -73,7 +74,7 @@ Example of FQDN: bastion.local";
             }
             else
             {
-                EnumInboundTrustSid = NativeMethods.GetSidFromDomainNameWithWindowsAPI(Server, EnumInboundSid);
+                EnumInboundTrustSid = NativeMethods.GetSidFromDomainNameWithWindowsAPI(Settings.Server, EnumInboundSid);
             }
             if (EnumInboundTrustSid == null)
             {
@@ -117,7 +118,7 @@ Example of FQDN: bastion.local";
         {
             NativeMethods.UNICODE_STRING us = new NativeMethods.UNICODE_STRING();
             NativeMethods.LSA_OBJECT_ATTRIBUTES loa = new NativeMethods.LSA_OBJECT_ATTRIBUTES();
-            us.Initialize(Server);
+            us.Initialize(Settings.Server);
             IntPtr PolicyHandle = IntPtr.Zero;
             uint ret = NativeMethods.LsaOpenPolicy(ref us, ref loa, 0x00000800, out PolicyHandle);
             us.Dispose();

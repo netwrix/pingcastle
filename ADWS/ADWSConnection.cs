@@ -83,7 +83,6 @@ namespace PingCastle.ADWS
 						_search.ClientCredentials.Windows.ClientCredential.Password = Credential.Password;
 						_search.ClientCredentials.Windows.ClientCredential.Domain = Credential.Domain;
 					}
-					_search.ClientCredentials.Windows.AllowNtlm = true;
 					_search.ClientCredentials.Windows.AllowedImpersonationLevel = System.Security.Principal.TokenImpersonationLevel.Impersonation;
 
 					// add the ad:instance soap header
@@ -121,7 +120,6 @@ namespace PingCastle.ADWS
 						_resource.ClientCredentials.Windows.ClientCredential.Password = Credential.Password;
 						_resource.ClientCredentials.Windows.ClientCredential.Domain = Credential.Domain;
 					}
-					_resource.ClientCredentials.Windows.AllowNtlm = true;
 					_resource.ClientCredentials.Windows.AllowedImpersonationLevel = System.Security.Principal.TokenImpersonationLevel.Impersonation;
 
 					// add the ad:instance & ad:objectReference soap header
@@ -160,7 +158,6 @@ namespace PingCastle.ADWS
 						_topology.ClientCredentials.Windows.ClientCredential.Password = Credential.Password;
 						_topology.ClientCredentials.Windows.ClientCredential.Domain = Credential.Domain;
 					}
-					_topology.ClientCredentials.Windows.AllowNtlm = true;
 					_topology.ClientCredentials.Windows.AllowedImpersonationLevel = System.Security.Principal.TokenImpersonationLevel.Impersonation;
 				}
 				return _topology;

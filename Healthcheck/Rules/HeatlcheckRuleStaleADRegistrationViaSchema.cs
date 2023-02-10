@@ -13,7 +13,7 @@ namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("S-ADRegistrationSchema", RiskRuleCategory.StaleObjects, RiskModelCategory.Provisioning)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-    [RuleMaturityLevel(3)]
+    [RuleDurANSSI(2, "warning_schema_posssuperiors", "Schema class allowing dangerous object creation")]
     [RuleMitreAttackMitigation(MitreAttackMitigation.UserAccountManagement)]
     [RuleIntroducedIn(2,9,3)]
     public class HeatlcheckRuleStaleADRegistrationViaSchema : RuleBase<HealthcheckData>

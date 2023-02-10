@@ -15,7 +15,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("A-CertTempAnyPurpose", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
     [RuleIntroducedIn(2, 9, 3)]
-    [RuleMaturityLevel(2)]
+    [RuleDurANSSI(1, "vuln_adcs_template_auth_enroll_with_name", "Dangerous enrollment permission on authentication certificate templates")]
     [RuleMitreAttackTechnique(MitreAttackTechnique.StealorForgeKerberosTickets)]
     public class HeatlcheckRuleAnomalyCertTempAnyPurpose : RuleBase<HealthcheckData>
     {

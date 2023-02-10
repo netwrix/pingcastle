@@ -32,6 +32,7 @@ namespace PingCastle.Data
         {
             try
             {
+                data.SetIntegrity();
                 if (EncryptReport)
                 {
                     Utf8StringWriter w = new Utf8StringWriter();
@@ -134,14 +135,16 @@ namespace PingCastle.Data
         {
             using (Stream fs = File.OpenRead(filename))
             {
-                return LoadXml(fs, filename, HealthCheckEncryption.GetAllPrivateKeys());
+                var t = LoadXml(fs, filename, HealthCheckEncryption.GetAllPrivateKeys());
+                return t;
             }
         }
 
         public static T LoadXml(Stream report, string filenameForDebug, List<RSA> Keys)
         {
             XmlDocument xmlDoc = LoadXmlDocument(report, filenameForDebug, Keys);
-            return ConvertXmlDocumentToData(xmlDoc);
+            var t = ConvertXmlDocumentToData(xmlDoc);
+            return t;
         }
 
         public static T ConvertXmlDocumentToData(XmlDocument xmlDoc)
@@ -150,6 +153,7 @@ namespace PingCastle.Data
             T data = (T)xs.Deserialize(new XmlNodeReader(xmlDoc));
             if (typeof(T).IsAssignableFrom(typeof(HealthcheckData)))
                 CheckForHCDataUnknownModel((HealthcheckData)Convert.ChangeType(data, typeof(HealthcheckData)));
+            data.CheckIntegrity();
             return data;
         }
 
@@ -261,17 +265,20 @@ namespace PingCastle.Data
         {
         }
 
-        public PingCastleDataException(string reportName, string message) : base(message)
+        public PingCastleDataException(string reportName, string message)
+            : base(message)
         {
             ReportName = reportName;
         }
 
-        public PingCastleDataException(string reportName, string message, Exception innerException) : base(message, innerException)
+        public PingCastleDataException(string reportName, string message, Exception innerException)
+            : base(message, innerException)
         {
             ReportName = reportName;
         }
 
-        protected PingCastleDataException(SerializationInfo info, StreamingContext context) : base(info, context)
+        protected PingCastleDataException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
         }
 

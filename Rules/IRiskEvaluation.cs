@@ -18,8 +18,4 @@ namespace PingCastle.Rules
         int MaturityLevel { get; set; }
         IList<IRuleScore> AllRiskRules { get; }
     }
-
-    public interface IRiskEvaluationOnObjective : IRiskEvaluation
-    {
-    }
 }

@@ -11,7 +11,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using System.Security.Cryptography;
 using System.Security.Principal;
+using System.Text;
 using System.Xml.Serialization;
 
 namespace PingCastle.Healthcheck
@@ -123,6 +125,16 @@ namespace PingCastle.Healthcheck
         [XmlAttribute]
         public string DNS { get; set; }
         public List<string> BindingInfo { get; set; }
+    }
+
+    public class HealthCheckDisplaySpecifier
+    {
+        [XmlAttribute]
+        public string DN { get; set; }
+
+        public string AdminContextMenu { get; set; }
+
+        public DateTime WhenChanged { get; set; }
     }
 
     [DebuggerDisplay("{DN} {ClassName} {DNS}")]
@@ -437,7 +449,7 @@ namespace PingCastle.Healthcheck
         public bool? RequireIntegrity { get; set; }
         [DefaultValue(null)]
         public bool? RequirePrivacy { get; set; }
-        
+
         [XmlAttribute]
         public string GPOName { get; set; }
 
@@ -1066,6 +1078,26 @@ namespace PingCastle.Healthcheck
         public string DelegationType { get; set; }
     }
 
+    [DebuggerDisplay("{DCName}")]
+    public class HealthcheckExchangeServer
+    {
+        public string Name { get; set; }
+
+        public DateTime CreationDate { get; set; }
+
+        public DateTime ChangedDate { get; set; }
+
+
+
+        public int ServerRoles { get; set; }
+
+        public string[] ComponentStates { get; set; }
+
+        public string InternetWebProxy { get; set; }
+
+        public string SerialNumber { get; set; }
+    }
+
     [DebuggerDisplay("{SiteName}")]
     public class HealthcheckSite
     {
@@ -1130,6 +1162,42 @@ namespace PingCastle.Healthcheck
         public void SetExportLevel(PingCastleReportDataExportLevel level)
         {
             Level = level;
+        }
+
+        public void SetIntegrity()
+        {
+            IntegrityRules = ComputeIntegrity();
+        }
+
+        public void CheckIntegrity()
+        {
+            if (new Version(EngineVersion.Split(' ')[0]) > new Version(3, 0))
+            {
+                var expected = ComputeIntegrity();
+                IntegrityVerified = IntegrityRules == expected;
+            }
+            else
+            {
+                IntegrityVerified = true;
+            }
+        }
+
+        public string ComputeIntegrity()
+        {
+            List<string> integrityBase = new List<string>();
+            if (RiskRules != null)
+            {
+                foreach (var r in RiskRules)
+                    integrityBase.Add(r.RiskId.Replace("-", "").Replace(".", ""));
+                integrityBase.Sort();
+            }
+            using (var hash = SHA256.Create())
+            {
+                string s = string.Join(",", integrityBase.ToArray());
+                var h = hash.ComputeHash(Encoding.UTF8.GetBytes(s));
+                var o = Convert.ToBase64String(h);
+                return o;
+            }
         }
 
         // this property is used to limit the serialization of some properties
@@ -1244,6 +1312,12 @@ namespace PingCastle.Healthcheck
             }
         }
 
+        [XmlAttribute]
+        public string IntegrityRules { get; set; }
+        [IgnoreDataMember]
+        [XmlIgnore]
+        public bool IntegrityVerified { get; set; }
+
         public string DomainFQDN { get; set; }
         public string NetBIOSName { get; set; }
         public string ForestFQDN { get; set; }
@@ -1266,6 +1340,10 @@ namespace PingCastle.Healthcheck
         public int TrustScore { get; set; }
         public int AnomalyScore { get; set; }
 
+        public DateTime ExchangeInstall { get; set; }
+        public int ExchangeSchemaVersion { get; set; }
+
+
         public bool ShouldSerializeTrusts() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
         public List<HealthCheckTrustData> Trusts { get; set; }
 
@@ -1274,6 +1352,8 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeDomainControllers() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthcheckDomainController> DomainControllers { get; set; }
+
+        public List<HealthcheckExchangeServer> ExchangeServers { get; set; }
 
         public bool ShouldSerializeSites() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthcheckSite> Sites { get; set; }
@@ -1498,6 +1578,8 @@ namespace PingCastle.Healthcheck
         public string AzureADId { get; set; }
         public string AzureADKerberosSid { get; set; }
 
+        public List<HealthCheckDisplaySpecifier> DisplaySpecifier { get; set; }
+
         private DomainKey _domain;
         [IgnoreDataMember]
         [XmlIgnore]
@@ -1596,6 +1678,5 @@ namespace PingCastle.Healthcheck
         }
 
         public CompromiseGraphData ControlPaths { get; set; }
-
     }
 }

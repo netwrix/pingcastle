@@ -24,7 +24,7 @@ namespace PingCastle.Exports
 
         public override void Export(string filename)
         {
-            using (LdapConnection connect = new LdapConnection(new LdapDirectoryIdentifier(Server, Port == 0 ? 389 : Port), Credential))
+            using (LdapConnection connect = new LdapConnection(new LdapDirectoryIdentifier(Settings.Server, Settings.Port == 0 ? 389 : Settings.Port), Settings.Credential))
             {
                 var filter = "(&(objectClass=*))";
                 var searchRequest = new SearchRequest(null, filter, SearchScope.Base);

@@ -20,18 +20,14 @@ namespace PingCastle.Scanners
         public string Name { get { return "aclcheck"; } }
         public string Description { get { return "Check authorization related to users or groups. Default to everyone, authenticated users and domain users"; } }
 
-        public string Server { get; private set; }
-        public int Port { get; private set; }
-        public NetworkCredential Credential { get; private set; }
-
         List<KeyValuePair<SecurityIdentifier, string>> UsersToMatch;
         public static List<string> UserList = new List<string>();
 
-        public void Initialize(string server, int port, NetworkCredential credential)
+        RuntimeSettings Settings;
+
+        public void Initialize(RuntimeSettings settings)
         {
-            Server = server;
-            Port = port;
-            Credential = credential;
+            Settings = settings;
         }
 
         Guid LAPSSchemaId = Guid.Empty;
@@ -40,7 +36,7 @@ namespace PingCastle.Scanners
         {
             DisplayAdvancement("Starting");
 
-            using (ADWebService adws = new ADWebService(Server, Port, Credential))
+            using (ADWebService adws = new ADWebService(Settings.Server, Settings.Port, Settings.Credential))
             {
                 string[] propertiesLaps = new string[] { "schemaIDGUID" };
                 // note: the LDAP request does not contain ms-MCS-AdmPwd because in the old time, MS consultant was installing customized version of the attriute, * being replaced by the company name
@@ -145,9 +141,14 @@ namespace PingCastle.Scanners
             }
         }
 
-        public Program.DisplayState QueryForAdditionalParameterInInteractiveMode()
+        public DisplayState QueryForAdditionalParameterInInteractiveMode()
         {
             string input = null;
+
+            var state = Settings.EnsureDataCompleted("Server");
+            if (state != DisplayState.Run)
+                return state;
+
             UserList.Clear();
             do
             {
@@ -165,7 +166,7 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
                     break;
                 }
             } while (true);
-            return Program.DisplayState.AskForServer;
+            return DisplayState.Run;
         }
 
         private KeyValuePair<SecurityIdentifier, string>? MatchesUsersToCheck(IdentityReference Owner)

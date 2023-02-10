@@ -155,46 +155,7 @@ namespace PingCastle.Rules
 
         public static void ReComputeTotals(T data, IEnumerable<IRuleScore> rules)
         {
-            if (typeof(T).IsAssignableFrom(typeof(IRiskEvaluationOnObjective)))
-            {
-                ReComputeTotalsWithObjective(data, rules);
-            }
-            else
-            {
-                ReComputeTotalsWithAccumulation(data, rules);
-            }
-        }
-
-        private static void ReComputeTotalsWithObjective(T data, IEnumerable<IRuleScore> rules)
-        {
-            // consolidate scores
-            data.GlobalScore = 0;
-            data.StaleObjectsScore = 0;
-            data.PrivilegiedGroupScore = 0;
-            data.TrustScore = 0;
-            data.AnomalyScore = 0;
-            foreach (var rule in rules)
-            {
-                switch (rule.Category)
-                {
-                    case RiskRuleCategory.Anomalies:
-                        if (rule.Points > data.AnomalyScore)
-                            data.AnomalyScore = rule.Points;
-                        break;
-                    case RiskRuleCategory.PrivilegedAccounts:
-                        if (rule.Points > data.PrivilegiedGroupScore)
-                            data.PrivilegiedGroupScore = rule.Points;
-                        break;
-                    case RiskRuleCategory.StaleObjects:
-                        if (rule.Points > data.StaleObjectsScore)
-                            data.StaleObjectsScore = rule.Points;
-                        break;
-                    case RiskRuleCategory.Trusts:
-                        if (rule.Points > data.TrustScore)
-                            data.TrustScore = rule.Points;
-                        break;
-                }
-            }
+            ReComputeTotalsWithAccumulation(data, rules);
         }
 
         private static void ReComputeTotalsWithAccumulation(T data, IEnumerable<IRuleScore> rules)

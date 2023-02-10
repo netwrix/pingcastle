@@ -26,6 +26,12 @@ namespace PingCastle.Rules
         public RiskModelCategory Model { get; private set; }
     }
 
+    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+    public class RuleNotPartiallyRecomputableAttribute : Attribute
+    {
+        
+    }
+
     public interface IRuleMaturity
     {
         int Level { get; }
@@ -73,6 +79,8 @@ namespace PingCastle.Rules
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     public class RuleComputationAttribute : Attribute
     {
+        public RuleComputationAttribute() { }
+
         public RuleComputationAttribute(RuleComputationType ComputationType, int Score, int Threshold = 0, int Order = 1)
         {
             this.ComputationType = ComputationType;
@@ -420,6 +428,8 @@ namespace PingCastle.Rules
     {
         [Description("Initial Access")]
         InitialAccess,
+        [Description("Execution")]
+        Execution,
         [Description("Privilege Escalation")]
         PrivilegeEscalation,
         [Description("Defense Evasion")]
@@ -484,7 +494,8 @@ namespace PingCastle.Rules
         RemoteServiceSessionHijacking,
         [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.LateralMovement, "T1210", "Exploitation of Remote Services")]
         ExploitationofRemoteServices,
-        
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.Execution, "T1569", "System Services")]
+        SystemServices,
     }
 
     public class MitreAttackTechniqueAttribute : Attribute

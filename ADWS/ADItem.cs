@@ -127,6 +127,8 @@ namespace PingCastle.ADWS
 
         [ADAttributeAttribute("adminCount", ADAttributeValueKind.IntValue)]
         public int AdminCount { get; set; }
+        [ADAttributeAttribute("adminContextMenu", ADAttributeValueKind.StringArrayValue)]
+        public string[] AdminContextMenu { get; set; }
         [ADAttributeAttribute("attributeID", ADAttributeValueKind.StringValue)]
         public string AttributeID { get; set; }
         [ADAttributeAttribute("cACertificate", ADAttributeValueKind.CertificateStore)]
@@ -213,6 +215,12 @@ namespace PingCastle.ADWS
         public string[] msDSNeverRevealGroup { get; set; }
         [ADAttributeAttribute("msDS-TrustForestTrustInfo", ADAttributeValueKind.ForestInfoValue)]
         public List<HealthCheckTrustDomainInfoData> msDSTrustForestTrustInfo { get; set; }
+        [ADAttributeAttribute("msExchCurrentServerRoles", ADAttributeValueKind.IntValue)]
+        public int msExchCurrentServerRoles { get; set; }
+        [ADAttributeAttribute("msExchComponentStates", ADAttributeValueKind.StringArrayValue)]
+        public string[] msExchComponentStates { get; set; }
+        [ADAttributeAttribute("msExchInternetWebProxy", ADAttributeValueKind.StringValue)]
+        public string msExchInternetWebProxy { get; set; }
         [ADAttributeAttribute("msPKI-Certificate-Name-Flag", ADAttributeValueKind.IntValue)]
         public int msPKICertificateNameFlag { get; set; }
         [ADAttributeAttribute("msPKI-Cert-Template-OID", ADAttributeValueKind.StringValue)]
@@ -255,6 +263,8 @@ namespace PingCastle.ADWS
         public int PrimaryGroupID { get; set; }
         [ADAttributeAttribute("pwdLastSet", ADAttributeValueKind.DateValue)]
         public DateTime PwdLastSet { get; set; }
+        [ADAttributeAttribute("rangeUpper", ADAttributeValueKind.IntValue)]
+        public int RangeUpper { get; set; }
         [ADAttributeAttribute("sAMAccountName", ADAttributeValueKind.StringValue)]
         public string SAMAccountName { get; set; }
         [ADAttributeAttribute("schemaIDGUID", ADAttributeValueKind.GUIDValue)]
@@ -265,6 +275,8 @@ namespace PingCastle.ADWS
         public string ScriptPath { get; set; }
         [ADAttributeAttribute("securityIdentifier", ADAttributeValueKind.SIDValue)]
         public SecurityIdentifier SecurityIdentifier { get; set; }
+        [ADAttributeAttribute("serialNumber", ADAttributeValueKind.StringValue)]
+        public string serialNumber { get; set; }
         [ADAttributeAttribute("servicePrincipalName", ADAttributeValueKind.StringArrayValue)]
         public string[] ServicePrincipalName { get; set; }
         [ADAttributeAttribute("serviceClassName", ADAttributeValueKind.StringValue)]

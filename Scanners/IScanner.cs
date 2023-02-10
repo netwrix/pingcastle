@@ -10,12 +10,12 @@ namespace PingCastle.Scanners
 {
     public interface IScanner
     {
-        void Initialize(string server, int port, NetworkCredential credential);
+        void Initialize(RuntimeSettings settings);
         void Export(string filename);
         string Name { get; }
         string Description { get; }
 
         // return false if the user query has been cancelled
-        Program.DisplayState QueryForAdditionalParameterInInteractiveMode();
+        DisplayState QueryForAdditionalParameterInInteractiveMode();
     }
 }

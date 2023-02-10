@@ -17,7 +17,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleCERTFR("CERTFR-2005-INF-003", "SECTION00032400000000000000")]
     [RuleMaturityLevel(2)]
     [RuleMitreAttackMitigation(MitreAttackMitigation.UpdateSoftware)]
-    [RuleIntroducedIn(2,9,3)]
+    [RuleIntroducedIn(2, 9, 3)]
     public class HeatlcheckRuleStaledObsoleteW10 : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
@@ -38,8 +38,44 @@ namespace PingCastle.Healthcheck.Rules
                     int release = int.Parse(m.Groups["release"].Value);
                     if (major == 10 && minor == 0)
                     {
+                        // see https://learn.microsoft.com/en-us/windows/release-health/release-information
+                        // and https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information
                         switch (release)
                         {
+                            case 22621:
+                                if (healthcheckData.GenerationDate > new DateTime(2025, 10, 14))
+                                {
+                                    AddRawDetail("Windows 11 22H2", osVersion.data.Number, osVersion.data.NumberActive);
+                                }
+                                break;
+                            case 22000:
+                                if (healthcheckData.GenerationDate > new DateTime(2024, 10, 08))
+                                {
+                                    AddRawDetail("Windows 11 21H2", osVersion.data.Number, osVersion.data.NumberActive);
+                                }
+                                break;
+                            case 19045:
+                                if (healthcheckData.GenerationDate > new DateTime(2025, 05, 13))
+                                {
+                                    AddRawDetail("Windows 10 22H2", osVersion.data.Number, osVersion.data.NumberActive);
+                                }
+                                break;
+                            case 19044:
+                                if (osVersion.IsLTSC)
+                                {
+                                    if (healthcheckData.GenerationDate > new DateTime(2027, 01, 12))
+                                    {
+                                        AddRawDetail("Windows 10 21H2", osVersion.data.Number, osVersion.data.NumberActive);
+                                    }
+                                }
+                                else
+                                {
+                                    if (healthcheckData.GenerationDate > new DateTime(2024, 06, 11))
+                                    {
+                                        AddRawDetail("Windows 10 21H2", osVersion.data.Number, osVersion.data.NumberActive);
+                                    }
+                                }
+                                break;
                             case 19043:
                                 if (healthcheckData.GenerationDate > new DateTime(2022, 12, 13))
                                 {

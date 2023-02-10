@@ -1,3 +1,31 @@
+3.0.0.0
+* migrate from .net 3 to .net 4.5
+* integrated PingCastleCloud project
+* fix rule A-CertEnrollChannelBinding which was triggering even if CB is enabled
+* fix test ldap signature on ldap and not ldaps
+* fix a logic issue when testing for integrity in LDAP
+* fix sorting and filtering issue
+* collect exchange info and display it and sccm in the report
+* migration from .net 3 to .net 4.5
+* added the rule S-KerberosArmoring and S-KerberosArmoringDC
+* fix visibility on DNS zone replicated on DC only (not the DomainDns zone)
+* fix HTTP ConnectionTester for NTLM only websites (refusing Negotiate)
+* changed A-WeakRSARootCert2 to be triggered in 2031 instead of 2030
+* added the rule P-DisplaySpecifier to check for DisplaySpecifier abuse
+* align S-ADRegistrationSchema with ANSSI rule
+* added the rule S-FunctionalLevel1/3/4 to check the functional level of the domain / forest
+* parallelize PKI checks for environments with several ADCS entries
+* fix a bug in T-SIDHistoryDangerous which made it ineffective
+* added the hidden option --doNotTestSMBv1 to not trigger SOC when testing for SMB v1
+* adapt the rule S-ADRegistration in case there is no GPO settings SeMachineAccountPrivilege
+* adjust the label of the rule A-WeakRSARootCert2 to clarify that certificate with 2048 bits module should expires before 2030
+* fix a regression with server containing * pattern
+* disabled --I-swear-I-paid-win7-support because extended support is not available anymore
+* fixed P-AdminPwdTooOld and P-ProtectedUsers which were checking also disabled accounts
+* fixed A-WSUS-SslProtocol incorrect LDAP reference in rule description
+* license can be pushed using API but only the banner for the embedded license was shown leading to customer confusing. Added a message to avoid that
+* added the rule S-OldNtlm to hunt DC accepting NTLMv1 and used in coerced authenthication attacks
+
 2.11.0.0
 * fix: the rule S-OS-W10 was triggering even if there is no enabled Windows 10
 * added the rules A-DCLdapSign and A-DCLdapsChannelBinding

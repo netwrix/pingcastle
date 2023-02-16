@@ -2914,7 +2914,7 @@ Here are the settings found in GPO.");
             {
                 GenerateSubSection("Exchange settings", "Exchangesettings");
                 AddParagraph(@"Echange is the mail server of Microsoft. Because it is deeply integrated into the Active Directory, it is a component to be monitored");
-                AddParagraph("PingCaslte is checking objects of type msExchExchangeServer and the schema to provide the information below.");
+                AddParagraph("PingCastle is checking objects of type msExchExchangeServer and the schema to provide the information below.");
                 if (Report.ExchangeInstall != default(DateTime))
                 {
                     Add("Since recent version, Exchange allows information to be stored in the Active Directory Schema to perform offline configuration. It is a copy of some information stored locally on the servers");
@@ -2960,7 +2960,7 @@ Here are the settings found in GPO.");
             {
                 GenerateSubSection("SCCM settings", "SCCMsettings");
                 AddParagraph(@"SCCM or its more recent name Microsoft Endpoint Manager is the Microsoft tool to manage the workstations and servers. It is used typically to deploy packages.");
-                AddParagraph("PingCaslte is checking objects of type mSSMSManagementPoint and the schema to provide the information below.");
+                AddParagraph("PingCastle is checking objects of type mSSMSManagementPoint and the schema to provide the information below.");
                 if (Report.SCCMInstalled != default(DateTime))
                 {
                     Add(@"
@@ -4105,6 +4105,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 
             GenerateSubSection("Security settings", "lsasettings");
             AddParagraph(@"A GPO can be used to deploy security settings to workstations.<br>The best practice out of the default security baseline is reported in <span class=""ticked"">green</span>.<br>The following settings in <span class=""unticked"">red</span> are unsual and may need to be reviewed.<br>Each setting is accompagnied which its value and a link to the GPO explanation.");
+            AddParagraph("You will find below the checks where no occurences have been found");
             AddBeginTable("Security settings list");
             AddHeaderText("Policy Name");
             AddHeaderText("Setting");
@@ -4124,6 +4125,72 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         AddLsaSettingsValue(property.Property, property.Value);
                         AddEndRow();
                     }
+                }
+            }
+            AddEndTable();
+
+            AddParagraph("Here are the security checks that have been check by PingCastle and where no applicable GPO have been found.");
+            AddBeginTable("Security settings not found list");
+            AddHeaderText("Setting");
+            AddBeginTableData();
+            if (Report.GPOLsaPolicy != null)
+            {
+                List<string> notFound = new List<string>()
+                    {
+                        "enableguestaccount",
+                        "lsaanonymousnamelookup",
+                        "everyoneincludesanonymous",
+                        "limitblankpassworduse",
+                        "forceguest",
+                        "nolmhash",
+                        "restrictanonymous",
+                        "restrictanonymoussam",
+                        "ldapclientintegrity",
+                        "recoveryconsole_securitylevel",
+                        "refusepasswordchange",
+                        "enablemulticast",
+                        "enablesecuritysignature",
+                        "enablemodulelogging",
+                        "enablescriptblocklogging",
+                        "srvsvcsessioninfo",
+                        "supportedencryptiontypes",
+                    };
+
+                if (Report.version >= new Version(3, 0, 0))
+                {
+                    notFound.Add("lmcompatibilitylevel");
+                    notFound.Add("enablecbacandarmor");
+                    notFound.Add("cbacandarmorlevel");
+                }
+
+                foreach (GPPSecurityPolicy policy in Report.GPOLsaPolicy)
+                {
+                    foreach (GPPSecurityPolicyProperty property in policy.Properties)
+                    {
+                        if (Report.GPOInfoDic == null || !Report.GPOInfoDic.ContainsKey(policy.GPOId))
+                        {
+                            continue;
+                        }
+                        var refGPO = Report.GPOInfoDic[policy.GPOId];
+                        if (refGPO.IsDisabled)
+                        {
+                            continue;
+                        }
+                        if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
+                        {
+                            continue;
+                        }
+                        if (notFound.Contains(property.Property.ToLowerInvariant()))
+                            notFound.Remove(property.Property.ToLowerInvariant());
+                    }
+                }
+                foreach (var f in notFound)
+                {
+                    AddBeginRow();
+                    Add(@"<td class='text'>");
+                    Add(GetLinkForLsaSetting(f));
+                    Add(@"</td>");
+                    AddEndRow();
                 }
             }
             AddEndTable();

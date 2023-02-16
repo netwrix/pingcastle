@@ -9,7 +9,7 @@ using PingCastle.Rules;
 namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("S-KerberosArmoringDC", RiskRuleCategory.StaleObjects, RiskModelCategory.ObjectConfig)]
-    [RuleComputation(RuleComputationType.TriggerOnPresence, 1)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
     [RuleIntroducedIn(2, 11, 1)]
     [RuleMaturityLevel(4)]
     [RuleMitreAttackTechnique(MitreAttackTechnique.StealorForgeKerberosTickets)]

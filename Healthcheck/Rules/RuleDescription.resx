@@ -695,10 +695,12 @@ Second, a more manual way is to essentially reset the password manually once, th
   Then, for each domain controller, extract the events 4624 at the date matching the LastLogon date. You will identify the computer and the process at the origin of the logon event.
   
   If the LastLogon attribute is older for ALL domain controllers than the LastLogonTimestamp, the LastLogonTimestamp attribute (that PingCastle relies on) may be updated by the kerberos S4u2Self mechanism.
-  You have to use replication metadata info to find which DC updated this attribute and look for 4769 and 4624 events on this DC.
+  This can be triggered in the Advanced Security Settings properties of any securable objects such as a file, then select the Effective Access tab and click on View effective access.
+  You have to use replication metadata info to find which DC updated this attribute and look for 4769 and 4624 events on this DC to know who have run this action.
   Read the page referenced in the documentation section for more information.
   
   Please note that PingCastle relies on the attribute LastLogonTimestamp to perform this check. The LastLogonTimestamp attribute is replicated but has a latency of a maximum of 14 days, while LastLogon is updated at each logon and is more accurate but not replicated.
+  The attribute  ms-DS-Logon-Time-Sync-Interval can be used to lower or increase the replication delay.
     </value>
   </data>
   <data name="P_AdminLogin_Rationale" xml:space="preserve">

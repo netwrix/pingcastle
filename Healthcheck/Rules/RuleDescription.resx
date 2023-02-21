@@ -761,7 +761,9 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 2003 for the workstations within the domain</value>
   </data>
   <data name="S_OS_2003_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Server 2003*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10.   
+    &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Server 2003*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2003_Rationale" xml:space="preserve">
     <value>Presence of Windows 2003 = {count}</value>
@@ -770,7 +772,9 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 2000 for the workstations within the domain</value>
   </data>
   <data name="S_OS_2000_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Server 2000*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
+    &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Server 2000*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2000_Rationale" xml:space="preserve">
     <value>Presence of Windows 2000 = {count}</value>
@@ -779,7 +783,9 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows XP for the workstations within the domain</value>
   </data>
   <data name="S_OS_XP_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Windows XP*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
+    &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Windows XP*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_XP_Rationale" xml:space="preserve">
     <value>Presence of Windows XP = {count}</value>
@@ -788,7 +794,9 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows NT for the workstations within the domain</value>
   </data>
   <data name="S_OS_NT_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 7. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "* NT *" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
+    &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "* NT *" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_NT_Rationale" xml:space="preserve">
     <value>Presence of Windows NT = {count}</value>
@@ -2791,7 +2799,9 @@ https://docs.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-loggi
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows Vista for the workstations within the domain</value>
   </data>
   <data name="S_OS_Vista_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt; You can replace &lt;i&gt;[-Filter *]&lt;/i&gt; with &lt;i&gt;[-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
+    &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt; You can replace &lt;i&gt;[-Filter *]&lt;/i&gt; with &lt;i&gt;[-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_Vista_Rationale" xml:space="preserve">
     <value>Presence of Windows Vista = {count}</value>
@@ -2842,7 +2852,9 @@ https://docs.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-loggi
     <value>The detail can be found in &lt;a href="#operatingsystems"&gt;Operating Systems&lt;/a&gt;</value>
   </data>
   <data name="S_OS_2008_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the servers to a more recent version of Windows, starting from Windows 2012. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the servers to a more recent version of Windows, starting from Windows 2012. 
+    &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2008_TechnicalExplanation" xml:space="preserve">
     <value>The Windows 2008 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
@@ -3864,7 +3876,9 @@ That means that an extraction of its password (using DCSync for example) can lea
     <value>The detail can be found in &lt;a href="#operatingsystems"&gt;Operating Systems&lt;/a&gt;</value>
   </data>
   <data name="S_OS_Win7_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
+    &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_Win7_TechnicalExplanation" xml:space="preserve">
     <value>The Windows 7 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.
@@ -4102,8 +4116,10 @@ https://www.gradenegger.eu/?p=1132</value>
     <value>The detail can be found in &lt;a href="#operatingsystems"&gt;Operating Systems&lt;/a&gt;</value>
   </data>
   <data name="S_OS_W10_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the Windows 10 or Windows 11 to a more recent version.
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows 1*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the Windows 10 or Windows 11 to a more recent version.    
+    &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;    
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows 1*"}&lt;/i&gt;
+    </value>
   </data>
   <data name="S_OS_W10_TechnicalExplanation" xml:space="preserve">
     <value>Some versions of Windows 10 and Windows 11 OS is no longer supported, and may be vulnerable to exploits that are not patched anymore.</value>
@@ -4461,7 +4477,9 @@ For the expected values:
     <value>The detail can be found in &lt;a href="#operatingsystems"&gt;Operating Systems&lt;/a&gt;</value>
   </data>
   <data name="S_OS_Win8_Solution" xml:space="preserve">
-    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10.     
+    &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;        
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_Win8_TechnicalExplanation" xml:space="preserve">
     <value>The Windows 8 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
@@ -4821,7 +4839,7 @@ An attacker can then change the DNS of a compromise host to the DC DNS and reque
 The safest settings is "Fail authentication requests when Kerberos armoring is not available" but it should be enabled only if the clients support kerberos armoring.</value>
   </data>
   <data name="S_KerberosArmoringDC_Rationale" xml:space="preserve">
-    <value>The Kerberos Armoring is not enabled on DC and the functional level is at least Windows 2012</value>
+    <value>Verify Kerberos Armoring is enabled on DCs and the functional level is at least Windows 2012</value>
   </data>
   <data name="S_KerberosArmoringDC_TechnicalExplanation" xml:space="preserve">
     <value>Kerberos Armoring is an optimization of the kerberos protocol. It avoids the preauthentication steps thus prohibiting preauthentication attacks;
@@ -4850,7 +4868,7 @@ The safest settings is "Fail authentication requests when Kerberos armoring is n
     then enable the policy "Kerberos client support for claims, compound authentication and Kerberos armoring".</value>
   </data>
   <data name="S_KerberosArmoring_Rationale" xml:space="preserve">
-    <value>The Kerberos Armoring is not enabled on client and the functional level is at least Windows 2012</value>
+    <value>Verify Kerberos Armoring is enabled on clients and the functional level is at least Windows 2012</value>
   </data>
   <data name="S_KerberosArmoring_TechnicalExplanation" xml:space="preserve">
     <value>Kerberos Armoring is an optimization of the kerberos protocol. It avoids the preauthentication steps thus prohibiting preauthentication attacks;

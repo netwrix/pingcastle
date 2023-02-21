@@ -255,7 +255,7 @@ namespace PingCastle
             PingCastle.Rules.RuleSet<HealthcheckData>.LoadCustomRules();
         }
 
-        const string basicEditionLicense = "PC2H4sIAAAAAAAEAO29B2AcSZYlJi9tynt/SvVK1+B0oQiAYBMk2JBAEOzBiM3mkuwdaUcjKasqgcplVmVdZhZAzO2dvPfee++999577733ujudTif33/8/XGZkAWz2zkrayZ4hgKrIHz9+fB8/In7NX+PX+DV+A/r/r/F7/g/Lf+v1v/Nr/tr0a0v/f/Zr1L9GTv+lv8bprzH7NQr6rPg1ql9jSX9Xv8Y5/fuS/l7+Ghe/xsmvkf0aDX1bctu9X2P8a+zSf+NfY4f+2qb/v6D2Lf08p581/ZzSzwX9l9NfU4KR0Zvpr7EmGPmvATT+oF/j1/g13v4ad9v/4u3v9U//Yb/N63dH/9zv+efv/zX//B+789V/8A/8W//LP/zH/Bd/3r/375R/1l/30e/+3/5jv/Jn/vW//nf+K2Z/2x/5X/9Jv8G/+Dv/1b/GX/W73P2Nfot/+2//7PLXfra+8+bf/rt+3+rxu391/O/8M59//uDNb7T1WxV/3g8+evGn/eA3/D1f/o7/3m/86/4JJ3/ir/n295x99If/8p03f9r/8T81f96L32L92/6zv8uf/t/8rd/7D/8fnT6M7RQBAAA=";
+        const string basicEditionLicense = "PC2H4sIAAAAAAAEAGNkYGDgAGKGAzLT7jy6xcgMZBYBsRuQTAVCBQZXhhSGTIYSIM5nyAPy8xnSgGQAkJ/HkM7gzJDIUAyUzQGrNWbQYzAAYwUGXSD2A6ouAdJpQLoISCcD6VwgTAXykoEmJAL1KTCUAk1IBbmBoQGImQ4+s9j59X9w1rOF7t6nn097JNLF6H92Pif/vFNT/87qVDt2pf4W+954r+YKwdUn4tq2pwsl5b2oKOWas9X8Rsdeb6O1PyTPzJ7/fwPbOcWwrtbci73XXKa8uBt1I+lVzxW/J2asCZZHbTw2h3++tb5sXfkHAc1DV89xt7PM68tV2K7paaFkAQD18TqOEgEAAA==";
         string _serialNumber;
         public string GetSerialNumber()
         {

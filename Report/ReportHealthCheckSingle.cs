@@ -1292,6 +1292,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         private void GenerateOperatingSystemList()
         {
             GenerateSubSection("Operating Systems", "operatingsystems");
+            AddParagraph("If you need to find the computers running a specific OS, we advise to use PingCastle.exe and the export / computers feature available from the main menu. " +
+                        "Indeed the computer details are not included in the report for performance issues. Doing this will impact significantly the report size and the time to load the report.");
             bool oldOS = Report.version <= new Version(2, 5, 0, 0);
             if (oldOS)
             {
@@ -4167,18 +4169,22 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                 {
                     foreach (GPPSecurityPolicyProperty property in policy.Properties)
                     {
-                        if (Report.GPOInfoDic == null || !Report.GPOInfoDic.ContainsKey(policy.GPOId))
+                        // checking if GPOId is not null for old reports
+                        if (!string.IsNullOrEmpty(policy.GPOId))
                         {
-                            continue;
-                        }
-                        var refGPO = Report.GPOInfoDic[policy.GPOId];
-                        if (refGPO.IsDisabled)
-                        {
-                            continue;
-                        }
-                        if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
-                        {
-                            continue;
+                            if (Report.GPOInfoDic == null || !Report.GPOInfoDic.ContainsKey(policy.GPOId))
+                            {
+                                continue;
+                            }
+                            var refGPO = Report.GPOInfoDic[policy.GPOId];
+                            if (refGPO.IsDisabled)
+                            {
+                                continue;
+                            }
+                            if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
+                            {
+                                continue;
+                            }
                         }
                         if (notFound.Contains(property.Property.ToLowerInvariant()))
                             notFound.Remove(property.Property.ToLowerInvariant());

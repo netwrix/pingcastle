@@ -147,7 +147,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
   <div class=""modal-dialog"" role=""document"">
     <div class=""modal-content"">
       <div class=""modal-header"">
-        <h4 class=""modal-title"">Privacy notive</h4>
+        <h4 class=""modal-title"">Privacy notice</h4>
         <button type=""button"" class=""btn-close"" data-bs-dismiss=""modal"" aria-label=""Close""></button>
       </div>
       <div class=""modal-body"">
@@ -155,7 +155,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         <p>The information collected depends on the license level.</p>
         <p>Information collected:</p>
 <ul>
-<li>IP Adress<br><span class='text-muted'><small>The goal is to compute country statistics and provide protection against database poisoning.</small></span></li>
+<li>IP Address<br><span class='text-muted'><small>The goal is to compute country statistics and provide protection against database poisoning.</small></span></li>
 <li>for the free license, the hash of the domain FQDN combined with the SID of the domain<br><span class='text-muted'><small>The goal is to compute the number of domains reported, without duplicates. The SID act as a salt to prohibit retrieving the original data by bruteforce.</small></span></li>
 <li>Report generation date<br><span class='text-muted'><small>This is to remove duplicates.</small></span></li>
 <li>The number of active users & active computers<br><span class='text-muted'><small>This is to compare with similar domain size.</small></span></li>
@@ -163,7 +163,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 <li>Rules ID that matched<br><span class='text-muted'><small>This is to present expected or non expected rules.</small></span></li>
 <li>the license<br><span class='text-muted'><small>This allows licensed customer to not transmit their domain identifier.</small></span></li>
 </ul>
-<p>Information not listed here are not sent to PingCastle</p>
+<p>Informations not listed here are not sent to PingCastle</p>
       </div>
       <div class=""modal-footer"">
         <button type=""button"" class=""btn btn-secondary"" data-bs-dismiss=""modal"">Close</button>
@@ -891,7 +891,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         {
             AddHeaderText("Nb Enabled", "Indicates the number of accounts not set as disabled.");
             AddHeaderText("Nb Disabled", "Indicates the number of accounts set as disabled.");
-            AddHeaderText("Nb Active", "Indicates the number of enabled accounts where at least one logon occured in the last 6 months.");
+            AddHeaderText("Nb Active", "Indicates the number of enabled accounts where at least one logon occurred in the last 6 months.");
             AddHeaderText("Nb Inactive", "Indicates the number of enabled accounts without any logon during the last 6 months.");
             if (!computerView)
             {
@@ -899,7 +899,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddHeaderText("Nb pwd never Expire", "Indicates the number of enabled accounts which have a password which never expires.");
             }
             AddHeaderText("Nb SidHistory", "Indicates the number of enabled accounts having the attribute SIDHistory set. This attributes indicates a foreign origin.");
-            AddHeaderText("Nb Bad PrimaryGroup", "Indicates the number of enabled account whose the group set as primary is not the default one.");
+            AddHeaderText("Nb Bad PrimaryGroup", "Indicates the number of enabled accounts whose group, set as primary, is not the default one.");
             if (!computerView)
             {
                 AddHeaderText("Nb Password not Req.", "Indicates the number of enabled accounts which have a flag set in useraccountcontrol allowing empty passwords.");
@@ -1416,7 +1416,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             AddHeaderText("Uptime");
                             AddHeaderText("Owner", "This is the owner of the underlying domain controller object stored in the active directory partition. The nTSecurityDescriptor attribute stores its value.");
                             AddHeaderText("Null sessions", "Indicates if an anonymous user can extract information from the domain controller");
-                            AddHeaderText("SMB v1", "Indicates if the domain controller supports this unsafe SMB v1 network protocol.");
+                            AddHeaderText("SMB v1", "Indicates if the domain controller supports the unsafe SMB v1 network protocol.");
                             if (Report.version >= new Version(2, 5, 3))
                             {
                                 AddHeaderText("Remote spooler", "Indicates if the spooler service is remotely accessible.");
@@ -1748,7 +1748,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 }
                 if (Report.version >= new Version(2, 5, 3))
                 {
-                    AddHeaderText("Service account", "Indicates for enabled accounts it has been marked as service. This is done by setting the servicePrincipalName attribute.");
+                    AddHeaderText("Service account", "Indicates for enabled accounts if it has been marked as service. This is done by setting the servicePrincipalName attribute.");
                 }
                 AddHeaderText("Flag Cannot be delegated present", "Indicates for enabled accounts if the protection 'this is account is sensitive and cannot be delegated' is in place.");
                 if (Report.version >= new Version(2, 8, 0))
@@ -1880,8 +1880,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 return;
             }
 
-            AddParagraph("The following table lists all the foreign domains whose compromission can impact this domain. The impact is listed by typology of objects.");
-            AddBeginTable("Compromission graph dependancies list");
+            AddParagraph("The following table lists all the foreign domains whose compromise can impact this domain. The impact is listed by typology of objects.");
+            AddBeginTable("Compromise graph dependancies list");
             AddHeaderText("FQDN", rowspan: 2);
             AddHeaderText("NetBIOS", rowspan: 2);
             AddHeaderText("SID", rowspan: 2);
@@ -2685,7 +2685,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 Add(@"
 		<div class=""row""><div class=""col-lg-12"">
 <p>The password of the AZUREADSSOACC account should be changed twice every 40 days. You can check this <a href=""https://github.com/MicrosoftDocs/azure-docs/blob/main/articles/active-directory/hybrid/how-to-connect-sso-faq.yml"">documentation</a> to have the procedure.</p>
-<p>You can use the version gathered using replication metadata from two reports to guess the frequency of the password change or if the two consecutive resets has been done. Version starts at 1.</p>
+<p>You can use the version gathered using replication metadata from two reports to guess the frequency of the password change or if the two consecutive resets have been done. Version starts at 1.</p>
 <p><strong>AZUREADSSOACC password last changed: </strong> " + Report.AzureADSSOLastPwdChange.ToString("u") + @"
 <strong>version: </strong> " + Report.AzureADSSOVersion + @"
 </p>
@@ -2773,7 +2773,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             if (Report.version >= new Version(2, 10, 1))
             {
                 GenerateSubSection("Azure AD Connect settings");
-                AddParagraph(@"Azure AD Connect help maintaining a synchronization between the Active Directory and Azure AD. Azure AD Connect servers should be considered as Tiers0 as they usually have the right to read of the hashes of the user passwords.");
+                AddParagraph(@"Azure AD Connect help maintaining a synchronization between the Active Directory and Azure AD. Azure AD Connect servers should be considered as Tiers0 as they usually have the right to read the hashes of the user passwords.");
                 AddBeginTable("Azure AD Connect account list");
                 AddHeaderText("Identifier", "This is the technical identifier set by Microsoft to identify this connection");
                 AddHeaderText("Computer", "This is the server where the synchronization is supposed to be performed");
@@ -2817,7 +2817,7 @@ Here are the settings found in GPO.");
                 AddHeaderText("Policy Name");
                 AddHeaderText("WSUS Server", "This is the server that will distribute Windows Update inside the network");
                 AddHeaderText("UseWUServer", "This option defines if the configuration is activated or ignored");
-                AddHeaderText("ElevateNonAdmins", "This option specifies if normal user can disapprove updates");
+                AddHeaderText("ElevateNonAdmins", "This option specifies if normal users can disapprove updates");
                 AddHeaderText("AUOptions", "This option determines if the local user can skip some updates");
                 AddHeaderText("NoAutoUpdate", "This option disable the auto update behavior");
                 AddHeaderText("NoAutoRebootWithLoggedOnUsers", "This option can block the update if there is a logged on user");
@@ -3077,7 +3077,7 @@ Here are the settings found in GPO.");
         private void GenerateAESPreparation()
         {
             GenerateSubSection("Replacement of RC4 by AES in kerberos");
-            AddParagraph(@"This section checks for know pain points in AES activation and RC4 removal for kerberos");
+            AddParagraph(@"This section checks for known pain points in AES activation and RC4 removal for kerberos");
             bool OK;
             if (string.IsNullOrEmpty(_license.Edition))
             {
@@ -3417,7 +3417,7 @@ Here is the list of servers configured for WEF found in GPO</p>
 		<div class=""row""><div class=""col-lg-12"">
 <p>The account password for the <em>krbtgt</em> account should be rotated twice yearly at a minimum. More frequent password rotations are recommended, with 40 days the current recommendation by ANSSI. Additional rotations based on external events, such as departure of an employee who had privileged network access, are also strongly recommended.</p>
 <p>You can perform this action using this <a href=""https://github.com/microsoft/New-KrbtgtKeys.ps1"">script</a></p>
-<p>You can use the version gathered using replication metadata from two reports to guess the frequency of the password change or if the two consecutive resets has been done. Version starts at 1.</p>
+<p>You can use the version gathered using replication metadata from two reports to guess the frequency of the password change or if the two consecutive resets have been done. Version starts at 1.</p>
 <p><strong>Kerberos password last changed: </strong> " + Report.KrbtgtLastChangeDate.ToString("u") + @"
 <strong>version: </strong> " + Report.KrbtgtLastVersion + @"
 </p>
@@ -3539,7 +3539,7 @@ Hackers can then perform a reconnaissance of the environement with only a networ
 <p>This control detects users which use only smart card and whose password hash has not been changed for at least 90 days.
 Indeed, once the smart card required check is activated in the user account properties, a random password hash is set.
 But this hash is not changed anymore like for users having a password whose change is controlled by password policies.
-As a consequence, a capture of the hash using a memory attack tool can lead to a compromission of this account unlimited in time.
+As a consequence, a capture of the hash using a memory attack tool can lead to a compromise of this account, unlimited in time.
 The best practice is to reset these passwords on a regular basis or to uncheck and check again the &quot;require smart card&quot; property to force a hash change.</p>
 			<p><strong>Users with smart card and having their password unchanged since at least 90 days:</strong> " +
         (Report.SmartCardNotOK == null ? 0 : Report.SmartCardNotOK.Count)
@@ -3551,7 +3551,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 
                 // logon script
                 GenerateSubSection("Logon scripts", "logonscripts");
-                AddParagraph("You can check here backdoors or typo error in the scriptPath attribute");
+                AddParagraph("You can check here for backdoors or typos in the scriptPath attribute");
                 AddBeginTable("Logon script list");
                 AddHeaderText("Script Name");
                 AddHeaderText("Count");
@@ -3654,7 +3654,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             Add(@"
 		<div class=""row"">
 			<div class=""col-lg-12"">
-				<p>This detects trusted certificate which can be used in man in the middle attacks or which can issue smart card logon certificates</p>
+				<p>This detects trusted certificates, which can be used in man in the middle attacks, or which can issue smart card logon certificates</p>
 				<p><strong>Number of trusted certificates:</strong> " + Report.TrustedCertificates.Count + @" 
 			</div>
 		</div>
@@ -3754,7 +3754,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                 Add(@"
 		<div class=""row"">
 			<div class=""col-lg-12"">
-				<p>This section lists certificate templates which can be used to generate certificate. A miss configuration can allow an attacker to create its own certificate and use it to impersonate other users</p>
+				<p>This section lists certificate templates which can be used to generate a certificate. A misconfiguration can allow an attacker to create its own certificate and use it to impersonate other users</p>
 				<p><strong>Number of certificate templates:</strong> " + Report.CertificateTemplates.Count + @" 
 			</div>
 		</div>
@@ -3771,7 +3771,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         AddHeaderText("Manager approval", "Require the CA certiicate manager approval before being issued");
                         AddHeaderText("Enrollee can supply subject", "Indicates if the user doing the request can submit its own subject or subject alternate name");
                         AddHeaderText("Issuance requirements", "Specify if an authorized signature is required before issuing the certificate");
-                        AddHeaderText("Vulnerable ACL", "Specify if large group such as EVERYONE can take controle of the template object");
+                        AddHeaderText("Vulnerable ACL", "Specify if large group such as EVERYONE can take control of the template object");
                         AddHeaderText("Everyone can enroll", "Indicates if there is no security restriction to request a certificate");
                         AddHeaderText("Agent template", "Specify if the certificates issued by this template can generate certificates on behalf other users");
                         AddHeaderText("Any purpose", "Indicates if no restrictions are in place for the certificate use such as authentication or agent use");
@@ -3816,7 +3816,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     Add(@"
 		<div class=""row"">
 			<div class=""col-lg-12"">");
-                    AddParagraph("Each delegations for certificate templates are listed below.");
+                    AddParagraph("The delegations for certificate templates are listed below.");
                     GenerateAccordion("ctdelegationaccordeon",
                         () =>
                         {
@@ -3842,7 +3842,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                 Add(@"
 		<div class=""row"">
 			<div class=""col-lg-12"">
-				<p>This section lists certificate in use on Domain Controllers. It gives an attacker hits about the PKI configuration.</p>
+				<p>This section lists certificates in use on Domain Controllers. They give an attacker hints about the PKI configuration.</p>
 				<p><strong>Number of DC certificates:</strong> " + DCCertCount + @" 
 			</div>
 		</div>
@@ -3984,7 +3984,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
         protected void GeneratePasswordPoliciesDetail()
         {
             GenerateSubSection("Password policies", "passwordpolicies");
-            Add(@"<p>Note: PSO (Password Settings Objects) will be visible only if the user which collected the information has the permission to view it.<br>PSO shown in the report will be prefixed by &quot;PSO:&quot;</p>");
+            Add(@"<p>Note: PSO (Password Settings Objects) will be visible only if the user, which collected the information, has the permission to view it.<br>PSO shown in the report will be prefixed by &quot;PSO:&quot;</p>");
             AddBeginTable("Password policies list");
             AddHeaderText("Policy Name");
             AddHeaderText("Complexity");
@@ -4106,7 +4106,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             }
 
             GenerateSubSection("Security settings", "lsasettings");
-            AddParagraph(@"A GPO can be used to deploy security settings to workstations.<br>The best practice out of the default security baseline is reported in <span class=""ticked"">green</span>.<br>The following settings in <span class=""unticked"">red</span> are unsual and may need to be reviewed.<br>Each setting is accompagnied which its value and a link to the GPO explanation.");
+            AddParagraph(@"A GPO can be used to deploy security settings to workstations.<br>The best practice out of the default security baseline is reported in <span class=""ticked"">green</span>.<br>The following settings in <span class=""unticked"">red</span> are unsual and may need to be reviewed.<br>Each setting is accompanied with its value and a link to the GPO explanation.");
             AddParagraph("You will find below the checks where no occurences have been found");
             AddBeginTable("Security settings list");
             AddHeaderText("Policy Name");
@@ -4131,7 +4131,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             }
             AddEndTable();
 
-            AddParagraph("Here are the security checks that have been check by PingCastle and where no applicable GPO have been found.");
+            AddParagraph("Here are the security checks that have been checked by PingCastle and where no applicable GPO has been found.");
             AddBeginTable("Security settings not found list");
             AddHeaderText("Setting");
             AddBeginTableData();
@@ -4208,7 +4208,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                 AddParagraph("Simple audit events are <a href='https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/01f8e057-f6a8-4d6e-8a00-99bcd241b403'>described here</a> and Advanced audit events are <a href='https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpac/77878370-0712-47cd-997d-b07053429f6d'>described here</a>");
                 AddParagraph("You can get a list of all audit settings with the command line: <code>auditpol.exe /get /category:*</code> (<a href='https://blogs.technet.microsoft.com/askds/2011/03/11/getting-the-effective-audit-policy-in-windows-7-and-2008-r2/'>source</a>)");
                 AddParagraph("Simple audit settings are located in: Computer Configuration / Policies / Windows Settings / Security Settings / Local Policies / Audit Policy. Simple audit settings are named [Simple Audit].");
-                AddParagraph("Advanced audit settings are located in: Computer Configuration / Policies / Windows Settings / Security Settings / Advanced Audit Policy Configuration. There category is displayed below.");
+                AddParagraph("Advanced audit settings are located in: Computer Configuration / Policies / Windows Settings / Security Settings / Advanced Audit Policy Configuration. This category is displayed below.");
                 AddBeginTable("Audit settings list");
                 AddHeaderText("Policy Name");
                 AddHeaderText("Category");
@@ -4243,7 +4243,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             }
 
             GenerateSubSection("Privileges", "gpoprivileges");
-            AddParagraph("Giving privileges in a GPO is a way to become administrator without being part of a group.<br>For example, SeTcbPriviledge give the right to act as SYSTEM, which has more privileges than the administrator account.");
+            AddParagraph("Giving privileges in a GPO is a way to become administrator without being part of a group.<br>For example, SeTcbPriviledge gives the right to act as SYSTEM, which has more privileges than the administrator account.");
             if (Report.GPPRightAssignment != null && Report.GPPRightAssignment.Count > 0)
             {
                 AddBeginTable("Privileges list");
@@ -4266,7 +4266,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             if (Report.version >= new Version(2, 8))
             {
                 GenerateSubSection("Login", "gpologin");
-                AddParagraph("Login authorization and restriction can be set by GPO. Indeed, by default, everyone is allowed to login on every computer except domain controllers. Defining login restriction is a way to have different isolated tiers. Here are the settings found in GPO.");
+                AddParagraph("Login authorization and restriction can be set by GPOs. Indeed, by default, everyone is allowed to login on every computer except domain controllers. Defining login restriction is a way to have different isolated tiers. Here are the settings found in GPOs.");
                 if (Report.GPPLoginAllowedOrDeny != null && Report.GPPLoginAllowedOrDeny.Count > 0)
                 {
                     AddBeginTable("Login list");

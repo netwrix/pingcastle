@@ -186,7 +186,7 @@ namespace PingCastle.ADWS
 			}
 			catch(Exception)
 			{
-				Trace.WriteLine("The domain location didn't worked - trying it directly");
+				Trace.WriteLine("The domain location didn't work - trying it directly");
 				GetDomainInfo();
 				return;
 			}
@@ -201,7 +201,7 @@ namespace PingCastle.ADWS
 				}
 				catch (EndpointNotFoundException)
 				{
-					Trace.WriteLine("The connection didn't worked");
+					Trace.WriteLine("The connection didn't work");
 					CleanConnection<Resource>(_resource);
 					_resource = null;
 				}
@@ -209,7 +209,7 @@ namespace PingCastle.ADWS
 				{
 					Trace.WriteLine("Exception: " + ex.Message);
 					Trace.WriteLine("Type: " + ex.GetType().ToString());
-					Trace.WriteLine("The connection didn't worked");
+					Trace.WriteLine("The connection didn't work");
 					CleanConnection<Resource>(_resource);
 					_resource = null;
 				}
@@ -447,7 +447,7 @@ namespace PingCastle.ADWS
 				var stringValue = Convert.ToString(stringWriter);
 				Trace.WriteLine("Exception:");
 				Trace.WriteLine(stringValue);
-				Trace.WriteLine("The connection didn't worked");
+				Trace.WriteLine("The connection didn't work");
 				throw;
 			}
 		}

@@ -172,15 +172,15 @@ https://docs.microsoft.com/en-us/azure/security/benchmarks/security-controls-v2-
     <value></value>
   </data>
   <data name="UserConsentCompanyData_Solution" xml:space="preserve">
-    <value>The recommandation is to require admin consent to grant consent to external applications.
+    <value>The recommendation is to require admin consent to grant consent to external applications.
   
 Open the Azure Console
 Go to Azure Active Directory
 Go to Users
 Go to User settings
-Click on Manage how end users launch and view their applications
+Click on "Manage how end users launch and view their applications"
 Under the Enterprise applications heading.
-Set Users can consent to apps accessing company data on their behalf to No
+Set "Users can consent to apps accessing company data on their behalf" to "No"
     </value>
   </data>
   <data name="UserConsentCompanyData_TechnicalExplanation" xml:space="preserve">
@@ -206,19 +206,19 @@ https://blogs.msdn.microsoft.com/exchangedev/2014/06/05/managing-user-consent-fo
 https://nicksnettravels.builttoroam.com/post/2017/01/24/Admin-Consent-for-Permissions-in-Azure-Active-Directory.aspx</value>
   </data>
   <data name="UserRegisterApplications_Rationale" xml:space="preserve">
-    <value>Users can register directly application into the AzureAD portal</value>
+    <value>Users can register applications directly into the AzureAD portal</value>
   </data>
   <data name="UserRegisterApplications_ReportLocation" xml:space="preserve">
     <value></value>
   </data>
   <data name="UserRegisterApplications_Solution" xml:space="preserve">
-    <value>The recommandation is to require admins to register new applications
+    <value>The recommendation is to require admins to register new applications
   
 Open the Azure Console
 Go to Azure Active Directory
 Go to Users
 Go to User settings
-Set Users can register applications to No
+Set "Users can register applications" to "No"
     </value>
   </data>
   <data name="UserRegisterApplications_TechnicalExplanation" xml:space="preserve">
@@ -229,7 +229,7 @@ Set Users can register applications to No
     <value>Check if users can consent to any app</value>
   </data>
   <data name="GuestUserAccessRestriction1_Description" xml:space="preserve">
-    <value>The purpose of this rule is to ensure that the guest user has not the same access level than a user</value>
+    <value>The purpose of this rule is to ensure that the Guest user does not have the same access level as a normal user</value>
   </data>
   <data name="GuestUserAccessRestriction1_Detail" xml:space="preserve">
     <value>GuestUserRoleId: {0}</value>
@@ -241,7 +241,7 @@ https://docs.microsoft.com/en-us/azure/security/benchmarks/security-controls-v2-
 https://docs.microsoft.com/en-us/azure/security/benchmarks/security-controls-v2-governance-strategy#gs-6-define-identity-and-privileged-access-strategy</value>
   </data>
   <data name="GuestUserAccessRestriction1_Rationale" xml:space="preserve">
-    <value>Guest users have the same access level than a normal user</value>
+    <value>Guest users have the same access level as a normal user</value>
   </data>
   <data name="GuestUserAccessRestriction1_ReportLocation" xml:space="preserve">
     <value></value>
@@ -251,7 +251,7 @@ https://docs.microsoft.com/en-us/azure/security/benchmarks/security-controls-v2-
 Go to Azure Active Directory
 Go to External Identities
 Go to External collaboration settings
-Under Guest user access, change the value to Guest users have limited access to properties and memberships of directory objects (default value)
+Under "Guest user access", change the value to "Guest users have limited access to properties and memberships of directory objects" (default value)
     </value>
   </data>
   <data name="GuestUserAccessRestriction1_TechnicalExplanation" xml:space="preserve">
@@ -284,14 +284,14 @@ https://docs.microsoft.com/en-us/azure/security/benchmarks/security-controls-v2-
 Go to Azure Active Directory
 Go to External Identities
 Go to External collaboration settings
-Under Guest user access, change the value to Guest user access is restricted to properties and memberships of their own directory objects (most restrictive)
+Under "Guest user access", change the value to "Guest user access is restricted to properties and memberships of their own directory objects" (most restrictive)
     </value>
   </data>
 	<data name="GuestUserAccessRestriction2_TechnicalExplanation" xml:space="preserve">
     <value>By default guests users are restricted from exploring the directory.
 But giving an existing account it is possible to explore the most of the directory.
-The technic, available in the export section of PingCastle, consists of enumerating groups from a given users, then to enumerate the members of these groups and to continue recursively.
-To prohibit this technic, there are a most restrictive to limit this exploration to the groups where the guess belongs.</value>
+The technique, available in the export section of PingCastle, consists of enumerating groups from a given users, then to enumerate the members of these groups and to continue recursively.
+To prohibit this technique, restrict this exploration to the groups where the guest belongs.</value>
   </data>
 	<data name="GuestUserAccessRestriction2_Title" xml:space="preserve">
     <value>Check if guests have the most restricted access level</value>

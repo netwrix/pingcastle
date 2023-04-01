@@ -154,7 +154,7 @@
     <value>Domain controller: {0} ip: {1}</value>
   </data>
   <data name="A_BackupMetadata_Description" xml:space="preserve">
-    <value>The purpose is to check if the backups are actually up to date in case they are needed. The alert can be triggered when a domain is backed up using non-recommended methods</value>
+    <value>The purpose is to check if the backups are actually up to date in case they are needed. The alert can be triggered when a domain is backed up using non-recommended methods</value>
   </data>
   <data name="A_BackupMetadata_Solution" xml:space="preserve">
     <value>Plan AD backups based on Microsoft standards. These standards depend on the Operating System. For example with the wbadmin utility: &lt;i&gt;wbadmin start systemstatebackup -backuptarget:d:&lt;/i&gt;</value>
@@ -500,7 +500,7 @@ To solve the anomaly, you should implement a PSO or GPO password guarantying a 2
     <value>The purpose is to identify domains having a GPO which allows access to the domain without any account </value>
   </data>
   <data name="A_AnonymousAuthorizedGPO_Solution" xml:space="preserve">
-    <value>In order to remove the anonymous access, we advise to identify the GPO indicated by the program and change the setting restrictanonymous and restrictanonymoussam</value>
+    <value>In order to remove the anonymous access, we advise to identify the GPO indicated by the program and change the setting restrictanonymous and restrictanonymoussam</value>
   </data>
   <data name="A_AnonymousAuthorizedGPO_Rationale" xml:space="preserve">
     <value>{count} policies have been found where anonymous accesses can be used</value>
@@ -569,10 +569,10 @@ For LmCompatibilityLevel the setting is located in: Network security: LAN Manage
     <value>GPO: {0} login: {1} password: {2}</value>
   </data>
   <data name="A_AdminSDHolder_Description" xml:space="preserve">
-    <value>The purpose is to ensure that there are no rogue admin accounts in the Active Directory</value>
+    <value>The purpose is to ensure that there are no rogue admin accounts in the Active Directory</value>
   </data>
   <data name="A_AdminSDHolder_Solution" xml:space="preserve">
-    <value>These accounts should be reviewed, especially in regards with their past activities and have the admincount attribute removed. In order to identify which accounts are detected by this rule, we advise to run a PowerShell command that will show you all users having this flag set: &lt;i&gt;get-adobject -ldapfilter "(admincount=1)"&lt;/i&gt;
+    <value>These accounts should be reviewed, especially in regards with their past activities and have the admincount attribute removed. In order to identify which accounts are detected by this rule, we advise to run a PowerShell command that will show you all users having this flag set: &lt;i&gt;get-adobject -ldapfilter "(admincount=1)"&lt;/i&gt;
     Do not forget to look at the section AdminSDHolder below.</value>
   </data>
   <data name="A_AdminSDHolder_Rationale" xml:space="preserve">
@@ -1102,14 +1102,14 @@ For all users in a OU:
     <value>A Delegation is granted to Everyone</value>
   </data>
   <data name="A_AdminSDHolder_TechnicalExplanation" xml:space="preserve">
-    <value>A check is performed on non-admin accounts in order to identify if they have an attribute &lt;i&gt;admincount&lt;/i&gt; set. If they have this attribute, it means that this account, which is not supposed to be admin, has been granted administrator rights in the past. This typically happens when an administrator gives temporary rights to a normal account, off process.</value>
+    <value>A check is performed on non-admin accounts in order to identify if they have an attribute &lt;i&gt;admincount&lt;/i&gt; set. If they have this attribute, it means that this account, which is not supposed to be admin, has been granted administrator rights in the past. This typically happens when an administrator gives temporary rights to a normal account, off process.</value>
   </data>
   <data name="A_AnonymousAuthorizedGPO_TechnicalExplanation" xml:space="preserve">
     <value>It is possible that domains are set to authorize connection without any account, which represents a security breach. It allows potential attackers to enumerate all the users and computers belonging to a domain, in order to identify very efficiently future weak targets.
 It is possible to verify the results provided by the PingCastle solution by using a Kali Linux distribution. You should run [rpcclient -U " target_ip_address] and press enter at the password prompt to finally type [enumdomusers].</value>
   </data>
   <data name="A_BackupMetadata_TechnicalExplanation" xml:space="preserve">
-    <value>A verification is done on the backups, ensuring that the backup is performed according to Microsoft standards. Indeed, at each backup the DIT Database Partition Backup Signature is updated. If for any reasons, backups are needed to perform a rollback (rebuild a domain) or to track past changes, the backups will actually be up to date. This check is equivalent to a &lt;i&gt;REPADMIN /showbackup *&lt;/i&gt;.</value>
+    <value>A verification is done on the backups, ensuring that the backup is performed according to Microsoft standards. Indeed, at each backup the DIT Database Partition Backup Signature is updated. If for any reasons, backups are needed to perform a rollback (rebuild a domain) or to track past changes, the backups will actually be up to date. This check is equivalent to a &lt;i&gt;REPADMIN /showbackup *&lt;/i&gt;.</value>
   </data>
   <data name="A_DsHeuristicsAnonymous_TechnicalExplanation" xml:space="preserve">
     <value>The way an Active Directory behaves can be controlled via the attribute &lt;i&gt;DsHeuristics&lt;/i&gt; of &lt;i&gt;CN=Directory Service,CN=Windows NT,CN=Services,CN=Configuration&lt;/i&gt;. A parameter stored in its attribute and whose value is &lt;i&gt;fLDAPBlockAnonOps&lt;/i&gt; can be set to allow access without any account on the &lt;b&gt;whole forest level&lt;/b&gt;.
@@ -1200,7 +1200,7 @@ It is possible to verify the results provided by the PingCastle solution by usin
     <value>Every domain administrator represents a possible security breach, this is why it is strongly advised to have as few domain administrator accounts as possible</value>
   </data>
   <data name="P_DangerousExtendedRight_TechnicalExplanation" xml:space="preserve">
-    <value>The right "REANIMATE_TOMBSTONE" used to undelete objects, "UNEXPIRE_PASSWORD" used to undo the expiration of a password, or "SID_HISTORY" used to create an alternate identity is considered dangerous. Indeed, this rights can be used to trigger a backdoor.</value>
+    <value>The right "REANIMATE_TOMBSTONE" used to undelete objects, "UNEXPIRE_PASSWORD" used to undo the expiration of a password, or "SID_HISTORY" used to create an alternate identity is considered dangerous. Indeed, this right can be used to trigger a backdoor.</value>
   </data>
   <data name="P_DCOwner_TechnicalExplanation" xml:space="preserve">
     <value>By default, the "Domain Administrators" group or the "Enterprise Administrators" group are set as owners for "Domain Controllers". Nonetheless, in some cases (for instance when the server has been promoted from an existing server), the owner can be a non-admin person which joined the server to the domain. If this person has still rights over this account, it can be used to take ownership over the whole domain. A chain of compromising events can be designed to take control of the domain by including this account.</value>
@@ -2801,7 +2801,8 @@ https://docs.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-loggi
   <data name="S_OS_Vista_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt; You can replace &lt;i&gt;[-Filter *]&lt;/i&gt; with &lt;i&gt;[-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;
+    You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>  
   </data>
   <data name="S_OS_Vista_Rationale" xml:space="preserve">
     <value>Presence of Windows Vista = {count}</value>
@@ -2854,7 +2855,8 @@ https://docs.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-loggi
   <data name="S_OS_2008_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the servers to a more recent version of Windows, starting from Windows Server 2012. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;
+    You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2008_TechnicalExplanation" xml:space="preserve">
     <value>The Windows Server 2008 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
@@ -3878,7 +3880,8 @@ That means that an extraction of its password (using DCSync for example) can lea
   <data name="S_OS_Win7_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto &lt;/i&gt;
+	You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_Win7_TechnicalExplanation" xml:space="preserve">
     <value>The Windows 7 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.
@@ -4118,7 +4121,8 @@ https://www.gradenegger.eu/?p=1132</value>
   <data name="S_OS_W10_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the Windows 10 or Windows 11 to a more recent version.    
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;    
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows 1*"}&lt;/i&gt;
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto &lt;/i&gt;
+	You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows 1*"}&lt;/i&gt;
     </value>
   </data>
   <data name="S_OS_W10_TechnicalExplanation" xml:space="preserve">
@@ -4479,7 +4483,8 @@ For the expected values:
   <data name="S_OS_Win8_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10.     
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;        
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto You can replace [-Filter *] by [-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto &lt;/i&gt;
+	You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_Win8_TechnicalExplanation" xml:space="preserve">
     <value>The Windows 8 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>

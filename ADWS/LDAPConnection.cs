@@ -212,7 +212,7 @@ namespace PingCastle.ADWS
             }
             catch (Exception)
             {
-                Trace.WriteLine("The domain location didn't worked - trying it directly");
+                Trace.WriteLine("The domain location didn't work - trying it directly");
                 GetDomainInfo();
                 return;
             }

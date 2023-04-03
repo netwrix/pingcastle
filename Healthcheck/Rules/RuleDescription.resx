@@ -479,7 +479,7 @@ Note: PSO (Password Settings Objects) will be visible only if the user, which co
 To solve the anomaly, you should implement a PSO or GPO password guarantying a 20+ length password.</value>
   </data>
   <data name="A_NoServicePolicy_Rationale" xml:space="preserve">
-    <value>No password policy for service account found (MinimumPasswordLength&gt;=20)</value>
+    <value>No password policy for service accounts found (MinimumPasswordLength&gt;=20)</value>
   </data>
   <data name="A_NoServicePolicy_Detail" xml:space="preserve">
     <value>GPO: {0}</value>
@@ -2398,7 +2398,7 @@ As an alternative, the file GptTmpl.inf can be manually edited.</value>
     <value>The GPO deployed settings are applied to computers locally and they can be abused to take control of individual computers.</value>
   </data>
   <data name="PasswordRetrieval_Detail" xml:space="preserve">
-    <value>Passwords stored in clear text or obfuscated can be retrieved. By reusing the user's identity, an attacker does not need to perform attack and it is difficult to detect it.</value>
+    <value>Passwords stored in clear text or obfuscated can be retrieved. By reusing the user's identity, an attacker's login appears like from any legitimate user. There's no need to perform a potentially detectable exploit for intrusion or lateral movement.</value>
   </data>
   <data name="WeakPassword_Detail" xml:space="preserve">
     <value>Misprotected credentials can be abused to be retrieved in plain text and then, impersonate the user.</value>
@@ -2413,7 +2413,7 @@ As an alternative, the file GptTmpl.inf can be manually edited.</value>
     <value>Certificates are an alternative to passwords. Their protection is crucial to avoid any backdoor.</value>
   </data>
   <data name="PassTheCredential_Detail" xml:space="preserve">
-    <value>If the password is a secret which protects its derivatives, such as the fingerprint named hash, can be used as if it was the password itself.</value>
+    <value>If the password is a secret, which protects its derivatives, such as the fingerprint named hash, it can be used as if it was the password itself.</value>
   </data>
   <data name="GoldenTicket_Detail" xml:space="preserve">
     <value>There are key secrets in Active Directory which provide seeds to the cryptographic processes. A leak could lead to a total compromise of the domain.</value>
@@ -2575,7 +2575,7 @@ https://github.com/daem0nc0re/PrivFu#privilegedoperations
 https://github.com/daem0nc0re/PrivFu/blob/main/PrivilegedOperations/SeTrustedCredManAccessPrivilegePoC/SeTrustedCredManAccessPrivilegePoC.cs</value>
   </data>
   <data name="P_TrustedCredManAccessPrivilege_Title" xml:space="preserve">
-    <value>Check if there is the privilege Access Credential Manager as a trusted caller user right has been explicitly granted.</value>
+    <value>Check if there is the privilege "Access Credential Manager" has been explicitly granted to a user other than the "Winlogon service".</value>
   </data>
   <data name="P_TrustedCredManAccessPrivilege_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href="#gpoprivileges"&gt;Privileges&lt;/a&gt;</value>
@@ -3070,7 +3070,7 @@ https://docs.microsoft.com/en-us/troubleshoot/windows-server/networking/sysvol-d
   <data name="A_NTFRSOnSysvol_TechnicalExplanation" xml:space="preserve">
     <value>NTFRS is an old protocol and is considered insecure.
     The SYSVOL share is mainly hosted on domain controllers to host GPO files and login scripts.
-  If the content can be modified, it can be used to grant to an hacker the control of the computers reading these configuration files.
+  If the content can be modified, it can be used to grant to a hacker the control of the computers reading these configuration files.
 To know if the setting is enabled, PingCastle read the following LDAP entry: CN=Domain System Volume (SYSVOL share),CN=File Replication Service,CN=System
 If there is any entry found, the program consider that NTFRS is in use for SYSVOL replication.
 
@@ -3857,8 +3857,8 @@ https://www.dsinternals.com/en/impersonating-office-365-users-mimikatz/</value>
     <value>Run the script referenced in the documentation below to change the password of the account AZUREADSSOACC.</value>
   </data>
   <data name="T_AzureADSSO_TechnicalExplanation" xml:space="preserve">
-    <value>AzureAD SSO is performed using a gateway. This gateway converts a Kerberos TGS ticket to SAML ticket.
-    In short, a connection to the computer account AZUREADSSOACC and the secret of this user account is used as a shared secret with AzureAD.
+    <value>AzureAD SSO is performed using a gateway. This gateway converts a Kerberos TGS ticket to a SAML ticket.
+    In short, a connection is made to the computer account AZUREADSSOACC and the secret of this user account is used as a shared secret with AzureAD.
   Despite the fact that this computer account should have its password automatically changed every 30 days, it did not happen.
 That means that an extraction of its password (using DCSync for example) can lead to an AzureAD compromise.</value>
   </data>
@@ -4229,12 +4229,12 @@ https://docs.oracle.com/cd/E19424-01/820-4813/6ng8jv82s/index.html</value>
     <value>The detail can be found in the &lt;a href="#javacoderefence"&gt;Java Code Reference&lt;/a&gt; section.</value>
   </data>
   <data name="S_JavaSchema_Solution" xml:space="preserve">
-    <value>Unfortuntaly there can be legit cases to use these Java attributes, that's why this rule is set to informative only.
-The recommended way to deal with this situation, is to make sure that no objects are using these attributes or to set the value com.sun.jndi.ldap.object.trustURLCodebase to false to ALL the Java code.
+    <value>Unfortuntaly there can be legit cases to use these Java attributes, that's why this rule is set to "informative" only.
+The recommended way to deal with this situation, is to either make sure that no objects are using these attributes, or to set the value com.sun.jndi.ldap.object.trustURLCodebase to "false" in ALL your Java code.
 PingCastle is displaying the active users having these Java attributes set in the Detail section.
 
 If you want to disable the Java extension you can proceed by setting each Java attributes to defunct.
-See the following procedure to disable existing schema attribute : https://docs.microsoft.com/en-us/windows/win32/ad/disabling-existing-classes-and-attributes
+See the following procedure on how to disable existing schema attributes: https://docs.microsoft.com/en-us/windows/win32/ad/disabling-existing-classes-and-attributes
 </value>
   </data>
   <data name="S_JavaSchema_TechnicalExplanation" xml:space="preserve">
@@ -5058,9 +5058,9 @@ https://learn.microsoft.com/en-us/troubleshoot/windows-server/identity/raise-act
   </data>
   <data name="S_OldNtlm_TechnicalExplanation" xml:space="preserve">
     <value>NTLMv1 is an old protocol which is known to be vulnerable to cryptographic attacks.
-    It is typically used when an hacker sniffs the network and tries to retrieve NTLM hashes which can then be used to impersonate users.
+    It is typically used when a hacker sniffs the network and tries to retrieve NTLM hashes which can then be used to impersonate users.
     
-    This attack can be combined with coerced authentication attacks - an hacker forces the DC to connect to a controlled host.
+    This attack can be combined with coerced authentication attacks - a hacker forces the DC to connect to a controlled host.
     In this case, NTLMv1 can be specified so the hacker can retrieve the NTLM hash of the DC, impersonates it and then take control of the domain.
     This attack is still possible with NTLMv2 but this is more difficult.
     

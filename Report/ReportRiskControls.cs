@@ -44,7 +44,7 @@ namespace PingCastle.Report
 		<div class=""row indicators-border"">
 ");
             GenerateSubIndicator("Stale Object", data.GlobalScore, data.StaleObjectsScore, rules, RiskRuleCategory.StaleObjects, "It is about operations related to user or computer objects");
-            GenerateSubIndicator("Trusts", data.GlobalScore, data.TrustScore, rules, RiskRuleCategory.Trusts, "It is about links between two Active Directories");
+            GenerateSubIndicator("Trusts", data.GlobalScore, data.TrustScore, rules, RiskRuleCategory.Trusts, "It is about connections between two Active Directories");
             GenerateSubIndicator("Privileged Accounts", data.GlobalScore, data.PrivilegiedGroupScore, rules, RiskRuleCategory.PrivilegedAccounts, "It is about administrators of the Active Directory");
             GenerateSubIndicator("Anomalies", data.GlobalScore, data.AnomalyScore, rules, RiskRuleCategory.Anomalies, "It is about specific security control points");
             Add(@"
@@ -219,11 +219,12 @@ namespace PingCastle.Report
 				</table>
 			</div>
 			<div class=""col-md-12"" id=""maturityModel"">
-		Legend: <br>
-			<i class=""risk_model_none"">&nbsp;</i> score is 0 - no risk identified but some improvements detected<br>
-			<i class=""risk_model_low"">&nbsp;</i> score between 1 and 10  - a few actions have been identified<br>
-			<i class=""risk_model_medium"">&nbsp;</i> score between 10 and 30 - rules should be looked with attention<br>
-			<i class=""risk_model_high"">&nbsp;</i> score higher than 30 - major risks identified
+		Left-click on the headlines in the boxes for more details.
+        Legend: <br>
+			<i class=""risk_model_none"">&nbsp;</i> Score is 0 - no risk identified but some possible improvements detected<br>
+			<i class=""risk_model_low"">&nbsp;</i> Score between 1 and 10  - a few needed actions have been identified<br>
+			<i class=""risk_model_medium"">&nbsp;</i> Score between 10 and 30 - rule results should be checked with high priority<br>
+			<i class=""risk_model_high"">&nbsp;</i> Score higher than 30 - major risks identified
 			</div>
 		</div>");
         }

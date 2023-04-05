@@ -44,7 +44,7 @@ namespace PingCastle.Report
 		<div class=""row indicators-border"">
 ");
             GenerateSubIndicator("Stale Object", data.GlobalScore, data.StaleObjectsScore, rules, RiskRuleCategory.StaleObjects, "It is about operations related to user or computer objects");
-            GenerateSubIndicator("Trusts", data.GlobalScore, data.TrustScore, rules, RiskRuleCategory.Trusts, "It is about links between two Active Directories");
+            GenerateSubIndicator("Trusts", data.GlobalScore, data.TrustScore, rules, RiskRuleCategory.Trusts, "It is about connections between two Active Directories");
             GenerateSubIndicator("Privileged Accounts", data.GlobalScore, data.PrivilegiedGroupScore, rules, RiskRuleCategory.PrivilegedAccounts, "It is about administrators of the Active Directory");
             GenerateSubIndicator("Anomalies", data.GlobalScore, data.AnomalyScore, rules, RiskRuleCategory.Anomalies, "It is about specific security control points");
             Add(@"
@@ -106,7 +106,7 @@ namespace PingCastle.Report
             Add(@"
 		<div class=""row d-print-none""><div class=""col-lg-12"">
 			<a data-bs-toggle=""collapse"" data-bs-target=""#riskModel"">
-				<h2>Risk model</h2>
+				<h2>Risk model <i class=""info-mark d-print-none has-tooltip"" data-bs-placement=""bottom"" title="""" data-bs-original-title=""Left-click on the headlines in the boxes for more details."">?</i></h2>
 			</a>
 		</div></div>
 		<div class=""row collapse show d-print-none"" id=""riskModel"">

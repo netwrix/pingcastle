@@ -9,22 +9,26 @@ Ping Castle is a tool designed to assess quickly the Active Directory security l
 It does not aim at a perfect evaluation but rather as an efficiency compromise.
 
 ```
-  \==--O___      PingCastle (Version 2.11.0.0     07/08/2022 09:56:28)
-   \  / \  ¨¨>   Get Active Directory Security at 80% in 20% of the time
-    \/   \ ,'    End of support: 31/01/2024
-     O¨---O
+  \==--O___      PingCastle (Version 3.0.0.0     2/21/2023 7:25:24 PM)
+   \  / \  "">   Get Active Directory Security at 80% in 20% of the time
+    \/   \ ,'    End of support: 7/31/2024
+     O"---O
       \ ,'       Vincent LE TOUX (contact@pingcastle.com)
        v         twitter: @mysmartlogon       https://www.pingcastle.com
+What do you want to do?
+=======================
 Using interactive mode.
 Do not forget that there are other command line switches like --help that you can use
-What you would like to do?
   1-healthcheck-Score the risk of a domain
-  2-graph      -Analyze admin groups and delegations
+  2-azuread    -Score the risk of AzureAD
   3-conso      -Aggregate multiple reports into a single one
-  4-nullsession-Perform a specific security check
-  5-carto      -Build a map of all interconnected domains
-  6-scanner    -Perform specific security checks on workstations
-
+  4-carto      -Build a map of all interconnected domains
+  5-scanner    -Perform specific security checks on workstations
+  6-export     -Export users or computers
+  7-advanced   -Open the advanced menu
+  0-Exit
+==============================
+This is the main functionnality of PingCastle. In a matter of minutes, it produces a report which will give you an overview of your Active Directory security. This report can be generated on other domains by using the existing trust links.
 ```
 
 Check https://www.pingcastle.com for the documentation and methodology

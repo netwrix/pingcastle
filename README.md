@@ -3,12 +3,12 @@
 ## Introduction
 
 The risk level regarding Active Directory security has changed.
-Several vulnerabilities have been made popular with tools like [mimikatz](https://github.com/gentilkiwi/mimikatz) or sites likes [adsecurity.org](http://adsecurity.org/). 
+Several vulnerabilities have been made popular with tools like [mimikatz](https://github.com/gentilkiwi/mimikatz) or sites likes [adsecurity.org](http://adsecurity.org/).
 
 Ping Castle is a tool designed to assess quickly the Active Directory security level with a methodology based on risk assessment and a maturity framework.
 It does not aim at a perfect evaluation but rather as an efficiency compromise.
 
-```
+```plain
   \==--O___      PingCastle (Version 3.0.0.0     2/21/2023 7:25:24 PM)
    \  / \  "">   Get Active Directory Security at 80% in 20% of the time
     \/   \ ,'    End of support: 7/31/2024
@@ -31,7 +31,7 @@ Do not forget that there are other command line switches like --help that you ca
 This is the main functionnality of PingCastle. In a matter of minutes, it produces a report which will give you an overview of your Active Directory security. This report can be generated on other domains by using the existing trust links.
 ```
 
-Check https://www.pingcastle.com for the documentation and methodology
+Check <https://www.pingcastle.com> for the documentation and methodology
 
 ## Build
 
@@ -52,6 +52,7 @@ PingCastle source code is licensed under a proprietary license and the Non-Profi
 
 Except if a license is purchased, you are not allowed to make any profit from this source code.
 To be more specific:
+
 * It is allowed to run PingCastle without purchasing any license on for profit companies if the company itself (or its ITSM provider) run it.
 * To build services based on PingCastle AND earning money from that, you MUST purchase a license.
 
@@ -66,7 +67,3 @@ Ping Castle uses the following Open source components:
 Author: Vincent LE TOUX
 
 You can contact me at vincent.letoux@gmail.com
-
-
-
-

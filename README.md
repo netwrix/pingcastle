@@ -9,7 +9,7 @@ Ping Castle is a tool designed to assess quickly the Active Directory security l
 It does not aim at a perfect evaluation but rather as an efficiency compromise.
 
 ```plain
-  \==--O___      PingCastle (Version 3.0.0.0     2/21/2023 7:25:24 PM)
+  \==--O___      PingCastle (Version 3.0.0.3     4/18/2023 7:25:24 PM)
    \  / \  "">   Get Active Directory Security at 80% in 20% of the time
     \/   \ ,'    End of support: 7/31/2024
      O"---O
@@ -35,7 +35,7 @@ Check <https://www.pingcastle.com> for the documentation and methodology
 
 ## Build
 
-PingCastle is a c# project which can be build from Visual Studio 2012 to Visual Studio 2017
+PingCastle is a c# project which can be build from Visual Studio 2012 to Visual Studio 2022
 
 ## Support & lifecycle
 
@@ -61,6 +61,8 @@ Ping Castle uses the following Open source components:
 * [Bootstrap](https://getbootstrap.com/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
 * [JQuery](https://jquery.org) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
 * [vis.js](http://visjs.org/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+* [popper.js](https://popper.js.org/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+* [Bootstrap Table](https://bootstrap-table.com/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
 
 ## Author
 

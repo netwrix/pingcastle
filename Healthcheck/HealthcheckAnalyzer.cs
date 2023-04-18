@@ -174,6 +174,7 @@ namespace PingCastle.Healthcheck
                 healthcheckData.RiskRules.Add(risk);
             }
             DisplayAdvancement("Export completed");
+            healthcheckData.SetIntegrity();
             return healthcheckData;
         }
 
@@ -534,7 +535,9 @@ namespace PingCastle.Healthcheck
                         {
                             return;
                         }
-                        ProcessAccountData(healthcheckData.UserAccountData, x, false, healthcheckData.DCWin2008Install, healthcheckData.ListHoneyPot);
+                        if (!ProcessAccountData(healthcheckData.UserAccountData, x, false, healthcheckData.DCWin2008Install, healthcheckData.ListHoneyPot))
+                            return;
+
                         // only enabled accounts and no guest account
                         if ((x.UserAccountControl & 0x00000002) == 0)
                         {
@@ -568,12 +571,7 @@ namespace PingCastle.Healthcheck
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine(ex.StackTrace);
                         Console.ResetColor();
-                        if (ex.InnerException != null)
-                        {
-                            Trace.WriteLine("Inner:");
-                            Trace.WriteLine(ex.InnerException.Message);
-                            Trace.WriteLine(ex.InnerException.StackTrace);
-                        }
+                        Trace.WriteLine(ex.ToString());
                     }
                 };
 
@@ -657,10 +655,10 @@ namespace PingCastle.Healthcheck
             return output;
         }
 
-        public static void ProcessAccountData(IAddAccountData data, ADItem x, bool computerCheck, DateTime DCWin2008Install, List<HealthcheckAccountDetailData> ListHoneyPot = null)
+        public static bool ProcessAccountData(IAddAccountData data, ADItem x, bool computerCheck, DateTime DCWin2008Install, List<HealthcheckAccountDetailData> ListHoneyPot = null)
         {
             // see https://msdn.microsoft.com/fr-fr/library/windows/desktop/ms680832%28v=vs.85%29.aspx for the flag
-            if (!string.IsNullOrEmpty(x.SAMAccountName) && ListHoneyPot != null && ListHoneyPot.Count > 0)
+            if (ListHoneyPot != null && ListHoneyPot.Count > 0)
             {
                 foreach (var h in ListHoneyPot)
                 {
@@ -671,7 +669,7 @@ namespace PingCastle.Healthcheck
                         h.CreationDate = x.WhenCreated;
                         h.DistinguishedName = x.DistinguishedName;
                         h.LastLogonDate = x.LastLogonTimestamp;
-                        return;
+                        return false;
                     }
                     if (string.Equals(h.DistinguishedName, x.DistinguishedName, StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -680,7 +678,7 @@ namespace PingCastle.Healthcheck
                         h.CreationDate = x.WhenCreated;
                         h.DistinguishedName = x.DistinguishedName;
                         h.LastLogonDate = x.LastLogonTimestamp;
-                        return;
+                        return false;
                     }
                 }
             }
@@ -794,7 +792,7 @@ namespace PingCastle.Healthcheck
                 }
 
             }
-
+            return true;
         }
 
         private static HealthcheckAccountDetailData GetAccountDetail(ADItem x)
@@ -830,9 +828,13 @@ namespace PingCastle.Healthcheck
         private void GenerateComputerData(ADDomainInfo domainInfo, ADWebService adws)
         {
 
+            var LAPSIntId = CheckLAPSInstalled(domainInfo, adws);
+
 
             Dictionary<string, HealthcheckOSData> operatingSystems = new Dictionary<string, HealthcheckOSData>();
             Dictionary<string, HealthcheckOSVersionData> operatingSystemVersion = new Dictionary<string, HealthcheckOSVersionData>();
+
+            var lapsDistribution = new Dictionary<int, int>();
 
             WorkOnReturnedObjectByADWS callback =
                 (ADItem x) =>
@@ -861,21 +863,12 @@ namespace PingCastle.Healthcheck
                             proxy.Clients.Add(operatingSystemVersion[key].data);
                         }
 
-                        ProcessAccountData(proxy, x, true, healthcheckData.DCWin2008Install, healthcheckData.ListHoneyPot);
+                        if (!ProcessAccountData(proxy, x, true, healthcheckData.DCWin2008Install, healthcheckData.ListHoneyPot))
+                            return;
+
                         // process only not disabled computers
                         if ((x.UserAccountControl & 0x00000002) == 0)
                         {
-                            // ignore honey pot accounts
-                            if (healthcheckData.ListHoneyPot != null)
-                            {
-                                foreach (var u in healthcheckData.ListHoneyPot)
-                                {
-                                    if (string.Equals(u.Name, x.SAMAccountName, StringComparison.InvariantCultureIgnoreCase))
-                                        return;
-                                    if (string.Equals(u.DistinguishedName, x.DistinguishedName, StringComparison.InvariantCultureIgnoreCase))
-                                        return;
-                                }
-                            }
 
                             // we consider DC as a computer in the special OU or having the primary group ID of DC or Enterprise DC
                             // known problem: if the DC is a member (not primary group) & not located in the DC OU
@@ -931,6 +924,19 @@ namespace PingCastle.Healthcheck
                                     }
                                 }
                             }
+                            if (x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(LAPSIntId))
+                            {
+                                proxy.AddWithoutDetail("LAPS");
+                                var d = x.ReplPropertyMetaData[LAPSIntId];
+                                if (d.LastOriginatingChange != DateTime.MinValue)
+                                {
+                                    var i = ConvertDateToKey(d.LastOriginatingChange);
+                                    if (lapsDistribution.ContainsKey(i))
+                                        lapsDistribution[i]++;
+                                    else
+                                        lapsDistribution[i] = 1;
+                                }
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -941,15 +947,17 @@ namespace PingCastle.Healthcheck
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine(ex.StackTrace);
                         Console.ResetColor();
-                        if (ex.InnerException != null)
-                        {
-                            Trace.WriteLine("Inner:");
-                            Trace.WriteLine(ex.InnerException.Message);
-                            Trace.WriteLine(ex.InnerException.StackTrace);
-                        }
+                        Trace.WriteLine(ex.ToString());
                     }
                 };
 
+
+            var computerPropertiesList = new List<string>(computerProperties);
+
+            if (LAPSIntId != 0)
+            {
+                computerPropertiesList.Add("replPropertyMetaData");
+            }
 
             adws.Enumerate(() =>
                 {
@@ -960,7 +968,7 @@ namespace PingCastle.Healthcheck
                     operatingSystems.Clear();
                     operatingSystemVersion.Clear();
                 },
-                domainInfo.DefaultNamingContext, computerfilter, computerProperties, callback, "SubTree");
+                domainInfo.DefaultNamingContext, computerfilter, computerPropertiesList.ToArray(), callback, "SubTree");
 
             foreach (string key in operatingSystems.Keys)
             {
@@ -971,6 +979,13 @@ namespace PingCastle.Healthcheck
             {
                 operatingSystemVersion[key].NumberOfOccurence = operatingSystemVersion[key].data.NumberActive;
                 healthcheckData.OperatingSystemVersion.Add(operatingSystemVersion[key]);
+            }
+
+            healthcheckData.LapsDistribution = new List<HealthcheckPwdDistributionData>();
+
+            foreach (var p in lapsDistribution)
+            {
+                healthcheckData.LapsDistribution.Add(new HealthcheckPwdDistributionData() { HigherBound = p.Key, Value = p.Value });
             }
         }
 
@@ -2326,7 +2341,7 @@ namespace PingCastle.Healthcheck
             // https access
             // channel binding
             var result = ConnectionTester.TestExtendedAuthentication(uri, adws.Credential);
-            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 3 done for TestExtendedAuthentication" );
+            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 3 done for TestExtendedAuthentication");
             if (result == ConnectionTesterStatus.ChannelBindingDisabled)
             {
                 enrollmentServer.WebEnrollmentChannelBindingDisabled = true;
@@ -3182,7 +3197,7 @@ namespace PingCastle.Healthcheck
             {
                 adws.Enumerate(domainInfo.DefaultNamingContext,
                                         "(objectSid=" + ADConnection.EncodeSidToString(sid) + ")",
-                                        new string[] { 
+                                        new string[] {
                                             "distinguishedName",
                                             "description",
                                             "lastLogonTimestamp",
@@ -3215,7 +3230,7 @@ namespace PingCastle.Healthcheck
             {
                 adws.Enumerate(domainInfo.DefaultNamingContext,
                                         "(samAccountName=" + ADConnection.EscapeLDAP(msol.Computer) + "$)",
-                                        new string[] { 
+                                        new string[] {
                                             "distinguishedName",
                                             "description",
                                             "lastLogonTimestamp",
@@ -4296,8 +4311,6 @@ namespace PingCastle.Healthcheck
 
             CheckKrbtgtPwdChange(domainInfo, adws);
 
-            CheckLAPSInstalled(domainInfo, adws);
-
             CheckAdminSDHolderNotOK(domainInfo, adws);
 
             CheckSmartCard(domainInfo, adws);
@@ -4358,7 +4371,7 @@ namespace PingCastle.Healthcheck
             , "Base");
         }
 
-        private void CheckLAPSInstalled(ADDomainInfo domainInfo, ADWebService adws)
+        private int CheckLAPSInstalled(ADDomainInfo domainInfo, ADWebService adws)
         {
             healthcheckData.LAPSInstalled = DateTime.MaxValue;
             string[] propertiesLaps = new string[] { "whenCreated", "msDS-IntId" };
@@ -4434,6 +4447,7 @@ namespace PingCastle.Healthcheck
                     }
                     );
             }
+            return LAPSIntId;
         }
 
         private void CheckAdminSDHolderNotOK(ADDomainInfo domainInfo, ADWebService adws)
@@ -5084,8 +5098,8 @@ namespace PingCastle.Healthcheck
                         byte[] c = null;
                         using (TcpClient client = new TcpClient(dns, port))
                         {
-                            client.ReceiveTimeout = 10;
-                            client.SendTimeout = 10;
+                            client.ReceiveTimeout = 1000;
+                            client.SendTimeout = 1000;
                             using (SslStream sslstream = new SslStream(client.GetStream(), false,
                                 (object sender, X509Certificate CACert, X509Chain CAChain, SslPolicyErrors sslPolicyErrors)
                                     =>
@@ -5113,8 +5127,8 @@ namespace PingCastle.Healthcheck
                 {
                     using (TcpClient client = new TcpClient(dns, port))
                     {
-                        client.ReceiveTimeout = 10;
-                        client.SendTimeout = 10;
+                        client.ReceiveTimeout = 1000;
+                        client.SendTimeout = 1000;
                         using (SslStream sslstream = new SslStream(client.GetStream(), false,
                                 (object sender, X509Certificate CACert, X509Chain CAChain, SslPolicyErrors sslPolicyErrors)
                                     =>

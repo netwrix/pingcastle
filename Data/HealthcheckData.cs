@@ -611,6 +611,8 @@ namespace PingCastle.Healthcheck
         public bool ShouldSerializeListNoPreAuth() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> ListNoPreAuth { get; set; }
 
+        public int NumberLAPS { get; set; }
+
         public void AddDetail<T>(string property, T item)
         {
             if (!DotNotRecordDetail)
@@ -1166,6 +1168,7 @@ namespace PingCastle.Healthcheck
 
         public void SetIntegrity()
         {
+            Trace.WriteLine("SetIntegrity called");
             IntegrityRules = ComputeIntegrity();
         }
 
@@ -1173,8 +1176,16 @@ namespace PingCastle.Healthcheck
         {
             if (new Version(EngineVersion.Split(' ')[0]) > new Version(3, 0))
             {
+                if (string.IsNullOrEmpty(IntegrityRules))
+                    Trace.WriteLine("IntegrityRules empty");
                 var expected = ComputeIntegrity();
                 IntegrityVerified = IntegrityRules == expected;
+                if (!IntegrityVerified)
+                {
+                    Trace.WriteLine("Integrity not verified");
+                    Trace.WriteLine("expected: " + expected);
+                    Trace.WriteLine("IntegrityRules: " + IntegrityRules);
+                }
             }
             else
             {
@@ -1194,6 +1205,7 @@ namespace PingCastle.Healthcheck
             using (var hash = SHA256.Create())
             {
                 string s = string.Join(",", integrityBase.ToArray());
+                Trace.WriteLine("Integrity string: " + s);
                 var h = hash.ComputeHash(Encoding.UTF8.GetBytes(s));
                 var o = Convert.ToBase64String(h);
                 return o;
@@ -1550,6 +1562,9 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializePasswordDistribution() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthcheckPwdDistributionData> PasswordDistribution { get; set; }
+
+        public bool ShouldSerializeLapsDistribution() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public List<HealthcheckPwdDistributionData> LapsDistribution { get; set; }
 
         public bool ShouldSerializeAzureADSSOLastPwdChange() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public DateTime AzureADSSOLastPwdChange { get; set; }

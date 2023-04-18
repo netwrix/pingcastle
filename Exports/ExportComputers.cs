@@ -75,7 +75,6 @@ namespace PingCastle.Exports
                             foreach (var p in hcprop)
                             {
                                 data.Add(d.PropertiesSet.Contains(p).ToString());
-
                             }
                             data.Add(x.OperatingSystem);
                             data.Add(x.OperatingSystemVersion);

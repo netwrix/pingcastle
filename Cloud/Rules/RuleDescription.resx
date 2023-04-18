@@ -178,9 +178,9 @@ Open the Azure Console
 Go to Azure Active Directory
 Go to Users
 Go to User settings
-Click on "Manage how end users launch and view their applications"
+Click on Manage how end users launch and view their applications
 Under the Enterprise applications heading.
-Set "Users can consent to apps accessing company data on their behalf" to "No"
+Set Users can consent to apps accessing company data on their behalf to No
     </value>
   </data>
   <data name="UserConsentCompanyData_TechnicalExplanation" xml:space="preserve">

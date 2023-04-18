@@ -12,9 +12,11 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows;
 
 namespace PingCastle.Report
 {
@@ -1504,6 +1506,95 @@ namespace PingCastle.Report
             if (String.IsNullOrEmpty(data))
                 return data;
             return data.Replace("\r\n", "<br>\r\n");
+        }
+
+        void AddPath(double radius, double startAngle, double endAngle, string idx, string tooltip = null)
+        {
+
+            var isCircle = (endAngle - startAngle) == 360;
+
+            if (isCircle)
+            {
+                endAngle--;
+            }
+            var start = polarToCartesian(radius, startAngle);
+            var end = polarToCartesian(radius, endAngle);
+            var largeArcFlag = endAngle - startAngle <= 180 ? 0 : 1;
+            var d = new List<string> {
+                "M", start.Item1.ToString(), start.Item2.ToString(),
+                "A", radius.ToString(), radius.ToString(), 0.ToString(), largeArcFlag.ToString(), 1.ToString(), end.Item1.ToString(), end.Item2.ToString()
+                };
+
+            if (isCircle)
+            {
+                d.Add("Z");
+            }
+            else
+            {
+                d.AddRange(new string[]{"L", radius.ToString(), radius.ToString(),
+                    "L", start.Item1.ToString(), start.Item2.ToString(),
+                    "Z" });
+            }
+            Add("<path d=\"");
+            Add(string.Join(" ", d.ToArray()));
+            Add("\" class=\"");
+            Add(idx);
+            Add("\"");
+            if (!string.IsNullOrEmpty(tooltip))
+            {
+                Add(" data-bs-toggle=\"tooltip\" title=\"");
+                AddEncoded(tooltip);
+                Add("\"");
+            }
+            Add("/>");
+        }
+        Tuple<int, int> polarToCartesian(double radius, double angleInDegrees)
+        {
+            var radians = (angleInDegrees - 90) * Math.PI / 180;
+            return new Tuple<int, int>((int)Math.Round(radius + (radius * Math.Cos(radians))),
+                    (int)Math.Round(radius + (radius * Math.Sin(radians))));
+        }
+
+        protected void AddPie(int radius, int total, params int[] vals)
+        {
+            AddPie(radius, total, vals.ToList(), null);
+        }
+
+        protected void AddPie(int radius, int total, List<int> vals, List<string> tooltips)
+        {
+            var width = radius * 2;
+            Add("<svg xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox = \"0 0 ");
+            Add(width);
+            Add(" ");
+            Add(width + "\" ><g class='sectors'>");
+
+            if (total == 0)
+                total = vals.Sum();
+
+            int i = 0;
+            int previousto = 0;
+            int t = 0;
+            for(int index = 0; index < vals.Count; index++)
+            {
+                var val = vals[index];
+                var degrees = (int)(((double)val / total) * 360);
+                int from = previousto;
+                int to = degrees + from;
+                previousto = to;
+
+                string tooltip = null;
+                if (tooltips != null && index < tooltips.Count + 1)
+                {
+                    tooltip = tooltips[i];
+                }
+
+                AddPath(radius, from, to, "type" + (i++ % 20).ToString(), tooltip);
+                t += val;
+            }
+            if (t != total)
+                AddPath(radius, previousto, previousto + ((double)(total - t) / total) * 360, "empty");
+
+            Add("</g></svg>");
         }
     }
 }

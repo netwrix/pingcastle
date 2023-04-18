@@ -20,10 +20,10 @@ namespace PingCastle.Healthcheck.Rules
             // trust
             foreach (HealthCheckTrustData trust in healthcheckData.Trusts)
             {
-                /*if (trust.TrustDirection == 0 || trust.TrustDirection == 1)
+                if (trust.TrustDirection == 2)
                 {
                     continue;
-                }*/
+                }
                 if (trust.msDSSupportedEncryptionTypes == 0)
                 {
                     AddRawDetail(trust.TrustPartner, "Not Configured");

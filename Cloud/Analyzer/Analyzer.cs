@@ -147,12 +147,11 @@ namespace PingCastle.Cloud.Analyzer
             catch (Exception ex)
             {
                 var e = ex;
+                Trace.WriteLine(e.ToString());
                 string lastMessage = null;
                 while (e != null)
                 {
                     lastMessage = e.Message;
-                    Trace.WriteLine(e.Message);
-                    Trace.WriteLine(e.StackTrace);
                     e = e.InnerException;
                 }
                 DisplayAdvancementWarning("Exception when doing " + display);
@@ -234,13 +233,7 @@ namespace PingCastle.Cloud.Analyzer
                     catch (Exception ex)
                     {
                         Trace.WriteLine("Exception when analyzing " + app.objectId);
-                        var e = ex;
-                        while (e != null)
-                        {
-                            Trace.WriteLine("Exception:" + e.Message);
-                            Trace.WriteLine("StackTrace:" + e.StackTrace);
-                            e = e.InnerException;
-                        }
+                        Trace.WriteLine(ex.ToString());
                     }
                 });
 
@@ -821,13 +814,7 @@ namespace PingCastle.Cloud.Analyzer
                 catch (Exception ex)
                 {
                     Trace.WriteLine("Exception when analyzing " + role.ObjectId);
-                    var e = ex;
-                    while (e != null)
-                    {
-                        Trace.WriteLine("Exception:" + e.Message);
-                        Trace.WriteLine("StackTrace:" + e.StackTrace);
-                        e = e.InnerException;
-                    }
+                    Trace.WriteLine(ex.ToString());
                 }
 
             });
@@ -944,13 +931,7 @@ namespace PingCastle.Cloud.Analyzer
                 catch (Exception ex)
                 {
                     Trace.WriteLine("Exception when analyzing " + domain.Domain);
-                    var e = ex;
-                    while (e != null)
-                    {
-                        Trace.WriteLine("Exception:" + e.Message);
-                        Trace.WriteLine("StackTrace:" + e.StackTrace);
-                        e = e.InnerException;
-                    }
+                    Trace.WriteLine(ex.ToString());
                 }
             });
         }

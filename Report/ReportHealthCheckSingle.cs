@@ -13,6 +13,7 @@ using PingCastle.template;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -1287,6 +1288,124 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             GenerateOperatingSystemList();
             GenerateDomainSIDHistoryList(Report.ComputerAccountData);
             GenerateDCInformation();
+
+            if (Report.LapsDistribution != null && Report.LapsDistribution.Count > 0)
+            {
+                GenerateSubSection("LAPS Analysis", "lapsanalysis");
+                if (string.IsNullOrEmpty(_license.Edition))
+                {
+                    AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
+                }
+                else
+                {
+                    AddParagraph("Here is the distribution of the LAPS password fresshness.");
+                    AddPasswordDistributionChart(Report.LapsDistribution, "generallapsdistribution");
+                    if (Report.ComputerAccountData != null && Report.OperatingSystemVersion != null)
+                    {
+                        AddParagraph("Here is the application of LAPS");
+
+                        Add("<div class='row'>");
+
+
+                        int total = 0; var laps = new List<int>(); var tooltip = new List<string>();
+                        int totalServer = 0; var lapsServer = new List<int>(); var tooltipServer = new List<string>();
+                        foreach (var os in Report.OperatingSystemVersion)
+                        {
+
+                            if (!os.IsServer)
+                            {
+                                total += os.data.NumberEnabled;
+                                if (os.data.NumberLAPS != 0)
+                                {
+                                    laps.Add(os.data.NumberLAPS);
+                                    tooltip.Add(GetOSVersionString(os) + " [" + os.data.NumberEnabled + " - " + Math.Round((decimal)os.data.NumberLAPS * 100 / os.data.NumberEnabled) + "%]");
+                                }
+                            }
+                            else
+                            {
+                                totalServer += os.data.NumberEnabled;
+                                if (os.data.NumberLAPS != 0)
+                                {
+                                    lapsServer.Add(os.data.NumberLAPS);
+                                    tooltipServer.Add(GetOSVersionString(os) + " [" + os.data.NumberEnabled + " - " + Math.Round((decimal)os.data.NumberLAPS * 100 / os.data.NumberEnabled) + "%]");
+                                }
+                            }
+                        }
+
+                        Add("<div class='col-lg-4'>");
+                        Add(@"<div class=""card"">
+  <div class=""card-body"">
+    <h5 class=""card-title"">Enabled computers with LAPS (");
+                        Add((laps.Sum() + lapsServer.Sum()).ToString("#,##0"));
+                        Add(@") over all enabled computers (");
+                        Add((total + totalServer).ToString("#,##0"));
+                        Add(@")</h5>
+    ");
+                        AddPie(50, Report.ComputerAccountData.NumberEnabled, Report.ComputerAccountData.NumberLAPS);
+                        Add(@"
+  </div>
+</div>");
+                        Add("</div>");
+
+                        Add("<div class='col-lg-4'>");
+                        Add(@"<div class=""card"">
+  <div class=""card-body"">
+    <h5 class=""card-title"">Enabled workstations with LAPS (");
+                        Add(laps.Sum().ToString("#,##0"));
+                        Add(@") over all enabled workstations (");
+                        Add(total.ToString("#,##0"));
+                        Add(@")</h5>
+    ");
+                        AddPie(50, total, laps, tooltip);
+                        Add(@"
+  </div>
+</div>");
+                        Add("</div>");
+
+                        Add("<div class='col-lg-4'>");
+                        Add(@"<div class=""card"">
+  <div class=""card-body"">
+    <h5 class=""card-title"">Enabled servers with LAPS (");
+                        Add(lapsServer.Sum().ToString("#,##0"));
+                        Add(@") over all enabled servers (");
+                        Add(totalServer.ToString("#,##0"));
+                        Add(@")</h5>
+    ");
+                        AddPie(50, totalServer, lapsServer, tooltipServer);
+                        Add(@"
+  </div>
+</div>");
+                        Add("</div>");
+
+                        Add("</div>");
+
+                        AddBeginTable("lapsos");
+                        AddHeaderText("Operating System");
+                        AddHeaderText("Number of Enabled");
+                        AddHeaderText("Number of LAPS installed");
+                        AddHeaderText("Ratio (%)");
+                        AddBeginTableData();
+                        foreach (var os in Report.OperatingSystemVersion)
+                        {
+                            AddBeginRow();
+                            AddCellText(GetOSVersionString(os));
+                            AddCellNum(os.data.NumberEnabled);
+                            AddCellNum(os.data.NumberLAPS);
+                            if (os.data.NumberEnabled > 0)
+                            {
+                                AddCellNum((int)Math.Round((decimal)os.data.NumberLAPS * 100 / os.data.NumberEnabled));
+                            }
+                            else
+                            {
+                                AddCellText();
+                            }
+                            AddEndRow();
+                        }
+                        AddEndTable();
+
+                    }
+                }
+            }
         }
 
         private void GenerateOperatingSystemList()
@@ -1950,7 +2069,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddParagraph("No data has been found.");
                 return;
             }
-            AddBeginTable("Compromission Grapth Indirect links list");
+            AddBeginTable("Compromise Grapth Indirect links list");
             AddHeaderText("Priority to remediate", "Indicates a set of objects considered as a priority when establishing a remediation plan.");
             AddHeaderText("Critical Object Found", "Indicates if critical objects such as everyone, authenticated users or domain users can take control, directly or not, of one of the objects.");
             AddHeaderText("Number of objects with Indirect", "Indicates the count of objects per category having at least one indirect user detected.");
@@ -3539,7 +3658,7 @@ Hackers can then perform a reconnaissance of the environement with only a networ
 <p>This control detects users which use only smart card and whose password hash has not been changed for at least 90 days.
 Indeed, once the smart card required check is activated in the user account properties, a random password hash is set.
 But this hash is not changed anymore like for users having a password whose change is controlled by password policies.
-As a consequence, a capture of the hash using a memory attack tool can lead to a compromise of this account, unlimited in time.
+As a consequence, a capture of the hash using a memory attack tool can lead to a compromise of this account unlimited in time.
 The best practice is to reset these passwords on a regular basis or to uncheck and check again the &quot;require smart card&quot; property to force a hash change.</p>
 			<p><strong>Users with smart card and having their password unchanged since at least 90 days:</strong> " +
         (Report.SmartCardNotOK == null ? 0 : Report.SmartCardNotOK.Count)
@@ -3654,7 +3773,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             Add(@"
 		<div class=""row"">
 			<div class=""col-lg-12"">
-				<p>This detects trusted certificates, which can be used in man in the middle attacks, or which can issue smart card logon certificates</p>
+				<p>This detects trusted certificates which can be used in man in the middle attacks, or which can issue smart card logon certificates</p>
 				<p><strong>Number of trusted certificates:</strong> " + Report.TrustedCertificates.Count + @" 
 			</div>
 		</div>

@@ -1,3 +1,11 @@
+3.0.0.3
+* fix T-AlgsAES to not be enforced for unidirectional trust (trusdirection=2)
+* removed rule P-DNSDelegation as it has no meaning anymore
+* added LAPS usage analysis & statictics (for paid customers)
+* change the timeout of TlsCheck from 10ms to 1s
+* fix setintegrity missing
+* fix kerberos armoring detection bug
+
 3.0.0.0
 * migrate from .net 3 to .net 4.5
 * integrated PingCastleCloud project
@@ -298,7 +306,7 @@ Information: the 3.0 version of PingCastle will run by default on .net 4 instead
 * fix in healthcheck report: the reversible password detail section was only displayed if there was unconstrained delegation in the domain
 * added the rule P-ExchangeAdminSDHolder to check for the Exchange modification of the AdminSDHolder object
 * added the rule P-DelegationKeyAdmin to check for boggus Windows 2016 installation
-* added the (informative) rule P-OperatorsEmpty to check the recommandation to have the account and server operators empty
+* added the (informative) rule P-OperatorsEmpty to check the recommendation to have the account and server operators empty
 * added the rule P-DelegationGPOData to check for too large permissions granted to GPO items
 * added the rule P-PrivilegeEveryone to check for too large GPO assigned privileges
 * adjust the Domain Controller selection for tests (aka: number of DC in a domain & checks performed on them)

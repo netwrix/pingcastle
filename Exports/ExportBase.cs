@@ -43,7 +43,9 @@ namespace PingCastle.Exports
                 {
                     if (p.Name.StartsWith("Number"))
                     {
-                        output.Add(p.Name.Substring("Number".Length));
+                        var p2 = p.Name.Substring("Number".Length);
+                        if (!string.IsNullOrEmpty(p2))
+                            output.Add(p2);
                     }
                 }
                 return output;

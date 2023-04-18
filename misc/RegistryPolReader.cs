@@ -148,7 +148,10 @@ namespace PingCastle.misc
             if (record == null)
                 return false;
             if (record.Type != RegistryValueKind.DWord)
+            {
+                Trace.WriteLine("Type for " + key + " is not DWORD: " + record.Type);
                 return false;
+            }
             if (record.ByteValue.Length != 4)
                 return false;
             data = (int)BitConverter.ToUInt32(record.ByteValue, 0);
@@ -188,7 +191,10 @@ namespace PingCastle.misc
             if (record == null)
                 return false;
             if (record.Type != RegistryValueKind.String)
+            {
+                Trace.WriteLine("Type for " + key + " is not String: " + record.Type);
                 return false;
+            }
             stringvalue = UnicodeEncoding.Unicode.GetString(record.ByteValue).TrimEnd('\0');
             return true;
         }

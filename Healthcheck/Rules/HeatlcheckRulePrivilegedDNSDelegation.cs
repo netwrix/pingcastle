@@ -18,6 +18,7 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
+            /*
             foreach (HealthcheckDelegationData delegation in healthcheckData.Delegations)
             {
                 if (delegation.DistinguishedName.StartsWith("CN=MicrosoftDNS,CN=System,DC="))
@@ -34,6 +35,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+            */
             return null;
         }
     }

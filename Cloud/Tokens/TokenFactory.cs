@@ -303,6 +303,9 @@ namespace PingCastle.Cloud.Tokens
         private static async Task<string> RunAuthorize<T>(IAzureCredential credential, string prtToken) where T : IAzureService
         {
             var sections = prtToken.Split('.');
+            if (sections.Length < 2)
+                throw new ApplicationException("PrtToken with Lenght < 2: " + prtToken);
+
             var payload = sections[1];
 
             JwtToken t = JwtToken.LoadFromBase64String(payload);

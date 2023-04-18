@@ -366,12 +366,7 @@ namespace PingCastle.Graph.Reporting
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Exception: " + ex.Message);
                 Console.WriteLine(ex.StackTrace);
-                Trace.WriteLine(ex.Message);
-                Trace.WriteLine(ex.StackTrace);
-                if (ex.InnerException != null)
-                {
-                    Trace.WriteLine("innerexception: " + ex.InnerException.Message);
-                }
+                Trace.WriteLine(ex.ToString());
                 Console.ResetColor();
             }
         }
@@ -671,7 +666,8 @@ namespace PingCastle.Graph.Reporting
             int id = node.Id;
             var currentNode = node;
             var path = new List<string>();
-            while (id >= 0 && !(currentNode.IsTypeAUser && !currentNode.Suspicious))
+            int l = 0;
+            while (id >= 0 && !(currentNode.IsTypeAUser && !currentNode.Suspicious) && (l++ < 100))
             {
                 path.Add(currentNode.ShortName);
                 if (map.ContainsKey(id))

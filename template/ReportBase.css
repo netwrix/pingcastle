@@ -311,11 +311,83 @@ html {
 }
 
 path.type0 {
-    fill: #e60049;
+    fill: #ff0029;
 }
 
 path.type1 {
-    fill: #0bb4ff;
+    fill: #377eb8;
+}
+
+path.type2 {
+    fill: #66a61e;
+}
+
+path.type3 {
+    fill: #984ea3;
+}
+
+path.type4 {
+    fill: #00d2d5;
+}
+
+path.type5 {
+    fill: #ff7f00;
+}
+
+path.type6 {
+    fill: #af8d00;
+}
+
+path.type7 {
+    fill: #7f80cd;
+}
+
+path.type8 {
+    fill: #b3e900;
+}
+
+path.type9 {
+    fill: #c42e60;
+}
+
+path.type10 {
+    fill: #a65628;
+}
+
+path.type11 {
+    fill: #f781bf;
+}
+
+path.type12 {
+    fill: #8dd3c7;
+}
+
+path.type13 {
+    fill: #bebada;
+}
+
+path.type14 {
+    fill: #fb8072;
+}
+
+path.type15 {
+    fill: #80b1d3;
+}
+
+path.type16 {
+    fill: #fdb462;
+}
+
+path.type17 {
+    fill: #fccde5;
+}
+
+path.type18 {
+    fill: #bc80bd;
+}
+
+path.type19 {
+    fill: #ffed6f;
 }
 
 path.empty {
@@ -324,7 +396,7 @@ path.empty {
 
 g.sectors {
     stroke: white;
-    stroke-width: 2px;
+    stroke-width: 1px;
 }
 
 .font-pc-orange {
@@ -338,4 +410,13 @@ g.sectors {
 
 .border-pc-orange {
     border-color: #FA9C1A !important;
+}
+
+.bi-download::before {
+    display: inline-block;
+    content: "\00a0\00a0\00a0\00a0";
+    vertical-align: -.125em;
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-download' viewBox='0 0 16 16'> <path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/> <path d='M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z'/> </svg>");
+    background-repeat: no-repeat;
+    background-size: 1rem 1rem;
 }

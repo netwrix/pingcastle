@@ -564,7 +564,12 @@
   <PropertyGroup>
     <PostBuildEvent>SET PATH=%25PATH%25;"C:\Program Files (x86)\Windows Kits\8.0\bin\x86"
 SET SIGN_SHA256=signtool.exe sign  /d "PingCastle" /td sha256 /fd sha256 /n "Ping Castle SAS" 
-IF /I "$(COMPUTERNAME)" == "DESKTOP-QCK4J75" (
+IF /I "$(COMPUTERNAME)" == "DESKTOP-QCK4J75" goto sign
+IF /I "$(COMPUTERNAME)" == "DESKTOP-90K6SJ2" goto sign
+
+goto end
+
+:sign
 @echo ================
 @echo signature
 @echo ================
@@ -575,7 +580,7 @@ echo timestamp
 IF /I "$(ConfigurationName)" == "Debug" (
 %25SIGN_SHA256%25 "$(TargetPath)"
 )
-)</PostBuildEvent>
+:end</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>cd $(ProjectDir)\template

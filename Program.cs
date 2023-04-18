@@ -210,7 +210,7 @@ namespace PingCastle
             LoadCustomRules(tasks);
             ConsoleMenu.Header = @"  \==--O___      PingCastle (Version " + version.ToString(4) + @"     " + ConsoleMenu.GetBuildDateTime(Assembly.GetExecutingAssembly()) + @")
    \  / \  ¨¨>   Get Active Directory Security at 80% in 20% of the time
-    \/   \ ,’    " + (license.EndTime < DateTime.MaxValue ? "End of support: " + license.EndTime.ToShortDateString() : "") + @"
+    \/   \ ,’    " + (license.EndTime < DateTime.MaxValue ? "End of support: " + license.EndTime.ToString("yyyy-MM-dd") : "") + @"
      O¨---O                                                     
       \ ,'       Vincent LE TOUX (contact@pingcastle.com)
        v         twitter: @mysmartlogon       https://www.pingcastle.com";
@@ -916,7 +916,7 @@ namespace PingCastle
                                 WriteInRed("argument for --xmls is mandatory");
                                 return false;
                             }
-                            settings.InputFile = args[++i];
+                            settings.InputDirectory = args[++i];
                             break;
                         default:
                             WriteInRed("unknow argument: " + args[i]);

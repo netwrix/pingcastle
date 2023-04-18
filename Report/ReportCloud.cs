@@ -1472,9 +1472,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             Add(@"<div class=""card"">
   <div class=""card-body"">
     <h5 class=""card-title"">Guest users (");
-            Add(Report.NumberOfUsers.ToString("#,##0"));
-            Add(@") over all users (");
             Add(Report.NumberofGuests.ToString("#,##0"));
+            Add(@") over all users (");
+            Add(Report.NumberOfUsers.ToString("#,##0"));
             Add(@")</h5>
     ");
             AddPie(50, Report.NumberOfUsers, Report.NumberofGuests);
@@ -1512,74 +1512,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             Add("</div>");
             Add("</div>");
 
-        }
-        void AddPath(double radius, double startAngle, double endAngle, string idx)
-        {
-
-            var isCircle = (endAngle - startAngle) == 360;
-
-            if (isCircle)
-            {
-                endAngle--;
-            }
-            var start = polarToCartesian(radius, startAngle);
-            var end = polarToCartesian(radius, endAngle);
-            var largeArcFlag = endAngle - startAngle <= 180 ? 0 : 1;
-            var d = new List<string> {
-                "M", start.X.ToString(), start.Y.ToString(),
-                "A", radius.ToString(), radius.ToString(), 0.ToString(), largeArcFlag.ToString(), 1.ToString(), end.X.ToString(), end.Y.ToString()
-                };
-
-            if (isCircle)
-            {
-                d.Add("Z");
-            }
-            else
-            {
-                d.AddRange(new string[]{"L", radius.ToString(), radius.ToString(),
-                    "L", start.X.ToString(), start.Y.ToString(),
-                    "Z" });
-            }
-            Add("<path d=\"");
-            Add(string.Join(" ", d.ToArray()));
-            Add("\" class=\"");
-            Add(idx);
-            Add("\" />");
-        }
-        Point polarToCartesian(double radius, double angleInDegrees)
-        {
-            var radians = (angleInDegrees - 90) * Math.PI / 180;
-            return new Point((int)Math.Round(radius + (radius * Math.Cos(radians))),
-                    (int)Math.Round(radius + (radius * Math.Sin(radians))));
-        }
-
-        void AddPie(int radius, int total, params int[] vals)
-        {
-            var width = radius * 2;
-            Add("<svg viewBox = \"0 0 ");
-            Add(width);
-            Add(" ");
-            Add(width + "\" ><g class='sectors'>");
-
-            if (total == 0)
-                total = vals.Sum();
-
-            int i = 0;
-            int previousto = 0;
-            int t = 0;
-            foreach (var val in vals)
-            {
-                var degrees = (int)(((double)val / total) * 360);
-                int from = previousto;
-                int to = degrees + from;
-                previousto = to;
-                AddPath(radius, from, to, "type" + i++.ToString());
-                t += val;
-            }
-            if (t != total)
-                AddPath(radius, previousto, previousto + ((double)(total - t) / total) * 360, "empty");
-
-            Add("</g></svg>");
         }
 
         void GenerateListAccountDetail(string accordion, string id, string title, List<HealthCheckCloudDataUser> list)

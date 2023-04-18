@@ -2756,9 +2756,9 @@ namespace PingCastle.Healthcheck
                             }
                             SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("EnableMulticast", intvalue));
                         }
-                        if (reader.IsValueSetIntAsStringValue(@"Software\Microsoft\Windows\CurrentVersion\Policies\System\KDC\Parameters", "EnableCbacAndArmor", out intvalue) && intvalue > 1)
+                        if (reader.IsValueSet(@"Software\Microsoft\Windows\CurrentVersion\Policies\System\KDC\Parameters", "EnableCbacAndArmor", out intvalue) && intvalue >= 1)
                         {
-                            if (reader.IsValueSetIntAsStringValue(@"Software\Microsoft\Windows\CurrentVersion\Policies\System\KDC\Parameters", "CbacAndArmorLevel", out intvalue))
+                            if (reader.IsValueSet(@"Software\Microsoft\Windows\CurrentVersion\Policies\System\KDC\Parameters", "CbacAndArmorLevel", out intvalue))
                             {
                                 GPPSecurityPolicy SecurityPolicy = null;
                                 foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
@@ -2784,7 +2784,7 @@ namespace PingCastle.Healthcheck
                                 SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("CbacAndArmorLevel", intvalue));
                             }
                         }
-                        if (reader.IsValueSetIntAsStringValue(@"Software\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters", "EnableCbacAndArmor", out intvalue))
+                        if (reader.IsValueSet(@"Software\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters", "EnableCbacAndArmor", out intvalue))
                         {
                             GPPSecurityPolicy SecurityPolicy = null;
                             foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)

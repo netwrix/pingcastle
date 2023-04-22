@@ -502,6 +502,9 @@
     <EmbeddedResource Include="Cloud\UI\AuthenticationDialog.resx">
       <DependentUpon>AuthenticationDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Healthcheck\Rules\RuleDescription.de.resx" />
+    <EmbeddedResource Include="Healthcheck\Rules\RuleDescription.es.resx" />
+    <EmbeddedResource Include="Healthcheck\Rules\RuleDescription.fr.resx" />
     <EmbeddedResource Include="Healthcheck\Rules\RuleDescription.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>

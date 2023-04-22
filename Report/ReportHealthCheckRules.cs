@@ -18,6 +18,8 @@ namespace PingCastle.Report
             return sb.ToString();
         }
 
+        string[] cultures = new string[] { null, "fr-FR", "de-DE", "es-ES" };
+
         protected override void GenerateFooterInformation()
         {
         }
@@ -61,6 +63,7 @@ namespace PingCastle.Report
 
         private void GenerateContent()
         {
+            System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
             GenerateRiskModelPanel();
             GenerateSubSection("Stale Objects");
             GenerateRuleAccordeon(RiskRuleCategory.StaleObjects);
@@ -114,7 +117,7 @@ namespace PingCastle.Report
                 Add(@"
 		<div class=""row""><div class=""col-lg-12 mt-3"">
 		<h3>");
-                Add(ReportHelper.GetEnumDescription(d.Key));
+                AddEncoded(ReportHelper.GetEnumDescription(d.Key));
                 Add(@"
 		</h3>
 ");
@@ -124,11 +127,34 @@ namespace PingCastle.Report
                     Add(@"
 		<div class=""row""><div class=""col-lg-12"">
 		<p>");
-                    Add(description);
+                    AddEncoded(description);
                     Add(@"
 		</p>
 ");
                 }
+                foreach (var culture in cultures)
+                {
+                    if (culture == null)
+                        continue;
+
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.CreateSpecificCulture(culture ?? "en-US");
+                    description = _resourceManager.GetString(d.Key.ToString() + "_Detail");
+                    if (!string.IsNullOrEmpty(description))
+                    {
+                        Add(@"<p><strong>Title (");
+                        Add(culture);
+                        Add(@"): </strong>");
+                        AddEncoded(ReportHelper.GetEnumDescription(d.Key));
+                        Add(@"</p>");
+                        Add(@"<p><strong>Description (");
+                        Add(culture);
+                        Add(@"): </strong>");
+                        AddEncoded(description);
+                        Add(@"</p>");
+                    }
+                }
+                System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
+
                 GenerateAccordion("rules" + d.Key.ToString(), () =>
                 {
                     foreach (var rule in d.Value)
@@ -259,13 +285,59 @@ namespace PingCastle.Report
                     Add(hcrule.Title);
                     Add("</h3>\r\n<strong>Rule ID:</strong><p class=\"text-justify\">");
                     Add(hcrule.RiskId);
-                    Add("</p>\r\n<strong>Description:</strong><p class=\"text-justify\">");
-                    Add(NewLineToBR(hcrule.Description));
-                    Add("</p>\r\n<strong>Technical Explanation:</strong><p class=\"text-justify\">");
-                    Add(NewLineToBR(hcrule.TechnicalExplanation));
-                    Add("</p>\r\n<strong>Advised Solution:</strong><p class=\"text-justify\">");
-                    Add(NewLineToBR(hcrule.Solution));
-                    Add(@"</p>");
+                    Add("</p>\r\n");
+
+                    Add(@"
+<div class=""row"">
+    <div class=""col-lg-12"">
+		<ul class=""nav nav-tabs nav-fill"" role=""tablist"">");
+                    foreach (var culture in cultures)
+                        GenerateTabHeader(culture ?? "Default", "international" + GenerateId(safeRuleId+culture), null, string.IsNullOrEmpty(culture));
+                    Add(@"
+        </ul>
+    </div>
+</div>
+<div class=""row"">
+    <div class=""col-lg-12"">
+		<div class=""tab-content"">");
+                    foreach (var culture in cultures)
+                    {
+                        Add(@"<div id=""");
+                        Add("international" + GenerateId(safeRuleId + culture));
+                        Add(@""" class=""tab-pane");
+                        if (string.IsNullOrEmpty(culture))
+                        {
+                            Add(" active");
+                        }
+                        Add(@""">");
+
+                        Add("<div class='row'><div class='col-lg-12'>");
+
+                        System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.CreateSpecificCulture(culture ?? "en-US");
+                        hcrule.ReloadResource();
+                        if (!string.IsNullOrEmpty(culture))
+                        {
+                            Add("<strong>Title:</strong><p class=\"text-justify\">");
+                            AddEncoded(hcrule.Title);
+                            Add(@"</p>");
+                        }
+                        Add("<strong>Description:</strong><p class=\"text-justify\">");
+                        Add(NewLineToBR(hcrule.Description));
+                        Add("</p>\r\n<strong>Technical Explanation:</strong><p class=\"text-justify\">");
+                        Add(NewLineToBR(hcrule.TechnicalExplanation));
+                        Add("</p>\r\n<strong>Advised Solution:</strong><p class=\"text-justify\">");
+                        Add(NewLineToBR(hcrule.Solution));
+                        Add(@"</p>");
+
+
+                        Add("</div></div></div>");
+                    }
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
+                    Add(@"
+		</div>
+	</div>
+</div>");
+                    
                     object[] models = hcrule.GetType().GetCustomAttributes(typeof(RuleIntroducedInAttribute), true);
                     if (models != null && models.Length != 0)
                     {

@@ -129,9 +129,9 @@ namespace PingCastle.Scanners
         }
 
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public static bool DoesServerSupportDialect(string server, string dialect, out SMBSecurityModeEnum securityMode)
+        public static bool DoesServerSupportDialect(string server, string dialect, out SMBSecurityModeEnum securityMode, string logPrefix = null)
         {
-            Trace.WriteLine("Checking " + server + " for SMBV1 dialect " + dialect);
+            Trace.WriteLine(logPrefix + "Checking " + server + " for SMBV1 dialect " + dialect);
             securityMode = SMBSecurityModeEnum.NotTested;
             TcpClient client = new TcpClient();
             client.ReceiveTimeout = 500;
@@ -164,7 +164,7 @@ namespace PingCastle.Scanners
                     return false;
                 if (negotiateresponse[1] == 0 && negotiateresponse[2] == 0)
                 {
-                    Trace.WriteLine("Checking " + server + " for SMBV1 dialect " + dialect + " = Supported");
+                    Trace.WriteLine(logPrefix + "Checking " + server + " for SMBV1 dialect " + dialect + " = Supported");
                     byte SmbSecurityMode = negotiateresponse[3];
                     if (SmbSecurityMode == 4)
                     {
@@ -180,7 +180,7 @@ namespace PingCastle.Scanners
                     }
                     return true;
                 }
-                Trace.WriteLine("Checking " + server + " for SMBV1 dialect " + dialect + " = Not supported");
+                Trace.WriteLine(logPrefix + "Checking " + server + " for SMBV1 dialect " + dialect + " = Not supported");
                 return false;
             }
             catch (Exception)

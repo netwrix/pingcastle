@@ -1170,6 +1170,7 @@ namespace PingCastle.Healthcheck
         {
             Trace.WriteLine("SetIntegrity called");
             IntegrityRules = ComputeIntegrity();
+            IntegrityVerified = true;
         }
 
         public void CheckIntegrity()

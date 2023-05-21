@@ -16,12 +16,14 @@ namespace PingCastle.Scanners
     {
         public string Server { get; set; }
 
-        public SmbScannerException(string server, string message) : base(message)
+        public SmbScannerException(string server, string message)
+            : base(message)
         {
             Server = server;
         }
         protected SmbScannerException(System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context) : base(info, context)
+            System.Runtime.Serialization.StreamingContext context)
+            : base(info, context)
         {
             this.Server = info.GetString("Server");
         }
@@ -81,14 +83,14 @@ namespace PingCastle.Scanners
     {
         public static bool DoNotTestSMBv1;
 
-        public static bool SupportSMB1(string server, out SMBSecurityModeEnum securityMode)
+        public static bool SupportSMB1(string server, out SMBSecurityModeEnum securityMode, string logPrefix)
         {
             securityMode = SMBSecurityModeEnum.NotTested;
             try
             {
                 if (DoNotTestSMBv1)
                     return false;
-                return Smb1Protocol.DoesServerSupportDialect(server, "NT LM 0.12", out securityMode);
+                return Smb1Protocol.DoesServerSupportDialect(server, "NT LM 0.12", out securityMode, logPrefix);
             }
             catch (Exception)
             {
@@ -96,7 +98,7 @@ namespace PingCastle.Scanners
             }
         }
 
-        public static bool SupportSMB2And3(string server, out SMBSecurityModeEnum securityMode)
+        public static bool SupportSMB2And3(string server, out SMBSecurityModeEnum securityMode, string logPrefix)
         {
             bool tempResult = false;
             bool result = false;
@@ -106,7 +108,7 @@ namespace PingCastle.Scanners
             {
                 try
                 {
-                    tempResult = Smb2ProtocolTest.DoesServerSupportDialectWithSmbV2(server, dialect, out smbv2temp);
+                    tempResult = Smb2ProtocolTest.DoesServerSupportDialectWithSmbV2(server, dialect, out smbv2temp, logPrefix);
                     if (tempResult)
                     {
                         result = true;

@@ -31,11 +31,12 @@ namespace PingCastle.misc
     abstract class ConnectionTester
     {
 
-        public static ConnectionTesterStatus TestExtendedAuthentication(Uri uri, NetworkCredential credential)
+        public static ConnectionTesterStatus TestExtendedAuthentication(Uri uri, NetworkCredential credential, string logPrefix)
         {
             try
             {
                 var tester = CreateTester(uri);
+                tester.LogPrefix = logPrefix;
                 tester.Credential = credential;
                 return tester.TestExtendedAuthentication(uri);
             }
@@ -45,17 +46,18 @@ namespace PingCastle.misc
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("Exception: " + ex.Message);
-                Trace.WriteLine("StackTrace: " + ex.StackTrace);
+                Trace.WriteLine(logPrefix + "Exception: " + ex.Message);
+                Trace.WriteLine(logPrefix + "StackTrace: " + ex.StackTrace);
                 return ConnectionTesterStatus.InvalidData;
             }
         }
 
-        public static ConnectionTesterStatus TestSignatureRequiredEnabled(Uri uri, NetworkCredential credential)
+        public static ConnectionTesterStatus TestSignatureRequiredEnabled(Uri uri, NetworkCredential credential, string logPrefix)
         {
             try
             {
                 var tester = CreateTester(uri);
+                tester.LogPrefix = logPrefix;
                 tester.Credential = credential;
                 return tester.TestSignatureRequiredEnabled(uri);
             }
@@ -65,17 +67,18 @@ namespace PingCastle.misc
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("Exception: " + ex.Message);
-                Trace.WriteLine("StackTrace: " + ex.StackTrace);
+                Trace.WriteLine(logPrefix + "Exception: " + ex.Message);
+                Trace.WriteLine(logPrefix + "StackTrace: " + ex.StackTrace);
                 return ConnectionTesterStatus.InvalidData;
             }
         }
 
-        public static ConnectionTesterStatus TestConnection(Uri uri, NetworkCredential credential)
+        public static ConnectionTesterStatus TestConnection(Uri uri, NetworkCredential credential, string logPrefix)
         {
             try
             {
                 var tester = CreateTester(uri);
+                tester.LogPrefix = logPrefix;
                 tester.Credential = credential;
                 return tester.Test(uri, false, true);
             }
@@ -85,8 +88,8 @@ namespace PingCastle.misc
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("Exception: " + ex.Message);
-                Trace.WriteLine("StackTrace: " + ex.StackTrace);
+                Trace.WriteLine(logPrefix + "Exception: " + ex.Message);
+                Trace.WriteLine(logPrefix + "StackTrace: " + ex.StackTrace);
                 return ConnectionTesterStatus.InvalidData;
             }
         }
@@ -112,15 +115,15 @@ namespace PingCastle.misc
             {
                 return new ConnectionTesterHttp();
             }
-            Trace.WriteLine("Invalid scheme " + uri.Scheme);
+            Trace.WriteLine("CreateTester: Invalid scheme " + uri.Scheme);
             throw new ArgumentOutOfRangeException("uri", uri, "Scheme not supported");
         }
 
         protected ConnectionTesterStatus TestExtendedAuthentication(Uri uri)
         {
-            Trace.WriteLine("Testing " + uri);
+            Trace.WriteLine(LogPrefix + "Testing " + uri);
 
-            Trace.WriteLine("testing WITH Extended Protection: ");
+            Trace.WriteLine(LogPrefix + "testing WITH Extended Protection: ");
             var WithExtended = Test(uri, false, true);
             Trace.WriteLine(WithExtended.ToString());
 
@@ -129,7 +132,7 @@ namespace PingCastle.misc
                 return WithExtended;
             }
 
-            Trace.WriteLine("testing WITHOUT Extended Protection: ");
+            Trace.WriteLine(LogPrefix + "testing WITHOUT Extended Protection: ");
             var WithoutExtended = Test(uri, false, false);
             Trace.WriteLine(WithoutExtended.ToString());
 
@@ -146,9 +149,9 @@ namespace PingCastle.misc
 
         protected ConnectionTesterStatus TestSignatureRequiredEnabled(Uri uri)
         {
-            Trace.WriteLine("Testing " + uri);
+            Trace.WriteLine(LogPrefix + "Testing " + uri);
 
-            Trace.WriteLine("testing WITH signature required: ");
+            Trace.WriteLine(LogPrefix + "testing WITH signature required: ");
             var WithSignature = Test(uri, false);
             Trace.WriteLine(WithSignature.ToString());
 
@@ -157,7 +160,7 @@ namespace PingCastle.misc
                 return WithSignature;
             }
 
-            Trace.WriteLine("testing WITHOUT signature required: ");
+            Trace.WriteLine(LogPrefix + "testing WITHOUT signature required: ");
             var WithoutSignature = Test(uri, true);
             Trace.WriteLine(WithoutSignature.ToString());
 
@@ -195,7 +198,10 @@ namespace PingCastle.misc
                     {
                         using (SslStream sslStream = new SslStream(tcpclient.GetStream(), false, AcceptEveryServerCertificate, null))
                         {
-                            sslStream.AuthenticateAsClient(uri.Host, null, SslProtocols.Default, false);
+                            // force all auth protocol.
+                            // if SslProtocols.None used (default is not specified), if Tls12 is added in Default and if the only supported protocol on server side, exception will occure:
+                            // The client and server cannot communicate, because they do not possess a common algorithm
+                            sslStream.AuthenticateAsClient(uri.Host, null, SslProtocols.Ssl2 | SslProtocols.Ssl3 | SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12, false);
 
                             if (enableChannelBinding)
                             {
@@ -220,8 +226,9 @@ namespace PingCastle.misc
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("Exception: " + ex.Message);
-                Trace.WriteLine("StackTrace: " + ex.StackTrace);
+                Trace.WriteLine(LogPrefix + "ExceptionType: " + ex.GetType());
+                Trace.WriteLine(LogPrefix + "Exception: " + ex.Message);
+                Trace.WriteLine(LogPrefix + "StackTrace: " + ex.StackTrace);
                 return ConnectionTesterStatus.InternalError;
             }
 
@@ -248,6 +255,8 @@ namespace PingCastle.misc
         MethodInfo NTAuthentication_GetOutgoingBlob;
         ConstructorInfo NTAuthentication_Ctor;
 
+        public string LogPrefix { get; private set; }
+
         private NetworkCredential Credential;
 
         protected bool Initialize()
@@ -255,14 +264,14 @@ namespace PingCastle.misc
             var NTAuthentication_Type = typeof(ServicePoint).Assembly.GetType("System.Net.NTAuthentication");
             if (NTAuthentication_Type == null)
             {
-                Trace.WriteLine("NTAuthentication_Type failed");
+                Trace.WriteLine(LogPrefix + "NTAuthentication_Type failed");
                 return false;
             }
 
             var ContextFlags_Type = typeof(ServicePoint).Assembly.GetType("System.Net.ContextFlags");
             if (ContextFlags_Type == null)
             {
-                Trace.WriteLine("ContextFlags_Type failed");
+                Trace.WriteLine(LogPrefix + "ContextFlags_Type failed");
                 return false;
             }
 
@@ -274,7 +283,7 @@ namespace PingCastle.misc
 
             if (NTAuthentication_Ctor == null)
             {
-                Trace.WriteLine("NTAuthentication_Ctor failed");
+                Trace.WriteLine(LogPrefix + "NTAuthentication_Ctor failed");
                 return false;
             }
 
@@ -282,7 +291,7 @@ namespace PingCastle.misc
 
             if (NTAuthentication_GetOutgoingBlob == null)
             {
-                Trace.WriteLine("NTAuthentication_GetOutgoingBlob failed");
+                Trace.WriteLine(LogPrefix + "NTAuthentication_GetOutgoingBlob failed");
                 return false;
             }
 
@@ -307,7 +316,7 @@ namespace PingCastle.misc
                     var flag = BitConverter.ToInt32(Response, offset + 20);
                     if ((flag & 0x00004000) != 0)
                     {
-                        Trace.WriteLine("Local CALL");
+                        Trace.WriteLine(LogPrefix + "Local CALL");
                         throw new LocalCallException();
                     }
                 }

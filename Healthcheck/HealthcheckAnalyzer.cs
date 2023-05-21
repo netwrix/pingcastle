@@ -2327,7 +2327,7 @@ namespace PingCastle.Healthcheck
             byte[] certificate;
             var protocols = new List<string>();
             Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 1 starts");
-            GenerateTLSInfo(uri.Host, uri.Port, protocols, out certificate);
+            GenerateTLSInfo(uri.Host, uri.Port, protocols, out certificate, "[" + DateTime.Now + "] ");
             Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 2 done for TLS");
 
             enrollmentServer.SSLProtocol = protocols;
@@ -2340,7 +2340,7 @@ namespace PingCastle.Healthcheck
             // web enrollment
             // https access
             // channel binding
-            var result = ConnectionTester.TestExtendedAuthentication(uri, adws.Credential);
+            var result = ConnectionTester.TestExtendedAuthentication(uri, adws.Credential, "[" + DateTime.Now + "] Test for " + dnsHostName + " ");
             Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 3 done for TestExtendedAuthentication");
             if (result == ConnectionTesterStatus.ChannelBindingDisabled)
             {
@@ -2353,7 +2353,7 @@ namespace PingCastle.Healthcheck
             }
             // http access
             uri = new Uri("http://" + dnsHostName + "/certsrv/certrqxt.asp");
-            result = ConnectionTester.TestConnection(uri, adws.Credential);
+            result = ConnectionTester.TestConnection(uri, adws.Credential, "[" + DateTime.Now + "] Test for " + dnsHostName + " ");
             Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 4 done for TestConnection");
             if (result == ConnectionTesterStatus.AuthenticationSuccessfull)
             {
@@ -2365,7 +2365,7 @@ namespace PingCastle.Healthcheck
             // channel binding
             uri = new Uri("https://" + dnsHostName + "/" + System.Net.WebUtility.UrlEncode(CAName) + "_CES_Kerberos/service.svc");
 
-            result = ConnectionTester.TestExtendedAuthentication(uri, adws.Credential);
+            result = ConnectionTester.TestExtendedAuthentication(uri, adws.Credential, "[" + DateTime.Now + "] Test for " + dnsHostName + " ");
             Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 5 done for TestExtendedAuthentication");
             if (result == ConnectionTesterStatus.ChannelBindingDisabled)
             {
@@ -2379,7 +2379,7 @@ namespace PingCastle.Healthcheck
 
             // http access
             uri = new Uri("http://" + dnsHostName + "/" + System.Net.WebUtility.UrlEncode(CAName) + "_CES_Kerberos/service.svc");
-            result = ConnectionTester.TestConnection(uri, adws.Credential);
+            result = ConnectionTester.TestConnection(uri, adws.Credential, "[" + DateTime.Now + "] Test for " + dnsHostName + " ");
             Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 6 done for TestConnection");
             if (result == ConnectionTesterStatus.AuthenticationSuccessfull)
             {
@@ -3129,7 +3129,7 @@ namespace PingCastle.Healthcheck
                             {
                                 byte[] certificate;
                                 var protocols = new List<string>();
-                                GenerateTLSInfo(uri.Host, uri.Port, protocols, out certificate);
+                                GenerateTLSInfo(uri.Host, uri.Port, protocols, out certificate, "[" + DateTime.Now + "] ");
                                 cache[key] = new KeyValuePair<List<string>, byte[]>(protocols, certificate);
                             }
                             gpo.WSUSserverSSLProtocol = cache[key].Key;
@@ -3149,7 +3149,7 @@ namespace PingCastle.Healthcheck
                             {
                                 byte[] certificate;
                                 var protocols = new List<string>();
-                                GenerateTLSInfo(uri.Host, uri.Port, protocols, out certificate);
+                                GenerateTLSInfo(uri.Host, uri.Port, protocols, out certificate, "[" + DateTime.Now + "] ");
                                 cache[key] = new KeyValuePair<List<string>, byte[]>(protocols, certificate);
                             }
                             gpo.WSUSserverAlternateSSLProtocol = cache[key].Key;
@@ -4962,12 +4962,12 @@ namespace PingCastle.Healthcheck
                         }
                         Trace.WriteLine("[" + threadId + "] Working on smb support " + dns);
                         SMBSecurityModeEnum securityMode;
-                        if (SmbScanner.SupportSMB1(dns, out securityMode))
+                        if (SmbScanner.SupportSMB1(dns, out securityMode, "[" + threadId + "] "))
                         {
                             DC.SupportSMB1 = true;
                         }
                         DC.SMB1SecurityMode = securityMode;
-                        if (SmbScanner.SupportSMB2And3(dns, out securityMode))
+                        if (SmbScanner.SupportSMB2And3(dns, out securityMode, "[" + threadId + "] "))
                         {
                             DC.SupportSMB2OrSMB3 = true;
                         }
@@ -4979,15 +4979,15 @@ namespace PingCastle.Healthcheck
                         }
                         if (DC.SMB1SecurityMode != SMBSecurityModeEnum.NotTested && DC.SMB2SecurityMode != SMBSecurityModeEnum.NotTested)
                         {
-                            if (NamedPipeTester.IsRemotePipeAccessible(dns, NamedPipeTester.WebClientPipeName))
+                            if (NamedPipeTester.IsRemotePipeAccessible(dns, NamedPipeTester.WebClientPipeName, "[" + threadId + "] "))
                             {
                                 DC.WebClientEnabled = true;
                             }
                         }
                         Trace.WriteLine("[" + threadId + "] Working on ldap ssl " + dns);
-                        GenerateTLSConnectionInfo(dns, DC, adws.Credential);
+                        GenerateTLSConnectionInfo(dns, DC, adws.Credential, threadId);
                         Trace.WriteLine("[" + threadId + "] Working on ldap signing requirements " + dns);
-                        GenerateLDAPSigningRequirementInfo(dns, DC, adws.Credential);
+                        GenerateLDAPSigningRequirementInfo(dns, DC, adws.Credential, threadId);
                         Trace.WriteLine("[" + threadId + "] Done for " + dns);
                     }
                 };
@@ -5042,21 +5042,23 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private void GenerateTLSConnectionInfo(string dns, HealthcheckDomainController DC, NetworkCredential credentials)
+        private void GenerateTLSConnectionInfo(string dns, HealthcheckDomainController DC, NetworkCredential credentials, int threadId)
         {
             DC.LDAPSProtocols = new List<string>();
             byte[] certificate;
-            GenerateTLSInfo(dns, 636, DC.LDAPSProtocols, out certificate);
+            Trace.WriteLine("[" + threadId + "] GenerateTLSInfo");
+            GenerateTLSInfo(dns, 636, DC.LDAPSProtocols, out certificate, "[" + threadId + "] ");
             DC.LDAPCertificate = certificate;
             if (DC.LDAPSProtocols.Count > 0)
             {
                 if (DoesComputerMatchDns(dns))
                 {
-                    Trace.WriteLine("Test ignored because tested on the DC itself");
+                    Trace.WriteLine("[" + threadId + "] Test ignored because tested on the DC itself");
                     return;
                 }
-
-                var result = ConnectionTester.TestExtendedAuthentication(new Uri("ldaps://" + dns), credentials);
+                Trace.WriteLine("[" + threadId + "] TestExtendedAuthentication");
+                var result = ConnectionTester.TestExtendedAuthentication(new Uri("ldaps://" + dns), credentials, "[" + threadId + "] ");
+                Trace.WriteLine("[" + threadId + "] Result:" + result);
                 if (result == ConnectionTesterStatus.ChannelBindingDisabled)
                 {
                     DC.ChannelBindingDisabled = true;
@@ -5064,14 +5066,16 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private void GenerateLDAPSigningRequirementInfo(string dns, HealthcheckDomainController DC, NetworkCredential credentials)
+        private void GenerateLDAPSigningRequirementInfo(string dns, HealthcheckDomainController DC, NetworkCredential credentials, int threadId)
         {
             if (DoesComputerMatchDns(dns))
             {
-                Trace.WriteLine("Test ignored because tested on the DC itself");
+                Trace.WriteLine("[" + threadId + "] Test ignored because tested on the DC itself");
                 return;
             }
-            var result = ConnectionTester.TestSignatureRequiredEnabled(new Uri("ldap://" + dns), credentials);
+            Trace.WriteLine("[" + threadId + "] TestSignatureRequiredEnabled");
+            var result = ConnectionTester.TestSignatureRequiredEnabled(new Uri("ldap://" + dns), credentials, "[" + threadId + "] ");
+            Trace.WriteLine("[" + threadId + "] Result:" + result);
             if (result == ConnectionTesterStatus.SignatureNotRequired)
             {
                 DC.LdapServerSigningRequirementDisabled = true;
@@ -5084,47 +5088,18 @@ namespace PingCastle.Healthcheck
             return string.Equals(hostName, Dns, StringComparison.OrdinalIgnoreCase);
         }
 
-        private void GenerateTLSInfo(string dns, int port, List<string> protocols, out byte[] certificate)
+        private void GenerateTLSInfo(string dns, int port, List<string> protocols, out byte[] certificate, string logPrefix)
         {
             certificate = null;
             foreach (SslProtocols protocol in Enum.GetValues(typeof(SslProtocols)))
             {
+                if (protocol == SslProtocols.Default)
+                    continue;
                 if (protocol == SslProtocols.None)
                     continue;
-                if (protocol == SslProtocols.Default)
-                {
-                    try
-                    {
-                        byte[] c = null;
-                        using (TcpClient client = new TcpClient(dns, port))
-                        {
-                            client.ReceiveTimeout = 1000;
-                            client.SendTimeout = 1000;
-                            using (SslStream sslstream = new SslStream(client.GetStream(), false,
-                                (object sender, X509Certificate CACert, X509Chain CAChain, SslPolicyErrors sslPolicyErrors)
-                                    =>
-                                { c = CACert.GetRawCertData(); return true; }
-                                    , null))
-                            {
-                                Trace.WriteLine("normal auth for " + dns);
-                                sslstream.AuthenticateAsClient(dns, null, protocol, false);
-                                Trace.WriteLine("normal auth supported for " + dns);
-                                certificate = c;
-                            }
-                        }
-                    }
-                    catch (SocketException)
-                    {
-                        Trace.WriteLine("SSL not supported for " + dns);
-                        return;
-                    }
-                    catch (Exception)
-                    {
-                    }
-                    continue;
-                }
                 try
                 {
+                    byte[] c = null;
                     using (TcpClient client = new TcpClient(dns, port))
                     {
                         client.ReceiveTimeout = 1000;
@@ -5132,24 +5107,25 @@ namespace PingCastle.Healthcheck
                         using (SslStream sslstream = new SslStream(client.GetStream(), false,
                                 (object sender, X509Certificate CACert, X509Chain CAChain, SslPolicyErrors sslPolicyErrors)
                                     =>
-                                { return true; }
+                                { c = CACert.GetRawCertData(); return true; }
                                      , null))
                         {
-                            Trace.WriteLine(protocol + " before auth for " + dns);
+                            Trace.WriteLine(logPrefix + protocol + " before auth for " + dns);
                             sslstream.AuthenticateAsClient(dns, null, protocol, false);
-                            Trace.WriteLine(protocol + " supported for " + dns);
+                            Trace.WriteLine(logPrefix + protocol + " supported for " + dns);
+                            certificate = c;
                             protocols.Add(protocol.ToString());
                         }
                     }
                 }
                 catch (SocketException)
                 {
-                    Trace.WriteLine("SSL not supported for " + dns);
+                    Trace.WriteLine(logPrefix + "SSL not supported for " + dns);
                     return;
                 }
                 catch (Exception ex)
                 {
-                    Trace.WriteLine(protocol + " not supported for " + dns + ":" + port + " (" + ex.Message + (ex.InnerException == null ? null : " - " + ex.InnerException.Message) + ")");
+                    Trace.WriteLine(logPrefix + protocol + " not supported for " + dns + ":" + port + " (" + ex.Message + (ex.InnerException == null ? null : " - " + ex.InnerException.Message) + ")");
                 }
             }
         }

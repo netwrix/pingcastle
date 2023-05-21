@@ -946,7 +946,7 @@ namespace PingCastle.Report
   </div>");
         }
 
-        private static string GenerateId(string title)
+        protected static string GenerateId(string title)
         {
             return "section" + title.Replace(" ", "");
         }
@@ -954,6 +954,11 @@ namespace PingCastle.Report
         protected void GenerateTabHeader(string title, string selectedTab, bool defaultIfTabEmpty = false)
         {
             string id = GenerateId(title);
+            GenerateTabHeader(title, id, selectedTab, defaultIfTabEmpty);
+        }
+
+        protected void GenerateTabHeader(string title, string id, string selectedTab, bool defaultIfTabEmpty = false)
+        {
             bool isActive = (String.IsNullOrEmpty(selectedTab) ? defaultIfTabEmpty : selectedTab == id);
             Add(@"<li class=""nav-item""><a href=""#");
             Add(id);
@@ -1393,6 +1398,8 @@ namespace PingCastle.Report
                 case "srvsvcsessioninfo":
                 case "enablemodulelogging":
                 case "enablescriptblocklogging":
+                case "enablecbacandarmor":
+                case "cbacandarmorlevel":
                     if (value == 0)
                     {
                         Add(@"<span class=""unticked"">Disabled</span>");

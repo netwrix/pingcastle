@@ -586,15 +586,15 @@ namespace PingCastle.Scanners
             byte[] packet = BuildNegotiatePacket(dialect);
             _stream.Write(packet, 0, packet.Length);
             _stream.Flush();
-            Trace.WriteLine("Negotiate Packet sent");
+            Trace.WriteLine(LogPrefix + "Negotiate Packet sent");
 
             byte[] answer = ReadPacket();
-            Trace.WriteLine("Negotiate Packet received");
+            Trace.WriteLine(LogPrefix + "Negotiate Packet received");
             var header = ReadSMB2Header(answer);
 
             if (header.Status != 0)
             {
-                Trace.WriteLine("Checking " + _server + " for SMBV2 dialect 0x" + dialect.ToString("X2") + " = Not supported via error code");
+                Trace.WriteLine(LogPrefix + "Checking " + _server + " for SMBV2 dialect 0x" + dialect.ToString("X2") + " = Not supported via error code");
                 throw new Win32Exception((int)header.Status);
             }
 
@@ -626,22 +626,22 @@ namespace PingCastle.Scanners
                 var packet = BuildSessionSetupPacket(ClientSSPIPacket, MIC);
                 SendPacket(packet);
 
-                Trace.WriteLine("SessionSetup Packet sent");
+                Trace.WriteLine(LogPrefix + "SessionSetup Packet sent");
                 var answer = ReadPacket();
                 var header = ReadSMB2Header(answer);
-                Trace.WriteLine("SessionSetup Packet received");
+                Trace.WriteLine(LogPrefix + "SessionSetup Packet received");
                 if (header.Status == 0)
                 {
                     return ReadResponse<SMB2_SessionSetupResponse>(answer);
                 }
                 if (header.Status != STATUS_MORE_PROCESSING_REQUIRED)
                 {
-                    Trace.WriteLine("Checking " + _server + "Error " + header.Status);
+                    Trace.WriteLine(LogPrefix + "Checking " + _server + "Error " + header.Status);
                     throw new Win32Exception((int)header.Status);
                 }
                 if (!bContinueProcessing)
                 {
-                    Trace.WriteLine("Checking " + _server + "Error " + header.Status + " when no processing needed");
+                    Trace.WriteLine(LogPrefix + "Checking " + _server + "Error " + header.Status + " when no processing needed");
                     throw new Win32Exception((int)header.Status, "Unexpected SessionSetup error");
                 }
 
@@ -659,13 +659,13 @@ namespace PingCastle.Scanners
             var packet = BuildTreeConnectPacket(target);
             SendPacket(packet);
 
-            Trace.WriteLine("TreeConnect Packet sent");
+            Trace.WriteLine(LogPrefix + "TreeConnect Packet sent");
             var answer = ReadPacket();
             var header = ReadSMB2Header(answer);
-            Trace.WriteLine("TreeConnect Packet received");
+            Trace.WriteLine(LogPrefix + "TreeConnect Packet received");
             if (header.Status != 0)
             {
-                Trace.WriteLine("Checking " + _server + "Error " + header.Status);
+                Trace.WriteLine(LogPrefix + "Checking " + _server + "Error " + header.Status);
                 throw new Win32Exception((int)header.Status);
             }
             var r = ReadResponse<SMB2_TreeConnectResponse>(answer);
@@ -678,13 +678,13 @@ namespace PingCastle.Scanners
             var packet = BuildIOCTLRequestPacket(CTLCode, IsFSCTL);
             SendPacket(packet);
 
-            Trace.WriteLine("IOCTLRequest Packet sent");
+            Trace.WriteLine(LogPrefix + "IOCTLRequest Packet sent");
             var answer = ReadPacket();
             var header = ReadSMB2Header(answer);
-            Trace.WriteLine("IOCTLRequest Packet received");
+            Trace.WriteLine(LogPrefix + "IOCTLRequest Packet received");
             if (header.Status != 0)
             {
-                Trace.WriteLine("Checking " + _server + "Error " + header.Status);
+                Trace.WriteLine(LogPrefix + "Checking " + _server + "Error " + header.Status);
                 throw new Win32Exception((int)header.Status);
             }
             var response = ReadResponse<SMB2_IOCTLResponse>(answer);
@@ -739,13 +739,15 @@ namespace PingCastle.Scanners
         }
 
 
+
+        public string LogPrefix { get; set; }
     }
     public class Smb2ProtocolTest
     {
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public static bool DoesServerSupportDialectWithSmbV2(string server, int dialect, out SMBSecurityModeEnum securityMode)
+        public static bool DoesServerSupportDialectWithSmbV2(string server, int dialect, out SMBSecurityModeEnum securityMode, string logPrefix = null)
         {
-            Trace.WriteLine("Checking " + server + " for SMBV2 dialect 0x" + dialect.ToString("X2"));
+            Trace.WriteLine(logPrefix + "Checking " + server + " for SMBV2 dialect 0x" + dialect.ToString("X2"));
             securityMode = SMBSecurityModeEnum.NotTested;
             TcpClient client = new TcpClient();
             client.ReceiveTimeout = 500;
@@ -763,7 +765,7 @@ namespace PingCastle.Scanners
                 NetworkStream stream = client.GetStream();
 
                 var smb2 = new Smb2Protocol(stream, server);
-
+                smb2.LogPrefix = logPrefix;
                 var negotiateresponse = smb2.SendNegotiateRequest(dialect);
                 if ((negotiateresponse.SecurityMode & 1) != 0)
                 {
@@ -779,7 +781,7 @@ namespace PingCastle.Scanners
                     securityMode = SMBSecurityModeEnum.None;
                 }
 
-                Trace.WriteLine("Checking " + server + " for SMBV2 dialect 0x" + dialect.ToString("X2") + " = Supported");
+                Trace.WriteLine(logPrefix + "Checking " + server + " for SMBV2 dialect 0x" + dialect.ToString("X2") + " = Supported");
                 return true;
             }
             catch (Exception)

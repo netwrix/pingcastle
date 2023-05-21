@@ -1559,7 +1559,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                                 AddCellText(dc.OperatingSystem);
                                 AddCellText((dc.CreationDate == DateTime.MinValue ? "Unknown" : dc.CreationDate.ToString("u")));
                                 AddCellText((dc.StartupTime == DateTime.MinValue ? (dc.LastComputerLogonDate.AddDays(60) < DateTime.Now ? "Inactive?" : "Unknown") : (dc.StartupTime.AddMonths(6) < DateTime.Now ? /*"<span class='unticked'>" + */dc.StartupTime.ToString("u")/* + "</span>"*/ : dc.StartupTime.ToString("u"))));
-                                AddCellText((dc.StartupTime == DateTime.MinValue ? "" : (DateTime.Now.Subtract(dc.StartupTime)).Days + " days"));
+                                AddCellText((dc.StartupTime == DateTime.MinValue ? "" : (DateTime.Now.Subtract(dc.StartupTime)).Days.ToString("D3") + " days"));
                                 AddCellText((String.IsNullOrEmpty(dc.OwnerName) ? dc.OwnerSID : dc.OwnerName));
                                 AddCellText((dc.HasNullSession ? "YES" : "NO"), true, !dc.HasNullSession);
                                 AddCellText((dc.SupportSMB1 ? "YES" : "NO"), true, !dc.SupportSMB1);

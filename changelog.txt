@@ -1,3 +1,7 @@
+3.0.0.4
+* fix channel binding issue (if server was configured with only TLS1.2 and client was not configured for TLS1.2 in the default algorithm it was not tested)
+* fix integrity bug for paid subscriptions
+
 3.0.0.3
 * fix T-AlgsAES to not be enforced for unidirectional trust (trusdirection=2)
 * removed rule P-DNSDelegation as it has no meaning anymore
@@ -5,6 +9,7 @@
 * change the timeout of TlsCheck from 10ms to 1s
 * fix setintegrity missing
 * fix kerberos armoring detection bug
+* change timeout for Tls check (was only 10ms) to 1s
 
 3.0.0.0
 * migrate from .net 3 to .net 4.5

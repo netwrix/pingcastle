@@ -22,18 +22,18 @@ namespace PingCastle.misc
 
         public const string WebClientPipeName = "DAV RPC SERVICE";
 
-        static public bool IsRemotePipeAccessible(string server, string pipe)
+        static public bool IsRemotePipeAccessible(string server, string pipe, string logPrefix)
         {
-            Trace.WriteLine("Testing " + server + " for " + pipe);
+            Trace.WriteLine(logPrefix + "Testing " + server + " for " + pipe);
             string path = @"\\" + server + @"\pipe\" + pipe;
             IntPtr p = CreateFile(path, GENERIC_READ + GENERIC_WRITE, 0, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
             if (p.ToInt32() == -1)
             {
                 var error = Marshal.GetLastWin32Error();
-                Trace.WriteLine("No handle " + error);
+                Trace.WriteLine(logPrefix + "No handle " + error);
                 return false;
             }
-            Trace.WriteLine("Handle acquired");
+            Trace.WriteLine(logPrefix + "Handle acquired");
             var t = new Microsoft.Win32.SafeHandles.SafeFileHandle(p, true);
             t.Close();
             return true;

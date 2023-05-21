@@ -83,9 +83,14 @@ namespace PingCastle.Rules
             {
                 throw new NotImplementedException();
             }
+            ReloadResource();
+        }
+
+        public void ReloadResource()
+        {
             string resourceKey;
             resourceKey = RiskId.Replace('-', '_').Replace('$', '_');
-
+            
             Title = ResourceManager.GetString(resourceKey + "_Title");
             Description = ResourceManager.GetString(resourceKey + "_Description");
             TechnicalExplanation = ResourceManager.GetString(resourceKey + "_TechnicalExplanation");

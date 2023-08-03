@@ -218,13 +218,13 @@
     <value>Domain controller: {0} Reason: {1}</value>
   </data>
   <data name="A_MembershipEveryone_Description" xml:space="preserve">
-    <value>The purpose is to identify if there are restricted groups such as local administrators, terminal server access, where Authenticated Users or Everyone is being granted access by a GPO</value>
+    <value>The purpose is to identify if there are local groups such as local administrators, terminal server access, where Authenticated Users or Everyone is being granted access by a GPO</value>
   </data>
   <data name="A_MembershipEveryone_Solution" xml:space="preserve">
-    <value>In order to correct the issue, you should edit the GPO and remove the "Members" security access rule. Another solution is to change the group to a more targeted one containing a limited set of users.</value>
+    <value>In order to correct the issue, you should edit the GPO and change the local group assignation. Another solution is to change the group to a more targeted one containing a limited set of users.</value>
   </data>
   <data name="A_MembershipEveryone_Rationale" xml:space="preserve">
-    <value>Presence of restricted group where anybody is a member: {count}</value>
+    <value>Presence of local group where anybody is a member granted by GPO: {count}</value>
   </data>
   <data name="A_MembershipEveryone_Detail" xml:space="preserve">
     <value>GPO: {0} MemberOf: {1} User: {2}</value>
@@ -551,7 +551,11 @@ For LmCompatibilityLevel the setting is located in: Network security: LAN Manage
     <value>The purpose is to make sure the requirement of Smart Cards doesn't degrade password rotation</value>
   </data>
   <data name="A_SmartCardRequired_Solution" xml:space="preserve">
-    <value>There are 3 solutions to fix this issue, the most obvious being to change the user password on a regular basis. The fastest way is to check if the domain has the attribute &lt;i&gt;msDS-ExpirePasswordsOnSmartCardOnlyAccounts&lt;/i&gt;, which is available for Windows Server 2016 and later versions and handles periodically hash change. Another possibility, instead of changing the password, is to disable the flag "this account requires a smart card" then re-enable it, which will trigger an internal password hash change.</value>
+    <value>There are a few solutions to fix this issue, the most obvious being to change the user password on a regular basis. 
+    The fastest way is to check if the domain has the attribute &lt;i&gt;msDS-ExpirePasswordsOnSmartCardOnlyAccounts&lt;/i&gt;, which is available for Windows Server 2016 and later versions and handles periodically hash change. 
+    Be sure also that functional level is at least Windows Server 2016 the GPO "Enable rolling of expiring NTLM secrets during sign on, for users who are required to use Microsoft Passport or smart card for interactive sign on"  is not disabled.
+    Another possibility, instead of changing the password, is to disable the flag "this account requires a smart card" then re-enable it, which will trigger an internal password hash change.
+    You can also used the script provided by the DoD named Invoke-SmartcardHashRefresh (see link below)</value>
   </data>
   <data name="A_SmartCardRequired_Rationale" xml:space="preserve">
     <value>Number of account(s) using a smart card whose password is not changed: {count}</value>
@@ -1060,7 +1064,7 @@ For all users in a OU:
     <value>Check if the LAPS tool to handle the native local administrator passwords is installed</value>
   </data>
   <data name="A_MembershipEveryone_Title" xml:space="preserve">
-    <value>Check if access to a restricted group is given to anyone by a GPO</value>
+    <value>Check if a GPO assigns everyone to a local group</value>
   </data>
   <data name="A_BackupMetadata_Title" xml:space="preserve">
     <value>Check for the last backup date according to Microsoft standard</value>
@@ -1149,7 +1153,12 @@ Also this attack can be performed using the former password of the krbtgt accoun
     <value>The MD5 hashing algorithm is not considered safe. There are design flaws inherent to the algorithm that allow an attacker to generate a hash collision in less than a brute-force time. Nevertheless, the root certificate algorithm has no direct impact on the security, but it can be used indirectly to force the use of this algorithm in the issued certificate</value>
   </data>
   <data name="A_MembershipEveryone_TechnicalExplanation" xml:space="preserve">
-    <value>It is possible that a GPO adds local membership of a restricted group. In this case the rule triggers if one is found with "Everyone" or "Authenticated Users" as members. It basically means that the Restricted Group has no restriction on belongs to it. This represents a security risk as Restricted Group are supposed to have more accesses or rights</value>
+    <value>It is possible that a GPO adds local membership using a GPO.
+    In this case the rule triggers if one is found with "Everyone" or "Authenticated Users" or "Domain Users", ... as members.
+    It basically means that the local Group has no restriction on belongs to it. This represents a security risk as Local Group are supposed to have more accesses or rights.
+    The GPO configuration is located in Computer Configuration / Policies / Windows Settings / Security Settings / Restricted Group
+    
+    This rule checks also the membership set in Computer Configuration / Preferences / Control Panel Settings / Local Users and group.</value>
   </data>
   <data name="A_MinPwdLen_TechnicalExplanation" xml:space="preserve">
     <value>A check is performed to identify if the GPO regarding password policy allows less than 8 characters password. Short passwords represent a high risk because they can fairly easily be brute-forced or password sprayed. Most CERT and agencies advise for at least 8 characters (and often this number goes up to 12)</value>
@@ -1188,7 +1197,7 @@ It is possible to verify the results provided by the PingCastle solution by usin
     <value>The SHA1 hashing algorithm is not considered as safe. There are design flaws inherent to the algorithm that allow an attacker to generate a hash collision in less than a brute-force time</value>
   </data>
   <data name="A_SmartCardRequired_TechnicalExplanation" xml:space="preserve">
-    <value>Using smart cards to protected sensitive accounts is a good thing. Nevertheless, when the "Smart Card required" flag is set, the password of the account is not changed anymore by default. Internally the hash of this password is used to sign the user's Kerberos tickets, making this account vulnerable to Silver ticket attacks. The rule is triggered 90 days after the last change of the attribute unicodePwd. This value is collected using the replication metadata of the attribute 589914</value>
+    <value>Using smart cards to protected sensitive accounts is a good thing. Nevertheless, when the "Smart Card required" flag is set, the password of the account is not changed anymore by default. The rule is triggered 90 days after the last change of the attribute unicodePwd. This value is collected using the replication metadata of the attribute 589914</value>
   </data>
   <data name="A_WeakRSARootCert_TechnicalExplanation" xml:space="preserve">
     <value>A RSA key certificate with a modulus under 1024 bits is considered unsafe</value>
@@ -1414,7 +1423,8 @@ https://github.com/PSSecTools/Krbtgt</value>
     <value>https://tools.ietf.org/html/rfc6194</value>
   </data>
   <data name="A_SmartCardRequired_Documentation" xml:space="preserve">
-    <value>https://blogs.technet.microsoft.com/positivesecurity/2017/05/17/smartcard-and-pass-the-hash/</value>
+    <value>https://blogs.technet.microsoft.com/positivesecurity/2017/05/17/smartcard-and-pass-the-hash/
+https://github.com/nsacyber/Pass-the-Hash-Guidance</value>
   </data>
   <data name="A_WeakRSARootCert_Documentation" xml:space="preserve">
     <value>https://www.iad.gov/iad/library/ia-guidance/ia-solutions-for-classified/algorithm-guidance/commercial-national-security-algorithm-suite-factsheet.cfm
@@ -2717,7 +2727,8 @@ https://github.com/ANSSI-FR/AD-control-paths</value>
     </value>
   </data>
   <data name="A_AuditDC_Documentation" xml:space="preserve">
-    <value>https://adsecurity.org/?p=3299</value>
+    <value>https://adsecurity.org/?p=3299
+https://adsecurity.org/?p=3377</value>
   </data>
   <data name="A_AuditDC_Title" xml:space="preserve">
     <value>Check if there is the expected audit policy on domain controllers.</value>
@@ -5082,5 +5093,193 @@ https://learn.microsoft.com/en-us/troubleshoot/windows-client/windows-security/e
   </data>
   <data name="S_OldNtlm_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href="#lsasettings"&gt;Security settings&lt;/a&gt;</value>
+  </data>
+  <data name="A_DCLdapsProtocolAdvanced_Description" xml:space="preserve">
+    <value>The purpose is to ensure that all DC are using the most advanced protocols when acting as server.</value>
+  </data>
+  <data name="A_DCLdapsProtocolAdvanced_Solution" xml:space="preserve">
+    <value>Apply Windows updates and registry tweaks described in the documentation section to use Tls 1.2 and later.
+  </value>
+  </data>
+  <data name="A_DCLdapsProtocolAdvanced_Rationale" xml:space="preserve">
+    <value>At least one DC is using Tls1.0 or Tls1.1.</value>
+  </data>
+  <data name="A_DCLdapsProtocolAdvanced_Detail" xml:space="preserve">
+    <value>DC: {0} Protocol: {1}</value>
+  </data>
+  <data name="A_DCLdapsProtocolAdvanced_TechnicalExplanation" xml:space="preserve">
+    <value>TLS 1.0 and TLS 1.1 are no longer recommended to use, even if there is no pratical attack to could lead to an immediate compromise of the DC.
+The SChannel component needs to be tuned in order to not propose these protocols. Many guidelines to handle this problem issued by Microsoft do not talk about SChannel but rather IIS. These guidlines are quoted in the documentation section below.
+
+PingCastle is able to check the SSL version if LDAPS is exposed. LDAPS is automatically exposed once a certificate is available for the DC and the service restarted.
+Please note that PingCastle is using the native .Net SSL stack to perform this test. .Net begins to ignore these weak protocols starting the version 4.7 of the framework and as a consequence, PingCasle may miss some weak protocol detection.
+
+To test for these protocols, you can use a version of openssl with the deprecated protocols still compiled in, e.g. openssl-unsafe from Kali Linux, with the following commands:
+openssl-unsafe s_client -connect dc.domain.local:636 -tls1 
+openssl-unsafe s_client -connect dc.domain.local:636 -tls1_1
+    </value>
+  </data>
+  <data name="A_DCLdapsProtocolAdvanced_Documentation" xml:space="preserve">
+    <value>https://support.microsoft.com/en-us/topic/kb5017811-manage-transport-layer-security-tls-1-0-and-1-1-after-default-behavior-change-on-september-20-2022-e95b1b47-9c7c-4d64-9baf-610604a64c3e
+https://support.microsoft.com/en-us/help/187498/how-to-disable-pct-1-0-ssl-2-0-ssl-3-0-or-tls-1-0-in-internet-informat</value>
+  </data>
+  <data name="A_DCLdapsProtocolAdvanced_Title" xml:space="preserve">
+    <value>Check if LDAPS is using Tls 1.0 or Tls 1.1.</value>
+  </data>
+  <data name="A_DCLdapsProtocolAdvanced_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#domaincontrollersection"&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="S_DefaultOUChanged_Description" xml:space="preserve">
+    <value>The purpose is to ensure that the default location of computers and user OU has not been changed.</value>
+  </data>
+  <data name="S_DefaultOUChanged_Solution" xml:space="preserve">
+    <value>You have to use redircmp to set the value back to normal. See documentation for more details
+  </value>
+  </data>
+  <data name="S_DefaultOUChanged_Rationale" xml:space="preserve">
+    <value>At least one default of default OU has been changed</value>
+  </data>
+  <data name="S_DefaultOUChanged_Detail" xml:space="preserve">
+    <value>Expected: {0} Found: {1}</value>
+  </data>
+  <data name="S_DefaultOUChanged_TechnicalExplanation" xml:space="preserve">
+    <value>Default OU such as CN=Computers or CN=Users are stored within the wellKnownObjects attribute of the Domain object.
+    There are 12 default locations officialy defined.
+    They can be changed using the program redircmp.
+    Changing these default can alter the behavior of programs (such as security audit programs) as they may not check the modified objects.
+    </value>
+  </data>
+  <data name="S_DefaultOUChanged_Documentation" xml:space="preserve">
+    <value>https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/5a00c890-6be5-4575-93c4-8bf8be0ca8d8
+https://rickardnobel.se/verify-redirected-computers-container-in-active-directory/</value>
+  </data>
+  <data name="S_DefaultOUChanged_Title" xml:space="preserve">
+    <value>Check if default OU location has been changed within the domain.</value>
+  </data>
+  <data name="S_DefaultOUChanged_ReportLocation" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="P_AdminEmailOn_Description" xml:space="preserve">
+    <value>The purpose is to ensure proper isolation of administrative activities and to prevent any admin from having an email address configured in the domain.</value>
+  </data>
+  <data name="P_AdminEmailOn_Solution" xml:space="preserve">
+    <value>Ensure that administrators do not use the privileged account for browsing the internet or receiving emails.
+    We highly recommend that you implement this practice to lower the risk of an admin compromise.
+    
+      To remove this alert, you have to edit the properties of the user account and clear the email attribute.
+      Keep in mind that this action will silence the alert, but the risk may still be present.
+  </value>
+  </data>
+  <data name="P_AdminEmailOn_Rationale" xml:space="preserve">
+    <value>Number of admin account with an email address defined: {count}</value>
+  </data>
+  <data name="P_AdminEmailOn_Detail" xml:space="preserve">
+    <value>Account: {0} Email: {1}</value>
+  </data>
+  <data name="P_AdminEmailOn_TechnicalExplanation" xml:space="preserve">
+    <value>The recommended approach for secure administration is to implement a Tier Zero model.
+    In this model, low privileged actions cannot be made by highly privileged accounts such as admins.
+    This means that, in practice, administrators should have two separate Windows accounts: one for regular activities and one for performing privileged actions.
+    </value>
+  </data>
+  <data name="P_AdminEmailOn_Documentation" xml:space="preserve">
+    <value>https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/securing-privileged-access-for-the-ad-admin-part-1/ba-p/259166</value>
+  </data>
+  <data name="P_AdminEmailOn_Title" xml:space="preserve">
+    <value>Check if administrator accounts are email enabled.</value>
+  </data>
+  <data name="P_AdminEmailOn_ReportLocation" xml:space="preserve">
+    <value></value>
+  </data>
+
+
+  <data name="P_UnprotectedOU_Description" xml:space="preserve">
+    <value>The purpose is to ensure that Organizational Units (OUs) and Containers in Active Directory are protected to prevent accidental deletion, which could lead to data loss and disruptions in the network infrastructure.</value>
+  </data>
+  <data name="P_UnprotectedOU_Solution" xml:space="preserve">
+    <value>To safeguard against accidental deletions, it is essential to enable the "Protect object from accidental deletion" option for critical OUs and Containers.
+    When this option is enabled, it adds an additional layer of security, preventing unintended deletions.
+  To implement this protection:
+
+* Open the Active Directory Users and Computers management console.
+* Locate the OU or Container that requires protection.
+* Right-click on the OU or Container, select "Properties."
+* In the "Object" tab, check the "Protect object from accidental deletion" option.
+* Click "Apply" and then "OK" to save the changes.
+    
+    You can list unprotected OU using the PowerShell command:
+  &lt;i&gt;Get-ADOrganizationalUnit -filter {name -like "*"} -Properties ProtectedFromAccidentalDeletion | format-table Name,ProtectedFromAccidentalDeletion&lt;/i&gt;
+  and protect them using the command:
+  &lt;i&gt;Get-ADOrganizationalUnit -filter {name -like "*"} -Properties ProtectedFromAccidentalDeletion | where {$_.ProtectedFromAccidentalDeletion -eq $false} | Set-ADOrganizationalUnit -ProtectedFromAccidentalDeletion $true&lt;/i&gt;
+  
+      Note: only 10 will be listed below. Checkout the Delegations section for the complete list.
+  </value>
+  </data>
+  <data name="P_UnprotectedOU_Rationale" xml:space="preserve">
+    <value>OU without the accidental deletion protection have been found</value>
+  </data>
+  <data name="P_UnprotectedOU_Detail" xml:space="preserve">
+    <value>OU: {0}</value>
+  </data>
+  <data name="P_UnprotectedOU_TechnicalExplanation" xml:space="preserve">
+    <value>In Active Directory, Organizational Units can be protected from accidental deletion (reads: using the del key in the wrong place at the wrong time).
+    This way these objects cannot be deleted, unless the protection is removed. This Active Directory feature was first introduced in Windows Server 2008.
+    
+    This protection consists of a Deny ACE added to the NTSecurityDescriptor attribute applied to Everyone with the flag set to Delete and DeleteTree.
+    </value>
+  </data>
+  <data name="P_UnprotectedOU_Documentation" xml:space="preserve">
+    <value>https://dirteam.com/sander/2011/07/13/preventing-ous-and-containers-from-accidental-deletion/</value>
+  </data>
+  <data name="P_UnprotectedOU_Title" xml:space="preserve">
+    <value>Check if OUs and Containers are protected from accidental deletion.</value>
+  </data>
+  <data name="P_UnprotectedOU_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#admindelegation"&gt;Delegations&lt;/a&gt;</value>
+  </data>
+  <data name="S_DC_2012_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows Server 2012 as Domain Controller within the domain</value>
+  </data>
+  <data name="S_DC_2012_Documentation" xml:space="preserve">
+    <value>https://learn.microsoft.com/fr-fr/lifecycle/products/windows-server-2012-r2</value>
+  </data>
+  <data name="S_DC_2012_Rationale" xml:space="preserve">
+    <value>Presence of Windows Server 2012 as DC = {count}</value>
+  </data>
+  <data name="S_DC_2012_ReportLocation" xml:space="preserve">
+    <value>The operating system of domain controllers can be found in &lt;a href="#domaincontrollersection"&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="S_DC_2012_Solution" xml:space="preserve">
+    <value>To resolve this security risk, the only way is to decommission DCs running Windows Server 2012 OS, in order to use new versions that are more secure and that are still being patched regarding new security threats</value>
+  </data>
+  <data name="S_DC_2012_TechnicalExplanation" xml:space="preserve">
+    <value>The OS Windows Server 2012 is not supported anymore by Microsoft (except when migrated to Azure, until January 9, 2024) and any vulnerability found will not be patched.</value>
+  </data>
+  <data name="S_DC_2012_Title" xml:space="preserve">
+    <value>Obsolete Domain Controller (Windows Server 2012)</value>
+  </data>
+  <data name="S_OS_2012_Description" xml:space="preserve">
+    <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows Server 2012 for the workstations within the domain</value>
+  </data>
+  <data name="S_OS_2012_Documentation" xml:space="preserve">
+    <value>https://learn.microsoft.com/fr-fr/lifecycle/products/windows-server-2012-r2</value>
+  </data>
+  <data name="S_OS_2012_Rationale" xml:space="preserve">
+    <value>Presence of Windows Server 2012 = {count}</value>
+  </data>
+  <data name="S_OS_2012_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#operatingsystems"&gt;Operating Systems&lt;/a&gt;</value>
+  </data>
+  <data name="S_OS_2012_Solution" xml:space="preserve">
+    <value>In order to solve this security issue, you should upgrade all the servers to a more recent version of Windows, starting from Windows Server 2012. 
+    &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;
+    You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+  </data>
+  <data name="S_OS_2012_TechnicalExplanation" xml:space="preserve">
+    <value>The Windows Server 2012 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
+  </data>
+  <data name="S_OS_2012_Title" xml:space="preserve">
+    <value>Obsolete OS (Windows Server 2012)</value>
   </data>
 </root>

@@ -1,3 +1,17 @@
+3.1.0.0
+* fix a bug for machineaccountquote when GPO has been rewritten to remove all users
+* fix a regression introduced in previous version in P-TrustedCredManAccessPrivilege
+* added a password distribution chart in consolidation report (reserved for licensee)
+* added LAPS last change date for "export computers"
+* using new LAPS attribute ms-LAPS-Password
+* wording change for A-SmartCardRequired
+* added the rule A-DCLdapsProtocolAdvanced for Tls 1.0 and Tls 1.1 detection (informational)
+* added the rule S-DefaultOUChanged for informational use of redircmp - thanks to Andy Wendel
+* changed the rule A-MembershipEveryone to check for "Local Users and group" assignation
+* added the rule P-AdminEmailOn to check if privileged accounts have an email (informative & maturity level 3)
+* added the rule P-UnprotectedOU to check for unprotected OU (informative & maturity level 4)
+* added the rule S-OS-2012 and S-DC-2012 that will trigger after Oct 10 2023 (unless --I-swear-... is set)
+
 3.0.0.4
 * fix channel binding issue (if server was configured with only TLS1.2 and client was not configured for TLS1.2 in the default algorithm it was not tested)
 * fix integrity bug for paid subscriptions
@@ -8,7 +22,7 @@
 * added LAPS usage analysis & statictics (for paid customers)
 * change the timeout of TlsCheck from 10ms to 1s
 * fix setintegrity missing
-* fix kerberos armoring detection bug
+* fix kerberos armoring detection bug - thanks to Andy Wendel
 * change timeout for Tls check (was only 10ms) to 1s
 
 3.0.0.0
@@ -114,7 +128,7 @@
 * fix: replace "admins" string in code, because they were some strings unmatched (especially in P-Kerberoasting & P-ServiceDomainAdmin)
 * fix S-PwdLastSet-45 S-PwdLastSet-90: the check was made against inactive computers instead of active ones
 * added the rule A-DnsZoneTransfert which checks for DNS Zone Transfers
-* added the rule A-LAPS-Joined-Computers which checks for manually joined computers - the owner of the computer objects see the LAPS password
+* added the rule A-LAPS-Joined-Computers which checks for manually joined computers - the owner of the computer objects see the LAPS password - thanks to Andy Wendel
 * fix P-AdminNum for a better wording if it matches
 * fix unixpassword LDAP search query for optimization (looks only on active user account)
 * added the MS FAQ for Krbtgt reset in the A-Krbtgt rule links

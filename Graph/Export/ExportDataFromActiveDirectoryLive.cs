@@ -21,26 +21,27 @@ namespace PingCastle.Graph.Export
     public class ExportDataFromActiveDirectoryLive
     {
         List<string> properties = new List<string> {
-                        "distinguishedName",
-                        "displayName",
-                        "dnsHostName",
-                        "name",
-                        "objectSid",
-                        "objectClass",
-                        "nTSecurityDescriptor",
-                        "member",
                         "adminCount",
+                        "displayName",
+                        "distinguishedName",
+                        "dnsHostName",
                         "gPLink",
                         "gPCFileSysPath",
                         "lastLogonTimestamp",
-                        "scriptPath",
+                        "member",
+                        "mail",
+                        "name",
+                        "nTSecurityDescriptor",
+                        "objectClass",
+                        "objectSid",
                         "primaryGroupID",
+                        "pwdlastset",
                         "sAMAccountName",
+                        "scriptPath",
                         "servicePrincipalName",
                         "sIDHistory",
                         "userAccountControl",
                         "whencreated",
-                        "pwdlastset",
             };
 
         public IDataStorage Storage { get; set; }

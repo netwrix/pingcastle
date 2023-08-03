@@ -30,7 +30,7 @@ namespace PingCastle.Scanners
             Settings = settings;
         }
 
-        Guid LAPSSchemaId = Guid.Empty;
+        List<Guid> DangerousObjectToRead = null;
 
         public void Export(string filename)
         {
@@ -38,13 +38,9 @@ namespace PingCastle.Scanners
 
             using (ADWebService adws = new ADWebService(Settings.Server, Settings.Port, Settings.Credential))
             {
-                string[] propertiesLaps = new string[] { "schemaIDGUID" };
-                // note: the LDAP request does not contain ms-MCS-AdmPwd because in the old time, MS consultant was installing customized version of the attriute, * being replaced by the company name
-                // check the oid instead ? (which was the same even if the attribute name was not)
-                adws.Enumerate(adws.DomainInfo.SchemaNamingContext, "(name=ms-*-AdmPwd)", propertiesLaps, (ADItem aditem) =>
-                {
-                    LAPSSchemaId = aditem.SchemaIDGUID;
-                }, "OneLevel");
+                var LAPSAnalyzer = new PingCastle.Healthcheck.LAPSAnalyzer(adws);
+
+                DangerousObjectToRead = LAPSAnalyzer.LAPSSchemaGuid;
 
                 using (StreamWriter sw = File.CreateText(filename))
                 {
@@ -305,9 +301,12 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
                 // ADS_RIGHT_DS_READ_PROP
                 if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.ReadProperty) == ActiveDirectoryRights.ReadProperty)
                 {
-                    if (LAPSSchemaId == accessrule.ObjectType)
+                    foreach (var schemaId in DangerousObjectToRead)
                     {
-                        return true;
+                        if (schemaId == accessrule.ObjectType)
+                        {
+                            return true;
+                        }
                     }
                 }
             }

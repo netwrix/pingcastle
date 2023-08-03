@@ -68,13 +68,11 @@ namespace PingCastle.Graph.Export
 
         public void Initialize(IADConnection adws)
         {
-            string[] propertiesLaps = new string[] { "schemaIDGUID" };
-            // note: the LDAP request does not contain ms-MCS-AdmPwd because in the old time, MS consultant was installing customized version of the attriute, * being replaced by the company name
-            // check the oid instead ? (which was the same even if the attribute name was not)
-            adws.Enumerate(DomainInfo.SchemaNamingContext, "(name=ms-*-AdmPwd)", propertiesLaps, (ADItem aditem) =>
-            {
-                GuidsReadProperties.Add(new KeyValuePair<Guid, RelationType>(aditem.SchemaIDGUID, RelationType.READ_PROP_MS_MCS_ADMPWD));
-            }, "OneLevel");
+            var lapsAnalyzer = new PingCastle.Healthcheck.LAPSAnalyzer(adws);
+            if (lapsAnalyzer.LegacyLAPSSchemaId != Guid.Empty)
+                GuidsReadProperties.Add(new KeyValuePair<Guid, RelationType>(lapsAnalyzer.LegacyLAPSSchemaId, RelationType.READ_PROP_MS_MCS_ADMPWD));
+            if (lapsAnalyzer.MsLAPSSchemaId != Guid.Empty)
+                GuidsReadProperties.Add(new KeyValuePair<Guid, RelationType>(lapsAnalyzer.MsLAPSSchemaId, RelationType.READ_PROP_MS_LAPS_PASSWORD)); 
         }
 
         // mapping from msDS-AllowedToDelegateTo

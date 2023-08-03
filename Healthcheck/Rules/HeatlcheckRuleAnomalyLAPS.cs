@@ -20,7 +20,7 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            return (healthcheckData.LAPSInstalled == DateTime.MaxValue ? 1 : 0);
+            return (healthcheckData.LAPSInstalled == DateTime.MaxValue && healthcheckData.NewLAPSInstalled == DateTime.MaxValue ? 1 : 0);
         }
     }
 }

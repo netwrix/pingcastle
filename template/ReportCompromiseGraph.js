@@ -297,11 +297,6 @@ $("[id^='mcg-']").on('hide.bs.modal', function (event) {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    });
-
     var hash = location.hash.replace('#','');
     if(hash != '' && hash.startsWith('mcg-') ){
         var modalDialog = new bootstrap.Modal(document.getElementById('hash'));

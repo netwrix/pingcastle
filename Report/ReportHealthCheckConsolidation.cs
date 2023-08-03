@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Linq;
 
 namespace PingCastle.Report
 {
@@ -103,7 +104,7 @@ namespace PingCastle.Report
             GenerateTabHeader("Control Paths", selectedTab);
             GenerateTabHeader("Trusts", selectedTab);
             GenerateTabHeader("Anomalies", selectedTab);
-            GenerateTabHeader("Password Policies", selectedTab);
+            GenerateTabHeader("Password", selectedTab);
             GenerateTabHeader("GPO", selectedTab);
             Add(@"
         </ul>
@@ -123,7 +124,7 @@ namespace PingCastle.Report
             GenerateSectionFluid("Control Paths", GenerateControlPathsInformation, selectedTab);
             GenerateSectionFluid("Trusts", GenerateTrustInformation, selectedTab);
             GenerateSectionFluid("Anomalies", GenerateAnomalyDetail, selectedTab);
-            GenerateSectionFluid("Password Policies", GeneratePasswordPoliciesDetail, selectedTab);
+            GenerateSectionFluid("Password", GeneratePasswordPoliciesDetail, selectedTab);
             GenerateSectionFluid("GPO", GenerateGPODetail, selectedTab);
 
             Add(@"
@@ -1026,7 +1027,8 @@ namespace PingCastle.Report
                 AddHeaderText("AdminSDHolder");
                 AddHeaderText("DC with null session");
                 AddHeaderText("Smart card account not update");
-                AddHeaderText("Date LAPS Installed");
+                AddHeaderText("Date LAPS Installed (legacy)");
+                AddHeaderText("Date LAPS Installed (new)");
                 AddBeginTableData();
                 foreach (HealthcheckData data in Report)
                 {
@@ -1037,6 +1039,7 @@ namespace PingCastle.Report
                     AddCellNum(data.DomainControllerWithNullSessionCount);
                     AddCellNum(data.SmartCardNotOKCount);
                     AddCellText((data.LAPSInstalled == DateTime.MaxValue ? "Never" : (data.LAPSInstalled == DateTime.MinValue ? "Not checked" : data.LAPSInstalled.ToString("u"))));
+                    AddCellText((data.NewLAPSInstalled == DateTime.MaxValue ? "Never" : (data.NewLAPSInstalled == DateTime.MinValue ? "Not checked" : data.NewLAPSInstalled.ToString("u"))));
                     AddEndRow();
                 }
                 AddEndTable();
@@ -1047,6 +1050,65 @@ namespace PingCastle.Report
         #region passwordpolicy
         private void GeneratePasswordPoliciesDetail()
         {
+            var dist = new Dictionary<string, IEnumerable<DistributionItem>>();
+            foreach (var r in Report)
+            {
+                if (r.PasswordDistribution != null && r.PasswordDistribution.Count > 0)
+                {
+                    var value = r.PasswordDistribution.Select(x => new DistributionItem { HigherBound = x.HigherBound, Value = x.Value }).ToList();
+                    if (dist.ContainsKey(r.DomainFQDN))
+                    {
+                        dist[r.DomainFQDN + " - " + r.DomainSid] = value;
+                    }
+                    else
+                    {
+                        dist[r.DomainFQDN] = value;
+                    }
+                }
+            }
+
+            if (dist.Count > 0)
+            {
+                GenerateSection("Password Age Distribution", () =>
+                {
+                    if (string.IsNullOrEmpty(_license.Edition))
+                    {
+                        AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
+                    }
+                    else
+                    {
+                        AddParagraph("Here is the distribution where the password has been changed for the last time. Only enabled user accounts are analyzed (no guest account for example).");
+                        AddDistributionSeriesChart(dist, "general");
+
+
+                        AddBeginTable("Password Distribution");
+                        AddHeaderText("Domain");
+                        for (int i = 0; i < 36; i++)
+                        {
+                            AddHeaderText((i * 30) + "-" + ((i + 1) * 30) + " days");
+                        }
+                        AddHeaderText("Other");
+                        AddBeginTableData();
+                        foreach (HealthcheckData data in Report)
+                        {
+                            if (data.PasswordDistribution != null && data.PasswordDistribution.Count > 0)
+                            {
+                                AddBeginRow();
+                                AddPrintDomain(data.Domain);
+                                for (int i = 0; i < 36; i++)
+                                {
+                                    var v = data.PasswordDistribution.Where(x => x.HigherBound == i).FirstOrDefault();
+                                    AddCellNum(v == null ? 0 : v.Value);
+                                }
+                                AddCellNum(data.PasswordDistribution.Where(x => x.HigherBound >= 36).Select(x => x.Value).Sum());
+                                AddEndRow();
+                            }
+                        }
+                        AddEndTable();
+                    }
+                });
+            }
+
             GenerateSection("Password policies", () =>
             {
                 AddBeginTable("List of password policies");

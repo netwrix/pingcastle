@@ -51,7 +51,15 @@ namespace PingCastle.Cloud.RESTServices
         public static List<ProofOfPossessionCookieInfo> GetCookieInforForUri(string uri)
         {
             var output = new List<ProofOfPossessionCookieInfo>();
-            var provider = (IProofOfPossessionCookieInfoManager)new WindowsTokenProvider();
+            IProofOfPossessionCookieInfoManager provider;
+            try
+            {
+                provider = (IProofOfPossessionCookieInfoManager)new WindowsTokenProvider();
+            }
+            catch (COMException ex)
+            {
+                throw new ApplicationException("Unable to retrieve the PRT. Is Windows support for AzureAD installed ? (" + ex.Message + "). You should use manual credential to login to AzureAD.");
+            }
             IntPtr ptr;
             uint count;
             var error = provider.GetCookieInfoForUri(uri, out count, out ptr);

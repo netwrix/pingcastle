@@ -124,8 +124,10 @@ namespace PingCastle.Graph.Database
         [Description("As part of delegation, the user can act on behalf other identities.")]
         msDS_Allowed_To_Delegate_To_With_Protocol_Transition,
         [RelationAppliesTo("computer")]
-        [Description("This right grant the ability to read the local administrator password defined by LAPS.")]
+        [Description("This right grant the ability to read the local administrator password defined by LAPS (legacy).")]
         READ_PROP_MS_MCS_ADMPWD,
+        [Description("This right grant the ability to read the local administrator password defined by LAPS (ms).")]
+        READ_PROP_MS_LAPS_PASSWORD,
         [Description("The permission described above is restricted to Users.")]
         RestrictedToUser,
         [Description("The permission described above is restricted to Computers.")]

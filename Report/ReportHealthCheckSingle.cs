@@ -951,127 +951,12 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 else
                 {
                     AddParagraph("Here is the distribution where the password has been changed for the last time. Only enabled user accounts are analyzed (no guest account for example).");
-                    AddPasswordDistributionChart(Report.PasswordDistribution, "general");
+                    AddDistributionChart(Report.PasswordDistribution.Select(x => new DistributionItem { HigherBound = x.HigherBound, Value = x.Value }), "general");
                 }
             }
             GenerateDomainSIDHistoryList(Report.UserAccountData);
         }
 
-        private void AddPasswordDistributionChart(List<HealthcheckPwdDistributionData> input, string id, Dictionary<int, string> tooltips = null)
-        {
-            NumberFormatInfo nfi = new NumberFormatInfo();
-            nfi.NumberDecimalSeparator = ".";
-            var data = new SortedDictionary<int, int>();
-            int highest = 0;
-            int max = 0;
-            const int division = 36;
-            const double horizontalStep = 25;
-            foreach (var entry in input)
-            {
-                data.Add(entry.HigherBound, entry.Value);
-                if (highest < entry.HigherBound)
-                    highest = entry.HigherBound;
-                if (max < entry.Value)
-                    max = entry.Value;
-            }
-            // add missing data
-            if (max > 10000)
-                max = 10000;
-            else if (max >= 5000)
-                max = 10000;
-            else if (max >= 1000)
-                max = 5000;
-            else if (max >= 500)
-                max = 1000;
-            else if (max >= 100)
-                max = 500;
-            else if (max >= 50)
-                max = 100;
-            else if (max >= 10)
-                max = 50;
-            else
-                max = 10;
-
-            int other = 0;
-            for (int i = 0; i < division; i++)
-            {
-                if (!data.ContainsKey(i))
-                    data[i] = 0;
-            }
-            for (int i = division; i <= highest; i++)
-            {
-                if (data.ContainsKey(i))
-                    other += data[i];
-            }
-            Add(@"<div id='pdwdistchart");
-            Add(id);
-            Add(@"'><svg viewBox='0 0 1000 400'>");
-            Add(@"<g transform=""translate(40,20)"">");
-            // horizontal scale
-            Add(@"<g transform=""translate(0,290)"" fill=""none"" font-size=""10"" font-family=""sans-serif"" text-anchor=""middle"">");
-            Add(@"<path class=""domain"" stroke=""#000"" d=""M0.5,0V0.5H950V0""></path>");
-            for (int i = 0; i < division; i++)
-            {
-                double v = 13.06 + (i) * horizontalStep;
-                Add(@"<g class=""tick"" opacity=""1"" transform=""translate(" + v.ToString(nfi) + @",30)""><line stroke=""#000"" y2=""0""></line><text fill=""#000"" y=""3"" dy="".15em"" dx=""-.8em"" transform=""rotate(-65)"">" +
-                    (i * 30) + "-" + ((i + 1) * 30) + @" days</text></g>");
-            }
-            {
-                double v = 13.06 + (division) * horizontalStep;
-                Add(@"<g class=""tick"" opacity=""1"" transform=""translate(" + v.ToString(nfi) + @",30)""><line stroke=""#000"" y2=""0""></line><text fill=""#000"" y=""3"" dy="".15em"" dx=""-.8em"" transform=""rotate(-65)"">Other</text></g>");
-            }
-            Add(@"</g>");
-            // vertical scale
-            Add(@"<g fill=""none"" font-size=""10"" font-family=""sans-serif"" text-anchor=""end"">");
-            Add(@"<path class=""domain"" stroke=""#000"" d=""M-6,290.5H0.5V0.5H-6""></path>");
-            for (int i = 0; i < 6; i++)
-            {
-                double v = 290 - i * 55;
-                Add(@"<g class=""tick"" opacity=""1"" transform=""translate(0," + v.ToString(nfi) + @")""><line stroke=""#000"" x2=""-6""></line><text fill=""#000"" x=""-9"" dy=""0.32em"">" +
-                    (max / 5 * i) + @"</text></g>");
-            }
-            Add(@"</g>");
-            // bars
-            for (int i = 0; i < division; i++)
-            {
-                double v = 3.28 + horizontalStep * (i);
-                int value = 0;
-                if (data.ContainsKey(i))
-                    value = data[i];
-                double size = 290 * value / max;
-                if (size > 290) size = 290;
-                double w = horizontalStep - 3;
-                string tooltip = value.ToString();
-                if (tooltips != null && tooltips.ContainsKey(i))
-                    tooltip = tooltips[i];
-                Add(@"<rect class=""bar"" fill=""#Fa9C1A"" x=""" + v.ToString(nfi) + @""" width=""" + w.ToString(nfi) + @""" y=""" + (290 - size).ToString(nfi) + @""" height=""" + (size).ToString(nfi) + @""" data-bs-toggle=""tooltip"" title=""");
-                AddEncoded(tooltip);
-                Add(@"""></rect>");
-            }
-            {
-                double v = 3.28 + horizontalStep * (division);
-                int value = 0;
-                value = other;
-                double size = 290 * value / max;
-                if (size > 290) size = 290;
-                double w = horizontalStep - 3;
-                string tooltip = string.Empty;
-                if (tooltips != null)
-                {
-                    foreach (var t in tooltips)
-                    {
-                        if (t.Key > division)
-                            tooltip += t.Value + "\r\n";
-                    }
-                }
-                if (string.IsNullOrEmpty(tooltip))
-                    tooltip = value.ToString();
-                Add(@"<rect class=""bar"" fill=""#Fa9C1A"" x=""" + v.ToString(nfi) + @""" width=""" + w.ToString(nfi) + @""" y=""" + (290 - size).ToString(nfi) + @""" height=""" + (size).ToString(nfi) + @""" data-bs-toggle=""tooltip"" title=""");
-                AddEncoded(tooltip);
-                Add(@"""></rect>");
-            }
-            Add(@"</g></svg></div>");
-        }
 
         private void GenerateListAccount(HealthcheckAccountData data, string root, string accordion)
         {
@@ -1289,17 +1174,30 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             GenerateDomainSIDHistoryList(Report.ComputerAccountData);
             GenerateDCInformation();
 
-            if (Report.LapsDistribution != null && Report.LapsDistribution.Count > 0)
+
+            GenerateSubSection("LAPS Analysis", "lapsanalysis");
+            if (string.IsNullOrEmpty(_license.Edition))
             {
-                GenerateSubSection("LAPS Analysis", "lapsanalysis");
-                if (string.IsNullOrEmpty(_license.Edition))
+                AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
+            }
+            else
+            {
+                if ((Report.LapsDistribution != null && Report.LapsDistribution.Count > 0) || (Report.LapsNewDistribution != null && Report.LapsNewDistribution.Count > 0))
                 {
-                    AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
-                }
-                else
-                {
-                    AddParagraph("Here is the distribution of the LAPS password fresshness.");
-                    AddPasswordDistributionChart(Report.LapsDistribution, "generallapsdistribution");
+                    AddParagraph("Here is the distribution of the LAPS password fresshness (legacy vs the new Microsoft extension).");
+                    if (Report.NewLAPSInstalled == DateTime.MinValue)
+                    {
+                        // if chart if for legacy values
+                        AddDistributionChart(Report.LapsDistribution.Select(x => new DistributionItem { HigherBound = x.HigherBound, Value = x.Value }), "generallapsdistribution");
+                    }
+                    else
+                    {
+                        AddDistributionSeriesChart(new Dictionary<string, IEnumerable<DistributionItem>>
+                        {
+                            {"Legacy LAPS", Report.LapsDistribution == null ? null : Report.LapsDistribution.Select(x => new DistributionItem { HigherBound = x.HigherBound, Value = x.Value })},
+                            {"New LAPS", Report.LapsNewDistribution == null ? null : Report.LapsNewDistribution.Select(x => new DistributionItem { HigherBound = x.HigherBound, Value = x.Value })},
+                        }, "generallapsdistribution");
+                    }
                     if (Report.ComputerAccountData != null && Report.OperatingSystemVersion != null)
                     {
                         AddParagraph("Here is the application of LAPS");
@@ -1404,6 +1302,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         AddEndTable();
 
                     }
+                }
+                else
+                {
+                    AddParagraph("No data is available in the report or no computers are enforcing LAPS.");
                 }
             }
         }
@@ -1711,28 +1613,26 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             }
             else
             {
-                List<HealthcheckPwdDistributionData> lastLogon = new List<HealthcheckPwdDistributionData>();
-                Dictionary<int, string> tooltips = new Dictionary<int, string>();
-                Dictionary<int, string> tooltips2 = new Dictionary<int, string>();
-                List<HealthcheckPwdDistributionData> pwdLastSet = new List<HealthcheckPwdDistributionData>();
+                var lastLogon = new List<DistributionItem>();
+                var pwdLastSet = new List<DistributionItem>();
 
-                ComputePrivilegedDistribution(lastLogon, tooltips, pwdLastSet, tooltips2);
+                ComputePrivilegedDistribution(lastLogon, pwdLastSet);
 
                 if (lastLogon.Count == 0)
-                    lastLogon = Report.PrivilegedDistributionLastLogon;
+                    lastLogon = Report.PrivilegedDistributionLastLogon.Select(x => new DistributionItem { HigherBound = x.HigherBound, Value = x.Value }).ToList();
                 if (lastLogon != null && lastLogon.Count > 0)
                 {
                     AddParagraph("Here is the distribution of the last logon of privileged users. Only enabled accounts are analyzed.");
-                    AddPasswordDistributionChart(lastLogon, "logonadmin", tooltips);
+                    AddDistributionChart(lastLogon, "logonadmin");
                 }
 
                 GenerateSubSection("Password Age Distribution", "adminpwdagedistribution");
                 if (pwdLastSet.Count == 0)
-                    pwdLastSet = Report.PrivilegedDistributionPwdLastSet;
+                    pwdLastSet = Report.PrivilegedDistributionPwdLastSet.Select(x => new DistributionItem { HigherBound = x.HigherBound, Value = x.Value }).ToList();
                 if (pwdLastSet != null && pwdLastSet.Count > 0)
                 {
                     AddParagraph("Here is the distribution of the password age for privileged users. Only enabled accounts are analyzed.");
-                    AddPasswordDistributionChart(pwdLastSet, "pwdlastsetadmin", tooltips2);
+                    AddDistributionChart(pwdLastSet, "pwdlastsetadmin");
                 }
             }
             if (Report.Delegations != null && Report.Delegations.Count > 0)
@@ -1749,6 +1649,24 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         GenerateAccordionDetailForDetail("alldelegation", "delegationaccordeon", "All delegations", Report.Delegations.Count, () => GenerateDelegationDetail(Report.Delegations));
                     });
                 Add("</div></div>");
+
+                if (Report.UnprotectedOU != null && Report.UnprotectedOU.Count > 0)
+                {
+                    Add(@"
+		<div class=""row"">
+			<div class=""col-lg-12"">");
+                    AddParagraph("The OU that are listed as not protected are:");
+                    GenerateAccordion("unprotectedOUaccordeon",
+                        () =>
+                        {
+                            GenerateAccordionDetailForDetail("unprotectedOU", "unprotectedOUaccordeon", "Unprotected OU", Report.UnprotectedOU.Count, () => GenerateUnprotectedOUDetail(Report.UnprotectedOU));
+                        });
+                    Add(@"
+			</div>
+		</div>
+");
+                }
+
                 List<HealthcheckDelegationData> dcsync = new List<HealthcheckDelegationData>();
                 foreach (var d in Report.Delegations)
                     if (d.Right.Contains(RelationType.EXT_RIGHT_REPLICATION_GET_CHANGES_ALL.ToString()))
@@ -1763,12 +1681,12 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             }
         }
 
-        private void ComputePrivilegedDistribution(List<HealthcheckPwdDistributionData> lastLogon, Dictionary<int, string> tooltips, List<HealthcheckPwdDistributionData> pwdLastSet, Dictionary<int, string> tooltips2)
+        private void ComputePrivilegedDistribution(List<DistributionItem> lastLogon, List<DistributionItem> pwdLastSet)
         {
             if (Report.AllPrivilegedMembers != null && Report.AllPrivilegedMembers.Count > 0)
             {
-                var pwdDistribution = new Dictionary<int, int>();
-                var logonDistribution = new Dictionary<int, int>();
+                var pwdDistribution = new Dictionary<int, DistributionItem>();
+                var logonDistribution = new Dictionary<int, DistributionItem>();
                 foreach (var user in Report.AllPrivilegedMembers)
                 {
                     if (user.IsEnabled)
@@ -1784,13 +1702,14 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         }
 
                         if (logonDistribution.ContainsKey(i))
-                            logonDistribution[i]++;
+                        {
+                            logonDistribution[i].Value++;
+                            logonDistribution[i].toolTip += "\r\n" + user.Name;
+                        }
                         else
-                            logonDistribution[i] = 1;
-                        if (tooltips.ContainsKey(i))
-                            tooltips[i] += "\r\n" + user.Name;
-                        else
-                            tooltips[i] = user.Name;
+                        {
+                            logonDistribution[i] = new DistributionItem { HigherBound = i, Value = 1, toolTip = user.Name };
+                        }
 
                         if (user.PwdLastSet != DateTime.MinValue)
                         {
@@ -1801,22 +1720,15 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             i = HealthcheckAnalyzer.ConvertDateToKey(user.Created);
                         }
                         if (pwdDistribution.ContainsKey(i))
-                            pwdDistribution[i]++;
+                        {
+                            pwdDistribution[i].Value++;
+                            pwdDistribution[i].toolTip += "\r\n" + user.Name;
+                        }
                         else
-                            pwdDistribution[i] = 1;
-                        if (tooltips2.ContainsKey(i))
-                            tooltips2[i] += "\r\n" + user.Name;
-                        else
-                            tooltips2[i] = user.Name;
+                        {
+                            pwdDistribution[i] = new DistributionItem { HigherBound = i, Value = 1, toolTip = user.Name };
+                        }
                     }
-                }
-                foreach (var p in pwdDistribution)
-                {
-                    pwdLastSet.Add(new HealthcheckPwdDistributionData() { HigherBound = p.Key, Value = p.Value });
-                }
-                foreach (var p in logonDistribution)
-                {
-                    lastLogon.Add(new HealthcheckPwdDistributionData() { HigherBound = p.Key, Value = p.Value });
                 }
             }
         }
@@ -2803,7 +2715,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddParagraph("The account AZUREADSSOACC is used under the hood to provide SSO functionalities with AzureAD.");
                 Add(@"
 		<div class=""row""><div class=""col-lg-12"">
-<p>The password of the AZUREADSSOACC account should be changed twice every 40 days. You can check this <a href=""https://github.com/MicrosoftDocs/azure-docs/blob/main/articles/active-directory/hybrid/how-to-connect-sso-faq.yml"">documentation</a> to have the procedure.</p>
+<p>The password of the AZUREADSSOACC account should be changed twice every 40 days. You can check this <a href=""https://github.com/MicrosoftDocs/azure-docs/blob/main/articles/active-directory/hybrid/connect/tshoot-connect-sso.md"">documentation</a> to have the procedure.</p>
 <p>You can use the version gathered using replication metadata from two reports to guess the frequency of the password change or if the two consecutive resets have been done. Version starts at 1.</p>
 <p><strong>AZUREADSSOACC password last changed: </strong> " + Report.AzureADSSOLastPwdChange.ToString("u") + @"
 <strong>version: </strong> " + Report.AzureADSSOVersion + @"
@@ -3466,7 +3378,8 @@ Here are the settings found in GPO.");
 Then this password is changed at a fixed interval. The risk is when a local administrator hash is retrieved and used on other workstation in a pass-the-hash attack.
 Please note that the LAPS schema is installed on the forest and as a consequence the installation date can be before the domain creation date.</p>
 <p>Mitigation: having a process when a new workstation is created or install LAPS and apply it through a GPO</p>
-<p><strong>LAPS installation date: </strong> " + (Report.LAPSInstalled == DateTime.MaxValue ? "<span class=\"unticked\">Never</span>" : (Report.LAPSInstalled == DateTime.MinValue ? "<span class=\"unticked\">Not checked (older version of PingCastle)</span>" : Report.LAPSInstalled.ToString("u"))) + @"</p>
+<p><strong>Legacy LAPS installation date: </strong> " + (Report.LAPSInstalled == DateTime.MaxValue ? "<span class=\"unticked\">Never</span>" : (Report.LAPSInstalled == DateTime.MinValue ? "<span class=\"unticked\">Not checked (older version of PingCastle)</span>" : Report.LAPSInstalled.ToString("u"))) + @"</p>
+<p><strong>Ms LAPS installation date: </strong> " + (Report.NewLAPSInstalled == DateTime.MaxValue ? "<span class=\"unticked\">Never</span>" : (Report.NewLAPSInstalled == DateTime.MinValue ? "<span class=\"unticked\">Not checked (older version of PingCastle)</span>" : Report.NewLAPSInstalled.ToString("u"))) + @"</p>
 		</div></div>
 ");
             if (Report.ListLAPSJoinedComputersToReview != null && Report.ListLAPSJoinedComputersToReview.Count > 0)
@@ -4074,6 +3987,25 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 		</div>
 ");
             }
+        }
+
+        private void GenerateUnprotectedOUDetail(List<string> list)
+        {
+            AddBeginTable("Unprotected OU");
+            AddHeaderText("DistinguishedName");
+            AddBeginTableData();
+
+            foreach (var item in list)
+            {
+                int dcPathPos = item.IndexOf(",DC=");
+                string path = item;
+                if (dcPathPos > 0)
+                    path = item.Substring(0, dcPathPos);
+                AddBeginRow();
+                AddCellText(path);
+                AddEndRow();
+            }
+            AddEndTable();
         }
 
         void AddNameWithCA(string Name, List<string> CA)

@@ -23,6 +23,10 @@ namespace PingCastle.Healthcheck.Rules
             {
                 if (string.Equals(privilege.Privilege, "SeTrustedCredManAccessPrivilege", StringComparison.OrdinalIgnoreCase))
                 {
+                    if (string.IsNullOrEmpty(privilege.User))
+                        continue;
+                    if (string.Equals(privilege.User, HealthcheckAnalyzer.EmptyUserPrivilege))
+                        continue;
                     AddRawDetail(privilege.GPOName, privilege.User);
                 }
             }

@@ -584,6 +584,8 @@ namespace PingCastle.Graph.Reporting
                 member.Name = x.SAMAccountName;
                 member.PwdLastSet = x.PwdLastSet;
                 member.LastLogonTimestamp = x.LastLogonTimestamp;
+                member.Email = x.Mail;
+
                 if ((x.UserAccountControl & 0x00000002) != 0)
                     data.NumberOfMemberDisabled++;
                 else

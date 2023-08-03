@@ -505,6 +505,9 @@ namespace PingCastle
                         case "--I-swear-I-paid-win8-support":
                             Healthcheck.Rules.HeatlcheckRuleStaledObsoleteWin8.IPaidSupportWin8 = true;
                             break;
+                        case "--I-swear-I-paid-win2012-support":
+                            Healthcheck.Rules.HeatlcheckRuleStaledObsolete2012.IPaidSupportWin2012 = true;
+                            break;
                         case "--interactive":
                             delayedInteractiveMode = true;
                             break;
@@ -1188,6 +1191,7 @@ namespace PingCastle
             Console.WriteLine("");
             Console.WriteLine("    --I-swear-I-paid-win7-support : meaningless");
             Console.WriteLine("    --I-swear-I-paid-win8-support : meaningless");
+            Console.WriteLine("    --I-swear-I-paid-win2012-support : meaningless");
             Console.WriteLine("");
             Console.WriteLine("--rules               : Generate an html containing all the rules used by PingCastle");
             Console.WriteLine("");

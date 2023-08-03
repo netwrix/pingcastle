@@ -27,6 +27,7 @@ using System.Threading;
 using TinyJson;
 using System.Xml.Serialization;
 using System.Xml;
+using System.Net.Http;
 
 namespace PingCastle
 {
@@ -42,6 +43,9 @@ namespace PingCastle
 
         Dictionary<string, string> xmlreports = new Dictionary<string, string>();
         Dictionary<string, string> htmlreports = new Dictionary<string, string>();
+        Dictionary<string, string> aadjsonreport = new Dictionary<string, string>();
+        Dictionary<string, string> aadhtmlreport = new Dictionary<string, string>();
+
         private RuntimeSettings Settings;
 
         public Tasks(RuntimeSettings settings)
@@ -238,23 +242,22 @@ namespace PingCastle
 
         public bool CompleteTasks()
         {
-            if (xmlreports.Count == 0 && htmlreports.Count == 0)
-                return true;
-            if (!String.IsNullOrEmpty(Settings.sendXmlTo))
+            if (!string.IsNullOrEmpty(Settings.sendXmlTo))
                 SendEmail(Settings.sendXmlTo, true, false);
-            if (!String.IsNullOrEmpty(Settings.sendHtmlTo))
+            if (!string.IsNullOrEmpty(Settings.sendHtmlTo))
                 SendEmail(Settings.sendHtmlTo, false, true);
-            if (!String.IsNullOrEmpty(Settings.sendAllTo))
+            if (!string.IsNullOrEmpty(Settings.sendAllTo))
                 SendEmail(Settings.sendAllTo, true, true);
-            if (!String.IsNullOrEmpty(Settings.sharepointdirectory))
+            if (!string.IsNullOrEmpty(Settings.sharepointdirectory))
             {
+                // TODO: remove this functionality (unused ?) or add AAD support
                 foreach (string domain in xmlreports.Keys)
                 {
                     UploadToWebsite("ad_hc_" + domain + ".xml", xmlreports[domain]);
                 }
             }
             if (!String.IsNullOrEmpty(Settings.apiKey) && !String.IsNullOrEmpty(Settings.apiEndpoint))
-                SendViaAPI(xmlreports);
+                SendViaAPI(xmlreports, aadjsonreport);
             return true;
         }
 
@@ -273,7 +276,7 @@ namespace PingCastle
                             DisplayAdvancement("Export level is " + ExportLevel);
                             if (ExportLevel != PingCastleReportDataExportLevel.Full)
                             {
-                                DisplayAdvancement("Personal data will NOT be included in the .xml file (add --level Full to add it)");
+                                DisplayAdvancement("Personal data will NOT be included in the .xml file (add --level Full to add it. Ex: PingCastle.exe --interactive --level Full)");
                             }
                             pingCastleReport.SetExportLevel(ExportLevel);
                             DataHelper<HealthcheckData>.SaveAsXml(pingCastleReport, pingCastleReport.GetMachineReadableFileName(), Settings.EncryptReport);
@@ -561,7 +564,7 @@ namespace PingCastle
                     DisplayAdvancement("Export level is " + ExportLevel);
                     if (ExportLevel != PingCastleReportDataExportLevel.Full)
                     {
-                        DisplayAdvancement("Personal data will NOT be included in the .xml file (add --level Full to add it)");
+                        DisplayAdvancement("Personal data will NOT be included in the .xml file (add --level Full to add it. Ex: PingCastle.exe --interactive --level Full)");
                     }
                     pingCastleReport.SetExportLevel(ExportLevel);
                     xmlreports[domain] = DataHelper<HealthcheckData>.SaveAsXml(pingCastleReport, pingCastleReport.GetMachineReadableFileName(), Settings.EncryptReport);
@@ -665,25 +668,12 @@ namespace PingCastle
                             DisplayAdvancement("Regenerating xml " + (Settings.EncryptReport ? " (encrypted)" : ""));
                             healthcheckData.Level = ExportLevel;
                             xml = DataHelper<HealthcheckData>.SaveAsXml(healthcheckData, newfile, Settings.EncryptReport);
+                            // email sending will be handled by completedtasks
+                            xmlreports[domainFQDN] = xml;
                         }
                         else
                         {
                             DisplayAdvancement("file ignored because it does not start with ad_hc_");
-                        }
-                        if (!String.IsNullOrEmpty(Settings.apiKey) && !String.IsNullOrEmpty(Settings.apiEndpoint))
-                            SendViaAPI(new Dictionary<string, string>() { { fi.Name, xml } });
-                        if (!String.IsNullOrEmpty(Settings.sharepointdirectory))
-                            UploadToWebsite(newfile, xml);
-                        if (!String.IsNullOrEmpty(Settings.sendXmlTo))
-                            SendEmail(Settings.sendXmlTo, new List<string> { domainFQDN },
-                                new List<Attachment> { Attachment.CreateAttachmentFromString(xml, newfile) });
-                        if (!String.IsNullOrEmpty(Settings.sendHtmlTo))
-                            WriteInRed("Html report ignored when xml file used as input");
-                        if (!String.IsNullOrEmpty(Settings.sendAllTo))
-                        {
-                            WriteInRed("Html report ignored when xml file used as input");
-                            SendEmail(Settings.sendAllTo, new List<string> { domainFQDN },
-                                new List<Attachment> { Attachment.CreateAttachmentFromString(xml, newfile) });
                         }
                     }
                 );
@@ -703,9 +693,11 @@ namespace PingCastle
                     {
                         sw.Write(report.ToJsonString());
                     }
+                    aadjsonreport[report.TenantName] = "pingcastlecloud_" + report.TenantName + ".json.gz";
 
                     var reportGenerator = new ReportCloud();
                     reportGenerator.GenerateReportFile(report, License, "pingcastlecloud_" + report.TenantName + ".html");
+                    aadhtmlreport[report.TenantName] = "pingcastlecloud_" + report.TenantName + ".html";
                 });
         }
 
@@ -717,24 +709,33 @@ namespace PingCastle
                     if (String.IsNullOrEmpty(Settings.apiKey) || String.IsNullOrEmpty(Settings.apiEndpoint))
                         throw new PingCastleException("API end point not available");
                     var files = new List<string>(Directory.GetFiles(Directory.GetCurrentDirectory(), "*ad_*.xml", SearchOption.AllDirectories));
+                    files.AddRange(Directory.GetFiles(Directory.GetCurrentDirectory(), "pingcastlecloud_*.json.gz", SearchOption.AllDirectories));
                     files.Sort();
-                    DisplayAdvancement(files.Count + " files to import (only ad_*.xml files are uploaded)");
+                    DisplayAdvancement(files.Count + " files to import (only ad_*.xml files and pingcastlecloud_*.json.gz files are uploaded)");
                     var reports = new List<KeyValuePair<string, string>>();
+                    var aadreports = new List<KeyValuePair<string, string>>();
                     int i = 1;
                     foreach (string file in files)
                     {
                         if (i % 50 == 0)
                         {
                             DisplayAdvancement("Uploading file up to #" + i);
-                            SendViaAPI(reports);
+                            SendViaAPI(reports, aadreports);
                             reports.Clear();
                         }
-                        string filename = Path.GetFileNameWithoutExtension(file);
-                        reports.Add(new KeyValuePair<string, string>(filename, File.ReadAllText(file)));
+                        if (!file.EndsWith(".json.gz", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string filename = Path.GetFileNameWithoutExtension(file);
+                            reports.Add(new KeyValuePair<string, string>(filename, File.ReadAllText(file)));
+                        }
+                        else
+                        {
+                            aadreports.Add(new KeyValuePair<string,string>(file, file));
+                        }
                         i++;
                     }
-                    if (reports.Count > 0)
-                        SendViaAPI(reports);
+                    if (reports.Count > 0 || aadreports.Count > 0)
+                        SendViaAPI(reports, aadreports);
                 }
             );
         }
@@ -863,6 +864,55 @@ namespace PingCastle
                 var request = "{\"xmlReport\": \"" + ReportHelper.EscapeJsonString(xml) + "\",\"filename\":\"" + ReportHelper.EscapeJsonString(filename) + "\"}";
                 byte[] data = Encoding.ASCII.GetBytes(request);
                 answer = client.UploadData(Settings.apiEndpoint + "api/Agent/SendReport", "POST", data);
+                var o = Encoding.Default.GetString(answer);
+                Trace.WriteLine("answer:" + o);
+                return o;
+            }
+            catch (WebException ex)
+            {
+                Trace.WriteLine("Status: " + ex.Status);
+                Trace.WriteLine("Message: " + ex.Message);
+                if (ex.Response != null)
+                {
+                    var responseStream = ex.Response.GetResponseStream();
+                    if (responseStream != null)
+                    {
+                        using (var reader = new StreamReader(responseStream))
+                        {
+                            string responseText = reader.ReadToEnd();
+                            if (string.IsNullOrEmpty(responseText))
+                                responseText = ex.Message;
+                            throw new PingCastleException(responseText);
+                        }
+                    }
+                }
+                else
+                {
+                    Trace.WriteLine("WebException response null");
+                }
+                throw;
+            }
+        }
+
+        string SendViaAPIUploadOneAADReport(WebClient client, string filename, Stream filecontent)
+        {
+            byte[] answer = null;
+            Version version = Assembly.GetExecutingAssembly().GetName().Version;
+            client.Headers.Add(HttpRequestHeader.UserAgent, "PingCastle " + version.ToString(4));
+            //client.Headers.Add(HttpRequestHeader.ContentType,  "multipart/form-data;
+            try
+            {
+                Trace.WriteLine("using filename:" + filename);
+                /*byte[] data;
+                using (var multipartcontent = new MultipartFormDataContent())
+                {
+                    multipartcontent.Headers.ContentType.MediaType = "multipart/form-data";
+                    multipartcontent.Add(new StreamContent(filecontent), "file", filename);
+                    data = multipartcontent.ReadAsByteArrayAsync().GetAwaiter().GetResult();
+                }
+                answer = client.UploadData(Settings.apiEndpoint + "api/Agent/SendAADReport", "POST", data);*/
+                answer = client.UploadFile(Settings.apiEndpoint + "api/Agent/SendAADReport", filename);
+
                 var o = Encoding.Default.GetString(answer);
                 Trace.WriteLine("answer:" + o);
                 return o;
@@ -1062,7 +1112,7 @@ namespace PingCastle
             }
         }
 
-        void SendViaAPI(IEnumerable<KeyValuePair<string, string>> xmlreports)
+        void SendViaAPI(IEnumerable<KeyValuePair<string, string>> xmlreports, IEnumerable<KeyValuePair<string, string>> jsonreports)
         {
             StartTask("Send via API",
                     () =>
@@ -1088,6 +1138,26 @@ namespace PingCastle
                                 {
                                     string answer = SendViaAPIUploadOneReport(client, report.Key, report.Value);
                                     DisplayAdvancement(report.Key + "-" + (String.IsNullOrEmpty(answer) ? "OK" : answer));
+                                }
+                                catch (Exception ex)
+                                {
+                                    Trace.WriteLine("Exception:");
+                                    Trace.WriteLine(ex.GetType());
+                                    Trace.WriteLine(ex.Message);
+                                    Trace.WriteLine(ex.StackTrace);
+                                    WriteInRed(report.Key);
+                                    DisplayException(null, ex);
+                                }
+                            }
+                            foreach (KeyValuePair<string, string> report in jsonreports)
+                            {
+                                try
+                                {
+                                    using (var stream = File.OpenRead(report.Value))
+                                    {
+                                        string answer = SendViaAPIUploadOneAADReport(client, report.Key, stream);
+                                        DisplayAdvancement(report.Key + "-" + (String.IsNullOrEmpty(answer) ? "OK" : answer));
+                                    }
                                 }
                                 catch (Exception ex)
                                 {
@@ -1168,6 +1238,12 @@ This is the PingCastle program sending reports for:
                         domains.Add(domain);
                     Files.Add(Attachment.CreateAttachmentFromString(xmlreports[domain], "ad_hc_" + domain + ".xml"));
                 }
+                foreach (string tenant in aadjsonreport.Keys)
+                {
+                    if (!domains.Contains(tenant))
+                        domains.Add(tenant);
+                    Files.Add(new Attachment(aadjsonreport[tenant]));
+                }
             }
             if (html)
             {
@@ -1177,7 +1253,15 @@ This is the PingCastle program sending reports for:
                         domains.Add(domain);
                     Files.Add(Attachment.CreateAttachmentFromString(htmlreports[domain], "ad_hc_" + domain + ".html"));
                 }
+                foreach (string tenant in aadhtmlreport.Keys)
+                {
+                    if (!domains.Contains(tenant))
+                        domains.Add(tenant);
+                    Files.Add(new Attachment(aadhtmlreport[tenant]));
+                }
             }
+            if (Files.Count == 0)
+                return;
             SendEmail(email, domains, Files);
         }
 

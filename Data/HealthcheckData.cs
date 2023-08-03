@@ -200,6 +200,8 @@ namespace PingCastle.Healthcheck
         public DateTime Created { get; set; }
 
         public bool IsInProtectedUser { get; set; }
+
+        public string Email { get; set; }
     }
 
     [DebuggerDisplay("{GroupName}")]
@@ -397,6 +399,15 @@ namespace PingCastle.Healthcheck
         }
         public string Property { get; set; }
         public int Value { get; set; }
+    }
+
+    [DebuggerDisplay("{Expected} {Found}")]
+    public class HealthcheckOUChangedData
+    {
+        [XmlAttribute]
+        public string Expected { get; set; }
+        [XmlAttribute]
+        public string Found { get; set; }
     }
 
     [DebuggerDisplay("{GPOName}")]
@@ -612,6 +623,7 @@ namespace PingCastle.Healthcheck
         public List<HealthcheckAccountDetailData> ListNoPreAuth { get; set; }
 
         public int NumberLAPS { get; set; }
+        public int NumberLAPSNew { get; set; }
 
         public void AddDetail<T>(string property, T item)
         {
@@ -1356,6 +1368,8 @@ namespace PingCastle.Healthcheck
         public DateTime ExchangeInstall { get; set; }
         public int ExchangeSchemaVersion { get; set; }
 
+        public bool ShouldSerializeDefaultOUChanged() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public List<HealthcheckOUChangedData> DefaultOUChanged { get; set; }
 
         public bool ShouldSerializeTrusts() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
         public List<HealthCheckTrustData> Trusts { get; set; }
@@ -1427,6 +1441,8 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeLAPSInstalled() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public DateTime LAPSInstalled { get; set; }
+        public bool ShouldSerializeNewLAPSInstalled() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public DateTime NewLAPSInstalled { get; set; }
 
         public bool ShouldSerializeSCCMInstalled() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public DateTime SCCMInstalled { get; set; }
@@ -1534,6 +1550,9 @@ namespace PingCastle.Healthcheck
         public bool ShouldSerializeDelegations() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckDelegationData> Delegations { get; set; }
 
+        public bool ShouldSerializeUnprotectedOU() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
+        public List<string> UnprotectedOU { get; set; }
+
         public bool ShouldSerializeGPOLoginScript() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckGPOLoginScriptData> GPOLoginScript { get; set; }
 
@@ -1566,6 +1585,9 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeLapsDistribution() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthcheckPwdDistributionData> LapsDistribution { get; set; }
+
+        public bool ShouldSerializeLapsNewDistribution() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public List<HealthcheckPwdDistributionData> LapsNewDistribution { get; set; }
 
         public bool ShouldSerializeAzureADSSOLastPwdChange() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public DateTime AzureADSSOLastPwdChange { get; set; }

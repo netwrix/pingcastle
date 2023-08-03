@@ -1515,7 +1515,7 @@ namespace PingCastle.Report
             return data.Replace("\r\n", "<br>\r\n");
         }
 
-        void AddPath(double radius, double startAngle, double endAngle, string idx, string tooltip = null)
+        void AddPath(double radius, double startAngle, double endAngle, string idx, string tooltip = null, string fill = null)
         {
 
             var isCircle = (endAngle - startAngle) == 360;
@@ -1544,9 +1544,19 @@ namespace PingCastle.Report
             }
             Add("<path d=\"");
             Add(string.Join(" ", d.ToArray()));
-            Add("\" class=\"");
-            Add(idx);
-            Add("\"");
+            Add("\" ");
+            if (!string.IsNullOrEmpty(idx))
+            {
+                Add(" class=\"");
+                Add(idx);
+                Add("\"");
+            }
+            if (!string.IsNullOrEmpty(fill))
+            {
+                Add(" fill=\"");
+                Add(fill);
+                Add("\"");
+            }
             if (!string.IsNullOrEmpty(tooltip))
             {
                 Add(" data-bs-toggle=\"tooltip\" title=\"");
@@ -1581,7 +1591,7 @@ namespace PingCastle.Report
             int i = 0;
             int previousto = 0;
             int t = 0;
-            for(int index = 0; index < vals.Count; index++)
+            for (int index = 0; index < vals.Count; index++)
             {
                 var val = vals[index];
                 var degrees = (int)(((double)val / total) * 360);
@@ -1595,7 +1605,7 @@ namespace PingCastle.Report
                     tooltip = tooltips[i];
                 }
 
-                AddPath(radius, from, to, "type" + (i++ % 20).ToString(), tooltip);
+                AddPath(radius, from, to, null, tooltip : tooltip, fill: GetColor(index, vals.Count));
                 t += val;
             }
             if (t != total)
@@ -1603,5 +1613,226 @@ namespace PingCastle.Report
 
             Add("</g></svg>");
         }
+
+        protected class DistributionItem
+        {
+            public int HigherBound { get; set; }
+            public int Value { get; set; }
+            public string toolTip { get; set; }
+        }
+
+
+        protected void AddDistributionChart(IEnumerable<DistributionItem> input, string id)
+        {
+            AddDistributionSeriesChart(new Dictionary<string, IEnumerable<DistributionItem>> { { string.Empty, input } }, id);
+        }
+
+        protected void AddDistributionSeriesChart(IDictionary<string, IEnumerable<DistributionItem>> input, string id)
+        {
+            const int division = 36;
+            const double horizontalStep = 25;
+            NumberFormatInfo nfi = new NumberFormatInfo();
+            nfi.NumberDecimalSeparator = ".";
+
+            bool single = input.Count == 1;
+
+            int highest = 0;
+            var global = new SortedDictionary<string, SortedDictionary<int, DistributionItem>>();
+            foreach (var inputDetail in input)
+            {
+                if (inputDetail.Value == null)
+                    continue;
+                var data = new SortedDictionary<int, DistributionItem>();
+                global[inputDetail.Key] = data;
+
+                // determine max X
+                foreach (var entry in inputDetail.Value)
+                {
+                    data.Add(entry.HigherBound, entry);
+                    if (highest < entry.HigherBound)
+                        highest = entry.HigherBound;
+                }
+
+                // add missing data
+                for (int i = 0; i < division; i++)
+                {
+                    if (!data.ContainsKey(i))
+                        data[i] = new DistributionItem { HigherBound = i, Value = 0 };
+                }
+            }
+            // determine max Y
+
+            int max = 0;
+            for (int i = 0; i < division; i++)
+            {
+                int value = global.Select(x => x.Value[i].Value).Max();
+                if (value > max)
+                    max = value;
+            }
+
+            // adjust max Y
+            if (max > 10000)
+                max = 10000;
+            else if (max >= 5000)
+                max = 10000;
+            else if (max >= 1000)
+                max = 5000;
+            else if (max >= 500)
+                max = 1000;
+            else if (max >= 100)
+                max = 500;
+            else if (max >= 50)
+                max = 100;
+            else if (max >= 10)
+                max = 50;
+            else
+                max = 10;
+
+
+            // draw chart
+            Add(@"<div id='pdwdistchart");
+            Add(id);
+            Add(@"'><svg viewBox='0 0 1000 400'>");
+            Add(@"<g transform=""translate(40,20)"">");
+            // horizontal scale
+            Add(@"<g transform=""translate(0,290)"" fill=""none"" font-size=""10"" font-family=""sans-serif"" text-anchor=""middle"">");
+            Add(@"<path class=""domain"" stroke=""#000"" d=""M0.5,0V0.5H950V0""></path>");
+            for (int i = 0; i < division; i++)
+            {
+                double v = 13.06 + (i) * horizontalStep;
+                Add(@"<g class=""tick"" opacity=""1"" transform=""translate(" + v.ToString(nfi) + @",30)""><line stroke=""#000"" y2=""0""></line><text fill=""#000"" y=""3"" dy="".15em"" dx=""-.8em"" transform=""rotate(-65)"">" +
+                    (i * 30) + "-" + ((i + 1) * 30) + @" days</text></g>");
+            }
+            {
+                double v = 13.06 + (division) * horizontalStep;
+                Add(@"<g class=""tick"" opacity=""1"" transform=""translate(" + v.ToString(nfi) + @",30)""><line stroke=""#000"" y2=""0""></line><text fill=""#000"" y=""3"" dy="".15em"" dx=""-.8em"" transform=""rotate(-65)"">Other</text></g>");
+            }
+            Add(@"</g>");
+            // vertical scale
+            Add(@"<g fill=""none"" font-size=""10"" font-family=""sans-serif"" text-anchor=""end"">");
+            Add(@"<path class=""domain"" stroke=""#000"" d=""M-6,290.5H0.5V0.5H-6""></path>");
+            for (int i = 0; i < 6; i++)
+            {
+                double v = 290 - i * 55;
+                Add(@"<g class=""tick"" opacity=""1"" transform=""translate(0," + v.ToString(nfi) + @")""><line stroke=""#000"" x2=""-6""></line><text fill=""#000"" x=""-9"" dy=""0.32em"">" +
+                    (max / 5 * i) + @"</text></g>");
+            }
+            Add(@"</g>");
+            // bars
+            double cumulatedSize = 0;
+
+            for (int i = 0; i < division; i++)
+            {
+                cumulatedSize = 0;
+                int serieindex = 0;
+                foreach (var serie in global.Keys)
+                {
+                    double v = 3.28 + horizontalStep * (i);
+                    int value = 0;
+                    if (global[serie].ContainsKey(i))
+                        value = global[serie][i].Value;
+                    double size = 290 * value / max;
+                    if (size > 290) size = 290;
+
+                    double w = horizontalStep - 3;
+                    string tooltip = value.ToString();
+                    if (!string.IsNullOrEmpty(global[serie][i].toolTip))
+                        tooltip = global[serie][i].toolTip;
+                    if (!single)
+                        tooltip = serie + ": " + tooltip;
+                    Add(@"<rect class=""bar"" fill=""");
+                    Add(GetColor(serieindex++, global.Count));
+                    Add(@""" x=""" + v.ToString(nfi) + @""" width=""" + w.ToString(nfi) + @""" y=""" + (290 - size - cumulatedSize).ToString(nfi) + @""" height=""" + (size).ToString(nfi) + @""" data-bs-toggle=""tooltip"" title=""");
+                    AddEncoded(tooltip);
+                    Add(@"""></rect>");
+                    cumulatedSize += size;
+                }
+            }
+            // last item (because max X may be restricted, as missing data here)
+            cumulatedSize = 0;
+            var otherValues = new Dictionary<string, int>();
+            foreach (var serie in global.Keys)
+            {
+                int other = 0;
+
+                for (int i = division; i <= highest; i++)
+                {
+                    if (global[serie].ContainsKey(i))
+                        other += global[serie][i].Value;
+                }
+                otherValues[serie] = other;
+                cumulatedSize += other;
+            }
+
+            double ratio = 1;
+            if (cumulatedSize > max)
+            {
+                ratio = cumulatedSize / max;
+            }
+
+            cumulatedSize = 0;
+            int i1 = 0;
+            foreach (var serie in global.Keys)
+            {
+                double v = 3.28 + horizontalStep * (division);
+                int value = otherValues[serie];
+                double size = 290 * value / max / ratio;
+                if (size > 290) size = 290;
+                double w = horizontalStep - 3;
+                string tooltip = string.Empty;
+
+                foreach (var t in global[serie].Keys)
+                {
+                    if (t > division && !string.IsNullOrEmpty(global[serie][t].toolTip))
+                        tooltip += global[serie][t].toolTip + "\r\n";
+                }
+
+                if (string.IsNullOrEmpty(tooltip))
+                    tooltip += value.ToString();
+
+                if (!single)
+                    tooltip = serie + ": " + tooltip;
+
+
+                Add(@"<rect class=""bar"" fill=""");
+                Add(GetColor(i1++, global.Count));
+                Add(@""" x=""" + v.ToString(nfi) + @""" width=""" + w.ToString(nfi) + @""" y=""" + (290 - cumulatedSize - size).ToString(nfi) + @""" height=""" + (size).ToString(nfi) + @""" data-bs-toggle=""tooltip"" title=""");
+                AddEncoded(tooltip);
+                Add(@"""></rect>");
+                cumulatedSize += size;
+            }
+            Add(@"</g></svg></div>");
+        }
+
+        static string[] colors = new string[] { 
+                                "#ff0029",
+                                "#377eb8",
+                                "#66a61e",
+                                "#984ea3",
+                                "#00d2d5",
+                                "#ff7f00",
+                                "#af8d00",
+                                "#7f80cd",
+                                "#b3e900",
+                                "#c42e60",
+                                "#a65628",
+                                "#f781bf",
+                                "#8dd3c7",
+                                "#bebada",
+                                "#fb8072",
+                                "#80b1d3",
+                                "#fdb462",
+                                "#fccde5",
+                                "#bc80bd",
+                                "#ffed6f",
+        };
+
+        string GetColor(int index, int NumberOfKeys)
+        {
+            if (NumberOfKeys == 1)
+                return "#Fa9C1A";
+            return colors[index % colors.Length];
+        }
+
     }
 }

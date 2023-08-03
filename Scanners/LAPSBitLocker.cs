@@ -28,8 +28,10 @@ namespace PingCastle.Scanners
             public DateTime WhenCreated { get; set; }
             public DateTime LastLogonTimestamp { get; set; }
             public string OperatingSystem { get; set; }
-            public bool HasLAPS { get; set; }
-            public DateTime LAPSLastChange { get; set; }
+            public bool HasLegacyLAPS { get; set; }
+            public DateTime LegacyLAPSLastChange { get; set; }
+            public bool HasMsLAPS { get; set; }
+            public DateTime MsLAPSLastChange { get; set; }
             public bool HasBitLocker { get; set; }
             public DateTime BitLockerLastChange { get; set; }
         }
@@ -46,14 +48,11 @@ namespace PingCastle.Scanners
 
                 DisplayAdvancement("Resolving LAPS attribute");
 
-                var attributeAdmPwd = "ms-Mcs-AdmPwd";
-                string[] propertiesLaps = new string[] { "name" };
-                // note: the LDAP request does not contain ms-MCS-AdmPwd because in the old time, MS consultant was installing customized version of the attriute, * being replaced by the company name
-                // check the oid instead ? (which was the same even if the attribute name was not)
-                adws.Enumerate(domainInfo.SchemaNamingContext, "(name=ms-*-AdmPwd)", propertiesLaps, (ADItem aditem) => { attributeAdmPwd = aditem.Name; }, "OneLevel");
-                DisplayAdvancement("LAPS attribute is " + attributeAdmPwd);
+                var lapsAnalyzer = new PingCastle.Healthcheck.LAPSAnalyzer(adws);
+                if (string.IsNullOrEmpty(lapsAnalyzer.LegacyLAPSName))
+                    DisplayAdvancement("LAPS attribute is " + lapsAnalyzer.LegacyLAPSName);
                 DisplayAdvancement("Iterating through computer objects (all except disabled ones)");
-                string[] properties = new string[] { "DistinguishedName", "dNSHostName", "msDS-ReplAttributeMetaData", "whenCreated", "lastLogonTimestamp", "operatingSystem" };
+                string[] properties = new string[] { "DistinguishedName", "dNSHostName", "replPropertyMetaData", "whenCreated", "lastLogonTimestamp", "operatingSystem" };
 
                 WorkOnReturnedObjectByADWS callback =
                     (ADItem x) =>
@@ -66,10 +65,15 @@ namespace PingCastle.Scanners
                             LastLogonTimestamp = x.LastLogonTimestamp,
                             OperatingSystem = x.OperatingSystem,
                         };
-                        if (x.msDSReplAttributeMetaData.ContainsKey(attributeAdmPwd))
+                        if (lapsAnalyzer.LegacyLAPSIntId > 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.LegacyLAPSIntId))
                         {
-                            computer.HasLAPS = true;
-                            computer.LAPSLastChange = x.msDSReplAttributeMetaData[attributeAdmPwd].LastOriginatingChange;
+                            computer.HasLegacyLAPS = true;
+                            computer.LegacyLAPSLastChange = x.ReplPropertyMetaData[lapsAnalyzer.LegacyLAPSIntId].LastOriginatingChange;
+                        }
+                        if (lapsAnalyzer.MsLAPSIntId > 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSIntId))
+                        {
+                            computer.HasMsLAPS = true;
+                            computer.MsLAPSLastChange = x.ReplPropertyMetaData[lapsAnalyzer.MsLAPSIntId].LastOriginatingChange;
                         }
                         computers.Add(computer);
                     };
@@ -108,10 +112,20 @@ namespace PingCastle.Scanners
                 DisplayAdvancement("Writing to file");
                 using (var sw = File.CreateText(filename))
                 {
-                    sw.WriteLine("DN\tDNS\tWhen Created\tLast Logon Timestamp\tOperating System\tHasLAPS\tLAPS changed date\tHasBitlocker\tBitlocker change date");
+                    sw.WriteLine("DN\tDNS\tWhen Created\tLast Logon Timestamp\tOperating System\tHasLegacyLAPS\tLegacyLAPS changed date\tHasMsLAPS\tMsLAPS changed date\tHasBitlocker\tBitlocker change date");
                     foreach (var computer in computers)
                     {
-                        sw.WriteLine(computer.DN + "\t" + computer.DNS + "\t" + computer.WhenCreated.ToString("u") + "\t" + computer.LastLogonTimestamp.ToString("u") + "\t" + computer.OperatingSystem + "\t" + computer.HasLAPS + "\t" + (computer.HasLAPS ? computer.LAPSLastChange.ToString("u") : "") + "\t" + computer.HasBitLocker + "\t" + (computer.HasBitLocker ? computer.BitLockerLastChange.ToString("u") : ""));
+                        sw.WriteLine(computer.DN + "\t" +
+                            computer.DNS + "\t" +
+                            computer.WhenCreated.ToString("u") + "\t" +
+                            computer.LastLogonTimestamp.ToString("u") + "\t" +
+                            computer.OperatingSystem + "\t" +
+                            computer.HasLegacyLAPS + "\t" +
+                            (computer.HasLegacyLAPS ? computer.LegacyLAPSLastChange.ToString("u") : "") + "\t" +
+                            computer.HasMsLAPS + "\t" +
+                            (computer.HasMsLAPS ? computer.MsLAPSLastChange.ToString("u") : "") + "\t" +
+                            computer.HasBitLocker + "\t" +
+                            (computer.HasBitLocker ? computer.BitLockerLastChange.ToString("u") : ""));
                     }
                 }
                 DisplayAdvancement("Done");

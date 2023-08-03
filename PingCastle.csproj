@@ -133,6 +133,13 @@
     <Compile Include="Cloud\PublicServices\UserRealmSRF.cs" />
     <Compile Include="Cloud\PublicServices\UserRealmV1.cs" />
     <Compile Include="Cloud\PublicServices\UserRealmV2.cs" />
+    <Compile Include="Healthcheck\LAPSAnalyzer.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsolete2012.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteDC2012.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedUnprotectedOU.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedEmailOn.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledDefaultOUChanged.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyDCLdapsSSLAdvanced.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledOldNtlm.cs" />
     <Compile Include="Report\ReportCloudCompared.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteFunctionalLevel4.cs" />

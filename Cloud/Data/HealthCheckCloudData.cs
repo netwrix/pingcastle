@@ -399,6 +399,7 @@ namespace PingCastle.Cloud.Data
 
         [IgnoreDataMember]
         [XmlIgnore]
+        [JsonIgnore]
         public IList<IRuleScore> AllRiskRules { get { return RiskRules.ConvertAll(x => { return (IRuleScore)x; }); } }
     }
 }

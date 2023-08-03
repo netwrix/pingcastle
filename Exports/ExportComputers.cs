@@ -28,6 +28,8 @@ namespace PingCastle.Exports
             {
                 domainInfo = adws.DomainInfo;
 
+                var lapsAnalyzer = new LAPSAnalyzer(adws);
+
                 int export = 0;
                 using (StreamWriter sw = File.CreateText(filename))
                 {
@@ -47,6 +49,8 @@ namespace PingCastle.Exports
                     header.Add("OperatingSystemVersion");
                     header.Add("PC OS 1");
                     header.Add("PC OS 2");
+                    header.Add("LAPS last update (legacy LAPS)");
+                    header.Add("LAPS last update (Ms LAPS)");
                     
                     sw.WriteLine(string.Join("\t", header.ToArray()));
                     
@@ -94,6 +98,24 @@ namespace PingCastle.Exports
                             else
                             {
                                 data.Add(string.Empty);
+                                data.Add(string.Empty);
+                            }
+                            if (lapsAnalyzer.LegacyLAPSIntId > 0 && x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.LegacyLAPSIntId))
+                            {
+                                var dd = x.ReplPropertyMetaData[lapsAnalyzer.LegacyLAPSIntId];
+                                data.Add(dd.LastOriginatingChange.ToString("u"));
+                            }
+                            else
+                            {
+                                data.Add(string.Empty);
+                            }
+                            if (lapsAnalyzer.MsLAPSIntId > 0 && x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSIntId))
+                            {
+                                var dd = x.ReplPropertyMetaData[lapsAnalyzer.MsLAPSIntId];
+                                data.Add(dd.LastOriginatingChange.ToString("u"));
+                            }
+                            else
+                            {
                                 data.Add(string.Empty);
                             }
                             sw.WriteLine(string.Join("\t", data.ToArray()));

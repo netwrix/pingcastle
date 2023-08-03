@@ -169,6 +169,8 @@ namespace PingCastle.ADWS
         public byte[][] lDAPIPDenyList { get; set; }
         [ADAttributeAttribute("location", ADAttributeValueKind.StringValue)]
         public string Location { get; set; }
+        [ADAttributeAttribute("mail", ADAttributeValueKind.StringValue)]
+        public string Mail { get; set; }
         [ADAttributeAttribute("member", ADAttributeValueKind.StringArrayValue)]
         public string[] Member { get; set; }
         [ADAttributeAttribute("memberOf", ADAttributeValueKind.StringArrayValue)]
@@ -265,6 +267,8 @@ namespace PingCastle.ADWS
         public DateTime PwdLastSet { get; set; }
         [ADAttributeAttribute("rangeUpper", ADAttributeValueKind.IntValue)]
         public int RangeUpper { get; set; }
+        [ADAttributeAttribute("replPropertyMetaData", ADAttributeValueKind.ReplMetadataValue)]
+        public Dictionary<int, ReplPropertyMetaDataItem> ReplPropertyMetaData { get; set; }
         [ADAttributeAttribute("sAMAccountName", ADAttributeValueKind.StringValue)]
         public string SAMAccountName { get; set; }
         [ADAttributeAttribute("schemaIDGUID", ADAttributeValueKind.GUIDValue)]
@@ -304,13 +308,13 @@ namespace PingCastle.ADWS
         public int TrustType { get; set; }
         [ADAttributeAttribute("userAccountControl", ADAttributeValueKind.IntValue)]
         public int UserAccountControl { get; set; }
+        [ADAttributeAttribute("wellKnownObjects", ADAttributeValueKind.StringArrayValue)]
+        public string[] WellKnownObjects { get; set; }
         [ADAttributeAttribute("whenCreated", ADAttributeValueKind.DateValue2)]
         public DateTime WhenCreated { get; set; }
         [ADAttributeAttribute("whenChanged", ADAttributeValueKind.DateValue2)]
         public DateTime WhenChanged { get; set; }
-        [ADAttributeAttribute("replPropertyMetaData", ADAttributeValueKind.ReplMetadataValue)]
-        public Dictionary<int, ReplPropertyMetaDataItem> ReplPropertyMetaData { get; set; }
-
+        
         public List<string> GetApplicableGPO()
         {
             var output = new List<string>();

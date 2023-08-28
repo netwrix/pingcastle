@@ -100,7 +100,7 @@ namespace PingCastle.Exports
                                 data.Add(string.Empty);
                                 data.Add(string.Empty);
                             }
-                            if (lapsAnalyzer.LegacyLAPSIntId > 0 && x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.LegacyLAPSIntId))
+                            if (lapsAnalyzer.LegacyLAPSIntId != 0 && x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.LegacyLAPSIntId))
                             {
                                 var dd = x.ReplPropertyMetaData[lapsAnalyzer.LegacyLAPSIntId];
                                 data.Add(dd.LastOriginatingChange.ToString("u"));
@@ -109,7 +109,7 @@ namespace PingCastle.Exports
                             {
                                 data.Add(string.Empty);
                             }
-                            if (lapsAnalyzer.MsLAPSIntId > 0 && x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSIntId))
+                            if (lapsAnalyzer.MsLAPSIntId != 0 && x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSIntId))
                             {
                                 var dd = x.ReplPropertyMetaData[lapsAnalyzer.MsLAPSIntId];
                                 data.Add(dd.LastOriginatingChange.ToString("u"));

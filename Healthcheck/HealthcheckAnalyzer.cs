@@ -925,7 +925,7 @@ namespace PingCastle.Healthcheck
                                     }
                                 }
                             }
-                            if (x.ReplPropertyMetaData != null && LAPSAnalyzer.LegacyLAPSIntId > 0 && x.ReplPropertyMetaData.ContainsKey(LAPSAnalyzer.LegacyLAPSIntId))
+                            if (x.ReplPropertyMetaData != null && LAPSAnalyzer.LegacyLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(LAPSAnalyzer.LegacyLAPSIntId))
                             {
                                 proxy.AddWithoutDetail("LAPS");
                                 var d = x.ReplPropertyMetaData[LAPSAnalyzer.LegacyLAPSIntId];
@@ -938,7 +938,7 @@ namespace PingCastle.Healthcheck
                                         lapsDistribution[i] = 1;
                                 }
                             }
-                            if (x.ReplPropertyMetaData != null && LAPSAnalyzer.MsLAPSIntId > 0 && x.ReplPropertyMetaData.ContainsKey(LAPSAnalyzer.MsLAPSIntId))
+                            if (x.ReplPropertyMetaData != null && LAPSAnalyzer.MsLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(LAPSAnalyzer.MsLAPSIntId))
                             {
                                 proxy.AddWithoutDetail("LAPSNew");
                                 var d = x.ReplPropertyMetaData[LAPSAnalyzer.MsLAPSIntId];
@@ -2607,7 +2607,7 @@ namespace PingCastle.Healthcheck
                 if (adws.FileConnection.FileExists(path))
                 {
                     step = "extract GPP local group assignment";
-                    ExtractLocalGroupAssignment(adws, path, GPO, "Unknown [" + shortName + "]");
+                    ExtractLocalGroupAssignment(adws, path, GPO);
                 }
                 path = directoryFullName + @"\Machine\Microsoft\Windows nt\SecEdit\GptTmpl.inf";
                 if (adws.FileConnection.FileExists(path))
@@ -2680,14 +2680,14 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private void ExtractLocalGroupAssignment(ADWebService adws, string path, GPO GPO, string p)
+        private void ExtractLocalGroupAssignment(ADWebService adws, string path, GPO GPO)
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(path);
             XmlNodeList nodeList = doc.SelectNodes(@"//Group");
             foreach (XmlNode node in nodeList)
             {
-                XmlNode actionNode = node.SelectSingleNode(@"//Properties/@action");
+                XmlNode actionNode = node.SelectSingleNode(@"Properties/@action");
                 if (actionNode != null)
                 {
                     switch (actionNode.Value.ToUpperInvariant())
@@ -2703,7 +2703,7 @@ namespace PingCastle.Healthcheck
                 var groupNameNode = node.SelectSingleNode("@name");
                 if (groupNameNode == null)
                     continue;
-                foreach (XmlNode userNameNode in node.SelectNodes(@"//Member[@action=""ADD""]"))
+                foreach (XmlNode userNameNode in node.SelectNodes(@"Properties/Members/Member[@action=""ADD""]"))
                 {
                     var sidnode = userNameNode.SelectSingleNode("@sid");
                     if (sidnode == null)
@@ -4552,9 +4552,9 @@ namespace PingCastle.Healthcheck
                         var f = false;
                         // check if there is a LAPS attribute (looked into metadata because hidden if the current user has not right to read it)
                         if (
-                            (lapsAnalyzer.LegacyLAPSIntId > 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.LegacyLAPSIntId))
+                            (lapsAnalyzer.LegacyLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.LegacyLAPSIntId))
                             ||
-                            (lapsAnalyzer.MsLAPSIntId > 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSIntId))
+                            (lapsAnalyzer.MsLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSIntId))
                             )
                         {
                             if (x.NTSecurityDescriptor != null)

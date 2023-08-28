@@ -65,12 +65,12 @@ namespace PingCastle.Scanners
                             LastLogonTimestamp = x.LastLogonTimestamp,
                             OperatingSystem = x.OperatingSystem,
                         };
-                        if (lapsAnalyzer.LegacyLAPSIntId > 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.LegacyLAPSIntId))
+                        if (lapsAnalyzer.LegacyLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.LegacyLAPSIntId))
                         {
                             computer.HasLegacyLAPS = true;
                             computer.LegacyLAPSLastChange = x.ReplPropertyMetaData[lapsAnalyzer.LegacyLAPSIntId].LastOriginatingChange;
                         }
-                        if (lapsAnalyzer.MsLAPSIntId > 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSIntId))
+                        if (lapsAnalyzer.MsLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSIntId))
                         {
                             computer.HasMsLAPS = true;
                             computer.MsLAPSLastChange = x.ReplPropertyMetaData[lapsAnalyzer.MsLAPSIntId].LastOriginatingChange;

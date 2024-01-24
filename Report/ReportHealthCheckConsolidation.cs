@@ -500,6 +500,7 @@ namespace PingCastle.Report
                 });
             });
             GenerateConsolidatedOperatingSystemList();
+            GenerateConsolidatedOperatingSystemListV2();
         }
 
         private void GenerateDCInformation()
@@ -565,9 +566,8 @@ namespace PingCastle.Report
             });
         }
 
-        private string GenerateConsolidatedOperatingSystemList()
+        private void GenerateConsolidatedOperatingSystemList()
         {
-            string output = null;
             List<string> AllOS = new List<string>();
             Dictionary<string, int> SpecificOK = new Dictionary<string, int>();
             foreach (HealthcheckData data in Report)
@@ -596,6 +596,7 @@ namespace PingCastle.Report
             AllOS.Sort(OrderOS);
             GenerateSection("Operating systems statistics", () =>
             {
+                AddParagraph("This section is about generic OS. To see details about Windows versions, see the next section.");
                 AddBeginTable("All Os stats");
                 AddHeaderText("Domain");
                 foreach (string os in AllOS)
@@ -672,7 +673,88 @@ namespace PingCastle.Report
                     AddEndTable();
                 }
             });
-            return output;
+        }
+
+        private void GenerateConsolidatedOperatingSystemListV2()
+        {
+            List<string> AllOS = new List<string>();
+            foreach (HealthcheckData data in Report)
+            {
+                if (data.OperatingSystemVersion != null)
+                {
+                    foreach (HealthcheckOSVersionData os in data.OperatingSystemVersion)
+                    {
+                        var o = GetOSVersionString(os);
+                        if (!AllOS.Contains(o))
+                            AllOS.Add(o);
+                    }
+                }
+            }
+            AllOS.Sort();
+            GenerateSection("Operating systems statistics", () =>
+            {
+                AddParagraph("This section is about detailled Windows OS version (Service Pack, Windows 10 release, etc)");
+                AddBeginTable("Windows Os stats");
+                AddHeaderText("Domain");
+                foreach (string os in AllOS)
+                {
+                    AddHeaderText(os);
+                }
+                AddBeginTableData();
+                // maybe not the most perfomant algorithm (n^4) but there is only a few domains to consolidate
+                foreach (HealthcheckData data in Report)
+                {
+                    AddBeginRow();
+                    AddPrintDomain(data.Domain);
+                    foreach (string os in AllOS)
+                    {
+                        int numberOfOccurence = -1;
+                        if (data.OperatingSystemVersion != null)
+                        {
+                            foreach (var OS in data.OperatingSystemVersion)
+                            {
+                                if (GetOSVersionString(OS) == os)
+                                {
+                                    numberOfOccurence = OS.NumberOfOccurence;
+                                    break;
+                                }
+                            }
+                        }
+                        if (numberOfOccurence < 0)
+                        {
+                            AddCellText(null);
+                        }
+                        else
+                        {
+                            AddCellNum(numberOfOccurence, true);
+                        }
+                    }
+                    AddEndRow();
+                }
+                AddEndTable(() =>
+                {
+                    AddCellText("Total");
+                    foreach (string os in AllOS)
+                    {
+                        int total = 0;
+                        foreach (HealthcheckData data in Report)
+                        {
+                            if (data.OperatingSystemVersion != null)
+                            {
+                                foreach (var OS in data.OperatingSystemVersion)
+                                {
+                                    if (GetOSVersionString(OS) == os)
+                                    {
+                                        total += OS.NumberOfOccurence;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        AddCellNum(total);
+                    }
+                });
+            });
         }
         #endregion computer
 

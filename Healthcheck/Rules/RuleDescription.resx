@@ -690,25 +690,18 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to verify if the Native Administrator account is used.</value>
   </data>
   <data name="P_AdminLogin_Solution" xml:space="preserve">
-    <value>To mitigate the security risk, a good practice is to use the Native Administrator account only for emergency, while the daily work is performed through other accounts.
-    It is indeed strongly recommended to not use this account but to use nominative account for administrators and dedicated account for services.
-    Do note that the anomaly will be removed 35 days after the last native administrator login.
-  
-  To track where the administrator account has been used for the last time, we recommend to extract the attribute LastLogon of the administrator account on ALL domain controllers.
-  It can be done with tools such as ADSIEdit or ADExplorer.
-  Then, for each domain controller, extract the event ID 4624 at the date matching the LastLogon date. You will identify the computer and the process at the origin of the logon event.
-  
-  If the LastLogon attribute is older for ALL domain controllers than the LastLogonTimestamp, the LastLogonTimestamp attribute (that PingCastle relies on) may be updated by the Kerberos S4u2Self mechanism.
-  This can be triggered in the Advanced Security Settings properties of any securable objects such as a file, then select the Effective Access tab and click on View effective access.
-  You have to use replication metadata info to find which DC updated this attribute and look for the event IDs 4769 and 4624 on this DC to know who has run this action.
-  Read the page referenced in the documentation section for more information.
-  
-  Please note that PingCastle relies on the attribute LastLogonTimestamp to perform this check. The LastLogonTimestamp attribute is replicated but has a latency of a maximum of 14 days, while LastLogon is updated at each logon and is more accurate but not replicated.
-  The attribute ms-DS-Logon-Time-Sync-Interval can be used to lower or increase the replication delay.
+    <value>To mitigate security risks effectively, it is advisable to reserve the Native Administrator account solely for emergency situations, with daily tasks being carried out using separate accounts. It is strongly recommended not to employ this account routinely, opting instead for individualized accounts for administrators and dedicated accounts for services. It's worth noting that any anomalies related to this practice will be automatically addressed and resolved within 35 days following the last login by a native administrator.
+
+To monitor the most recent use of the administrator account, we recommend extracting the LastLogon attribute of the administrator account from ALL domain controllers. This task can be accomplished using tools such as ADSIEdit or ADExplorer. Subsequently, for each domain controller, extract the event ID 4624 corresponding to the LastLogon date. This will enable you to pinpoint the computer and process responsible for the logon event.
+
+It's worth mentioning that prior to version 3.2 of PingCastle, this information was obtained through the LastLogonTimestamp attribute, which could have been altered by the Kerberos S4u2Self mechanism. While this approach offered the advantage of gathering data from domain controllers that were otherwise inaccessible via the network, it often resulted in a high number of false positives.  
     </value>
   </data>
   <data name="P_AdminLogin_Rationale" xml:space="preserve">
     <value>The native administrator account has been used recently: {count} day(s) ago</value>
+  </data>
+  <data name="P_AdminLogin_Detail" xml:space="preserve">
+    <value>DC: {0} LoginTime: {1}</value>
   </data>
   <data name="A_DsHeuristicsAnonymous_Description" xml:space="preserve">
     <value>The purpose is to identify domains having a forest setting which allows access to the domain without any account </value>
@@ -767,7 +760,7 @@ Second, a more manual way is to essentially reset the password manually once, th
   <data name="S_OS_2003_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10.   
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Server 2003*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Server 2003*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2003_Rationale" xml:space="preserve">
     <value>Presence of Windows Server 2003 = {count}</value>
@@ -778,7 +771,7 @@ Second, a more manual way is to essentially reset the password manually once, th
   <data name="S_OS_2000_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Server 2000*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Server 2000*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2000_Rationale" xml:space="preserve">
     <value>Presence of Windows 2000 = {count}</value>
@@ -789,7 +782,7 @@ Second, a more manual way is to essentially reset the password manually once, th
   <data name="S_OS_XP_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Windows XP*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Windows XP*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_XP_Rationale" xml:space="preserve">
     <value>Presence of Windows XP = {count}</value>
@@ -800,7 +793,7 @@ Second, a more manual way is to essentially reset the password manually once, th
   <data name="S_OS_NT_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "* NT *" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "* NT *" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_NT_Rationale" xml:space="preserve">
     <value>Presence of Windows NT = {count}</value>
@@ -1203,7 +1196,9 @@ It is possible to verify the results provided by the PingCastle solution by usin
     <value>A RSA key certificate with a modulus under 1024 bits is considered unsafe</value>
   </data>
   <data name="P_AdminLogin_TechnicalExplanation" xml:space="preserve">
-    <value>The Native Administrator account is the main administrator account, and it is sharing its password with Directory Services Restore Mode password. Since it is the same password, it can be used to take control of the domain even if the account is disabled, notably through a DCSync attack. The last login date is retrieved through the LastLogonTimestamp LDAP attribute retrieved from the Active Directory. There is an exception for 35 days to avoid this rule to be triggered at the domain creation.</value>
+    <value>The Native Administrator account serves as the primary administrative account and shares its password with the Directory Services Restore Mode password. This shared password presents a potential security vulnerability as it can be exploited to gain control of the domain, even if the account itself is disabled. This vulnerability is particularly notable in the context of a DCSync attack.
+
+Previously, the last login date was obtained by querying the LastLogonTimestamp LDAP attribute from the Active Directory. However, there was an exception in place, allowing for a 35-day window to prevent this rule from being triggered during domain creation. Since the release of PingCastle version 3.2, the last login date is acquired by connecting to each domain controller and querying the LastLogon attribute.</value>
   </data>
   <data name="P_AdminNum_TechnicalExplanation" xml:space="preserve">
     <value>Every domain administrator represents a possible security breach, this is why it is strongly advised to have as few domain administrator accounts as possible</value>
@@ -2812,7 +2807,7 @@ https://docs.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-loggi
   <data name="S_OS_Vista_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;
     You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>  
   </data>
   <data name="S_OS_Vista_Rationale" xml:space="preserve">
@@ -2866,7 +2861,7 @@ https://docs.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-loggi
   <data name="S_OS_2008_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the servers to a more recent version of Windows, starting from Windows Server 2012. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;
     You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2008_TechnicalExplanation" xml:space="preserve">
@@ -3292,6 +3287,9 @@ See one of the link below for more information.</value>
   </data>
   <data name="S_PwdNeverExpires_Title" xml:space="preserve">
     <value>Check that there is no account with never-expiring passwords</value>
+  </data>
+  <data name="S_PwdNeverExpires_Detail" xml:space="preserve">
+    <value>DN: {0}</value>
   </data>
   <data name="S_DCRegistration_Description" xml:space="preserve">
     <value>The purpose is to ensure that DC are well registered.</value>
@@ -3891,7 +3889,7 @@ That means that an extraction of its password (using DCSync for example) can lea
   <data name="S_OS_Win7_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto &lt;/i&gt;
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;
 	You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_Win7_TechnicalExplanation" xml:space="preserve">
@@ -4124,7 +4122,7 @@ https://www.gradenegger.eu/?p=1132</value>
     <value>https://docs.microsoft.com/en-us/windows/release-health/release-information</value>
   </data>
   <data name="S_OS_W10_Rationale" xml:space="preserve">
-    <value>Presence of non-supported versions of Windows 10 or Windows 11 = {count}</value>
+    <value>Presence of non-supported versions of Windows 10 or Windows 11 = {count} editions ( {activeComputers} active computers)</value>
   </data>
   <data name="S_OS_W10_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href="#operatingsystems"&gt;Operating Systems&lt;/a&gt;</value>
@@ -4132,7 +4130,7 @@ https://www.gradenegger.eu/?p=1132</value>
   <data name="S_OS_W10_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the Windows 10 or Windows 11 to a more recent version.    
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;    
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto &lt;/i&gt;
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;
 	You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows 1*"}&lt;/i&gt;
     </value>
   </data>
@@ -4494,7 +4492,7 @@ For the expected values:
   <data name="S_OS_Win8_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10.     
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;        
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto &lt;/i&gt;
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;
 	You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_Win8_TechnicalExplanation" xml:space="preserve">
@@ -5058,8 +5056,6 @@ https://learn.microsoft.com/en-us/troubleshoot/windows-server/identity/raise-act
     This can be done by editing the policy "Network security: LAN Manager authentication level" which can be accessed in Computer Configuration\Windows Settings\Security Settings\Local Policies\Security Options
     The policy will be applied after a computer reboot.
     
-    As an alternative, the well known script Get-NtlmV1LogonEvents.ps1 can be used to search for NTLMv1 logon events.
-    
     Beware that you may break software which is not compatible with Ntlmv2 such as very old Linux stacks or very old Windows before Windows Vista.
     But please note that Ntlmv2 can be activited on all Windows starting Windows 95 and other operating systems.
     </value>
@@ -5273,7 +5269,7 @@ https://rickardnobel.se/verify-redirected-computers-container-in-active-director
   <data name="S_OS_2012_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the servers to a more recent version of Windows, starting from Windows Server 2012. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;
     You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2012_TechnicalExplanation" xml:space="preserve">
@@ -5281,5 +5277,61 @@ https://rickardnobel.se/verify-redirected-computers-container-in-active-director
   </data>
   <data name="S_OS_2012_Title" xml:space="preserve">
     <value>Obsolete OS (Windows Server 2012)</value>
+  </data>
+  <data name="A_DC_Coerce_Description" xml:space="preserve">
+    <value>The objective is to assess the vulnerability of the Domain Controller (DC) to Coerce attacks.</value>
+  </data>
+  <data name="A_DC_Coerce_Documentation" xml:space="preserve">
+    <value>https://github.com/p0dalirius/Coercer
+https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-security-restrict-ntlm-outgoing-ntlm-traffic-to-remote-servers
+https://blog.nviso.eu/2023/12/08/rpc-or-not-here-we-log-preventing-exploitation-and-abuse-with-rpc-firewall/</value>
+  </data>
+  <data name="A_DC_Coerce_Rationale" xml:space="preserve">
+    <value>RPC interfaces of DC are likely vulnerable to coercion attacks. Identified interfaces: {count}</value>
+  </data>
+  <data name="A_DC_Coerce_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#domaincontrollersection"&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="A_DC_Coerce_Solution" xml:space="preserve">
+    <value>To effectively mitigate the vulnerability, consider one of the following approaches:
+
+1. Apply Group Policy Object (GPO) - "Network security: Restrict NTLM: Outgoing NTLM traffic to remote servers":
+Apply this GPO specifically to the Organizational Unit (OU) "Domain Controllers".
+Caution: Enabling this GPO might impact services dependent on NTLM such as files copy Backups.
+Consider setting the GPO in "Audit mode" initially to identify and assess the impact on affected services.
+
+2. Enable RPC Filters in Windows Firewall:
+Configure Windows Firewall to block specific Interface IDs associated with vulnerable RPC interfaces.
+This is done using the netsh command. See the documentation links for more information.
+Exercise caution: This method filters the entire interface, not specific Operation Numbers (OpNum).
+Adjust exceptions for necessary services to ensure critical functionality.
+
+3. Implement External Filters (e.g., EDR, Firewalls):
+Leverage third-party solutions, such as Endpoint Detection and Response (EDR) tools or firewalls.
+Notable project: rpcfirewall https://github.com/zeronetworks/rpcfirewall, offering logical filtering at the OpNum level.
+Be cautious of potential impact and ensure compatibility with existing infrastructure.
+    </value>
+  </data>
+  <data name="A_DC_Coerce_TechnicalExplanation" xml:space="preserve">
+    <value>Coerce attacks are a category of attacks which aims to forcing domain controllers to authenticate to a device controlled by the attacker for the purpose to relay this authentication to gain privileges.
+    This category of attacks is usually mitigated by  applying patch (PetitPotam), disabling services (Spooler), added RPC filter (EDR or firewall) or ensuring integrity (SMB integrity).
+  Because each of these protections can be individually bypassed (NTLM integrity is disabled on LDAPS), the aim of this scan is to detect proactively if vulnerable RPC services are exposed.
+
+    PingCastle estimates that Coerceable interfaces are protected if:
+- the GPO "Network security: Restrict NTLM: Outgoing NTLM traffic to remote servers" is applied through a GPO to DC
+- or if RPC interfaces are not reachable
+
+Because these interfaces need to be tested from a computer controlled by the attacker, PingCastle cannot do this test with reliability.
+Instead, it sends a malformed RPC packet to try to trigger an error such as "Permission denied" or "RPC interface unavailable".
+If the error RPC_X_BAD_STUB_DATA (1783) is triggered, PingCastle considers that the interface is available.
+A report that a vulnerable interface is online may not be accurate because its full exploitation is not tested.
+
+Also to avoid EDR alerts or to not perform the scan, you can run PingCastle with the flag --skip-dc-rpc</value>
+  </data>
+  <data name="A_DC_Coerce_Title" xml:space="preserve">
+    <value>RPC interfaces potentially vulnerable to Coerce attacks</value>
+  </data>
+  <data name="A_DC_Coerce_Detail" xml:space="preserve">
+    <value>DCName: {0} IP: {1} Interface: {2} Function: {3} OpNum: {4}</value>
   </data>
 </root>

@@ -43,6 +43,10 @@ namespace PingCastle.Healthcheck.Rules
                     }
                     if (trap)
                         continue;
+
+                    if (string.Equals(member.Class, "msDS-GroupManagedServiceAccount", System.StringComparison.OrdinalIgnoreCase))
+                        continue;
+
                     if (healthcheckData.SchemaVersion < 69)
                     {
                         adminCanBeDelegated++;

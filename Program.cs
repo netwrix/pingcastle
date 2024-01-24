@@ -255,7 +255,7 @@ namespace PingCastle
             PingCastle.Rules.RuleSet<HealthcheckData>.LoadCustomRules();
         }
 
-        const string basicEditionLicense = "PC2H4sIAAAAAAAEAGNkYGDgAGKGA3JCxcW3GZmBzCIgdgOSqUCowODKkMKQyVACxPkMeUB+PkMakAwA8vMY0hmcGRIZioGyOWC1xgx6DIZAbABk6wKxH1B1CZBOA9JFQDoZSOcCYSqQlww0IRGoT4GhFGhCKsgNDA1AXG85/ddKHe2s8FjT3Wujsg+EzZW596ora96aq8J7unVvHlnuf/8au/USvt/8vvGzj8euiPh3sy9oyZaIcwXqfRev1G565ZDVlB7LujUg2MX1hEndvC88CsxGRs9mZdt/PyCrFGxnZsLvPHlHyqJJCRJVQu+UE26WuW56FpvWf+z2zy6rbQdSAT+MAE8SAQAA";
+        const string basicEditionLicense = "PC2H4sIAAAAAAAEAGNkYGDgAGKGhsd86xjvMDIDmUVA7AYkU4FQgcGVIYUhk6EEiPMZ8oD8fIY0IBkA5OcxpDM4MyQyFANlc8BqjRn0GIyA2ADI1gViP6DqEiCdBqSLgHQykM4FwlQgLxloQiJQnwJDKdCEVAawI4B4crKeGFtAuZZtR1+6YveRBWVcErp3Kook2PQvG1wt2Lw182zyBI4npooXko+9vtP088v5u3IOKxf2p7b6z4hwv31uzz3+U6Kmgj+MLVXvBqXZZr1MtA62z5gRP2HnzK4lSlpbbsUdYN1WmqZ/jL9ZRSJhF9O3+SzLYxfH8Abr9q6dXp+5bhMABKQvnhIBAAA=";
         string _serialNumber;
         public string GetSerialNumber()
         {
@@ -579,6 +579,9 @@ namespace PingCastle
                         case "--no-enum-limit":
                             ReportHealthCheckSingle.MaxNumberUsersInHtmlReport = int.MaxValue;
                             break;
+                        case "--no-csp-header":
+                            ReportBase.NoCspHeader = true;
+                            break;
                         case "--node":
                             if (i + 1 >= args.Length)
                             {
@@ -813,6 +816,9 @@ namespace PingCastle
                             break;
                         case "--skip-null-session":
                             HealthcheckAnalyzer.SkipNullSession = true;
+                            break;
+                        case "--skip-dc-rpc":
+                            HealthcheckAnalyzer.SkipRPC = true;
                             break;
                         case "--reload-report":
                         case "--slim-report":
@@ -1180,6 +1186,7 @@ namespace PingCastle
             Console.WriteLine("    --smtppass <pass> : ... to be entered on the command line");
             Console.WriteLine("    --smtptls         : enable TLS/SSL in SMTP if used on other port than 465 and 587");
             Console.WriteLine("    --skip-null-session: do not test for null session");
+            Console.WriteLine("    --skip-dc-rpc     : do not test for rpc on DC");
             Console.WriteLine("    --webdirectory <dir>: upload the xml report to a webdav server");
             Console.WriteLine("    --webuser <user>  : optional user and password");
             Console.WriteLine("    --webpassword <password>");
@@ -1197,6 +1204,8 @@ namespace PingCastle
             Console.WriteLine("");
             Console.WriteLine("  --generate-key      : generate and display a new RSA key for encryption");
             Console.WriteLine("");
+            Console.WriteLine("  --no-csp-header     : disable the Content Security Policy header. More risks but enables styles & js when stored on a webserver");
+            Console.WriteLine("");
             Console.WriteLine("  --hc-conso          : consolidate multiple healthcheck xml reports (step2)");
             Console.WriteLine("    --center-on <domain> : center the simplified graph on this domain");
             Console.WriteLine("                         default is the domain with the most links");
@@ -1213,6 +1222,7 @@ namespace PingCastle
             Console.WriteLine("");
             Console.WriteLine("  --scanner <type>    : perform a scan on one of all computers of the domain (using --server)");
             Console.WriteLine("");
+            
             var scanner = PingCastleFactory.GetAllScanners();
             var scannerNames = new List<string>(scanner.Keys);
             scannerNames.Sort();

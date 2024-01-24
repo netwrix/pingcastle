@@ -233,8 +233,22 @@ namespace PingCastle.RPC
         protected IntPtr Bind(IntPtr IntPtrserver)
         {
             string server = Marshal.PtrToStringUni(IntPtrserver);
+            IntPtr binding;
+            var res = BindUsingPipe(server, out binding);
+            if (res != 0)
+            {
+                if (binding != IntPtr.Zero)
+                    Unbind(IntPtrserver, binding);
+                return IntPtr.Zero;
+            }
+            return binding;
+        }
+
+        protected Int32 BindUsingPipe(string server, out IntPtr binding)
+        {
+            
             IntPtr bindingstring = IntPtr.Zero;
-            IntPtr binding = IntPtr.Zero;
+            binding = IntPtr.Zero;
             Int32 status;
 
             Trace.WriteLine("Binding to " + server + " " + PipeName);
@@ -242,14 +256,14 @@ namespace PingCastle.RPC
             if (status != 0)
             {
                 Trace.WriteLine("RpcStringBindingCompose failed with status 0x" + status.ToString("x"));
-                return IntPtr.Zero;
+                return status;
             }
             status = NativeMethods.RpcBindingFromStringBinding(Marshal.PtrToStringUni(bindingstring), out binding);
             NativeMethods.RpcBindingFree(ref bindingstring);
             if (status != 0)
             {
                 Trace.WriteLine("RpcBindingFromStringBinding failed with status 0x" + status.ToString("x"));
-                return IntPtr.Zero;
+                return status;
             }
             if (UseNullSession)
             {
@@ -273,18 +287,20 @@ namespace PingCastle.RPC
                 if (status != 0)
                 {
                     Trace.WriteLine("RpcBindingSetAuthInfoEx failed with status 0x" + status.ToString("x"));
-                    Unbind(IntPtrserver, binding);
-                    return IntPtr.Zero;
+                    return status;
                 }
             }
-
+            else
+            {
+                status = NativeMethods.RpcBindingSetAuthInfo(binding, null, 0, 0xFFFFFFFF, IntPtr.Zero, 0xFFFFFFFF);
+            }
             status = NativeMethods.RpcBindingSetOption(binding, 12, RPCTimeOut);
             if (status != 0)
             {
                 Trace.WriteLine("RpcBindingSetOption failed with status 0x" + status.ToString("x"));
             }
             Trace.WriteLine("binding ok (handle=" + binding + ")");
-            return binding;
+            return 0;
         }
 
         protected string magic(int num)
@@ -297,7 +313,7 @@ namespace PingCastle.RPC
             return s.ToString();
         }
 
-        protected Int32 Bind(string server, out IntPtr binding)
+        protected Int32 BindUsingMapper(string server, out IntPtr binding)
         {
             IntPtr bindingstring = IntPtr.Zero;
             binding = IntPtr.Zero;
@@ -319,6 +335,11 @@ namespace PingCastle.RPC
             }
 
             status = NativeMethods.RpcBindingSetOption(binding, 12, RPCTimeOut);
+            if (status != 0)
+                return status;
+
+            status = NativeMethods.RpcEpResolveBinding(binding, rpcClientInterface);
+            
             return status;
         }
 

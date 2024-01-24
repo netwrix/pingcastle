@@ -15,8 +15,19 @@ namespace PingCastle.Healthcheck.Rules
     [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
     public class HeatlcheckRuleStaledPwdNeverExpires : RuleBase<HealthcheckData>
     {
+        const int maxNumDisplayAccount = 100;
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
+            if (healthcheckData.UserAccountData.ListPwdNeverExpires != null)
+            {
+                if (healthcheckData.UserAccountData.NumberPwdNeverExpires < maxNumDisplayAccount)
+                {
+                    for (int i = 0; i < healthcheckData.UserAccountData.NumberPwdNeverExpires; i++)
+                    {
+                        AddRawDetail(healthcheckData.UserAccountData.ListPwdNeverExpires[i].DistinguishedName);
+                    }
+                }
+            }
             return healthcheckData.UserAccountData.NumberPwdNeverExpires;
         }
     }

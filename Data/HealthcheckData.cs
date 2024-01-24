@@ -202,6 +202,8 @@ namespace PingCastle.Healthcheck
         public bool IsInProtectedUser { get; set; }
 
         public string Email { get; set; }
+
+        public string Class { get; set; }
     }
 
     [DebuggerDisplay("{GroupName}")]
@@ -811,7 +813,7 @@ namespace PingCastle.Healthcheck
         public HealthcheckOSVersionData(PingCastle.ADWS.ADItem x)
         {
             IsServer = x.OperatingSystem.Contains("Server");
-            IsLTSC = x.OperatingSystem.Contains("LTSC") || x.OperatingSystem.Contains("LTSB");
+            IsLTSC = x.OperatingSystem.IndexOf("LTSC", StringComparison.OrdinalIgnoreCase) >= 0 || x.OperatingSystem.IndexOf("LTSB", StringComparison.OrdinalIgnoreCase) >= 0;
             OSVersion = x.OperatingSystemVersion;
             data = new HealthcheckAccountData();
             data.DotNotRecordDetail = true;
@@ -1007,6 +1009,22 @@ namespace PingCastle.Healthcheck
     }
 
     [DebuggerDisplay("{DCName}")]
+    public class HealthcheckDCRPCInterface
+    {
+        [XmlAttribute]
+        public string IP { get; set; }
+
+        [XmlAttribute]
+        public string Interface { get; set; }
+        
+        [XmlAttribute]
+        public int OpNum { get; set; }
+
+        [XmlAttribute]
+        public string Function { get; set; }
+    }
+
+    [DebuggerDisplay("{DCName}")]
     public class HealthcheckDomainController
     {
         public string DCName { get; set; }
@@ -1079,6 +1097,11 @@ namespace PingCastle.Healthcheck
         [XmlAttribute]
         [DefaultValue(false)]
         public bool WebClientEnabled { get; set; }
+
+        [XmlAttribute]
+        public DateTime AdminLocalLogin { get; set; }
+
+        public List<HealthcheckDCRPCInterface> RPCInterfacesOpen { get; set; }
     }
 
     [XmlType("delegation")]
@@ -1165,10 +1188,20 @@ namespace PingCastle.Healthcheck
 
         public string GetHumanReadableFileName()
         {
-            return "ad_hc_" + DomainFQDN + (UseDateInFileNameValue ? "_" + GenerationDate.ToString("yyyyMMddTHHmmss") : null) + ".html";
+            return GetHumanReadableFileName(DomainFQDN, GenerationDate);
         }
 
         public string GetMachineReadableFileName()
+        {
+            return GetMachineReadableFileName(DomainFQDN, GenerationDate);
+        }
+
+        public static string GetHumanReadableFileName(string DomainFQDN, DateTime GenerationDate)
+        {
+            return "ad_hc_" + DomainFQDN + (UseDateInFileNameValue ? "_" + GenerationDate.ToString("yyyyMMddTHHmmss") : null) + ".html";
+        }
+
+        public static string GetMachineReadableFileName(string DomainFQDN, DateTime GenerationDate)
         {
             return "ad_hc_" + DomainFQDN + (UseDateInFileNameValue ? "_" + GenerationDate.ToString("yyyyMMddTHHmmss") : null) + ".xml";
         }

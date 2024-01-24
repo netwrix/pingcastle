@@ -37,6 +37,7 @@ namespace PingCastle.Healthcheck
     public class HealthcheckAnalyzer : IPingCastleAnalyzer<HealthcheckData>
     {
         public static bool SkipNullSession { get; set; }
+        public static bool SkipRPC { get; set; }
         HealthcheckData healthcheckData;
 
         private const string LatinUpperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -149,8 +150,8 @@ namespace PingCastle.Healthcheck
                 GenerateWSUSData(domainInfo, adws);
                 DisplayAdvancement("Gathering MSOL data");
                 GenerateMSOLData(domainInfo, adws);
-                DisplayAdvancement("Gathering domain controller data" + (SkipNullSession ? null : " (including null session)"));
-                GenerateDomainControllerData(domainInfo, adws);
+                DisplayAdvancement("Gathering domain controller data" + (SkipNullSession ? null : " (including null session)"  + (SkipRPC ? null : " (including RPC tests)")));
+                GenerateDomainControllerData(domainInfo, adws, parameters);
                 GenerateRODCData(domainInfo, adws);
                 GenerateFSMOData(domainInfo, adws);
                 GenerateCheckDCConfig(domainInfo, adws);
@@ -351,7 +352,7 @@ namespace PingCastle.Healthcheck
                                                 // version stored in big endian
                                                 if (aditem.SchemaInfo != null)
                                                     domainInfo.SchemaInternalVersion = aditem.SchemaInfo[1] * 0x1000000 + aditem.SchemaInfo[2] * 0x10000 + aditem.SchemaInfo[3] * 0x100 + aditem.SchemaInfo[4];
-                                                if (aditem.ReplPropertyMetaData.ContainsKey(0x9054E))
+                                                if (aditem.ReplPropertyMetaData != null && aditem.ReplPropertyMetaData.ContainsKey(0x9054E))
                                                 {
                                                     domainInfo.SchemaLastChanged = aditem.ReplPropertyMetaData[0x9054E].LastOriginatingChange;
                                                 }
@@ -842,6 +843,21 @@ namespace PingCastle.Healthcheck
                 {
                     try
                     {
+                        bool isCluster = false;
+                        if (x.ServicePrincipalName != null)
+                        {
+                            foreach (var sp in x.ServicePrincipalName)
+                            {
+                                if (sp.StartsWith("MSClusterVirtualServer/"))
+                                {
+                                    isCluster = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (isCluster)
+                            return;
+
                         string os = GetOperatingSystem(x.OperatingSystem);
                         if (!operatingSystems.ContainsKey(os))
                         {
@@ -1277,7 +1293,7 @@ namespace PingCastle.Healthcheck
                         }
                         else////////////
                         {
-                            if (d < x.ReplPropertyMetaData[0x9005A].LastOriginatingChange)
+                            if (x.ReplPropertyMetaData != null && d < x.ReplPropertyMetaData[0x9005A].LastOriginatingChange)
                             {
                                 d = x.ReplPropertyMetaData[0x9005A].LastOriginatingChange;
                                 healthcheckData.AzureADSSOVersion = x.ReplPropertyMetaData[0x9005A].Version;
@@ -1582,6 +1598,8 @@ namespace PingCastle.Healthcheck
             foreach (string rule in rulesAdded)
             {
                 string[] SDDL = rule.Split(';');
+                if (SDDL.Length < 6)
+                    continue;
                 string sid = SDDL[5];
                 if (sid.StartsWith("S-1-5-21"))
                 {
@@ -2545,7 +2563,10 @@ namespace PingCastle.Healthcheck
                         file.Type = "Application (" + section + " section)";
                         file.FileName = msiFile[1];
                         file.Delegation = new List<HealthcheckScriptDelegationData>();
-                        healthcheckData.GPPFileDeployed.Add(file);
+                        lock (healthcheckData.GPPFileDeployed)
+                        {
+                            healthcheckData.GPPFileDeployed.Add(file);
+                        }
                         if (adws.FileConnection.FileExists(file.FileName))
                         {
                             try
@@ -3858,12 +3879,12 @@ namespace PingCastle.Healthcheck
             {
                 bool found = false;
                 bool MemberOf = false;
-                if (line.Contains("__MemberOf"))
+                if (line.IndexOf("__MemberOf", StringComparison.OrdinalIgnoreCase) > 0)
                 {
                     found = true;
                     MemberOf = true;
                 }
-                else if (line.Contains("__Members"))
+                else if (line.IndexOf("__Members", StringComparison.OrdinalIgnoreCase) > 0)
                 {
                     found = true;
                 }
@@ -4067,6 +4088,7 @@ namespace PingCastle.Healthcheck
                 @"NoLMHash",
                 @"RestrictAnonymous",
                 @"RestrictAnonymousSAM",
+                @"MSV1_0\RestrictSendingNTLMTraffic",
             };
             if (line.StartsWith(@"MACHINE\System\CurrentControlSet\Control\Lsa\", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -4498,8 +4520,11 @@ namespace PingCastle.Healthcheck
                 (ADItem aditem) =>
                 {
                     Trace.WriteLine("krbtgt found");
-                    healthcheckData.KrbtgtLastVersion = aditem.ReplPropertyMetaData[0x9005A].Version;
                     healthcheckData.KrbtgtLastChangeDate = aditem.PwdLastSet;
+
+                    if (aditem.ReplPropertyMetaData == null)
+                        return;
+                    healthcheckData.KrbtgtLastVersion = aditem.ReplPropertyMetaData[0x9005A].Version;
                     if (healthcheckData.KrbtgtLastChangeDate < aditem.ReplPropertyMetaData[0x9005A].LastOriginatingChange)
                     {
                         healthcheckData.KrbtgtLastChangeDate = aditem.ReplPropertyMetaData[0x9005A].LastOriginatingChange;
@@ -4517,7 +4542,7 @@ namespace PingCastle.Healthcheck
                 (ADItem aditem) =>
                 {
                     // check replication data for dsaSignature
-                    if (aditem.ReplPropertyMetaData.ContainsKey(0x2004A))
+                    if (aditem.ReplPropertyMetaData != null && aditem.ReplPropertyMetaData.ContainsKey(0x2004A))
                         healthcheckData.LastADBackup = aditem.ReplPropertyMetaData[0x2004A].LastOriginatingChange;
 
                 }
@@ -4550,6 +4575,8 @@ namespace PingCastle.Healthcheck
                     (ADItem x) =>
                     {
                         var f = false;
+                        if (x.ReplPropertyMetaData == null)
+                            return;
                         // check if there is a LAPS attribute (looked into metadata because hidden if the current user has not right to read it)
                         if (
                             (lapsAnalyzer.LegacyLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.LegacyLAPSIntId))
@@ -4644,7 +4671,7 @@ namespace PingCastle.Healthcheck
                             }
                         }
                         var w = GetAccountDetail(x);
-                        if (x.ReplPropertyMetaData.ContainsKey(589974))
+                        if (x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(589974))
                         {
                             w.Event = x.ReplPropertyMetaData[589974].LastOriginatingChange;
                         }
@@ -4897,6 +4924,10 @@ namespace PingCastle.Healthcheck
                 (ADItem x) =>
                 {
                     var w = GetAccountDetail(x);
+                    healthcheckData.UnixPasswordUsers.Add(w);
+
+                    if (x.ReplPropertyMetaData == null)
+                        return;
                     if (x.ReplPropertyMetaData.ContainsKey(35)) // userPassword
                     {
                         w.Event = x.ReplPropertyMetaData[35].LastOriginatingChange;
@@ -4905,7 +4936,6 @@ namespace PingCastle.Healthcheck
                     {
                         w.Event = x.ReplPropertyMetaData[591734].LastOriginatingChange;
                     }
-                    healthcheckData.UnixPasswordUsers.Add(w);
                 };
             adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectCategory=person)(!userAccountControl:1.2.840.113556.1.4.803:=2)(|(unixUserPassword=*)(userPassword=*)))", propertiesUnixPassword, callbackUnixPassword);
             healthcheckData.UnixPasswordUsersCount = healthcheckData.UnixPasswordUsers.Count;
@@ -5046,7 +5076,7 @@ namespace PingCastle.Healthcheck
             adws.Enumerate("CN=DisplaySpecifiers," + domainInfo.ConfigurationNamingContext, "(objectCategory=displaySpecifier)", properties, callback);
         }
 
-        private void GenerateDomainControllerData(ADDomainInfo domainInfo, ADWebService adws)
+        private void GenerateDomainControllerData(ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
         {
             Trace.WriteLine("GenerateDomainControllerData");
             BlockingQueue<HealthcheckDomainController> queue = new BlockingQueue<HealthcheckDomainController>(200);
@@ -5094,6 +5124,31 @@ namespace PingCastle.Healthcheck
                                     break;
                             }
                         }
+                        Trace.WriteLine("[" + threadId + "] Getting individual LDAP data" + dns);
+                        try
+                        {
+                            var localAdws = new LDAPConnection(dns, parameters.Port, parameters.Credential);
+
+                            var localDomainInfo = localAdws.GetDomainInfo();
+                            Trace.WriteLine("[" + threadId + "] Connected LDAP to " + localDomainInfo.DnsHostName);
+
+                            string[] adminProperties = new string[] {
+                            "distinguishedName",
+                            "lastlogon",
+                            };
+                            WorkOnReturnedObjectByADWS callback =
+                                    (ADItem x) =>
+                                    {
+                                        DC.AdminLocalLogin = x.LastLogon;
+                                    };
+                            localAdws.Enumerate(domainInfo.DefaultNamingContext, "(objectSid=" + ADConnection.EncodeSidToString(domainInfo.DomainSid + "-" + 500) + ")", adminProperties, callback, "SubTree");
+                        }
+                        catch (Exception ex)
+                        {
+                            Trace.WriteLine("[" + threadId + "] Exception while getting admin login time: " + ex.Message);
+                            Trace.WriteLine("[" + threadId + "] " + ex.StackTrace);
+                        }
+
                         Trace.WriteLine("[" + threadId + "] Working on startup " + dns);
                         DC.StartupTime = NativeMethods.GetStartupTime(dns);
                         if (DC.StartupTime == DateTime.MinValue)
@@ -5137,6 +5192,11 @@ namespace PingCastle.Healthcheck
                         GenerateTLSConnectionInfo(dns, DC, adws.Credential, threadId);
                         Trace.WriteLine("[" + threadId + "] Working on ldap signing requirements " + dns);
                         GenerateLDAPSigningRequirementInfo(dns, DC, adws.Credential, threadId);
+                        if (!SkipRPC)
+                        {
+                            Trace.WriteLine("[" + threadId + "] testing RPC " + dns);
+                            TestFirewallRPCDC(DC, threadId);
+                        }
                         Trace.WriteLine("[" + threadId + "] Done for " + dns);
                     }
                 };
@@ -5188,6 +5248,79 @@ namespace PingCastle.Healthcheck
             {
                 if (DC.HasNullSession)
                     healthcheckData.DomainControllerWithNullSessionCount++;
+            }
+        }
+
+        class RPCTest
+        {
+            public Guid guid;
+            public string pipe;
+            public ushort major;
+            public ushort minor;
+            public Dictionary<string, int> functions;
+        }
+
+        void TestFirewallRPCDC(HealthcheckDomainController DC, int threadId)
+        {
+            var toTest = new List<RPCTest>
+            {
+                new RPCTest {
+                    guid = Guid.Parse("4fc742e0-4a10-11cf-8273-00aa004ae673"),
+                    pipe = "netdfs",
+                    major = 3,
+                    functions = new Dictionary<string, int> { { "NetrDfsAddStdRoot", 12 }, { "NetrDfsRemoveStdRoot", 13 } }
+                },
+                new RPCTest {
+                    guid = Guid.Parse("82273fdc-e32a-18c3-3f78-827929dc23ea"), 
+                    pipe = "eventlog",
+                    functions =    new Dictionary<string, int> { { "ElfrOpenBELW", 9 }}
+                },
+                new RPCTest {
+                    guid = Guid.Parse("c681d488-d850-11d0-8c52-00c04fd90f7e"),
+                    pipe = "efsrpc",
+                    major = 1,
+                    functions = new Dictionary<string, int> { { "EfsRpcAddUsersToFile", 9 }, { "EfsRpcAddUsersToFileEx", 15 }, 
+                                                            {"EfsRpcDecryptFileSrv", 5}, {"EfsRpcDuplicateEncryptionInfoFile",12},
+                                                            {"EfsRpcEncryptFileSrv",4 },{"EfsRpcFileKeyInfo",12 },
+                                                            {"EfsRpcOpenFileRaw",0 },{"EfsRpcQueryRecoveryAgents",7 },
+                                                            {"EfsRpcQueryUsersOnFile", 6}, {"EfsRpcRemoveUsersFromFile", 8},
+                    },
+                },
+                new RPCTest {
+                    guid = Guid.Parse("a8e0653c-2744-4389-a61d-7373df8b2292"), 
+                    pipe = "Fssagentrpc",
+                    major = 1,
+                    functions =    new Dictionary<string, int> { { "IsPathShadowCopied", 9 },{ "IsPathSupported", 8 }}
+                },
+                new RPCTest {
+                    guid = Guid.Parse("12345678-1234-ABCD-EF00-0123456789AB"), 
+                    pipe = "spoolss",
+                    major = 1,
+                    functions = new Dictionary<string, int> { { "RpcRemoteFindFirstPrinterChangeNotification", 62 },{ "RpcRemoteFindFirstPrinterChangeNotificationEx", 65 }}
+                },
+            };
+
+            DC.RPCInterfacesOpen = new List<HealthcheckDCRPCInterface>();
+
+            foreach (var ip in DC.IP)
+            {
+                Trace.WriteLine("[" + threadId + "] testing IP " + ip);
+                foreach (var test in toTest)
+                {
+                    Trace.WriteLine("[" + threadId + "] testing RPC interface " + test.guid);
+                    foreach (var r in RpcFirewallChecker.TestFunctions(ip, test.guid, test.pipe, test.major, test.minor, test.functions))
+                    {
+                        Trace.WriteLine("[" + threadId + "] found " + r + " available");
+
+                        DC.RPCInterfacesOpen.Add(new HealthcheckDCRPCInterface
+                        {
+                            IP = ip,
+                            Function = r,
+                            Interface = test.guid.ToString(),
+                            OpNum = test.functions[r],
+                        });
+                    }
+                }
             }
         }
 

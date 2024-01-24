@@ -35,6 +35,8 @@ namespace PingCastle.Report
 
         public HasDomainAmbigousNameDelegate HasDomainAmbigousName { get; set; }
 
+        public static bool NoCspHeader { get; set; }
+
         public void SetUrlDisplayDelegate(GetUrlDelegateDomain uRLDelegate)
         {
             GetUrlCallbackDomain = uRLDelegate;
@@ -136,6 +138,8 @@ namespace PingCastle.Report
 
         private void GenerateCspMeta()
         {
+            if (NoCspHeader)
+                return;
             Add(@"<meta http-equiv=""Content-Security-Policy"" content=""default-src 'self'; script-src ");
             foreach (var script in JSToAdd)
             {
@@ -893,7 +897,7 @@ namespace PingCastle.Report
 
         }
 
-        protected void GenerateAccordionDetailForDetail(string id, string dataParent, string title, int itemCount, GenerateContentDelegate content)
+        protected void GenerateAccordionDetailForDetail(string id, string dataParent, string title, int itemCount, GenerateContentDelegate content, string tooltip = null)
         {
             GenerateAccordionDetail(id, dataParent, title,
                 () =>
@@ -901,10 +905,10 @@ namespace PingCastle.Report
                     Add(@"<i class=""float-end"">[");
                     Add((int)itemCount);
                     Add(@"]</i>");
-                }, content);
+                }, content, tooltip);
         }
 
-        protected void GenerateAccordionDetail(string id, string dataParent, string title, GenerateContentDelegate header, GenerateContentDelegate content)
+        protected void GenerateAccordionDetail(string id, string dataParent, string title, GenerateContentDelegate header, GenerateContentDelegate content, string tooltip = null)
         {
             Add(@"
     <div class=""card-header"" id=""heading");
@@ -920,6 +924,12 @@ namespace PingCastle.Report
             Add(@""">
           ");
             Add(title);
+            if (!string.IsNullOrEmpty(tooltip))
+            {
+                AddBeginTooltip();
+                Add(tooltip);
+                AddEndTooltip();
+            }
             Add(@"
         </button>
       </span>
@@ -1833,6 +1843,5 @@ namespace PingCastle.Report
                 return "#Fa9C1A";
             return colors[index % colors.Length];
         }
-
     }
 }

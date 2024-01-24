@@ -31,6 +31,8 @@ namespace PingCastle.Healthcheck.Rules
                         continue;
                     if (!user.IsEnabled)
                         continue;
+                    if (string.Equals(user.Class, "msDS-GroupManagedServiceAccount", System.StringComparison.OrdinalIgnoreCase))
+                        continue;
                     if (!user.IsInProtectedUser)
                     {
                         if (!users.Contains(user.Name))

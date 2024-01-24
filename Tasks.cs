@@ -43,6 +43,7 @@ namespace PingCastle
 
         Dictionary<string, string> xmlreports = new Dictionary<string, string>();
         Dictionary<string, string> htmlreports = new Dictionary<string, string>();
+        Dictionary<string, DateTime> dateReports = new Dictionary<string, DateTime>();
         Dictionary<string, string> aadjsonreport = new Dictionary<string, string>();
         Dictionary<string, string> aadhtmlreport = new Dictionary<string, string>();
 
@@ -253,7 +254,7 @@ namespace PingCastle
                 // TODO: remove this functionality (unused ?) or add AAD support
                 foreach (string domain in xmlreports.Keys)
                 {
-                    UploadToWebsite("ad_hc_" + domain + ".xml", xmlreports[domain]);
+                    UploadToWebsite(HealthcheckData.GetMachineReadableFileName(domain, dateReports.ContainsKey(domain) ? dateReports[domain] : DateTime.Now), xmlreports[domain]);
                 }
             }
             if (!String.IsNullOrEmpty(Settings.apiKey) && !String.IsNullOrEmpty(Settings.apiEndpoint))
@@ -568,6 +569,7 @@ namespace PingCastle
                     }
                     pingCastleReport.SetExportLevel(ExportLevel);
                     xmlreports[domain] = DataHelper<HealthcheckData>.SaveAsXml(pingCastleReport, pingCastleReport.GetMachineReadableFileName(), Settings.EncryptReport);
+                    dateReports[domain] = pingCastleReport.GenerationDate;
                     DisplayAdvancement("Done");
                 });
             return pingCastleReport;
@@ -645,6 +647,10 @@ namespace PingCastle
                         else if (fi.Name.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
                         {
                             var healthcheckData = DataHelper<HealthcheckData>.LoadXml(Settings.InputFile);
+                            if (healthcheckData.Level != PingCastleReportDataExportLevel.Full)
+                            {
+                                DisplayAdvancement("The xml report does not contain personal data. Current reporting level is: " + healthcheckData.Level);
+                            }
                             var endUserReportGenerator = new ReportHealthCheckSingle();
                             endUserReportGenerator.GenerateReportFile(healthcheckData, License, healthcheckData.GetHumanReadableFileName());
                         }
@@ -664,12 +670,18 @@ namespace PingCastle
                         if (fi.Name.StartsWith("ad_hc_"))
                         {
                             HealthcheckData healthcheckData = DataHelper<HealthcheckData>.LoadXml(Settings.InputFile);
+                            if (healthcheckData.Level != PingCastleReportDataExportLevel.Full)
+                            {
+                                DisplayAdvancement("The xml report does not contain personal data. Current reporting level is: " + healthcheckData.Level);
+                            }
+
                             domainFQDN = healthcheckData.DomainFQDN;
                             DisplayAdvancement("Regenerating xml " + (Settings.EncryptReport ? " (encrypted)" : ""));
                             healthcheckData.Level = ExportLevel;
                             xml = DataHelper<HealthcheckData>.SaveAsXml(healthcheckData, newfile, Settings.EncryptReport);
                             // email sending will be handled by completedtasks
                             xmlreports[domainFQDN] = xml;
+                            dateReports[domainFQDN] = healthcheckData.GenerationDate;
                         }
                         else
                         {
@@ -730,7 +742,7 @@ namespace PingCastle
                         }
                         else
                         {
-                            aadreports.Add(new KeyValuePair<string,string>(file, file));
+                            aadreports.Add(new KeyValuePair<string, string>(file, file));
                         }
                         i++;
                     }
@@ -1236,7 +1248,7 @@ This is the PingCastle program sending reports for:
                 {
                     if (!domains.Contains(domain))
                         domains.Add(domain);
-                    Files.Add(Attachment.CreateAttachmentFromString(xmlreports[domain], "ad_hc_" + domain + ".xml"));
+                    Files.Add(Attachment.CreateAttachmentFromString(xmlreports[domain], HealthcheckData.GetMachineReadableFileName(domain, dateReports.ContainsKey(domain) ? dateReports[domain] : DateTime.Now)));
                 }
                 foreach (string tenant in aadjsonreport.Keys)
                 {
@@ -1251,7 +1263,7 @@ This is the PingCastle program sending reports for:
                 {
                     if (!domains.Contains(domain))
                         domains.Add(domain);
-                    Files.Add(Attachment.CreateAttachmentFromString(htmlreports[domain], "ad_hc_" + domain + ".html"));
+                    Files.Add(Attachment.CreateAttachmentFromString(htmlreports[domain], HealthcheckData.GetHumanReadableFileName(domain, dateReports.ContainsKey(domain) ? dateReports[domain] : DateTime.Now)));
                 }
                 foreach (string tenant in aadhtmlreport.Keys)
                 {

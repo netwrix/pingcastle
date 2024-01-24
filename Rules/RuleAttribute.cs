@@ -304,7 +304,9 @@ namespace PingCastle.Rules
         {
             get
             {
-                return "https://www.ssi.gouv.fr/uploads/IMG/pdf/NP_ActiveDirectory_NoteTech.pdf" + (!String.IsNullOrEmpty(Location) ? "#" + Location : null);
+                // old: https://www.ssi.gouv.fr/uploads/IMG/pdf/NP_ActiveDirectory_NoteTech.pdf
+                // new: https://cyber.gouv.fr/sites/default/files/IMG/pdf/NP_ActiveDirectory_NoteTech.pdf
+                return "https://cyber.gouv.fr/sites/default/files/IMG/pdf/NP_ActiveDirectory_NoteTech.pdf" + (!String.IsNullOrEmpty(Location) ? "#" + Location : null);
             }
         }
 

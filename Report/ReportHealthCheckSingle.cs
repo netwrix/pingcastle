@@ -51,6 +51,7 @@ namespace PingCastle.Report
         {
             Report = report;
             _license = aDHealthCheckingLicense;
+            AdjustReportIfNeeded();
             report.InitializeReportingData();
             sb.Length = 0;
             GenerateContent();
@@ -60,6 +61,23 @@ namespace PingCastle.Report
         public string GenerateRawContent(HealthcheckData report)
         {
             return GenerateRawContent(report, null);
+        }
+
+        void AdjustReportIfNeeded()
+        {
+            if (!string.IsNullOrEmpty(_license.Edition) && _license.Edition != "Basic")
+            {
+                if (_license.CustomerNotice != null && _license.CustomerNotice.StartsWith("Free "))
+                {
+                    int count = Report.RiskRules.Count;
+                    Random rnd = new Random();
+                    for (int i = 0; i < count / 3; i++)
+                    {
+                        Report.RiskRules.RemoveAt(rnd.Next(Report.RiskRules.Count));
+                    }
+                    RuleSet<HealthcheckData>.ReComputeTotals(Report, Report.RiskRules.ConvertAll(x => x));
+                }
+            }
         }
 
         protected override void GenerateTitleInformation()
@@ -993,7 +1011,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     }
                     if (data.ListNotAesEnabled != null && data.ListNotAesEnabled.Count > 0)
                     {
-                        GenerateListAccountDetail(accordion, "sectionnotaesenabled" + root, "Objects where last password change is before install of the first AES compatible DC (not supporting AES in kerberos)", data.ListNotAesEnabled);
+                        GenerateListAccountDetail(accordion, "sectionnotaesenabled" + root, "Objects where AES usage with kerberos may be cause issues", data.ListNotAesEnabled,
+                            tooltip: "Accounts are listed if 1) no password changed occured after the first DC Win 2008 install to initate AES secrets or 2) they have a SPN and the account is not flaged to use AES for encryption with msDS-SupportedEncryptionTypes");
                     }
                     if (data.ListTrustedToAuthenticateForDelegation != null && data.ListTrustedToAuthenticateForDelegation.Count > 0)
                     {
@@ -1032,7 +1051,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             }
         }
 
-        void GenerateListAccountDetail(string accordion, string id, string title, List<HealthcheckAccountDetailData> list)
+        void GenerateListAccountDetail(string accordion, string id, string title, List<HealthcheckAccountDetailData> list, string tooltip = null)
         {
             if (list == null)
             {
@@ -1053,6 +1072,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddHeaderText("Name");
                     AddHeaderText("Creation");
                     AddHeaderText("Last logon");
+                    AddHeaderText("Pwd Last Set");
                     if (eventDate)
                     {
                         AddHeaderText("Event date");
@@ -1073,6 +1093,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         AddCellText(detail.Name);
                         AddCellText((detail.CreationDate > DateTime.MinValue ? detail.CreationDate.ToString("u") : "Access Denied"));
                         AddCellText((detail.LastLogonDate > DateTime.MinValue ? detail.LastLogonDate.ToString("u") : "Never"));
+                        AddCellText((detail.PwdLastSet > DateTime.MinValue ? detail.PwdLastSet.ToString("u") : "Never"));
                         if (eventDate)
                         {
                             if (detail.Event == DateTime.MinValue)
@@ -1103,7 +1124,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add("</td>");
                         }
                     });
-                });
+                }, tooltip: tooltip);
         }
 
         private void GenerateDomainSIDHistoryList(HealthcheckAccountData data)
@@ -1201,6 +1222,12 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     if (Report.ComputerAccountData != null && Report.OperatingSystemVersion != null)
                     {
                         AddParagraph("Here is the application of LAPS");
+                        var note = "Note: LAPS cannot be installed on Domain controllers. As a consequence LAPS cannot be deployed on 100% of the servers.";
+                        if (Report.DomainControllers != null)
+                        {
+                            note += " There is currently " + Report.DomainControllers.Count + " domain controllers or AzureAD gateway listed in this report.";
+                        }
+                        AddParagraph(note);
 
                         Add("<div class='row'>");
 

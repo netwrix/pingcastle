@@ -1,3 +1,23 @@
+3.2.0.0
+* added a RPC scanner for DC (python coercer like script but without exploiting) and --skip-dc-rpc to disable this scan
+* added the rule A-DC-Coerce matching the RPC scanner output
+
+3.1.5.0
+* exclude cluster objects (which looks like computers) from healthcheck analysis. In export computers, new column is added to reflect the cluster status
+* fix an issue with restricted group membership
+* excluded gmsa from P-ProtectedUsers and P-Delegated
+* added a message in the console if the custom rule failed to load (instead of just being logged)
+* adjusted the implementation logic of P-AdminLogin for better adjustment of customization
+* rewrote the collection logic for admin last login to avoid S4USelf side effect (aka collect it on all DC instead of relying on lastlogontimestamp)
+* added whenChanged to the user export function
+* fix a bug when the replication metadata of some objects is denied
+* fix an issue relative to parallele work for msi analysis
+* clarify the rationale of S-OS-W10 by adding the number of active computers
+* display the list of accounts in S-PwdNeverExpires if the count is less than 100 (hardcoded) so I can be added in exception for licensed version
+* change the logic to handle AzureADKerberos accounts for S-DC-NotUpdated and S-DC-Inactive
+* added a remark in the report about the impossibility to reach 100% LAPS deployment given the collected stats
+* add Windows OS details (such as SP or release) on the consolidation report
+
 3.1.0.1
 * fix local membership if many settings are defined
 * fix LAPS collection (signed / unsigned bug)

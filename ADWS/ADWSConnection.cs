@@ -239,11 +239,20 @@ namespace PingCastle.ADWS
 							{
 								Console.WriteLine("Warning: unable to process element (" + ex.Message + ")\r\n" + item.OuterXml);
 								Trace.WriteLine("Warning: unable to process element\r\n" + item.OuterXml);
-								Trace.WriteLine("Exception: " + ex.Message);
-								Trace.WriteLine(ex.StackTrace);
+								Trace.WriteLine("Exception: " + ex.ToString());
 							}
-							if (aditem != null)
-								callback(aditem);
+                            if (aditem != null)
+                            {
+                                try
+                                {
+                                    callback(aditem);
+                                }
+                                catch
+                                {
+                                    Trace.WriteLine("Exception while working on " + aditem.DistinguishedName);
+                                    throw;
+                                }
+                            }
 						}
 					}
 				}

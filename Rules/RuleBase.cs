@@ -38,6 +38,8 @@ namespace PingCastle.Rules
 
         public int MaturityLevel { get; set; }
 
+        protected Dictionary<string, string> ReplacementToDo = new Dictionary<string, string>();
+
         [XmlIgnore]
         public IInfrastructureSettings InfrastructureSettings { get; set; }
 
@@ -218,6 +220,10 @@ namespace PingCastle.Rules
                 Rationale = DetailRationale;
                 Rationale = Rationale.Replace("{count}", valueReturnedByAnalysis.ToString());
                 Rationale = Rationale.Replace("{threshold}", computation.Threshold.ToString());
+                foreach (var data in ReplacementToDo)
+                {
+                    Rationale = Rationale.Replace(data.Key, data.Value);
+                }
             }
         }
 

@@ -65,14 +65,11 @@ namespace PingCastle.RPC
         {
             IntPtr hBind;
             stringBindings = new List<string>();
-            Int32 status = Bind(server, out hBind);
+            Int32 status = BindUsingMapper(server, out hBind);
             if (status != 0)
                 return status;
             try
             {
-                status = NativeMethods.RpcEpResolveBinding(hBind, rpcClientInterface);
-                if (status != 0)
-                    return status;
 
                 var conversion = new COMVERSION() { MajorVersion = 5, MinorVersion = 1 };
                 UInt32 reserved = 0;

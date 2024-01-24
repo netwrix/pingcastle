@@ -417,6 +417,21 @@ namespace PingCastle
         [DllImport("Dnsapi.dll", CharSet = CharSet.Unicode)]
         internal static extern void DnsRecordListFree([In] IntPtr dnsResultList, [In] bool dnsFreeType);
 
+        [DllImport("Dnsapi.dll", SetLastError = true, EntryPoint = "DnsWriteQuestionToBuffer_W", CharSet = CharSet.Unicode)]
+        internal static extern bool DnsWriteQuestionToBuffer(
+            byte[] buffer,
+            ref int bufferSize,
+            string name,
+            ushort wType,
+            ushort Xid,
+            bool fRecursionDesired);
+
+        [DllImport("Dnsapi.dll", SetLastError = true, EntryPoint = "DnsExtractRecordsFromMessage_W", CharSet = CharSet.Unicode)]
+        internal static extern bool DnsExtractRecordsFromMessage(
+            byte[] message,
+            int messageLength,
+            out IntPtr ppRecords);
+
         [DllImport("Crypt32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern bool CryptDecodeObject([In] uint dwCertEncodingType, [In] [MarshalAs(UnmanagedType.LPStr)] string lpszStructType, [In] byte[] pbEncoded, [In] uint cbEncoded, [In] uint dwFlags, [Out] IntPtr pvStructInfo, [In] [Out] ref uint pcbStructInfo);
 

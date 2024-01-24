@@ -161,6 +161,8 @@ namespace PingCastle.ADWS
         public string[] Keywords { get; set; }
         [ADAttributeAttribute("gPLink", ADAttributeValueKind.StringValue)]
         public string GPLink { get; set; }
+        [ADAttributeAttribute("lastLogon", ADAttributeValueKind.DateValue)]
+        public DateTime LastLogon { get; set; }
         [ADAttributeAttribute("lastLogonTimestamp", ADAttributeValueKind.DateValue)]
         public DateTime LastLogonTimestamp { get; set; }
         [ADAttributeAttribute("lDAPDisplayName", ADAttributeValueKind.StringValue)]

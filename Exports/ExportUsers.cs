@@ -40,6 +40,7 @@ namespace PingCastle.Exports
                     header.Add("lastLogonTimestamp");
                     header.Add("pwdLastSet");
                     header.Add("whenCreated");
+                    header.Add("whenChanged");
                     header.Add("objectClass");
                     header.Add("userAccountControl");
                     header.AddRange(hcprop);
@@ -66,6 +67,7 @@ namespace PingCastle.Exports
                             data.Add(x.LastLogonTimestamp.ToString("u"));
                             data.Add(x.PwdLastSet.ToString("u"));
                             data.Add(x.WhenCreated.ToString("u"));
+                            data.Add(x.WhenChanged.ToString("u"));
                             data.Add(x.Class);
                             data.Add(x.UserAccountControl.ToString());
                             foreach (var p in hcprop)
@@ -77,7 +79,9 @@ namespace PingCastle.Exports
                         };
 
                     DisplayAdvancement("Starting");
-                    adws.Enumerate(domainInfo.DefaultNamingContext, HealthcheckAnalyzer.userFilter, HealthcheckAnalyzer.userProperties, callback, "SubTree");
+                    var properties = new List<string>(HealthcheckAnalyzer.userProperties);
+                    properties.Add("whenChanged");
+                    adws.Enumerate(domainInfo.DefaultNamingContext, HealthcheckAnalyzer.userFilter, properties.ToArray(), callback, "SubTree");
                     DisplayAdvancement("Done");
                 }
             }

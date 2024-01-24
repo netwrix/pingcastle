@@ -134,6 +134,7 @@
     <Compile Include="Cloud\PublicServices\UserRealmV1.cs" />
     <Compile Include="Cloud\PublicServices\UserRealmV2.cs" />
     <Compile Include="Healthcheck\LAPSAnalyzer.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyDCCoerce.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsolete2012.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteDC2012.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedUnprotectedOU.cs" />
@@ -146,6 +147,7 @@
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteFunctionalLevel3.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteFunctionalLevel1.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDisplaySpecifier.cs" />
+    <Compile Include="RPC\rpcfirewallchecker.cs" />
     <Compile Include="RuntimeSettings.cs" />
     <Compile Include="Report\ReportCloud.cs" />
     <Compile Include="Cloud\RESTServices\AzureServiceAttribute.cs" />

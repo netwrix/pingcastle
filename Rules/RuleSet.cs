@@ -94,6 +94,7 @@ namespace PingCastle.Rules
             }
             catch (Exception ex)
             {
+                Console.WriteLine("An error occured while loading custom rules: " + ex.Message);
                 Trace.WriteLine("Unable to load custom rules");
                 var e = ex;
                 while (e != null)

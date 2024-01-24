@@ -47,14 +47,15 @@ namespace PingCastle.Exports
                     header.AddRange(hcprop);
                     header.Add("OperatingSystem");
                     header.Add("OperatingSystemVersion");
+                    header.Add("IsCluster");
                     header.Add("PC OS 1");
                     header.Add("PC OS 2");
                     header.Add("LAPS last update (legacy LAPS)");
                     header.Add("LAPS last update (Ms LAPS)");
-                    
+
                     sw.WriteLine(string.Join("\t", header.ToArray()));
-                    
-                    
+
+
                     WorkOnReturnedObjectByADWS callback =
                         (ADItem x) =>
                         {
@@ -99,6 +100,26 @@ namespace PingCastle.Exports
                             {
                                 data.Add(string.Empty);
                                 data.Add(string.Empty);
+                            }
+                            if (x.ServicePrincipalName != null)
+                            {
+                                bool isCluster = false;
+                                if (x.ServicePrincipalName != null)
+                                {
+                                    foreach (var sp in x.ServicePrincipalName)
+                                    {
+                                        if (sp.StartsWith("MSClusterVirtualServer/"))
+                                        {
+                                            isCluster = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                data.Add(isCluster.ToString());
+                            }
+                            else
+                            {
+                                data.Add(false.ToString());
                             }
                             if (lapsAnalyzer.LegacyLAPSIntId != 0 && x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.LegacyLAPSIntId))
                             {

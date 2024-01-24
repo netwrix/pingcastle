@@ -23,10 +23,8 @@ namespace PingCastle.Healthcheck.Rules
                 if (!string.IsNullOrEmpty(dc.RegistrationProblem))
                 {
                     bool isException = false;
-                    if (string.Equals(dc.DCName, "AzureADKerberos", StringComparison.OrdinalIgnoreCase))
+                    if (dc.AzureADKerberos)
                     {
-                        // Ugly AzureAD Kerberos stuff
-                        // https://techcommunity.microsoft.com/t5/azure-active-directory-identity/public-preview-of-azure-ad-support-for-fido2-security-keys-in/ba-p/1187929
                         continue;
                     }
                     if (InfrastructureSettings != null && InfrastructureSettings.Riverbeds != null)

@@ -22,6 +22,7 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
+            int totalActive = 0;
             foreach (var osVersion in healthcheckData.OperatingSystemVersion)
             {
                 if (!osVersion.IsServer)
@@ -46,18 +47,21 @@ namespace PingCastle.Healthcheck.Rules
                                 if (healthcheckData.GenerationDate > new DateTime(2025, 10, 14))
                                 {
                                     AddRawDetail("Windows 11 22H2", osVersion.data.Number, osVersion.data.NumberActive);
+                                    totalActive += osVersion.data.NumberActive;
                                 }
                                 break;
                             case 22000:
                                 if (healthcheckData.GenerationDate > new DateTime(2024, 10, 08))
                                 {
                                     AddRawDetail("Windows 11 21H2", osVersion.data.Number, osVersion.data.NumberActive);
+                                    totalActive += osVersion.data.NumberActive;
                                 }
                                 break;
                             case 19045:
                                 if (healthcheckData.GenerationDate > new DateTime(2025, 05, 13))
                                 {
                                     AddRawDetail("Windows 10 22H2", osVersion.data.Number, osVersion.data.NumberActive);
+                                    totalActive += osVersion.data.NumberActive;
                                 }
                                 break;
                             case 19044:
@@ -66,6 +70,7 @@ namespace PingCastle.Healthcheck.Rules
                                     if (healthcheckData.GenerationDate > new DateTime(2027, 01, 12))
                                     {
                                         AddRawDetail("Windows 10 21H2", osVersion.data.Number, osVersion.data.NumberActive);
+                                        totalActive += osVersion.data.NumberActive;
                                     }
                                 }
                                 else
@@ -73,6 +78,7 @@ namespace PingCastle.Healthcheck.Rules
                                     if (healthcheckData.GenerationDate > new DateTime(2024, 06, 11))
                                     {
                                         AddRawDetail("Windows 10 21H2", osVersion.data.Number, osVersion.data.NumberActive);
+                                        totalActive += osVersion.data.NumberActive;
                                     }
                                 }
                                 break;
@@ -80,32 +86,38 @@ namespace PingCastle.Healthcheck.Rules
                                 if (healthcheckData.GenerationDate > new DateTime(2022, 12, 13))
                                 {
                                     AddRawDetail("Windows 10 21H1", osVersion.data.Number, osVersion.data.NumberActive);
+                                    totalActive += osVersion.data.NumberActive;
                                 }
                                 break;
                             case 19042:
                                 if (healthcheckData.GenerationDate > new DateTime(2023, 05, 09))
                                 {
                                     AddRawDetail("Windows 10 20H2", osVersion.data.Number, osVersion.data.NumberActive);
+                                    totalActive += osVersion.data.NumberActive;
                                 }
                                 break;
                             case 19041:
                                 if (healthcheckData.GenerationDate > new DateTime(2021, 12, 14))
                                 {
                                     AddRawDetail("Windows 10 2004", osVersion.data.Number, osVersion.data.NumberActive);
+                                    totalActive += osVersion.data.NumberActive;
                                 }
                                 break;
                             case 18363:
                                 if (healthcheckData.GenerationDate > new DateTime(2022, 05, 10))
                                 {
                                     AddRawDetail("Windows 10 1909", osVersion.data.Number, osVersion.data.NumberActive);
+                                    totalActive += osVersion.data.NumberActive;
                                 }
                                 break;
                             case 18362:
                                 AddRawDetail("Windows 10 1903", osVersion.data.Number, osVersion.data.NumberActive);
+                                totalActive += osVersion.data.NumberActive;
                                 break;
                             case 18356:
                             case 18908:
                                 AddRawDetail("Windows 10 " + release + " (insider)", osVersion.data.Number, osVersion.data.NumberActive);
+                                totalActive += osVersion.data.NumberActive;
                                 break;
                             case 17763:
                                 if (osVersion.IsLTSC)
@@ -113,21 +125,26 @@ namespace PingCastle.Healthcheck.Rules
                                     if (healthcheckData.GenerationDate > new DateTime(2029, 01, 09))
                                     {
                                         AddRawDetail("Windows 10 1809 LTSC", osVersion.data.Number, osVersion.data.NumberActive);
+                                        totalActive += osVersion.data.NumberActive;
                                     }
                                 }
                                 else
                                 {
                                     AddRawDetail("Windows 10 1809", osVersion.data.Number, osVersion.data.NumberActive);
+                                    totalActive += osVersion.data.NumberActive;
                                 }
                                 break;
                             case 17134:
                                 AddRawDetail("Windows 10 1803", osVersion.data.Number, osVersion.data.NumberActive);
+                                totalActive += osVersion.data.NumberActive;
                                 break;
                             case 16299:
                                 AddRawDetail("Windows 10 1709", osVersion.data.Number, osVersion.data.NumberActive);
+                                totalActive += osVersion.data.NumberActive;
                                 break;
                             case 15063:
                                 AddRawDetail("Windows 10 1703", osVersion.data.Number, osVersion.data.NumberActive);
+                                totalActive += osVersion.data.NumberActive;
                                 break;
                             case 14393:
                                 if (osVersion.IsLTSC)
@@ -135,23 +152,28 @@ namespace PingCastle.Healthcheck.Rules
                                     if (healthcheckData.GenerationDate > new DateTime(2026, 09, 13))
                                     {
                                         AddRawDetail("Windows 10 1607 LTSC", osVersion.data.Number, osVersion.data.NumberActive);
+                                        totalActive += osVersion.data.NumberActive;
                                     }
                                 }
                                 else
                                 {
                                     AddRawDetail("Windows 10 1607", osVersion.data.Number, osVersion.data.NumberActive);
+                                    totalActive += osVersion.data.NumberActive;
                                 }
                                 break;
                             case 10586:
                                 AddRawDetail("Windows 10 1511", osVersion.data.Number, osVersion.data.NumberActive);
+                                totalActive += osVersion.data.NumberActive;
                                 break;
                             case 10240:
                                 AddRawDetail("Windows 10 1507", osVersion.data.Number, osVersion.data.NumberActive);
+                                totalActive += osVersion.data.NumberActive;
                                 break;
                         }
                     }
                 }
             }
+            ReplacementToDo.Add("{activeComputers}", totalActive.ToString());
             return null;
         }
     }

@@ -22,6 +22,10 @@ namespace PingCastle.Healthcheck.Rules
             {
                 foreach (var DC in healthcheckData.DomainControllers)
                 {
+                    if (DC.AzureADKerberos)
+                    {
+                        continue;
+                    }
                     if (DC.StartupTime != DateTime.MinValue)
                     {
                         if (DC.StartupTime.AddMonths(6) < DateTime.Now)

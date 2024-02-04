@@ -23,81 +23,36 @@ namespace PingCastle.Healthcheck.Rules
             {
                 return 0;
             }
-            var gpo = new Dictionary<GPOInfo, bool>();
+            var gpo = new Dictionary<IGPOReference, string>();
             foreach (GPPRightAssignment right in healthcheckData.GPPRightAssignment)
             {
-                if (string.IsNullOrEmpty(right.GPOId))
-                {
-                    continue;
-                }
-                if (healthcheckData.GPOInfoDic == null || !healthcheckData.GPOInfoDic.ContainsKey(right.GPOId))
-                {
-                    continue;
-                }
-                var refGPO = healthcheckData.GPOInfoDic[right.GPOId];
-                if (refGPO.IsDisabled)
-                {
-                    continue;
-                }
-                if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
-                {
-                    continue;
-                }
                 if (right.Privilege == "SeMachineAccountPrivilege")
                 {
-                    if (right.User == GraphObjectReference.Everyone
-                        || right.User == GraphObjectReference.AuthenticatedUsers
-                        || right.User == GraphObjectReference.Users
-                        || right.User == GraphObjectReference.Anonymous
-                        )
-                    {
-                        Trace.WriteLine("SeMachineAccountPrivilege found in GPO 1 " + right.GPOName);
-                        gpo[refGPO] = true;
-                    }
-                    else
-                    {
-                        Trace.WriteLine("SeMachineAccountPrivilege found in GPO 2 " + right.GPOName);
-                        gpo[refGPO] = false;
-                    }
+                    gpo.Add(right, right.User);
                 }
             }
-            // note: according to https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/add-workstations-to-domain if not GPO sets SeMachineAccountPrivilege it is assigned by DC to authenticated users.
-            if (gpo.Count == 0)
-                return healthcheckData.MachineAccountQuota;
-            var applied = new Dictionary<string, Dictionary<int, bool>>();
-            foreach (var v in gpo.Keys)
+            var o = ApplyGPOPrority2(healthcheckData, gpo);
+
+            bool found = false;
+            foreach (var v in o)
             {
-                for (int i = 0; i < v.AppliedTo.Count; i++)
+                found = true;
+                if (v.Value == GraphObjectReference.Everyone
+                       || v.Value == GraphObjectReference.AuthenticatedUsers
+                       || v.Value == GraphObjectReference.Users
+                       || v.Value == GraphObjectReference.Anonymous
+                       )
                 {
-                    var a = v.AppliedTo[i];
-                    int order = 0;
-                    if (v.AppliedOrder != null && v.AppliedOrder.Count > i)
-                    {
-                        order = v.AppliedOrder[i];
-                    }
-                    if (!applied.ContainsKey(a))
-                        applied[a] = new Dictionary<int, bool>();
-                    applied[a][order] = gpo[v];
-                }
-            }
-            var applied2 = new Dictionary<string, bool>();
-            foreach (var a in applied.Keys)
-            {
-                var min = int.MaxValue;
-                var w = false;
-                foreach (var v in applied[a])
-                {
-                    if (v.Key < min)
-                    {
-                        w = v.Value;
-                    }
-                }
-                applied2[a] = w;
-            }
-            foreach (var v in applied2)
-            {
-                if (v.Value == true)
+                    Trace.WriteLine("Found on " + v.Key.GPOName + " with " + v.Value);
                     return healthcheckData.MachineAccountQuota;
+                }
+            }
+
+            // note: according to https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/add-workstations-to-domain if not GPO sets SeMachineAccountPrivilege it is assigned by DC to authenticated users.
+            if (!found)
+            {
+                Trace.WriteLine("Defined in no GPO so default AD settings");
+                return healthcheckData.MachineAccountQuota;
             }
             return 0;
         }

@@ -4209,6 +4209,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             }
             AddEndTable();
 
+            /*
             AddParagraph("Here are the security checks that have been checked by PingCastle and where no applicable GPO has been found.");
             AddBeginTable("Security settings not found list");
             AddHeaderText("Setting");
@@ -4278,13 +4279,13 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                 }
             }
             AddEndTable();
-
+            */
             if (Report.version >= new Version(2, 8))
             {
                 GenerateSubSection("Audit settings", "auditsettings");
                 AddParagraph(@"Audit settings allow the system to generate logs which are useful to detect intrusions. Here are the settings found in GPO.");
                 AddParagraph("Simple audit events are <a href='https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/01f8e057-f6a8-4d6e-8a00-99bcd241b403'>described here</a> and Advanced audit events are <a href='https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpac/77878370-0712-47cd-997d-b07053429f6d'>described here</a>");
-                AddParagraph("You can get a list of all audit settings with the command line: <code>auditpol.exe /get /category:*</code> (<a href='https://blogs.technet.microsoft.com/askds/2011/03/11/getting-the-effective-audit-policy-in-windows-7-and-2008-r2/'>source</a>)");
+                AddParagraph("You can get a list of all audit settings with the command line: <code>auditpol.exe /get /category:*</code> (<a href='https://techcommunity.microsoft.com/t5/ask-the-directory-services-team/getting-the-effective-audit-policy-in-windows-7-and-2008-r2/ba-p/399010'>source</a>)");
                 AddParagraph("Simple audit settings are located in: Computer Configuration / Policies / Windows Settings / Security Settings / Local Policies / Audit Policy. Simple audit settings are named [Simple Audit].");
                 AddParagraph("Advanced audit settings are located in: Computer Configuration / Policies / Windows Settings / Security Settings / Advanced Audit Policy Configuration. This category is displayed below.");
                 AddBeginTable("Audit settings list");

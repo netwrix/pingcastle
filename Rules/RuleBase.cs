@@ -8,6 +8,7 @@ using PingCastle.Data;
 using PingCastle.Healthcheck;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Resources;
 using System.Text;
@@ -92,7 +93,7 @@ namespace PingCastle.Rules
         {
             string resourceKey;
             resourceKey = RiskId.Replace('-', '_').Replace('$', '_');
-            
+
             Title = ResourceManager.GetString(resourceKey + "_Title");
             Description = ResourceManager.GetString(resourceKey + "_Description");
             TechnicalExplanation = ResourceManager.GetString(resourceKey + "_TechnicalExplanation");
@@ -230,6 +231,112 @@ namespace PingCastle.Rules
         public string GetComputationModelString()
         {
             return RuleComputationAttribute.GetComputationModelString(RuleComputation);
+        }
+
+        // based on GPO Data, filter only GPO that are applied
+        protected Dictionary<IGPOReference, X> ApplyGPOPrority2<X>(HealthcheckData healthcheckData, Dictionary<IGPOReference, X> GPOData)
+        {
+            // get GPO applied
+            var output = ApplyGPOPrority(healthcheckData, GPOData);
+
+            // remove the application to the GPO output (for simplified analysis)
+            var output2 = new Dictionary<IGPOReference, X>();
+            foreach (var entry in output)
+            { 
+                if (!output2.ContainsKey(entry.Value.Key))
+                {
+                    output2[entry.Value.Key] = entry.Value.Value;
+                }
+            }
+            return output2;
+        }
+
+        // based on GPO Data, filter only GPO that are applied
+        // most detailled ouput
+        protected Dictionary<string, KeyValuePair<IGPOReference, X>> ApplyGPOPrority<X>(HealthcheckData healthcheckData, Dictionary<IGPOReference, X> GPOData)
+        {
+            var GPOData2 = new Dictionary<GPOInfo, X>();
+            // step 1: skip GPO not applied or disabled
+            Trace.WriteLine("Step 1: GPO matches");
+            foreach (var entry in GPOData)
+            {
+                if (healthcheckData.GPOInfoDic == null || !healthcheckData.GPOInfoDic.ContainsKey(entry.Key.GPOId))
+                {
+                    continue;
+                }
+                var refGPO = healthcheckData.GPOInfoDic[entry.Key.GPOId];
+                if (refGPO.IsDisabled)
+                {
+                    continue;
+                }
+                if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
+                {
+                    continue;
+                }
+                Trace.WriteLine("Step 1: " + refGPO.GPOName);
+                GPOData2.Add(refGPO, entry.Value);
+            }
+            Trace.WriteLine("Step 1: dump");
+            foreach (var a in GPOData2)
+            {
+                Trace.WriteLine("Step 1: GPO " + a.Key.GPOName);
+                foreach (var b in a.Key.AppliedTo)
+                {
+                    Trace.WriteLine("Step 1:       applied to : " + b);
+                }
+            }
+            // step2: project to the OU where the GPO is applied
+            Trace.WriteLine("Step 2: projection");
+            var applied = new Dictionary<string, Dictionary<int, KeyValuePair<IGPOReference, X>>>();
+            foreach (var v in GPOData2.Keys)
+            {
+                for (int i = 0; i < v.AppliedTo.Count; i++)
+                {
+                    var a = v.AppliedTo[i];
+                    int order = 0;
+                    if (v.AppliedOrder != null && v.AppliedOrder.Count > i)
+                    {
+                        order = v.AppliedOrder[i];
+                    }
+                    if (!applied.ContainsKey(a))
+                        applied[a] = new Dictionary<int, KeyValuePair<IGPOReference, X>>();
+                    applied[a][order] = new KeyValuePair<IGPOReference, X>(v, GPOData2[v]);
+                }
+            }
+            foreach (var a in applied)
+            {
+                Trace.WriteLine("Step 2: OU " + a.Key);
+                foreach(var b in a.Value)
+                {
+                    Trace.WriteLine("Step 2:       Order : " + b.Key + " GPO: " + b.Value.Key.GPOName);
+                }
+            }
+
+            // step3: keep only the GPO with the most priority
+            Trace.WriteLine("Step 3: projection");
+            var applied2 = new Dictionary<string, KeyValuePair<IGPOReference, X>>();
+            foreach (var a in applied.Keys)
+            {
+                var max = 0;
+                object w = null;
+                foreach (var v in applied[a])
+                {
+                    if (v.Key > max)
+                    {
+                        max = v.Key;
+                        w = v.Value;
+                    }
+                }
+                if (w != null)
+                {
+                    applied2[a] = (KeyValuePair<IGPOReference, X>)w;
+                }
+            }
+            foreach (var i in applied2)
+            {
+                Trace.WriteLine("Step 3: " + i.Key + " gpo " + i.Value.Key.GPOName);
+            }
+            return applied2;
         }
     }
 }

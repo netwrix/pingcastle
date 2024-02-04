@@ -5296,6 +5296,7 @@ namespace PingCastle.Healthcheck
                     guid = Guid.Parse("12345678-1234-ABCD-EF00-0123456789AB"), 
                     pipe = "spoolss",
                     major = 1,
+                    minor = 0,
                     functions = new Dictionary<string, int> { { "RpcRemoteFindFirstPrinterChangeNotification", 62 },{ "RpcRemoteFindFirstPrinterChangeNotificationEx", 65 }}
                 },
             };

@@ -887,7 +887,8 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
   <data name="S_PrimaryGroup_Solution" xml:space="preserve">
     <value>Unless strongly justified, change the primary group id to its default: 513 or 514 for users, 516 or 521 for domain controllers, 514 or 515 for computers. The primary group can be edited in a friendly manner by editing the account with the "Active Directory Users and Computers" and after selecting the "Member Of" tab, "set primary group".
     You can use the following script to list Users with a primary group id different from domain users:
-    &lt;i&gt;Get-ADUser -Filter * -Properties PrimaryGroup | Where-Object { $_.PrimaryGroup -ne (Get-ADGroup -Identity "Domain Users").DistinguishedName } | Select-Object UserPrincipalName,PrimaryGroup&lt;/i&gt;</value>
+    &lt;i&gt;$DomainUsersSid = New-Object System.Security.Principal.SecurityIdentifier ([System.Security.Principal.WellKnownSidType]::AccountDomainUsersSid,(Get-ADDomain).DomainSID)&lt;br&gt;
+      Get-ADUser -Filter * -Properties PrimaryGroup | Where-Object { $_.PrimaryGroup -ne (Get-ADGroup -Filter {SID -eq $DomainUsersSid} ).DistinguishedName } | Select-Object UserPrincipalName,PrimaryGroup&lt;/i&gt;</value>
   </data>
   <data name="S_PrimaryGroup_Rationale" xml:space="preserve">
     <value>Presence of wrong primary group for users: {count}</value>

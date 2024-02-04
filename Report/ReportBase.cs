@@ -1189,6 +1189,7 @@ namespace PingCastle.Report
                     string w;
                     switch (release)
                     {
+                        case 22631: w = "Windows 11 23H2"; break;
                         case 22621: w = "Windows 11 22H2"; break;
                         case 22000: w = "Windows 11 21H2"; break;
                         case 22449:
@@ -1315,7 +1316,7 @@ namespace PingCastle.Report
                 case "lsaanonymousnamelookup":
                     return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-access-allow-anonymous-sidname-translation"">Allow anonymous SID/Name translation</a> (<a href=""https://msdn.microsoft.com/en-us/library/hh128296.aspx"">Technical details</a>)";
                 case "everyoneincludesanonymous":
-                    return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-access-let-everyone-permissions-apply-to-anonymous-users"">Let Everyone permissions apply to anonymous users</a> (<a href=""https://support.microsoft.com/en-us/kb/278259"">Technical details</a>)";
+                    return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-access-let-everyone-permissions-apply-to-anonymous-users"">Let Everyone permissions apply to anonymous users</a>";
                 case "limitblankpassworduse":
                     return @"<a href=""https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/accounts-limit-local-account-use-of-blank-passwords-to-console-logon-only"">Limit local account use of blank passwords to console logon only</a> (<a href=""https://technet.microsoft.com/en-us/library/jj852174.aspx"">Technical details</a>)";
                 case "forceguest":
@@ -1350,8 +1351,11 @@ namespace PingCastle.Report
                     return @"<a href=""https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-kerberos"">Kerberos client support for claims, compound authentication and Kerberos armoring</a>";
                 case "cbacandarmorlevel":
                     return @"<a href=""https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/operations/ad-fs-compound-authentication-and-ad-ds-claims"">KDC support for claims compound authentication and Kerberos armoring</a>";
+                case "msv1_0\\restrictsendingntlmtraffic":
+                    return @"<a href=""https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-security-restrict-ntlm-outgoing-ntlm-traffic-to-remote-servers"">Network security: Restrict NTLM: Outgoing NTLM traffic to remote servers</a>";
+                default:
+                    return property;
             }
-            return property;
         }
 
         protected void AddLsaSettingsValue(string property, int value)
@@ -1417,6 +1421,20 @@ namespace PingCastle.Report
                     else
                     {
                         Add(@"<span class=""ticked"">Enabled</span>");
+                    }
+                    break;
+                case "msv1_0\\restrictsendingntlmtraffic":
+                    if (value == 0)
+                    {
+                        Add(@"<span class=""unticked"">Allow All</span>");
+                    }
+                    else if (value == 1)
+                    {
+                        Add(@"<span class=""unticked"">Audit</span> (Deny All is not enabled)");
+                    }
+                    else if (value == 2)
+                    {
+                        Add(@"<span class=""ticked"">Deny All</span>");
                     }
                     break;
                 case "supportedencryptiontypes":
@@ -1615,7 +1633,7 @@ namespace PingCastle.Report
                     tooltip = tooltips[i];
                 }
 
-                AddPath(radius, from, to, null, tooltip : tooltip, fill: GetColor(index, vals.Count));
+                AddPath(radius, from, to, null, tooltip: tooltip, fill: GetColor(index, vals.Count));
                 t += val;
             }
             if (t != total)

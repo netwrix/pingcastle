@@ -24,6 +24,7 @@ namespace PingCastle.Report
         {
             Report = report;
             _license = license;
+            Brand(license);
             return GenerateReportFile(filename);
         }
 
@@ -1293,6 +1294,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddEndTable();
                 AddEndModal();
 
+                AddParagraph("This is the analysis of guests or external members per external tenants. Guests are allowed to connect and may be able to list the membership of all groups, thus reconstructing the list of all users.");
                 Add("<div class='foreigntenantcontainer'>");
                 AddBeginTable("Foreign Tenants");
                 AddHeaderText("Name");

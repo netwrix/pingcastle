@@ -47,9 +47,9 @@ namespace PingCastle.Exports
                     header.AddRange(hcprop);
                     header.Add("OperatingSystem");
                     header.Add("OperatingSystemVersion");
-                    header.Add("IsCluster");
                     header.Add("PC OS 1");
                     header.Add("PC OS 2");
+                    header.Add("IsCluster");
                     header.Add("LAPS last update (legacy LAPS)");
                     header.Add("LAPS last update (Ms LAPS)");
 
@@ -61,6 +61,15 @@ namespace PingCastle.Exports
                         {
                             var d = new AddData();
                             HealthcheckAnalyzer.ProcessAccountData(d, x, false, default(DateTime));
+                            if (lapsAnalyzer.LegacyLAPSIntId != 0 && x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.LegacyLAPSIntId))
+                            {
+                                d.AddWithoutDetail("LAPS");
+                            }
+                            if (lapsAnalyzer.MsLAPSIntId != 0 && x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSIntId))
+                            {
+                                d.AddWithoutDetail("LAPSNew");
+                            }
+
                             if ((++export % 500) == 0)
                             {
                                 DisplayAdvancement("Exported: " + export);
@@ -143,7 +152,9 @@ namespace PingCastle.Exports
                         };
 
                     DisplayAdvancement("Starting");
-                    adws.Enumerate(domainInfo.DefaultNamingContext, HealthcheckAnalyzer.computerfilter, HealthcheckAnalyzer.computerProperties, callback, "SubTree");
+                    var attributes = new List<string> (HealthcheckAnalyzer.computerProperties);
+                    attributes.Add("replPropertyMetaData");
+                    adws.Enumerate(domainInfo.DefaultNamingContext, HealthcheckAnalyzer.computerfilter, attributes.ToArray(), callback, "SubTree");
                     DisplayAdvancement("Done");
                 }
             }

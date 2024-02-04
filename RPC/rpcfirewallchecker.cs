@@ -97,30 +97,6 @@ namespace PingCastle.RPC
             return checker.CheckOpNum(opnum, server);
         }
 
-        public static bool CheckElfrOpenBELW(string server)
-        {
-            var expectedError = CheckRPCOpnum(Guid.Parse("82273fdc-e32a-18c3-3f78-827929dc23ea"), "eventlog", 0, 0, 17, server);
-            if (expectedError == 1783)
-                return true;
-            return false;
-        }
-
-        public static bool CheckEfsRpcAddUsersToFile(string server)
-        {
-            var expectedError = CheckRPCOpnum(Guid.Parse("df1941c5-fe89-4e79-bf10-463657acf44d"), "netlogon", 1, 0, 9, server);
-            if (expectedError == 1783)
-                return true;
-            return false;
-        }
-
-        public static bool CheckRpcRemoteFindFirstPrinterChangeNotification(string server)
-        {
-            var expectedError = CheckRPCOpnum(Guid.Parse("12345678-1234-abcd-ef00-0123456789ab"), "spoolss", 1, 0, 9, server);
-            if (expectedError == 1783)
-                return true;
-            return false;
-        }
-
         public static List<string> TestFunctions(string server, Guid interfaceId, string pipe, ushort majorVersion, ushort minorVersion, Dictionary<string, int> functionsToTest)
         {
             List<string> output = new List<string>();

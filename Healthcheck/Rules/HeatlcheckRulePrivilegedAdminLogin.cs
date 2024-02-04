@@ -71,7 +71,7 @@ namespace PingCastle.Healthcheck.Rules
                     Trace.WriteLine("P-AdminLogin: computation value: " + minDays);
                     return minDays;
                 }
-                return 0;
+                return 3 * threshold;
             }
 
             Trace.WriteLine("P-AdminLogin: fallback to default computation model");

@@ -43,6 +43,13 @@ namespace PingCastle.Healthcheck.Rules
                         // and https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information
                         switch (release)
                         {
+                            case 22631:
+                                if (healthcheckData.GenerationDate > new DateTime(2026, 11, 10))
+                                {
+                                    AddRawDetail("Windows 11 23H2", osVersion.data.Number, osVersion.data.NumberActive);
+                                    totalActive += osVersion.data.NumberActive;
+                                }
+                                break;
                             case 22621:
                                 if (healthcheckData.GenerationDate > new DateTime(2025, 10, 14))
                                 {

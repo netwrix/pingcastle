@@ -316,7 +316,7 @@ namespace PingCastle.ADWS
         public DateTime WhenCreated { get; set; }
         [ADAttributeAttribute("whenChanged", ADAttributeValueKind.DateValue2)]
         public DateTime WhenChanged { get; set; }
-        
+
         public List<string> GetApplicableGPO()
         {
             var output = new List<string>();
@@ -424,7 +424,7 @@ namespace PingCastle.ADWS
         }
 
         // see https://msdn.microsoft.com/en-us/library/cc223786.aspx
-        private static List<HealthCheckTrustDomainInfoData> ConvertByteToTrustInfo(byte[] data)
+        internal static List<HealthCheckTrustDomainInfoData> ConvertByteToTrustInfo(byte[] data)
         {
             List<HealthCheckTrustDomainInfoData> output = new List<HealthCheckTrustDomainInfoData>();
             Trace.WriteLine("Beginning to analyze a forestinfo data " + Convert.ToBase64String(data));
@@ -472,6 +472,33 @@ namespace PingCastle.ADWS
                     domaininfoc.NetbiosName = NetbiosName;
                     domaininfoc.Sid = sid.Value;
                     output.Add(domaininfoc);
+                }
+                else if (recordType == 4)
+                {
+                    /*Trace.WriteLine("RecordType 4");
+                    int tempPointer = pointer + recordSize;
+                    int binaryDataLen = BitConverter.ToInt32(data, tempPointer);
+                    tempPointer += 4;
+                    int subRecordType = BitConverter.ToInt32(data, tempPointer);
+                    tempPointer += 4;
+                    int sidLen = data[ tempPointer];
+                    tempPointer += 1;
+                    if (sidLen > 0)
+                    {
+                        SecurityIdentifier sid = new SecurityIdentifier(data, tempPointer);
+                        tempPointer += sidLen;
+                    }
+                    int DnsNameLen = BitConverter.ToInt32(data, tempPointer);
+                    tempPointer += 4;
+                    string DnsName = UnicodeEncoding.UTF8.GetString(data, tempPointer, DnsNameLen);
+                    tempPointer += DnsNameLen;
+                    int NetbiosNameLen = BitConverter.ToInt32(data, tempPointer);
+                    tempPointer += 4;
+                    string NetbiosName = UnicodeEncoding.UTF8.GetString(data, tempPointer, NetbiosNameLen);
+                    tempPointer += NetbiosNameLen;*/
+                }
+                else
+                {
                 }
                 pointer += 4 + recordLen;
             }

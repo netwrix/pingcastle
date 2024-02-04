@@ -5,6 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.Rules;
+using System.Collections.Generic;
 
 namespace PingCastle.Healthcheck.Rules
 {
@@ -18,24 +19,12 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            bool found = false;
+            var gpo = new Dictionary<IGPOReference, int>();
+            
             if (healthcheckData.GPOLsaPolicy != null)
             {
                 foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
                 {
-                    if (healthcheckData.GPOInfoDic == null || !healthcheckData.GPOInfoDic.ContainsKey(policy.GPOId))
-                    {
-                        continue;
-                    }
-                    var refGPO = healthcheckData.GPOInfoDic[policy.GPOId];
-                    if (refGPO.IsDisabled)
-                    {
-                        continue;
-                    }
-                    if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
-                    {
-                        continue;
-                    }
                     // The default level value for LmCompatibilityLevel for each version of Windows is as follows:
                     // Windows XP: 0 Windows 2003: 2 Vista/2008 3 Win7/2008 R2 3
                     // DC is not 5
@@ -43,15 +32,24 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         if (property.Property == "LmCompatibilityLevel")
                         {
-                            found = true;
-                            if (property.Value < 5)
-                            {
-                                AddRawDetail(policy.GPOName, property.Value);
-                            }
+                            gpo.Add(policy, property.Value);
                         }
                     }
                 }
             }
+
+            var o = ApplyGPOPrority2(healthcheckData, gpo);
+           
+            bool found = false;
+            foreach (var v in o)
+            {
+                found = true;
+                if (v.Value < 5)
+                {
+                    AddRawDetail(v.Key.GPOName, v.Value);
+                }
+            }
+            
             if (!found)
             {
                 AddRawDetail("Windows default without an active GPO", "3");

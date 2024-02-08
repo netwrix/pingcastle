@@ -274,7 +274,7 @@ namespace PingCastle.Rules
                     continue;
                 }
                 Trace.WriteLine("Step 1: " + refGPO.GPOName);
-                GPOData2.Add(refGPO, entry.Value);
+                GPOData2[refGPO] = entry.Value;
             }
             Trace.WriteLine("Step 1: dump");
             foreach (var a in GPOData2)

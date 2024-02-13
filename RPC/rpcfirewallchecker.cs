@@ -11,41 +11,37 @@ namespace PingCastle.RPC
 {
     public class RpcFirewallChecker : rpcapi
     {
-        private static byte[] MIDL_ProcFormatStringx86;
-
-        private static byte[] MIDL_ProcFormatStringx64;
-
-        private static byte[] MIDL_TypeFormatStringx64;
-
-        private static byte[] MIDL_TypeFormatStringx86;
-
+        
         int maxOpNum;
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         private RpcFirewallChecker(Guid interfaceId, string pipe, ushort majorVersion, ushort minorVersion, int maxOpNum)
         {
+            byte[] MIDL_ProcFormatString;
+            byte[] MIDL_TypeFormatString;
+
             this.maxOpNum = maxOpNum;
             if (IntPtr.Size == 8)
             {
-                MIDL_ProcFormatStringx64 = new byte[30 * maxOpNum + 1];
+                MIDL_ProcFormatString = new byte[30 * maxOpNum + 1];
                 for (byte i = 0; i < maxOpNum; i++)
                 {
                     var v = new byte[] { 0x00, 0x48, 0x00, 0x00, 0x00, 0x00, i, 0x00, 0x08, 0x00, 0x32, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x0a, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-                    Array.Copy(v, 0, MIDL_ProcFormatStringx64, 30 * i, v.Length);
+                    Array.Copy(v, 0, MIDL_ProcFormatString, 30 * i, v.Length);
                 }
-                MIDL_TypeFormatStringx64 = new byte[3];
-                InitializeStub(interfaceId, MIDL_ProcFormatStringx64, MIDL_TypeFormatStringx64, "\\pipe\\" + pipe, majorVersion, minorVersion);
+                MIDL_TypeFormatString = new byte[3];
+                InitializeStub(interfaceId, MIDL_ProcFormatString, MIDL_TypeFormatString, "\\pipe\\" + pipe, majorVersion, minorVersion);
             }
             else
             {
-                MIDL_ProcFormatStringx86 = new byte[28 * maxOpNum + 1];
+                MIDL_ProcFormatString = new byte[28 * maxOpNum + 1];
                 for (byte i = 0; i < maxOpNum; i++)
                 {
                     var v = new byte[] { 0x00, 0x48, 0x00, 0x00, 0x00, 0x00, i, 0x00, 0x04, 0x00, 0x32, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x08, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-                    Array.Copy(v, 0, MIDL_ProcFormatStringx86, 28 * i, v.Length);
+                    Array.Copy(v, 0, MIDL_ProcFormatString, 28 * i, v.Length);
                 }
-                MIDL_TypeFormatStringx86 = new byte[3];
-                InitializeStub(interfaceId, MIDL_ProcFormatStringx86, MIDL_TypeFormatStringx86, "\\pipe\\" + pipe, majorVersion, minorVersion);
+                MIDL_TypeFormatString = new byte[3];
+                InitializeStub(interfaceId, MIDL_ProcFormatString, MIDL_TypeFormatString, "\\pipe\\" + pipe, majorVersion, minorVersion);
             }
         }
 

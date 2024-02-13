@@ -23,12 +23,14 @@ namespace PingCastle.Healthcheck.Rules
             {
                 return 0;
             }
-            var gpo = new Dictionary<IGPOReference, string>();
+            var gpo = new Dictionary<IGPOReference, List<string>>();
             foreach (GPPRightAssignment right in healthcheckData.GPPRightAssignment)
             {
                 if (right.Privilege == "SeMachineAccountPrivilege")
                 {
-                    gpo.Add(right, right.User);
+                    if (!gpo.ContainsKey(right))
+                        gpo[right] = new List<string>();
+                    gpo[right].Add(right.User);
                 }
             }
             var o = ApplyGPOPrority2(healthcheckData, gpo);
@@ -37,14 +39,17 @@ namespace PingCastle.Healthcheck.Rules
             foreach (var v in o)
             {
                 found = true;
-                if (v.Value == GraphObjectReference.Everyone
-                       || v.Value == GraphObjectReference.AuthenticatedUsers
-                       || v.Value == GraphObjectReference.Users
-                       || v.Value == GraphObjectReference.Anonymous
-                       )
+                foreach (var user in v.Value)
                 {
-                    Trace.WriteLine("Found on " + v.Key.GPOName + " with " + v.Value);
-                    return healthcheckData.MachineAccountQuota;
+                    if (user == GraphObjectReference.Everyone
+                           || user == GraphObjectReference.AuthenticatedUsers
+                           || user == GraphObjectReference.Users
+                           || user == GraphObjectReference.Anonymous
+                           )
+                    {
+                        Trace.WriteLine("Found on " + v.Key.GPOName + " with " + v.Value);
+                        return healthcheckData.MachineAccountQuota;
+                    }
                 }
             }
 

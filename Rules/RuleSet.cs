@@ -7,7 +7,9 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 
 namespace PingCastle.Rules
@@ -15,6 +17,7 @@ namespace PingCastle.Rules
     public class RuleSet<T> where T : IRiskEvaluation
     {
         private static Dictionary<string, RuleBase<T>> _cachedRules = null;
+        private static List<string> _excludedRuleIds = new List<string>();
 
         public IInfrastructureSettings InfrastructureSettings { get; set; }
 
@@ -47,6 +50,11 @@ namespace PingCastle.Rules
                     try
                     {
                         var a = (RuleBase<T>)Activator.CreateInstance(type);
+                        if (_excludedRuleIds.Contains(a.RiskId))
+                        {
+                            Trace.WriteLine("Excluding " + a.RiskId + " from ruleset");
+                            continue;
+                        }
                         rules.Add(a.RiskId, a);
                     }
                     catch (Exception)
@@ -206,6 +214,12 @@ namespace PingCastle.Rules
             data.GlobalScore = Math.Max(data.StaleObjectsScore,
                                             Math.Max(data.PrivilegiedGroupScore,
                                             Math.Max(data.TrustScore, data.AnomalyScore)));
+        }
+
+        public static void ExcludeRules(List<string> ruleIds)
+        {
+            _excludedRuleIds = ruleIds;
+            ReloadRules();
         }
 
         public static string GetRuleDescription(string ruleid)

@@ -54,6 +54,8 @@ namespace PingCastle
 
         public string InitForExportAsGuest { get; set; }
 
+        public List<string> excludedRules = new List<string>();
+
         public string sendXmlTo;
         public string sendHtmlTo;
         public string sendAllTo;

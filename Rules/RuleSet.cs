@@ -17,6 +17,7 @@ namespace PingCastle.Rules
     public class RuleSet<T> where T : IRiskEvaluation
     {
         private static Dictionary<string, RuleBase<T>> _cachedRules = null;
+        private static Dictionary<string, RuleBase<T>> _cachedRulesExcluded = null;
         private static List<string> _excludedRuleIds = new List<string>();
 
         public IInfrastructureSettings InfrastructureSettings { get; set; }
@@ -33,13 +34,30 @@ namespace PingCastle.Rules
             }
         }
 
+        public static IEnumerable<RuleBase<T>> ExcludedRules
+        {
+            get
+            {
+                if (_cachedRulesExcluded == null || (_cachedRulesExcluded.Count == 0 && _excludedRuleIds.Count > 0))
+                {
+                    ReloadRules();
+                }
+                return _cachedRulesExcluded.Values;
+            }
+        }
+
         public static void ReloadRules()
         {
             _cachedRules = new Dictionary<string, RuleBase<T>>();
             LoadRules(_cachedRules);
         }
-
         public static void LoadRules(Dictionary<string, RuleBase<T>> rules)
+        {
+            _cachedRulesExcluded = new Dictionary<string, RuleBase<T>>();
+            LoadRules(rules, _cachedRulesExcluded);
+        }
+
+        public static void LoadRules(Dictionary<string, RuleBase<T>> rules, Dictionary<string, RuleBase<T>> excludedRules)
         {
             // important: to work with W2000, we cannot use GetType because it will instanciate .Net 3.0 class then load the missing assembly
             // the trick here is to check only the exported type and put as internal the class using .Net 3.0 functionalities
@@ -53,9 +71,12 @@ namespace PingCastle.Rules
                         if (_excludedRuleIds.Contains(a.RiskId))
                         {
                             Trace.WriteLine("Excluding " + a.RiskId + " from ruleset");
-                            continue;
+                            excludedRules.Add(a.RiskId, a);
                         }
-                        rules.Add(a.RiskId, a);
+                        else
+                        {
+                            rules.Add(a.RiskId, a);
+                        }
                     }
                     catch (Exception)
                     {
@@ -242,7 +263,6 @@ namespace PingCastle.Rules
             if (_cachedRules.ContainsKey(ruleid))
                 return _cachedRules[ruleid];
             return null;
-
         }
     }
 }

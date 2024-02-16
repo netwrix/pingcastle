@@ -1197,6 +1197,7 @@ namespace PingCastle
             Console.WriteLine("");
             Console.WriteLine("    --datefile        : insert the date into the report filename");
             Console.WriteLine("    --encrypt         : use an RSA key stored in the .config file to crypt the content of the xml report");
+            Console.WriteLine("    --exclude <riskids> : comma delimited list of risk ids to exclude from the health check");
             Console.WriteLine("    --level <level>   : specify the amount of data found in the xml file");
             Console.WriteLine("                      : level: Full, Normal, Light");
             Console.WriteLine("    --no-enum-limit   : remove the max 100 users limitation in html report");

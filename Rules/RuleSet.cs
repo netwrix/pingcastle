@@ -29,11 +29,11 @@ namespace PingCastle.Rules
                 {
                     ReloadRules();
                 }
-                return _cachedRules.Values;
+                return _cachedRules.Values.Where(r => !_excludedRuleIds.Contains(r.RiskId));
             }
         }
 
-        public static IEnumerable<RuleBase<T>> IncludedRules
+        public static IEnumerable<RuleBase<T>> AllRules
         {
             get
             {
@@ -41,7 +41,7 @@ namespace PingCastle.Rules
                 {
                     ReloadRules();
                 }
-                return _cachedRules.Values.Where(r => !_excludedRuleIds.Contains(r.RiskId));
+                return _cachedRules.Values;
             }
         }
 

@@ -45,7 +45,7 @@ namespace PingCastle
         UploadAllRports,
         FakeReport,
         CloudHealthCheck,
-        ExportRulesXml
+        ExportRulesXml,
     }
 
     [LicenseProvider(typeof(PingCastle.ADHealthCheckingLicenseProvider))]

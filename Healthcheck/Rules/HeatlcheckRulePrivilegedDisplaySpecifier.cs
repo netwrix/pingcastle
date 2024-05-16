@@ -29,7 +29,7 @@ namespace PingCastle.Healthcheck.Rules
                     var e = entry.AdminContextMenu.Split(',');
                     if (e.Length < 3)
                         continue;
-                    var path = e[2];
+                    var path = e[2].Trim();
                     if (!path.Contains("\\\\"))
                         continue;
 

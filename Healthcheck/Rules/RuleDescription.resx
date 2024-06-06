@@ -3985,7 +3985,8 @@ https://www.securityinsider-wavestone.com/2020/01/taking-over-windows-workstatio
   </data>
   <data name="A_CertTempAnyone_Documentation" xml:space="preserve">
     <value>https://posts.specterops.io/certified-pre-owned-d95910965cd2
-https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-directory-environment/</value>
+https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-directory-environment/
+https://github.com/ly4k/Certipy</value>
   </data>
   <data name="A_CertTempAnyone_Rationale" xml:space="preserve">
     <value>At least one certificate template can be modified by everyone [{count}]</value>
@@ -4016,7 +4017,8 @@ Note: the program regards the group "Domain Computers" like "Everyone" if ms-DS-
   </data>
   <data name="A_CertTempAnyPurpose_Documentation" xml:space="preserve">
     <value>https://posts.specterops.io/certified-pre-owned-d95910965cd2
-https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-directory-environment/</value>
+https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-directory-environment/
+https://github.com/ly4k/Certipy</value>
   </data>
   <data name="A_CertTempAnyPurpose_Rationale" xml:space="preserve">
     <value>At least one certificate template can be requested by everyone having any purpose [{count}]</value>
@@ -4043,7 +4045,8 @@ https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-a
   </data>
   <data name="A_CertTempAgent_Documentation" xml:space="preserve">
     <value>https://posts.specterops.io/certified-pre-owned-d95910965cd2
-https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-directory-environment/</value>
+https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-directory-environment/
+https://github.com/ly4k/Certipy</value>
   </data>
   <data name="A_CertTempAgent_Rationale" xml:space="preserve">
     <value>At least one certificate template can be used to issue agent certificate to everyone [{count}]</value>
@@ -4070,7 +4073,8 @@ https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-a
   </data>
   <data name="A_CertTempCustomSubject_Documentation" xml:space="preserve">
     <value>https://posts.specterops.io/certified-pre-owned-d95910965cd2
-https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-directory-environment/</value>
+https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-directory-environment/
+https://github.com/ly4k/Certipy</value>
   </data>
   <data name="A_CertTempCustomSubject_Rationale" xml:space="preserve">
     <value>At least one certificate template used for authentication can have its subject modified when being used [{count}]</value>

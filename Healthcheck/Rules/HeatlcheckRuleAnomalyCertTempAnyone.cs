@@ -13,7 +13,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("A-CertTempAnyone", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
-    [RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 30)]
     [RuleIntroducedIn(2, 9, 3)]
     [RuleDurANSSI(1, "vuln_adcs_template_auth_enroll_with_name", "Dangerous enrollment permission on authentication certificate templates")]
     [RuleMitreAttackTechnique(MitreAttackTechnique.StealorForgeKerberosTickets)]

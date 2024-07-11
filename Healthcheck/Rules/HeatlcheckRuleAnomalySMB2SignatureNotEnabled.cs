@@ -1,4 +1,4 @@
-﻿//
+﻿	//
 // Copyright (c) Ping Castle. All rights reserved.
 // https://www.pingcastle.com
 //
@@ -9,7 +9,7 @@ using PingCastle.Rules;
 namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("A-SMB2SignatureNotEnabled", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
-    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
     //[RuleBSI("M 2.412")]
     [RuleCERTFR("CERTFR-2015-ACT-021", "SECTION00010000000000000000")]
     [RuleIntroducedIn(2, 5)]

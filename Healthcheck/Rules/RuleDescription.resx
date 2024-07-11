@@ -121,7 +121,7 @@
     <value>The purpose is to ensure that the SMB version 2 protocol has signing enabled when communicating with domain controllers</value>
   </data>
   <data name="A_SMB2SignatureNotEnabled_Solution" xml:space="preserve">
-    <value>Enable the group policy "Digitally sign communications (if client agrees)" or check for any policy, which may alter the server settings. See the &lt;a href="https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/smbv1-microsoft-network-server-digitally-sign-communications-if-client-agrees"&gt;official documentation&lt;/a&gt; for more information.</value>
+    <value>Enable the group policy "Digitally sign communications (if client agrees)" or check for any policy, which may alter the server settings. Check that the performance impact is within reasonable limits. See the &lt;a href="https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/smbv1-microsoft-network-server-digitally-sign-communications-if-client-agrees"&gt;official documentation&lt;/a&gt; for more information.</value>
   </data>
   <data name="A_SMB2SignatureNotEnabled_Rationale" xml:space="preserve">
     <value>{count} Domain Controller(s) have been found, where SMB signing is not enabled</value>
@@ -133,7 +133,7 @@
     <value>The purpose is to ensure that the SMB version 2 protocol has signing enforced when communicating with domain controllers</value>
   </data>
   <data name="A_SMB2SignatureNotRequired_Solution" xml:space="preserve">
-    <value>Enable the group policy "Digitally sign communications (always)" or check for any policy which may alter the server settings. See the &lt;a href="https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/microsoft-network-server-digitally-sign-communications-always"&gt;official documentation&lt;/a&gt; for more information.</value>
+    <value>Enable the group policy "Digitally sign communications (always)" or check for any policy which may alter the server settings. Check that the performance impact is within reasonable limits. See the &lt;a href="https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/microsoft-network-server-digitally-sign-communications-always"&gt;official documentation&lt;/a&gt; for more information.</value>
   </data>
   <data name="A_SMB2SignatureNotRequired_Rationale" xml:space="preserve">
     <value>{count} Domain Controller(s) have been found where SMB signing is not enforced</value>
@@ -1593,16 +1593,24 @@ https://github.com/misterch0c/shadowbroker/tree/master/windows/exploits </value>
     <value>Check if the account has been migrated from a domain which doesn't exist anymore</value>
   </data>
   <data name="A_SMB2SignatureNotEnabled_TechnicalExplanation" xml:space="preserve">
-    <value>Python responder is a tool used to compromise a domain by listening for SMB connections and injecting rogue data into the communications at the network level. SMB v1 does not provide a mechanism to enforce integrity and thus is compromised easily. SMB v2 (and subsequent version SMB v3) provides a way to guarantee the integrity of the network communication via a signature of each packet. By establishing a SMB v2 dialog with domain controllers, PingCastle checks the signature capability by looking at the SMB options provided by the server.</value>
+    <value>If SMB signing is not required on domain controllers, it can lead to several security risks and potential problems like Man-in-the-Middle (MitM) or relaying attacks like e.g. the so called RemotePotato0. An often used attack tool is Python Responder, which can be used to compromise a domain by listening for SMB connections, injecting rogue data into the communications and relaying it to a different system.
+SMB v1 does not provide a mechanism to enforce integrity and thus is compromised easily. SMB v2 (and subsequent version SMB v3) provides a way to guarantee the integrity of the network communication via a signature of each packet. By establishing a SMB v2 dialog with domain controllers, PingCastle checks the signature capability by looking at the SMB options provided by the server.</value>
   </data>
   <data name="A_SMB2SignatureNotRequired_TechnicalExplanation" xml:space="preserve">
-    <value>Python responder is a tool used to compromise a domain by listening for SMB connections and injecting rogue data into the communications at the network level. SMB v1 does not provide a mechanism to enforce integrity and thus is compromised easily. SMB v2 (and subsequent version SMB v3) provides a way to guarantee the integrity of the network communication via a signature of each packet. By establishing a SMB v2 dialog with domain controllers, PingCastle checks the signature capability by looking at the SMB options provided by the server.</value>
+    <value>If SMB signing is not required on domain controllers, it can lead to several security risks and potential problems like Man-in-the-Middle (MitM) or relaying attacks like e.g. the so called RemotePotato0. An often used attack tool is Python Responder, which can be used to compromise a domain by listening for SMB connections, injecting rogue data into the communications and relaying it to a different system.
+SMB v1 does not provide a mechanism to enforce integrity and thus is compromised easily. SMB v2 (and subsequent version SMB v3) provides a way to guarantee the integrity of the network communication via a signature of each packet. By establishing a SMB v2 dialog with domain controllers, PingCastle checks the signature capability by looking at the SMB options provided by the server.</value>
   </data>
   <data name="A_SMB2SignatureNotEnabled_Documentation" xml:space="preserve">
-    <value>https://msdn.microsoft.com/en-us/library/cc246675.aspx</value>
+    <value>https://support.microsoft.com/en-us/topic/kb5005413-mitigating-ntlm-relay-attacks-on-active-directory-certificate-services-ad-cs-3612b773-4043-4aa9-b23d-b87910cd3429
+https://www.sentinelone.com/labs/relaying-potatoes-another-unexpected-privilege-escalation-vulnerability-in-windows-rpc-protocol/
+https://trustedsec.com/blog/a-comprehensive-guide-on-relaying-anno-2022
+https://msdn.microsoft.com/en-us/library/cc246675.aspx</value>
   </data>
   <data name="A_SMB2SignatureNotRequired_Documentation" xml:space="preserve">
-    <value>https://msdn.microsoft.com/en-us/library/cc246675.aspx</value>
+    <value>https://support.microsoft.com/en-us/topic/kb5005413-mitigating-ntlm-relay-attacks-on-active-directory-certificate-services-ad-cs-3612b773-4043-4aa9-b23d-b87910cd3429
+https://www.sentinelone.com/labs/relaying-potatoes-another-unexpected-privilege-escalation-vulnerability-in-windows-rpc-protocol/
+https://trustedsec.com/blog/a-comprehensive-guide-on-relaying-anno-2022
+https://msdn.microsoft.com/en-us/library/cc246675.aspx</value>
   </data>
   <data name="S_NoPreAuth_Description" xml:space="preserve">
     <value>The purpose is to ensure that all accounts require Kerberos pre-authentication</value>
@@ -2948,7 +2956,7 @@ https://keychest.net/roca</value>
   <data name="A_CertWeakRsaComponent_TechnicalExplanation" xml:space="preserve">
     <value>The RSA public key is composed of two parts: The modulus and the exponent. The exponent must be a prime number and its value is usually 65537.
     It is not recommended to have a exponent larger than 65537 for compatibility reasons as for example older Windows handle the exponent in 4 bytes.
-  Having a lower exponent, such as 3, give a significant performance boost (up to 8 times), but it is considered less secure.</value>
+  Having a lower exponent, such as 3, gives a significant performance boost (up to 8 times), but it is considered less secure.</value>
   </data>
   <data name="A_CertWeakRsaComponent_Title" xml:space="preserve">
     <value>Check for Certificates using a weak RSA exponent</value>

@@ -9,7 +9,7 @@ using PingCastle.Rules;
 namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("A-DCLdapSign", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
-    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
     [RuleIntroducedIn(2, 11)]
     [RuleMaturityLevel(3)]
     [RuleMitreAttackTechnique(MitreAttackTechnique.ManintheMiddle)]

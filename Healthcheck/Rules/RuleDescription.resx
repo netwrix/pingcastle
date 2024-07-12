@@ -4566,7 +4566,7 @@ The best mitigation is to create the DNS records manually as part as the domain 
   </data>
   <data name="A_DCLdapsChannelBinding_Documentation" xml:space="preserve">
     <value>https://support.microsoft.com/en-us/topic/use-the-ldapenforcechannelbinding-registry-entry-to-make-ldap-authentication-over-ssl-tls-more-secure-e9ecfa27-5e57-8519-6ba3-d2c06b21812e
-https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/ldap-channel-binding-and-ldap-signing-requirements-march-2020/ba-p/921536/page/4
+https://support.microsoft.com/en-us/topic/2020-2023-and-2024-ldap-channel-binding-and-ldap-signing-requirements-for-windows-kb4520412-ef185fb8-00f7-167d-744c-f299a66fc00a
 https://oxfordcomputergroup.com/resources/ldap-channel-binding-signing-requirements/
 https://github.com/zyn3rgy/LdapRelayScan
 https://access.redhat.com/articles/4661861
@@ -4609,7 +4609,7 @@ False positives may exists if the PingCastle program is run on the server tested
   </data>
   <data name="A_DCLdapSign_Documentation" xml:space="preserve">
     <value>https://docs.microsoft.com/en-US/troubleshoot/windows-server/identity/enable-ldap-signing-in-windows-server
-https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/ldap-channel-binding-and-ldap-signing-requirements-march-2020/ba-p/921536/page/4
+https://support.microsoft.com/en-us/topic/2020-2023-and-2024-ldap-channel-binding-and-ldap-signing-requirements-for-windows-kb4520412-ef185fb8-00f7-167d-744c-f299a66fc00a
 https://github.com/zyn3rgy/LdapRelayScan</value>
   </data>
   <data name="A_DCLdapSign_Rationale" xml:space="preserve">

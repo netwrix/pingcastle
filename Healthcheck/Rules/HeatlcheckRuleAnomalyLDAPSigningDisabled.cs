@@ -9,7 +9,7 @@ using PingCastle.Rules;
 namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("A-LDAPSigningDisabled", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
-    [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
     [RuleIntroducedIn(2, 7)]
     [RuleMaturityLevel(3)]
     [RuleMitreAttackTechnique(MitreAttackTechnique.ManintheMiddle)]

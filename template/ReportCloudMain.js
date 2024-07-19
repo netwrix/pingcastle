@@ -26,6 +26,11 @@ function azureRole(value, row) {
 //https://docs.microsoft.com/en-us/graph/permissions-reference
 function permissionFormatter(value, row) {
     var mark = "";
+    // Gracefully handle null values
+    if (value == null) {
+        console.log("Null value in permissionFormatter", row);
+        return "N/A";
+    }
     if (value.startsWith("User.")) {
         mark = "user-permissions";
     }

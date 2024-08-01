@@ -18,8 +18,8 @@ It does not aim at a perfect evaluation but rather as an efficiency compromise.
    \  / \  "">   Get Active Directory Security at 80% in 20% of the time
     \/   \ ,'    End of support: 7/31/2024
      O"---O
-      \ ,'       Vincent LE TOUX (contact@pingcastle.com)
-       v         twitter: @mysmartlogon       https://www.pingcastle.com
+      \ ,'       [PingCastle.Contact@netwrix.com](mailto:PingCastle.Contact@netwrix.com)
+       v         https://www.pingcastle.com
 What do you want to do?
 =======================
 Using interactive mode.

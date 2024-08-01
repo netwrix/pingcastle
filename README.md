@@ -1,11 +1,16 @@
-# Ping Castle
+# PingCastle by Netwrix
+
+## Announcement
+
+PingCastle has been acquired by [Netwrix](http://www.netwrix.com/)! An industry leader in Active Directory security solutions and other cybersecurity solutions that ensure a brighter digital future for more than 13,500 customers worldwide. Netwrix empowers security professionals to face digital threats with confidence by enabling them to identify and protect sensitive data as well as to detect, respond to, and recover from attacks.
+
 
 ## Introduction
 
 The risk level regarding Active Directory security has changed.
 Several vulnerabilities have been made popular with tools like [mimikatz](https://github.com/gentilkiwi/mimikatz) or sites likes [adsecurity.org](http://adsecurity.org/).
 
-Ping Castle is a tool designed to assess quickly the Active Directory security level with a methodology based on risk assessment and a maturity framework.
+PingCastle is a tool designed to assess quickly the Active Directory security level with a methodology based on risk assessment and a maturity framework.
 It does not aim at a perfect evaluation but rather as an efficiency compromise.
 
 ```plain
@@ -39,12 +44,13 @@ PingCastle is a c# project which can be build from Visual Studio 2012 to Visual 
 
 ## Support & lifecycle
 
-For support requests, you should contact support@pingcastle.com
-The support for the basic edition is made on a best effort basis and fixes delivered when a new version is delivered.
+For support requests, we invite you to create an account for Netwrix’s customer support portal, if you don’t already have one. Through this portal, you can submit tickets with benefits such as ticket and resolution history. Any inquiries to the [support@pingcastle.com](mailto:support@pingcastle.com) email will be responded to with a prompt to create a support portal account.
 
-The Basic Edition of PingCastle is released every 6 months (January, August) and this repository is updated at each release.
+The Support Portal where you can submit tickets is available [here](https://www.netwrix.com/support.html). 
 
-If you need changes, please contact contact@pingcastle.com for support packages.
+You can create an account by clicking “Sign Up” and completing the form available at the following link: [https://www.netwrix.com/sign_in.html](https://www.netwrix.com/sign_in.html)
+
+Please refer to Netwrix’s [Support Reference Guide](https://www.netwrix.com/download/documents/customer_support_program_guide.pdf) for additional details about our support process, including available contact methods, case severity guidelines, and more.
 
 ## License
 
@@ -66,6 +72,6 @@ Ping Castle uses the following Open source components:
 
 ## Author
 
-Author: Vincent LE TOUX
+*	General Contact: [PingCastle.Contact@netwrix.com](mailto:PingCastle.Contact@netwrix.com)
+*	Support Information: [PingCastle.Support@netwrix.com](mailto:PingCastle.Support@netwrix.com)
 
-You can contact me at vincent.letoux@gmail.com

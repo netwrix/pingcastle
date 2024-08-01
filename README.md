@@ -1,9 +1,14 @@
 # PingCastle by Netwrix
 
-## Announcement
+## Acquisition Announcement
 
-PingCastle has been acquired by [Netwrix](http://www.netwrix.com/)! An industry leader in Active Directory security solutions and other cybersecurity solutions that ensure a brighter digital future for more than 13,500 customers worldwide. Netwrix empowers security professionals to face digital threats with confidence by enabling them to identify and protect sensitive data as well as to detect, respond to, and recover from attacks.
+We are excited to announce that PingCastle has been acquired by [Netwrix](http://www.netwrix.com/)!
 
+Netwrix understands that commercial acquisitions of open source solutions can create concerns within the community. We are committed to actively stewarding the project and maintaining the availability of the open source edition.
+
+PingCastle has a long history of offering both open source and commercial editions. Netwrix is not only committed to preserving the open source project but also increasing development resources to enhance both the open source and commercial versions with new features and capabilities.
+
+Netwrix, an industry leader in Active Directory security solutions and other cybersecurity solutions, ensures a brighter digital future for more than 13,500 customers worldwide. Netwrix empowers security professionals to face digital threats with confidence by enabling them to identify and protect sensitive data as well as to detect, respond to, and recover from attacks.
 
 ## Introduction
 
@@ -45,7 +50,8 @@ PingCastle is a c# project which can be build from Visual Studio 2012 to Visual 
 ## Features & Bugs
 
 For reporting bugs or requesting features in the open source edition of PingCastle, please create a Github issue.
-Customers of a commercially available edition should contact Netwrix technical support.
+
+Customers of a commercially available edition should contact [Netwrix technical support](https://www.netwrix.com/support.html).
 
 ## License
 
@@ -68,5 +74,3 @@ Ping Castle uses the following Open source components:
 ## Author
 
 *	General Contact: [PingCastle.Contact@netwrix.com](mailto:PingCastle.Contact@netwrix.com)
-*	Support Information: [PingCastle.Support@netwrix.com](mailto:PingCastle.Support@netwrix.com)
-

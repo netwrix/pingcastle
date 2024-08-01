@@ -42,15 +42,10 @@ Check <https://www.pingcastle.com> for the documentation and methodology
 
 PingCastle is a c# project which can be build from Visual Studio 2012 to Visual Studio 2022
 
-## Support & lifecycle
+## Features & Bugs
 
-For support requests, we invite you to create an account for Netwrix’s customer support portal, if you don’t already have one. Through this portal, you can submit tickets with benefits such as ticket and resolution history. Any inquiries to the [support@pingcastle.com](mailto:support@pingcastle.com) email will be responded to with a prompt to create a support portal account.
-
-The Support Portal where you can submit tickets is available [here](https://www.netwrix.com/support.html). 
-
-You can create an account by clicking “Sign Up” and completing the form available at the following link: [https://www.netwrix.com/sign_in.html](https://www.netwrix.com/sign_in.html)
-
-Please refer to Netwrix’s [Support Reference Guide](https://www.netwrix.com/download/documents/customer_support_program_guide.pdf) for additional details about our support process, including available contact methods, case severity guidelines, and more.
+For reporting bugs or requesting features in the open source edition of PingCastle, please create a Github issue.
+Customers of a commercially available edition should contact Netwrix technical support.
 
 ## License
 

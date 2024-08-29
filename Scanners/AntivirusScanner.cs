@@ -30,6 +30,9 @@ namespace PingCastle.Scanners
             {"CSFalconService", "CrowdStrike Falcon Sensor Service"},
 
             {"CylanceSvc", "Cylance"},
+            
+            {"CynetLauncher", "Cynet Launcher Service"},
+            
             {"ekm", "ESET"},
             {"epfw", "ESET"},
             {"epfwlwf", "ESET"},

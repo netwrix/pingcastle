@@ -785,15 +785,15 @@ namespace PingCastle.Report
 <div class='form-check'>
   <input class='form-check-input' type='checkbox' value='' id='optionExpand'>
   <label class='form-check-label' for='optionExpand'>
-    Expand all collpsed items
+    Expand all collapsed items
   </label>
 </div>
 <p>Open source components:</p>
 <ul>
 <li><a href=""https://getbootstrap.com/"">Bootstrap</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
-<li><a href=""https://bootstrap-table.com/"">Bootstrap Table </a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
+<li><a href=""https://bootstrap-table.com/"">Bootstrap Table</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
 <li><a href=""https://popper.js.org/"">Popper.js</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
-<li><a href=""https://jquery.org"">JQuery</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
+<li><a href=""https://jquery.org/"">jQuery</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
 </ul>");
         }
         protected void GenerateAbout(string aboutString)

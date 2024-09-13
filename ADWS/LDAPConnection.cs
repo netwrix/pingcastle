@@ -8,7 +8,10 @@ using System;
 using System.Diagnostics;
 using System.DirectoryServices;
 using System.Net;
+using System.Net.Security;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Permissions;
 
 namespace PingCastle.ADWS
@@ -187,6 +190,10 @@ namespace PingCastle.ADWS
                 // Windows 2000 does not support a bind to the rootDse and returns "The server is not operational" (0x8007203A)
                 if (ex.ErrorCode == -2147016646)
                 {
+                    if (Port == 636)
+                    {
+                        EnsureLDAPSIsWorking();
+                    }
                     if (Credential == null)
                     {
                         rootDse = new DirectoryEntry(@"LDAP://" + Server + (Port == 0 ? null : ":" + Port) + "/RootDSE", null, null, AuthenticationTypes.Secure | (Port == 636 ? AuthenticationTypes.SecureSocketsLayer : 0));
@@ -202,6 +209,38 @@ namespace PingCastle.ADWS
                 }
             }
             return ADDomainInfo.Create(rootDse);
+        }
+
+        private void EnsureLDAPSIsWorking()
+        {
+            Trace.WriteLine("testing LDAPS connectivity");
+            using (TcpClient client = new TcpClient(Server, Port))
+            {
+                client.ReceiveTimeout = 1000;
+                client.SendTimeout = 1000;
+                using (SslStream sslstream = new SslStream(client.GetStream(), false,
+                        (object sender, X509Certificate CACert, X509Chain CAChain, SslPolicyErrors sslPolicyErrors)
+                            =>
+                        {
+                            Trace.WriteLine("Certificate presented: " + CACert.Subject);
+                            Trace.WriteLine("Certificate expires: " + CACert.GetExpirationDateString());
+                            Trace.WriteLine("SSLPolicyErrors: " + sslPolicyErrors);
+                            if (sslPolicyErrors != SslPolicyErrors.None)
+                            {
+                                Console.WriteLine("While testing the LDAPS certificate, PingCastle found the following error: " + sslPolicyErrors);
+                                Console.WriteLine("The certificate is untrusted and Windows prohibits PingCastle to connect to it");
+                                Console.WriteLine("Certificate:  " + CACert.Subject);
+                                Console.WriteLine("Expires: " + CACert.GetExpirationDateString());
+                            }
+                            return true; 
+                        }
+                             , null))
+                {
+                    Trace.WriteLine("before testing LDAPS certificatre for " + Server);
+                    sslstream.AuthenticateAsClient(Server, null, System.Security.Authentication.SslProtocols.Default, false);
+                    Trace.WriteLine("testing LDAPS certificatre for " + Server + " worked");
+                }
+            }
         }
 
         // connecting using LDAP

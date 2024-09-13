@@ -16,6 +16,17 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
+            if (healthcheckData.UserAccountData.ListBadPrimaryGroup != null)
+            {
+                if (healthcheckData.UserAccountData.NumberBadPrimaryGroup < maxNumDisplayAccount)
+                {
+                    for (int i = 0; i < healthcheckData.UserAccountData.NumberBadPrimaryGroup; i++)
+                    {
+                        AddRawDetail(healthcheckData.UserAccountData.ListBadPrimaryGroup[i].DistinguishedName);
+                    }
+                }
+                return null;
+            }
             return healthcheckData.UserAccountData.NumberBadPrimaryGroup;
         }
     }

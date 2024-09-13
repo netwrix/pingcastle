@@ -18,13 +18,7 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            foreach (var group in healthcheckData.PrivilegedGroups)
-            {
-                if (group.GroupName == GraphObjectReference.DnsAdministrators)
-                {
-                    return group.NumberOfMemberEnabled;
-                }
-            }
+            // rule is not active anymore
             return 0;
         }
     }

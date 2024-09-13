@@ -139,6 +139,10 @@ This report has been generated with the ");
 <br><strong class='auditor'>Being part of a commercial package is forbidden</strong> (selling the information contained in the report).<br>
 If you are an auditor, you MUST purchase an Auditor license to share the development effort.");
             }
+            if (Report.WinTrustLevel != 0)
+            {
+                Add(@"<br>You are not using a supported version of PingCastle.");
+            }
             Add(@"</div>
 ");
             Add(@"</div></div>
@@ -4209,77 +4213,6 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             }
             AddEndTable();
 
-            /*
-            AddParagraph("Here are the security checks that have been checked by PingCastle and where no applicable GPO has been found.");
-            AddBeginTable("Security settings not found list");
-            AddHeaderText("Setting");
-            AddBeginTableData();
-            if (Report.GPOLsaPolicy != null)
-            {
-                List<string> notFound = new List<string>()
-                    {
-                        "enableguestaccount",
-                        "lsaanonymousnamelookup",
-                        "everyoneincludesanonymous",
-                        "limitblankpassworduse",
-                        "forceguest",
-                        "nolmhash",
-                        "restrictanonymous",
-                        "restrictanonymoussam",
-                        "ldapclientintegrity",
-                        "recoveryconsole_securitylevel",
-                        "refusepasswordchange",
-                        "enablemulticast",
-                        "enablesecuritysignature",
-                        "enablemodulelogging",
-                        "enablescriptblocklogging",
-                        "srvsvcsessioninfo",
-                        "supportedencryptiontypes",
-                    };
-
-                if (Report.version >= new Version(3, 0, 0))
-                {
-                    notFound.Add("lmcompatibilitylevel");
-                    notFound.Add("enablecbacandarmor");
-                    notFound.Add("cbacandarmorlevel");
-                }
-
-                foreach (GPPSecurityPolicy policy in Report.GPOLsaPolicy)
-                {
-                    foreach (GPPSecurityPolicyProperty property in policy.Properties)
-                    {
-                        // checking if GPOId is not null for old reports
-                        if (!string.IsNullOrEmpty(policy.GPOId))
-                        {
-                            if (Report.GPOInfoDic == null || !Report.GPOInfoDic.ContainsKey(policy.GPOId))
-                            {
-                                continue;
-                            }
-                            var refGPO = Report.GPOInfoDic[policy.GPOId];
-                            if (refGPO.IsDisabled)
-                            {
-                                continue;
-                            }
-                            if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
-                            {
-                                continue;
-                            }
-                        }
-                        if (notFound.Contains(property.Property.ToLowerInvariant()))
-                            notFound.Remove(property.Property.ToLowerInvariant());
-                    }
-                }
-                foreach (var f in notFound)
-                {
-                    AddBeginRow();
-                    Add(@"<td class='text'>");
-                    Add(GetLinkForLsaSetting(f));
-                    Add(@"</td>");
-                    AddEndRow();
-                }
-            }
-            AddEndTable();
-            */
             if (Report.version >= new Version(2, 8))
             {
                 GenerateSubSection("Audit settings", "auditsettings");
@@ -4414,6 +4347,155 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     }
                     AddEndTable();
                 }
+            }
+
+            if (Report.version > new Version(3, 2, 1, 0))
+            {
+                GenerateSubSection("Folder Options", "gpofolderoptions");
+                AddParagraph("File associations may be managed through Group Policy Objects (GPO) by navigating to \"Folder Options\". This setting is located under Computer Configuration / Preferences / Control Panel Settings / Folders Options in the GPO.");
+                AddParagraph("This method serves as an effective countermeasure against script execution from phishing emails by setting Notepad as the default program for opening script files, rather than the script engine. The script extensions that can be reconfigured include: .js, .jse, .vbs, .vbe, .vb, .wsh, and .wsf. Specifically, JavaScript files with extensions .js and .jse can be safely altered to open with Notepad. Other file extensions may have an impact and needs to be assessed before being configured.");
+                if (Report.GPOFolderOptions != null)
+                {
+                    AddBeginTable("Folder Options");
+                    AddHeaderText("GPO Name");
+                    AddHeaderText("Type");
+                    AddHeaderText("Action", "A for Add, R for Replace, U for update, D for delete");
+                    AddHeaderText("Application");
+                    AddBeginTableData();
+                    foreach (var ext in Report.GPOFolderOptions)
+                    {
+                        AddBeginRow();
+                        AddGPOName(ext);
+                        AddCellText(ext.FileExt);
+                        AddCellText(ext.Action);
+                        AddCellText(ext.OpenApp);
+                        AddEndRow();
+                    }
+                    AddEndTable();
+                }
+            }
+
+            if (Report.version > new Version(3, 2, 1, 0))
+            {
+                GenerateSubSection("Microsoft Defender ASR (attack surface reduction)", "gpodefenderASR");
+                AddParagraph("Microsoft Defender is the default Antivirus shipped with Windows. There are many alternatives, but if a computer is installed without an antivirus, it will be enabled by default.");
+                AddParagraph("A set of mitigation named ASR (attack surface reduction) can be enabled, even on non premium version of Windows Defender. Some protections are available since Windows 10 1710 and even Windows 2012 R2. See https://learn.microsoft.com/en-us/defender-endpoint/attack-surface-reduction-rules-reference?view=o365-worldwide for more information.");
+                AddParagraph("To enable a mitigation, enable the GPO \"Configure Attack Surface Redurction rules\" in Computer Configuration / Policies / Administrative Templates / Windows Components / Windows Defender Antivirus / Windows Defender Exploit Guard / Attack Surface Reduction. After having Enabled the setting, click on Set the state for each ASR rule. Add the GUID of the mitigation as Value name and set 1 as Value to enforce the Block mode. Example for Block JavaScript or VBScript from launching downloaded executable content: d3e037e1-3eb8-44c8-a917-57927947596d. The other values are: 2 for Audit and 6 for Warn.");
+                if (Report.GPODefenderASR != null)
+                {
+                    AddBeginTable("Defender ASR");
+                    AddHeaderText("GPO Name");
+                    AddHeaderText("Rule");
+                    AddHeaderText("Description");
+                    AddHeaderText("Action");
+                    AddBeginTableData();
+                    foreach (var asr in Report.GPODefenderASR)
+                    {
+                        AddBeginRow();
+                        AddGPOName(asr);
+                        AddCellText(asr.ASRRule);
+                        Add(@"<td class='text'>");
+                        Add(GetDefenderASRLabelLink(asr.ASRRule));
+                        Add("</td>");
+                        switch (asr.Action)
+                        {
+                            case 0:
+                                AddCellText("Not configured");
+                                break;
+                            case 1:
+                                AddCellText("Block");
+                                break;
+                            case 2:
+                                AddCellText("Audit");
+                                break;
+                            case 6:
+                                AddCellText("Warn");
+                                break;
+                            default:
+                                AddCellText(asr.Action.ToString());
+                                break;
+                        }
+                        AddEndRow();
+                    }
+                    AddEndTable();
+                }
+            }
+
+            if (Report.version > new Version(3, 2, 1, 0))
+            {
+                GenerateSubSection("Firewall configuration", "gpofirewall");
+                AddParagraph("Firewall rules may be managed through Group Policy Objects (GPO). This setting is located under Computer Configuration / Policies Windows Settings / Security Settings / Windows Defender Firewall with Advanced Security.");
+                if (Report.GPPFirewallRules != null)
+                {
+                    AddBeginTable("Firewall Rules");
+                    AddHeaderText("GPO Name");
+                    AddHeaderText("Name");
+                    AddHeaderText("Active");
+                    AddHeaderText("Direction");
+                    AddHeaderText("Action");
+                    AddHeaderText("Application");
+                    AddHeaderText("Remote IP");
+                    AddBeginTableData();
+                    foreach (var fw in Report.GPPFirewallRules)
+                    {
+                        AddBeginRow();
+                        AddGPOName(fw);
+                        AddCellText(fw.Name);
+                        AddCellBool(fw.Active);
+                        AddCellText(fw.Direction);
+                        AddCellText(fw.Action);
+                        AddCellText(fw.App);
+                        string ip = null;
+                        if (fw.RA4 != null)
+                        {
+                            ip += string.Join(",", fw.RA4);
+                        }
+                        if (fw.RA6 != null)
+                        {
+                            if (!string.IsNullOrEmpty(ip))
+                                ip += ",";
+                            ip += string.Join(",", fw.RA6);
+                        }
+                        AddCellText(ip);
+                        AddEndRow();
+                    }
+                    AddEndTable();
+                }
+            }
+        }
+
+        private string GetDefenderASRLabelLink(string rule)
+        {
+            var label = GetDefenderASRLabel(rule);
+            var url = "https://learn.microsoft.com/en-us/defender-endpoint/attack-surface-reduction-rules-reference?view=o365-worldwide#" + label.Replace(" ", "-").Replace("(", "").Replace(")", "").ToLowerInvariant();
+            return "<a href=\"" + url + "\">" + label + "</a>";
+        }
+
+        private string GetDefenderASRLabel(string rule)
+        {
+            switch (rule.ToLowerInvariant())
+            {
+                case "56a863a9-875e-4185-98a7-b882c64b5ce5": return "Block abuse of exploited vulnerable signed drivers";
+                case "7674ba52-37eb-4a4f-a9a1-f0f9a1619a2c": return "Block Adobe Reader from creating child processes";
+                case "d4f940ab-401b-4efc-aadc-ad5f3c50688a": return "Block all Office applications from creating child processes";
+                case "9e6c4e1f-7d60-472f-ba1a-a39ef669e4b2": return "Block credential stealing from the Windows local security authority subsystem (lsass.exe)";
+                case "be9ba2d9-53ea-4cdc-84e5-9b1eeee46550": return "Block executable content from email client and webmail";
+                case "01443614-cd74-433a-b99e-2ecdc07bfc25": return "Block executable files from running unless they meet a prevalence, age, or trusted list criterion";
+                case "5beb7efe-fd9a-4556-801d-275e5ffc04cc": return "Block execution of potentially obfuscated scripts";
+                case "d3e037e1-3eb8-44c8-a917-57927947596d": return "Block JavaScript or VBScript from launching downloaded executable content";
+                case "3b576869-a4ec-4529-8536-b80a7769e899": return "Block Office applications from creating executable content";
+                case "75668c1f-73b5-4cf0-bb93-3ecf5cb7cc84": return "Block Office applications from injecting code into other processes";
+                case "26190899-1602-49e8-8b27-eb1d0a1ce869": return "Block Office communication application from creating child processes";
+                case "e6db77e5-3df2-4cf1-b95a-636979351e5b": return "Block persistence through WMI event subscription";
+                case "d1e49aac-8f56-4280-b9ba-993a6d77406c": return "Block process creations originating from PSExec and WMI commands";
+                case "33ddedf1-c6e0-47cb-833e-de6133960387": return "Block rebooting machine in Safe Mode (preview)";
+                case "b2b3f03d-6a65-4f7b-a9c7-1c7ef74a9ba4": return "Block untrusted and unsigned processes that run from USB";
+                case "c0033c00-d16d-4114-a5a0-dc9b3a7d2ceb": return "Block use of copied or impersonated system tools (preview)";
+                case "a8f5898e-1dc8-49a9-9878-85004b8a61e6": return "Block Webshell creation for Servers";
+                case "92e97fa1-2edf-4476-bdd6-9dd0b4dddc7b": return "Block Win32 API calls from Office macros";
+                case "c1db55ab-c21a-4637-bb3f-a12568109d35": return "Use advanced protection against ransomware";
+                default:
+                    return "";
             }
         }
 

@@ -22,6 +22,7 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
+            ReplacementToDo.Clear();
             int totalActive = 0;
             foreach (var osVersion in healthcheckData.OperatingSystemVersion)
             {
@@ -74,9 +75,17 @@ namespace PingCastle.Healthcheck.Rules
                             case 19044:
                                 if (osVersion.IsLTSC)
                                 {
-                                    if (healthcheckData.GenerationDate > new DateTime(2027, 01, 12))
+                                    if (osVersion.IsIOT)
                                     {
-                                        AddRawDetail("Windows 10 21H2", osVersion.data.Number, osVersion.data.NumberActive);
+                                        if (healthcheckData.GenerationDate > new DateTime(2032, 01, 13))
+                                        {
+                                            AddRawDetail("Windows 10 21H2 IOT LTSC", osVersion.data.Number, osVersion.data.NumberActive);
+                                            totalActive += osVersion.data.NumberActive;
+                                        }
+                                    }
+                                    else if (healthcheckData.GenerationDate > new DateTime(2027, 01, 12))
+                                    {
+                                        AddRawDetail("Windows 10 21H2 LTSC", osVersion.data.Number, osVersion.data.NumberActive);
                                         totalActive += osVersion.data.NumberActive;
                                     }
                                 }
@@ -129,7 +138,15 @@ namespace PingCastle.Healthcheck.Rules
                             case 17763:
                                 if (osVersion.IsLTSC)
                                 {
-                                    if (healthcheckData.GenerationDate > new DateTime(2029, 01, 09))
+                                    if (osVersion.IsIOT)
+                                    {
+                                        if (healthcheckData.GenerationDate > new DateTime(2029, 01, 09))
+                                        {
+                                            AddRawDetail("Windows 10 1809 IOT LTSC", osVersion.data.Number, osVersion.data.NumberActive);
+                                            totalActive += osVersion.data.NumberActive;
+                                        }
+                                    }
+                                    else if (healthcheckData.GenerationDate > new DateTime(2029, 01, 09))
                                     {
                                         AddRawDetail("Windows 10 1809 LTSC", osVersion.data.Number, osVersion.data.NumberActive);
                                         totalActive += osVersion.data.NumberActive;
@@ -156,7 +173,15 @@ namespace PingCastle.Healthcheck.Rules
                             case 14393:
                                 if (osVersion.IsLTSC)
                                 {
-                                    if (healthcheckData.GenerationDate > new DateTime(2026, 09, 13))
+                                    if (osVersion.IsIOT)
+                                    {
+                                        if (healthcheckData.GenerationDate > new DateTime(2026, 10, 13))
+                                        {
+                                            AddRawDetail("Windows 10 1607 IOT LTSC", osVersion.data.Number, osVersion.data.NumberActive);
+                                            totalActive += osVersion.data.NumberActive;
+                                        }
+                                    }
+                                    else if (healthcheckData.GenerationDate > new DateTime(2026, 09, 13))
                                     {
                                         AddRawDetail("Windows 10 1607 LTSC", osVersion.data.Number, osVersion.data.NumberActive);
                                         totalActive += osVersion.data.NumberActive;
@@ -173,14 +198,25 @@ namespace PingCastle.Healthcheck.Rules
                                 totalActive += osVersion.data.NumberActive;
                                 break;
                             case 10240:
-                                AddRawDetail("Windows 10 1507", osVersion.data.Number, osVersion.data.NumberActive);
-                                totalActive += osVersion.data.NumberActive;
+                                if (osVersion.IsIOT)
+                                {
+                                    if (healthcheckData.GenerationDate > new DateTime(2025, 10, 14))
+                                    {
+                                        AddRawDetail("Windows 10 1507 IOT LTSC", osVersion.data.Number, osVersion.data.NumberActive);
+                                        totalActive += osVersion.data.NumberActive;
+                                    }
+                                }
+                                else
+                                {
+                                    AddRawDetail("Windows 10 1507", osVersion.data.Number, osVersion.data.NumberActive);
+                                    totalActive += osVersion.data.NumberActive;
+                                }
                                 break;
                         }
                     }
                 }
             }
-            ReplacementToDo.Add("{activeComputers}", totalActive.ToString());
+            ReplacementToDo["{activeComputers}"] = totalActive.ToString();
             return null;
         }
     }

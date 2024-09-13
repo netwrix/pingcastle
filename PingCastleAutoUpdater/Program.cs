@@ -1,19 +1,17 @@
-﻿using System;
+﻿using PingCastleCommon;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.UI;
-using System.Web.Script.Serialization;
-using System.Net;
-using System.IO;
-using System.Reflection;
-using System.IO.Compression;
 using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Net;
+using System.Reflection;
+using System.Web.Script.Serialization;
 
 namespace PingCastleAutoUpdater
 {
-	class Program
+    class Program
 	{
 		class Release
 		{
@@ -41,7 +39,7 @@ namespace PingCastleAutoUpdater
 		bool forceDownload = false;
 		bool preview = false;
 		int numberOfDaysToWay = 0;
-		string releaseInfoUrl = "https://api.github.com/repos/vletoux/pingcastle/releases";
+		string releaseInfoUrl = "https://api.github.com/repos/netwrix/pingcastle/releases";
 
 		void Run(string[] args)
 		{
@@ -189,77 +187,82 @@ namespace PingCastleAutoUpdater
 			}
 		}
 
-		static void ProceedReleaseInstall(string url)
-		{
-			Version version = Assembly.GetExecutingAssembly().GetName().Version;
-			HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-			request.UserAgent = "PingCastleAutoUpdater " + version.ToString();
-			try
-			{
-				WebResponse response = request.GetResponse();
-				using (Stream responseStream = response.GetResponseStream())
-				using (var archive = new ZipArchive(responseStream, ZipArchiveMode.Read))
-				{
-					foreach (var entry in archive.Entries)
-					{
-						// do not save .config file except if it doesn't exists 
-						// and do not overwrite the updater file because it's running !
-						if (entry.FullName.EndsWith(".config", StringComparison.OrdinalIgnoreCase))
-						{
-							if (!File.Exists(entry.FullName))
-							{
-								performCopy(entry);
-							}
-						}
-						else
-						{
-							performCopy(entry);
-						}
-					}
-				}
-			}
-			catch (WebException ex)
-			{
-				WebResponse errorResponse = ex.Response;
-				using (Stream responseStream = errorResponse.GetResponseStream())
-				{
-					StreamReader reader = new StreamReader(responseStream, System.Text.Encoding.GetEncoding("utf-8"));
-					String errorText = reader.ReadToEnd();
-					Console.WriteLine(errorText);
-					// log errorText
-				}
-				throw;
-			}
-		}
+        static void ProceedReleaseInstall(string url)
+        {
+            Version version = Assembly.GetExecutingAssembly().GetName().Version;
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.UserAgent = "PingCastleAutoUpdater " + version.ToString();
+            try
+            {
+                WebResponse response = request.GetResponse();
+                using (Stream responseStream = response.GetResponseStream())
+                using (var archive = new ZipArchive(responseStream, ZipArchiveMode.Read))
+                {
+                    foreach (var entry in archive.Entries)
+                    {
+						FilesValidator.CheckPathTraversal(entry.FullName);
+						var fullEntryPath = Path.GetFullPath(entry.FullName);
+                        // do not save .config file except if it doesn't exists 
+                        // and do not overwrite the updater file because it's running !
+                        if (fullEntryPath.EndsWith(".config", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (!File.Exists(fullEntryPath))
+                            {
+                                performCopy(entry);
+                            }
+                        }
+                        else
+                        {
+                            performCopy(entry);
+                        }
+                    }
+                }
+            }
+            catch (WebException ex)
+            {
+                WebResponse errorResponse = ex.Response;
+                using (Stream responseStream = errorResponse.GetResponseStream())
+                {
+                    StreamReader reader = new StreamReader(responseStream, System.Text.Encoding.GetEncoding("utf-8"));
+                    string errorText = reader.ReadToEnd();
+                    Console.WriteLine(errorText);
+                    // Log the errorText
+                }
+                throw;
+            }
+        }
 
-		static void performCopy(ZipArchiveEntry entry)
-		{
-			using (var e = entry.Open())
-			{
-				Console.WriteLine("Saving " + entry.FullName);
-				if (File.Exists(entry.FullName))
-				{
-					string exePath = new Uri(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase).LocalPath;
-					// if we try to overwrite the current exe, it will fail
-					// the trick is to move the current assembly to a new file
-					if (string.Compare(new FileInfo(entry.FullName).FullName,exePath,StringComparison.OrdinalIgnoreCase) == 0)
-					{
-						string bakFileName = entry.FullName + ".bak";
-						if (File.Exists(bakFileName))
-							File.Delete(bakFileName);
-						File.Move(entry.FullName, bakFileName);
-					}
-				}
-				using (var fileStream = File.Create(entry.FullName))
-				{
-					e.CopyTo(fileStream);
-					fileStream.Close();
-				}
-				
-			}
-		}
+        static void performCopy(ZipArchiveEntry entry)
+        {
+            using (var e = entry.Open())
+            {
+                string exePath = new Uri(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase).LocalPath;
+				string exeFullPath = Path.GetFullPath(exePath);
+                // Check for path traversal and zip slip
+                string entryFullPath = FilesValidator.CheckPathTraversal(entry.FullName, Path.GetDirectoryName(exePath));
 
-		private static void DisplayHelp()
+                Console.WriteLine("Saving " + entry.FullName);
+                if (File.Exists(entryFullPath))
+                {
+                    // if we try to overwrite the current exe, it will fail
+                    // the trick is to move the current assembly to a new file
+                    if (string.Compare(entryFullPath, exeFullPath, StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        string bakFileName = entryFullPath + ".bak";
+                        if (File.Exists(bakFileName))
+                            File.Delete(bakFileName);
+                        File.Move(entryFullPath, bakFileName);
+                    }
+                }
+                using (var fileStream = File.Create(entryFullPath))
+                {
+                    e.CopyTo(fileStream);
+                    fileStream.Close();
+                }
+            }
+        }
+
+        private static void DisplayHelp()
 		{
 			Console.WriteLine("switch:");
 			Console.WriteLine("  --help              : display this message");

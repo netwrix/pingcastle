@@ -5,6 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.Rules;
+using System;
 
 namespace PingCastle.Healthcheck.Rules
 {
@@ -23,7 +24,12 @@ namespace PingCastle.Healthcheck.Rules
             {
                 foreach (var c in healthcheckData.ListComputerPwdNotChanged)
                 {
-                    if (c.PwdLastSet.AddDays(45) < c.LastLogonDate && c.PwdLastSet.AddDays(90) > c.LastLogonDate)
+                    // workaround for timeproblem with DC that sets lastlongdate in the future
+                    var date = c.LastLogonDate;
+                    if (date > DateTime.Now)
+                        date = DateTime.Now;
+
+                    if (c.PwdLastSet.AddDays(45) < date && c.PwdLastSet.AddDays(90) > date)
                     {
                         AddRawDetail(c.Name, c.CreationDate, c.LastLogonDate, c.PwdLastSet);
                     }

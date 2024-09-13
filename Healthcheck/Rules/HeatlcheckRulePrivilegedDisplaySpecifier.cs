@@ -13,9 +13,9 @@ namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("P-DisplaySpecifier", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.AccountTakeOver)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-    [RuleDurANSSI(1, "vuln_display_specifier", "Dangerous Display Specifiers")]
+    [RuleDurANSSI(1, "display_specifier", "Dangerous Display Specifiers")]
     [RuleMitreAttackTechnique(MitreAttackTechnique.SystemServices)]
-    [RuleIntroducedIn(2,11,2)]
+    [RuleIntroducedIn(2, 11, 2)]
     public class HeatlcheckRulePrivilegedDisplaySpecifier : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
@@ -29,9 +29,13 @@ namespace PingCastle.Healthcheck.Rules
                     var e = entry.AdminContextMenu.Split(',');
                     if (e.Length < 3)
                         continue;
-                    var path = e[2];
+                    var path = e[2].Trim();
+
                     if (!path.Contains("\\\\"))
                         continue;
+
+                    if (path.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && path.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+                        path = path.Substring(1, path.Length - 2);
 
                     if (!path.StartsWith("\\\\" + healthcheckData.DomainFQDN + "\\sysvol\\", StringComparison.OrdinalIgnoreCase) &&
                         !path.StartsWith("\\\\" + healthcheckData.ForestFQDN + "\\sysvol\\", StringComparison.OrdinalIgnoreCase))

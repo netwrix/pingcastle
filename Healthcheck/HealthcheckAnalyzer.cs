@@ -115,7 +115,7 @@ namespace PingCastle.Healthcheck
                 }
                 DisplayAdvancement("Gathering general data");
                 GenerateGeneralData(domainInfo, adws);
-                CheckMsDsMachineAccountQuota(domainInfo, adws);
+                CheckRootDomainProperties(domainInfo, adws);
 
                 DisplayAdvancement("Gathering user data");
                 GenerateUserData(domainInfo, adws);
@@ -150,9 +150,10 @@ namespace PingCastle.Healthcheck
                 GenerateWSUSData(domainInfo, adws);
                 DisplayAdvancement("Gathering MSOL data");
                 GenerateMSOLData(domainInfo, adws);
-                DisplayAdvancement("Gathering domain controller data" + (SkipNullSession ? null : " (including null session)"  + (SkipRPC ? null : " (including RPC tests)")));
+                DisplayAdvancement("Gathering domain controller data" + (SkipNullSession ? null : " (including null session)" + (SkipRPC ? null : " (including RPC tests)")));
                 GenerateDomainControllerData(domainInfo, adws, parameters);
                 GenerateRODCData(domainInfo, adws);
+                GenerateRODCKrbtgtOrphans(domainInfo, adws);
                 GenerateFSMOData(domainInfo, adws);
                 GenerateCheckDCConfig(domainInfo, adws);
                 GenerateCheckFRS(domainInfo, adws);
@@ -181,7 +182,7 @@ namespace PingCastle.Healthcheck
 
         private void LoadHoneyPotData()
         {
-            var s = HoneyPotSettings.GetEncryptionSettings();
+            var s = HoneyPotSettings.GetHoneyPotSettings();
             if (s == null)
                 return;
             if (s.HoneyPots.Count > 25 && limitHoneyPot)
@@ -413,6 +414,8 @@ namespace PingCastle.Healthcheck
 #if DEBUG
             healthcheckData.EngineVersion += " Beta";
 #endif
+
+            healthcheckData.WinTrustLevel = ConsoleMenu.CheckWinTrustFlags(typeof(Program).Assembly);
             healthcheckData.Level = PingCastleReportDataExportLevel.Full;
 
         }
@@ -785,9 +788,14 @@ namespace PingCastle.Healthcheck
                     }
                     else if (x.ServicePrincipalName != null && x.ServicePrincipalName.Length > 0 && !string.IsNullOrEmpty(x.ServicePrincipalName[0]))
                     {
-                        if ((x.msDSSupportedEncryptionTypes & (8 + 16)) == 0)
+                        // quote: "Users accounts, Group Managed Service accounts, and other accounts in Active Directory do not have the msds-SupportedEncryptionTypes value set automatically. "
+                        // https://support.microsoft.com/en-us/topic/kb5021131-how-to-manage-the-kerberos-protocol-changes-related-to-cve-2022-37966-fd837ac3-cdec-4e76-a6ec-86e67501407d#registrykey5021131
+                        //if (x.Class != "msds-groupmanagedserviceaccount" && x.Class != "computer" && x.Class != "msds-managedserviceaccount")
                         {
-                            data.AddDetail("NotAesEnabled", GetAccountDetail(x));
+                            if ((x.msDSSupportedEncryptionTypes & (8 + 16)) == 0)
+                            {
+                                data.AddDetail("NotAesEnabled", GetAccountDetail(x));
+                            }
                         }
                     }
                 }
@@ -856,7 +864,26 @@ namespace PingCastle.Healthcheck
                             }
                         }
                         if (isCluster)
+                        {
+                            // process only not disabled cluster
+                            if ((x.UserAccountControl & 0x00000002) == 0)
+                            {
+                                // cluster created for at least 3 years and use within the last 45 days
+                                if (x.WhenCreated.AddYears(3) <= DateTime.Now && x.LastLogonTimestamp.AddDays(45) > DateTime.Now)
+                                {
+                                    // pwd last set at least 3 years ago
+                                    if (x.PwdLastSet.AddYears(3) < x.LastLogonTimestamp)
+                                    {
+                                        // computer password not changed
+                                        if (healthcheckData.ListClusterPwdNotChanged == null)
+                                            healthcheckData.ListClusterPwdNotChanged = new List<HealthcheckAccountDetailData>();
+                                        healthcheckData.ListClusterPwdNotChanged.Add(GetAccountDetail(x));
+                                    }
+                                }
+                            }
+                            // all subsequent checks are to be ignored
                             return;
+                        }
 
                         string os = GetOperatingSystem(x.OperatingSystem);
                         if (!operatingSystems.ContainsKey(os))
@@ -899,6 +926,8 @@ namespace PingCastle.Healthcheck
                                 dc.LastComputerLogonDate = x.LastLogonTimestamp;
                                 dc.DistinguishedName = x.DistinguishedName;
                                 dc.OperatingSystem = os;
+                                dc.OperatingSystemVersion = x.OperatingSystemVersion;
+
                                 dc.PwdLastSet = x.PwdLastSet;
                                 if (x.PrimaryGroupID == 521) // RODC
                                 {
@@ -941,30 +970,49 @@ namespace PingCastle.Healthcheck
                                     }
                                 }
                             }
-                            if (x.ReplPropertyMetaData != null && LAPSAnalyzer.LegacyLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(LAPSAnalyzer.LegacyLAPSIntId))
+                            if (x.ReplPropertyMetaData != null)
                             {
-                                proxy.AddWithoutDetail("LAPS");
-                                var d = x.ReplPropertyMetaData[LAPSAnalyzer.LegacyLAPSIntId];
-                                if (d.LastOriginatingChange != DateTime.MinValue)
+                                if (LAPSAnalyzer.LegacyLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(LAPSAnalyzer.LegacyLAPSIntId))
                                 {
-                                    var i = ConvertDateToKey(d.LastOriginatingChange);
-                                    if (lapsDistribution.ContainsKey(i))
-                                        lapsDistribution[i]++;
-                                    else
-                                        lapsDistribution[i] = 1;
+                                    proxy.AddWithoutDetail("LAPS");
+                                    var d = x.ReplPropertyMetaData[LAPSAnalyzer.LegacyLAPSIntId];
+                                    if (d.LastOriginatingChange != DateTime.MinValue)
+                                    {
+                                        var i = ConvertDateToKey(d.LastOriginatingChange);
+                                        if (lapsDistribution.ContainsKey(i))
+                                            lapsDistribution[i]++;
+                                        else
+                                            lapsDistribution[i] = 1;
+                                    }
                                 }
-                            }
-                            if (x.ReplPropertyMetaData != null && LAPSAnalyzer.MsLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(LAPSAnalyzer.MsLAPSIntId))
-                            {
-                                proxy.AddWithoutDetail("LAPSNew");
-                                var d = x.ReplPropertyMetaData[LAPSAnalyzer.MsLAPSIntId];
-                                if (d.LastOriginatingChange != DateTime.MinValue)
+                                var newLAPSDate = default(DateTime);
+                                // we need this flag because replicationdata may not be accessible and all metadata fields could not be filled
+                                bool newLAPSFound = false;
+                                if (LAPSAnalyzer.MsLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(LAPSAnalyzer.MsLAPSIntId))
                                 {
-                                    var i = ConvertDateToKey(d.LastOriginatingChange);
+                                    var d = x.ReplPropertyMetaData[LAPSAnalyzer.MsLAPSIntId].LastOriginatingChange;
+                                    if (d > newLAPSDate)
+                                        newLAPSDate = d;
+                                    newLAPSFound = true;
+                                }
+                                if (LAPSAnalyzer.MsLAPSEncryptedIntId != 0 && x.ReplPropertyMetaData.ContainsKey(LAPSAnalyzer.MsLAPSEncryptedIntId))
+                                {
+                                    var d = x.ReplPropertyMetaData[LAPSAnalyzer.MsLAPSEncryptedIntId].LastOriginatingChange;
+                                    if (d > newLAPSDate)
+                                        newLAPSDate = d;
+                                    newLAPSFound = true;
+                                }
+                                if (newLAPSFound)
+                                    proxy.AddWithoutDetail("LAPSNew");
+
+                                if (newLAPSDate != default(DateTime))
+                                {
+                                    var i = ConvertDateToKey(newLAPSDate);
                                     if (lapsNewDistribution.ContainsKey(i))
                                         lapsNewDistribution[i]++;
                                     else
                                         lapsNewDistribution[i] = 1;
+
                                 }
                             }
                         }
@@ -1648,6 +1696,8 @@ namespace PingCastle.Healthcheck
                 ReadGuidsControlProperties.Add(new KeyValuePair<Guid, string>(lapsAnalyzer.LegacyLAPSSchemaId, "READ_PROP_ms-mcs-admpwd"));
             if (lapsAnalyzer.MsLAPSSchemaId != Guid.Empty)
                 ReadGuidsControlProperties.Add(new KeyValuePair<Guid, string>(lapsAnalyzer.MsLAPSSchemaId, "READ_PROP_ms-LAPS-Password"));
+            if (lapsAnalyzer.MsLAPSEncryptedSchemaId != Guid.Empty)
+                ReadGuidsControlProperties.Add(new KeyValuePair<Guid, string>(lapsAnalyzer.MsLAPSEncryptedSchemaId, "READ_PROP_ms-LAPS-EncryptedPassword"));
 
             string[] properties = new string[] {
                         "distinguishedName",
@@ -1962,6 +2012,7 @@ namespace PingCastle.Healthcheck
             return delegations;
         }
 
+        [DebuggerDisplay("{DisplayName} {InternalName}")]
         private class GPO
         {
             public string InternalName { get; set; }
@@ -1987,10 +2038,14 @@ namespace PingCastle.Healthcheck
             healthcheckData.GPOEventForwarding = new List<GPOEventForwardingInfo>();
             healthcheckData.GPODelegation = new List<GPODelegationData>();
             healthcheckData.GPPFileDeployed = new List<GPPFileDeployed>();
+            healthcheckData.GPPFirewallRules = new List<GPPFireWallRule>();
+            healthcheckData.GPPTerminalServiceConfigs = new List<GPPTerminalServiceConfig>();
             healthcheckData.GPOAuditSimple = new List<GPOAuditSimpleData>();
             healthcheckData.GPOAuditAdvanced = new List<GPOAuditAdvancedData>();
             healthcheckData.GPOHardenedPath = new List<GPPHardenedPath>();
             healthcheckData.GPOWSUS = new List<HealthcheckWSUSData>();
+            healthcheckData.GPOFolderOptions = new List<GPPFolderOption>();
+            healthcheckData.GPODefenderASR = new List<HealthcheckDefenderASRData>();
 
             // subitility: GPOList = all active and not active GPO (but not the deleted ones)
             Dictionary<string, GPO> GPOList = new Dictionary<string, GPO>(StringComparer.OrdinalIgnoreCase);
@@ -2563,6 +2618,7 @@ namespace PingCastle.Healthcheck
                         file.Type = "Application (" + section + " section)";
                         file.FileName = msiFile[1];
                         file.Delegation = new List<HealthcheckScriptDelegationData>();
+                        Trace.WriteLine("before check msi: " + file.FileName);
                         lock (healthcheckData.GPPFileDeployed)
                         {
                             healthcheckData.GPPFileDeployed.Add(file);
@@ -2587,6 +2643,7 @@ namespace PingCastle.Healthcheck
                                 Trace.WriteLine("Unable to analyze " + file.FileName + " " + ex.Message);
                             }
                         }
+                        Trace.WriteLine("after check msi: " + file.FileName);
                     }
 
                 };
@@ -2674,6 +2731,12 @@ namespace PingCastle.Healthcheck
                 if (adws.FileConnection.FileExists(path))
                 {
                     ExtractNetSessionHardeningFromRegistryXml(path, GPO);
+                }
+                step = "check Folder option";
+                path = directoryFullName + @"\MACHINE\Preferences\FolderOptions\FolderOptions.xml";
+                if (adws.FileConnection.FileExists(path))
+                {
+                    ExtractFolderOptions(adws, path, GPO);
                 }
 
             }
@@ -2868,6 +2931,43 @@ namespace PingCastle.Healthcheck
             secPol.Properties.Add(new GPPSecurityPolicyProperty(valueName, 1));
         }
 
+        private void ExtractFolderOptions(ADWebService adws, string path, GPO gpo)
+        {
+            var doc = new XmlDocument();
+            doc.Load(path);
+
+            var nodeList = doc.SelectNodes("//FolderOptions/FileType");
+            if (nodeList.Count == 0)
+            {
+                return;
+            }
+            foreach (XmlNode node in nodeList)
+            {
+                XmlNode action = node.SelectSingleNode("Properties/@action");
+                XmlNode fileExt = node.SelectSingleNode("Properties/@fileExt");
+                XmlNode openAction = node.SelectSingleNode("Properties/Actions/Action[@name=\"open\"]");
+                if (openAction != null)
+                {
+                    XmlNode appUsed = openAction.SelectSingleNode("@appUsed");
+
+                    var folderOption = new GPPFolderOption
+                    {
+                        GPOName = gpo.DisplayName,
+                        GPOId = gpo.InternalName,
+                        Action = action.Value,
+                        FileExt = fileExt.Value,
+                        OpenApp = appUsed.Value,
+                    };
+
+                    lock (healthcheckData.GPOFolderOptions)
+                    {
+                        healthcheckData.GPOFolderOptions.Add(folderOption);
+                    }
+                }
+            }
+
+        }
+
         private void ExtractRegistryPolInfo(IADConnection adws, ADDomainInfo domainInfo, string directoryFullName, GPO GPO)
         {
             GPPSecurityPolicy PSO = null;
@@ -2878,326 +2978,572 @@ namespace PingCastle.Healthcheck
                 {
                     RegistryPolReader reader = new RegistryPolReader(adws.FileConnection);
                     reader.LoadFile(path);
-                    int intvalue = 0;
                     if (gpotarget == "Machine")
                     {
-                        //https://support.microsoft.com/en-us/kb/221784
-                        if (reader.IsValueSetIntAsStringValue(@"Software\Microsoft\Windows NT\CurrentVersion\Winlogon", "ScreenSaverGracePeriod", out intvalue))
-                        {
-                            if (PSO == null)
-                            {
-                                PSO = new GPPSecurityPolicy();
-                                PSO.GPOName = GPO.DisplayName;
-                                PSO.GPOId = GPO.InternalName;
-                                lock (healthcheckData.GPOScreenSaverPolicy)
-                                {
-                                    healthcheckData.GPOScreenSaverPolicy.Add(PSO);
-                                }
-                                PSO.Properties = new List<GPPSecurityPolicyProperty>();
-                            }
-                            PSO.Properties.Add(new GPPSecurityPolicyProperty("ScreenSaverGracePeriod", intvalue));
-                        }
-                        if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows NT\DNSClient", "EnableMulticast", out intvalue))
-                        {
-                            GPPSecurityPolicy SecurityPolicy = null;
-                            foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
-                            {
-                                if (policy.GPOId == GPO.InternalName)
-                                {
-                                    SecurityPolicy = policy;
-                                    break;
-                                }
-                            }
-                            if (SecurityPolicy == null)
-                            {
-                                SecurityPolicy = new GPPSecurityPolicy();
-                                SecurityPolicy.GPOName = GPO.DisplayName;
-                                SecurityPolicy.GPOId = GPO.InternalName;
+                        ExtractFirewallRules(GPO, reader);
+                        ExtractScreenSavePolicy(GPO, ref PSO, reader);
+                        ExtractEnableMulticast(GPO, reader);
+                        ExtractKerberosSettings(GPO, reader);
+                        ExtractPowershellLogging(GPO, reader);
+                        ExtractHardeningPath(GPO, reader);
 
-                                lock (healthcheckData.GPOLsaPolicy)
-                                {
-                                    healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
-                                }
-                                SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
-                            }
-                            SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("EnableMulticast", intvalue));
-                        }
-                        if (reader.IsValueSet(@"Software\Microsoft\Windows\CurrentVersion\Policies\System\KDC\Parameters", "EnableCbacAndArmor", out intvalue) && intvalue >= 1)
-                        {
-                            if (reader.IsValueSet(@"Software\Microsoft\Windows\CurrentVersion\Policies\System\KDC\Parameters", "CbacAndArmorLevel", out intvalue))
-                            {
-                                GPPSecurityPolicy SecurityPolicy = null;
-                                foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
-                                {
-                                    if (policy.GPOId == GPO.InternalName)
-                                    {
-                                        SecurityPolicy = policy;
-                                        break;
-                                    }
-                                }
-                                if (SecurityPolicy == null)
-                                {
-                                    SecurityPolicy = new GPPSecurityPolicy();
-                                    SecurityPolicy.GPOName = GPO.DisplayName;
-                                    SecurityPolicy.GPOId = GPO.InternalName;
-
-                                    lock (healthcheckData.GPOLsaPolicy)
-                                    {
-                                        healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
-                                    }
-                                    SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
-                                }
-                                SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("CbacAndArmorLevel", intvalue));
-                            }
-                        }
-                        if (reader.IsValueSet(@"Software\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters", "EnableCbacAndArmor", out intvalue))
-                        {
-                            GPPSecurityPolicy SecurityPolicy = null;
-                            foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
-                            {
-                                if (policy.GPOId == GPO.InternalName)
-                                {
-                                    SecurityPolicy = policy;
-                                    break;
-                                }
-                            }
-                            if (SecurityPolicy == null)
-                            {
-                                SecurityPolicy = new GPPSecurityPolicy();
-                                SecurityPolicy.GPOName = GPO.DisplayName;
-                                SecurityPolicy.GPOId = GPO.InternalName;
-
-                                lock (healthcheckData.GPOLsaPolicy)
-                                {
-                                    healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
-                                }
-                                SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
-                            }
-                            SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("EnableCbacAndArmor", intvalue));
-                        }
-                        if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows\PowerShell\ModuleLogging", "EnableModuleLogging", out intvalue))
-                        {
-                            GPPSecurityPolicy SecurityPolicy = null;
-                            foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
-                            {
-                                if (policy.GPOId == GPO.InternalName)
-                                {
-                                    SecurityPolicy = policy;
-                                    break;
-                                }
-                            }
-                            if (SecurityPolicy == null)
-                            {
-                                SecurityPolicy = new GPPSecurityPolicy();
-                                SecurityPolicy.GPOName = GPO.DisplayName;
-                                SecurityPolicy.GPOId = GPO.InternalName;
-
-                                lock (healthcheckData.GPOLsaPolicy)
-                                {
-                                    healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
-                                }
-                                SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
-                            }
-                            SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("EnableModuleLogging", intvalue));
-                        }
-                        if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging", "EnableScriptBlockLogging", out intvalue))
-                        {
-                            GPPSecurityPolicy SecurityPolicy = null;
-                            foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
-                            {
-                                if (policy.GPOId == GPO.InternalName)
-                                {
-                                    SecurityPolicy = policy;
-                                    break;
-                                }
-                            }
-                            if (SecurityPolicy == null)
-                            {
-                                SecurityPolicy = new GPPSecurityPolicy();
-                                SecurityPolicy.GPOName = GPO.DisplayName;
-                                SecurityPolicy.GPOId = GPO.InternalName;
-
-                                lock (healthcheckData.GPOLsaPolicy)
-                                {
-                                    healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
-                                }
-                                SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
-                            }
-                            SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("EnableScriptBlockLogging", intvalue));
-                        }
-                        var HardenedPaths = reader.SearchRecord(@"Software\Policies\Microsoft\Windows\NetworkProvider\HardenedPaths");
-                        if (HardenedPaths.Count > 0)
-                        {
-                            foreach (var record in HardenedPaths)
-                            {
-                                if (string.IsNullOrEmpty(record.Key))
-                                    continue;
-                                if (record.Type != Microsoft.Win32.RegistryValueKind.String)
-                                    continue;
-                                var stringvalue = UnicodeEncoding.Unicode.GetString(record.ByteValue).TrimEnd('\0');
-                                if (string.IsNullOrEmpty(stringvalue))
-                                    continue;
-                                var hardenedPath = new GPPHardenedPath();
-                                hardenedPath.Key = record.Value;
-                                hardenedPath.GPOName = GPO.DisplayName;
-                                hardenedPath.GPOId = GPO.InternalName;
-                                foreach (var v in stringvalue.Split(','))
-                                {
-                                    if (string.IsNullOrEmpty(v))
-                                        continue;
-                                    var w = v.Split('=');
-                                    if (w.Length < 2)
-                                        continue;
-                                    switch (w[0].ToLowerInvariant().Trim())
-                                    {
-                                        case "requiremutualauthentication":
-                                            hardenedPath.RequireMutualAuthentication = int.Parse(w[1]) == 1;
-                                            break;
-                                        case "requireprivacy":
-                                            hardenedPath.RequirePrivacy = int.Parse(w[1]) == 1;
-                                            break;
-                                        case "requireintegrity":
-                                            hardenedPath.RequireIntegrity = int.Parse(w[1]) == 1;
-                                            break;
-                                    }
-                                }
-                                if (hardenedPath.RequireIntegrity == null && hardenedPath.RequireMutualAuthentication == null && hardenedPath.RequirePrivacy == null)
-                                    continue;
-                                lock (healthcheckData.GPOHardenedPath)
-                                {
-                                    healthcheckData.GPOHardenedPath.Add(hardenedPath);
-                                }
-                            }
-                        }
+                        ExtractTerminalServerConfig(GPO, reader);
 
                         ProcessWSUSData(reader, GPO);
-
-                        for (int i = 1; ; i++)
-                        {
-                            string server = null;
-                            if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows\EventLog\EventForwarding\SubscriptionManager", i.ToString(), out server))
-                            {
-                                lock (healthcheckData.GPOEventForwarding)
-                                {
-                                    GPOEventForwardingInfo info = new GPOEventForwardingInfo();
-                                    info.GPOName = GPO.DisplayName;
-                                    info.GPOId = GPO.InternalName;
-                                    info.Order = i;
-                                    info.Server = server;
-                                    healthcheckData.GPOEventForwarding.Add(info);
-                                }
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
+                        ProcessDefenderASRData(reader, GPO);
+                        ExtractEvenForwardingInfo(GPO, reader);
                     }
                     else
                     {
-                        //https://msdn.microsoft.com/fr-fr/library/cc781591(v=ws.10).aspx
-                        if (reader.IsValueSetIntAsStringValue(@"software\policies\microsoft\windows\Control Panel\Desktop", "ScreenSaveTimeOut", out intvalue))
-                        {
-                            if (PSO == null)
-                            {
-                                PSO = new GPPSecurityPolicy();
-                                PSO.GPOName = GPO.DisplayName;
-                                PSO.GPOId = GPO.InternalName;
-                                lock (healthcheckData.GPOScreenSaverPolicy)
-                                {
-                                    healthcheckData.GPOScreenSaverPolicy.Add(PSO);
-                                }
-                                PSO.Properties = new List<GPPSecurityPolicyProperty>();
-                            }
-                            PSO.Properties.Add(new GPPSecurityPolicyProperty("ScreenSaveTimeOut", intvalue));
-                        }
-                        //https://msdn.microsoft.com/fr-fr/library/cc787364(v=ws.10).aspx
-                        if (reader.IsValueSetIntAsStringValue(@"software\policies\microsoft\windows\Control Panel\Desktop", "ScreenSaveActive", out intvalue))
-                        {
-                            if (PSO == null)
-                            {
-                                PSO = new GPPSecurityPolicy();
-                                PSO.GPOName = GPO.DisplayName;
-                                PSO.GPOId = GPO.InternalName;
-                                lock (healthcheckData.GPOScreenSaverPolicy)
-                                {
-                                    healthcheckData.GPOScreenSaverPolicy.Add(PSO);
-                                }
-                                PSO.Properties = new List<GPPSecurityPolicyProperty>();
-                            }
-                            PSO.Properties.Add(new GPPSecurityPolicyProperty("ScreenSaveActive", intvalue));
-                        }
-                        // https://technet.microsoft.com/en-us/library/cc959646.aspx
-                        if (reader.IsValueSetIntAsStringValue(@"software\policies\microsoft\windows\Control Panel\Desktop", "ScreenSaverIsSecure", out intvalue))
-                        {
-                            if (PSO == null)
-                            {
-                                PSO = new GPPSecurityPolicy();
-                                PSO.GPOName = GPO.DisplayName;
-                                PSO.GPOId = GPO.InternalName;
-                                lock (healthcheckData.GPOScreenSaverPolicy)
-                                {
-                                    healthcheckData.GPOScreenSaverPolicy.Add(PSO);
-                                }
-                                PSO.Properties = new List<GPPSecurityPolicyProperty>();
-                            }
-                            PSO.Properties.Add(new GPPSecurityPolicyProperty("ScreenSaverIsSecure", intvalue));
-                        }
+                        ExtractScreenSavePolicyUserSide(GPO, ref PSO, reader);
                     }
-                    // search for certificates
-                    foreach (string storename in new string[] { "Root", "CA", "Trust", "TrustedPeople", "TrustedPublisher", })
+                    ExtractTrustedCertificates(GPO, gpotarget, reader);
+                    ExtractLogonScripts(adws, domainInfo, GPO, gpotarget, reader);
+                }
+            }
+        }
+
+        private void ExtractTerminalServerConfig(GPO GPO, RegistryPolReader reader)
+        {
+            int intvalue;
+            GPPTerminalServiceConfig config = null;
+            // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-tsts/d7cb8c2d-f60e-42d6-b8f4-e617ad4d8c1b
+            if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows NT\Terminal Services", "MaxIdleTime", out intvalue))
+            {
+                if (config == null)
+                {
+                    config = new GPPTerminalServiceConfig();
+                    config.GPOName = GPO.DisplayName;
+                    config.GPOId = GPO.InternalName;
+                    lock (healthcheckData.GPOScreenSaverPolicy)
                     {
-                        X509Certificate2Collection store = null;
-                        if (reader.HasCertificateStore(storename, out store))
+                        healthcheckData.GPPTerminalServiceConfigs.Add(config);
+                    }
+                }
+                config.MaxIdleTime = intvalue;
+            }
+            if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows NT\Terminal Services", "MaxDisconnectionTime", out intvalue))
+            {
+                if (config == null)
+                {
+                    config = new GPPTerminalServiceConfig();
+                    config.GPOName = GPO.DisplayName;
+                    config.GPOId = GPO.InternalName;
+                    lock (healthcheckData.GPOScreenSaverPolicy)
+                    {
+                        healthcheckData.GPPTerminalServiceConfigs.Add(config);
+                    }
+                }
+                config.MaxDisconnectionTime = intvalue;
+            }
+            if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows NT\Terminal Services", "fDisableCpm", out intvalue))
+            {
+                if (config == null)
+                {
+                    config = new GPPTerminalServiceConfig();
+                    config.GPOName = GPO.DisplayName;
+                    config.GPOId = GPO.InternalName;
+                    lock (healthcheckData.GPOScreenSaverPolicy)
+                    {
+                        healthcheckData.GPPTerminalServiceConfigs.Add(config);
+                    }
+                }
+                config.fDisableCpm = intvalue > 0;
+            }
+
+        }
+
+        private void ExtractLogonScripts(IADConnection adws, ADDomainInfo domainInfo, GPO GPO, string gpotarget, RegistryPolReader reader)
+        {
+            foreach (RegistryPolRecord record in reader.SearchRecord(@"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run"))
+            {
+                if (record.Value == "**delvals.")
+                    continue;
+                string filename = Encoding.Unicode.GetString(record.ByteValue).Trim();
+                if (string.IsNullOrEmpty(filename))
+                    continue;
+                filename = filename.Replace("\0", string.Empty);
+                HealthcheckGPOLoginScriptData loginscript = new HealthcheckGPOLoginScriptData();
+                loginscript.GPOName = GPO.DisplayName;
+                loginscript.GPOId = GPO.InternalName;
+                loginscript.Action = "Logon";
+                // this is bad, I'm assuming that the file name doesn't contain any space which is wrong.
+                // but a real command line parsing will bring more anomalies.
+                var filePart = NativeMethods.SplitArguments(filename);
+                loginscript.Source = "Registry.pol (" + (gpotarget == "Machine" ? "Computer" : "User") + " section)";
+                loginscript.CommandLine = filePart[0];
+                if (loginscript.CommandLine.StartsWith("\\\\"))
+                {
+                    loginscript.Delegation = CheckScriptPermission(adws, domainInfo, loginscript.CommandLine);
+                }
+                if (filePart.Length > 1)
+                {
+                    for (int i = 1; i < filePart.Length; i++)
+                    {
+                        if (i > 1)
+                            loginscript.Parameters += " ";
+                        loginscript.Parameters += filePart[i];
+                    }
+                }
+                lock (healthcheckData.GPOLoginScript)
+                {
+                    healthcheckData.GPOLoginScript.Add(loginscript);
+                }
+            }
+        }
+
+        private void ExtractTrustedCertificates(GPO GPO, string gpotarget, RegistryPolReader reader)
+        {
+            // search for certificates
+            foreach (string storename in new string[] { "Root", "CA", "Trust", "TrustedPeople", "TrustedPublisher", })
+            {
+                X509Certificate2Collection store = null;
+                if (reader.HasCertificateStore(storename, out store))
+                {
+                    foreach (X509Certificate2 certificate in store)
+                    {
+                        HealthcheckCertificateData data = new HealthcheckCertificateData();
+                        data.Source = "GPO:" + GPO.DisplayName + ";" + gpotarget;
+                        data.Store = storename;
+                        data.Certificate = certificate.GetRawCertData();
+                        lock (healthcheckData.TrustedCertificates)
                         {
-                            foreach (X509Certificate2 certificate in store)
+                            healthcheckData.TrustedCertificates.Add(data);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ExtractScreenSavePolicyUserSide(GPO GPO, ref GPPSecurityPolicy PSO, RegistryPolReader reader)
+        {
+            int intvalue;
+            //https://msdn.microsoft.com/fr-fr/library/cc781591(v=ws.10).aspx
+            if (reader.IsValueSetIntAsStringValue(@"software\policies\microsoft\windows\Control Panel\Desktop", "ScreenSaveTimeOut", out intvalue))
+            {
+                if (PSO == null)
+                {
+                    PSO = new GPPSecurityPolicy();
+                    PSO.GPOName = GPO.DisplayName;
+                    PSO.GPOId = GPO.InternalName;
+                    lock (healthcheckData.GPOScreenSaverPolicy)
+                    {
+                        healthcheckData.GPOScreenSaverPolicy.Add(PSO);
+                    }
+                    PSO.Properties = new List<GPPSecurityPolicyProperty>();
+                }
+                PSO.Properties.Add(new GPPSecurityPolicyProperty("ScreenSaveTimeOut", intvalue));
+            }
+            //https://msdn.microsoft.com/fr-fr/library/cc787364(v=ws.10).aspx
+            if (reader.IsValueSetIntAsStringValue(@"software\policies\microsoft\windows\Control Panel\Desktop", "ScreenSaveActive", out intvalue))
+            {
+                if (PSO == null)
+                {
+                    PSO = new GPPSecurityPolicy();
+                    PSO.GPOName = GPO.DisplayName;
+                    PSO.GPOId = GPO.InternalName;
+                    lock (healthcheckData.GPOScreenSaverPolicy)
+                    {
+                        healthcheckData.GPOScreenSaverPolicy.Add(PSO);
+                    }
+                    PSO.Properties = new List<GPPSecurityPolicyProperty>();
+                }
+                PSO.Properties.Add(new GPPSecurityPolicyProperty("ScreenSaveActive", intvalue));
+            }
+            // https://technet.microsoft.com/en-us/library/cc959646.aspx
+            if (reader.IsValueSetIntAsStringValue(@"software\policies\microsoft\windows\Control Panel\Desktop", "ScreenSaverIsSecure", out intvalue))
+            {
+                if (PSO == null)
+                {
+                    PSO = new GPPSecurityPolicy();
+                    PSO.GPOName = GPO.DisplayName;
+                    PSO.GPOId = GPO.InternalName;
+                    lock (healthcheckData.GPOScreenSaverPolicy)
+                    {
+                        healthcheckData.GPOScreenSaverPolicy.Add(PSO);
+                    }
+                    PSO.Properties = new List<GPPSecurityPolicyProperty>();
+                }
+                PSO.Properties.Add(new GPPSecurityPolicyProperty("ScreenSaverIsSecure", intvalue));
+            }
+        }
+
+        private void ExtractEvenForwardingInfo(GPO GPO, RegistryPolReader reader)
+        {
+            for (int i = 1; ; i++)
+            {
+                string server = null;
+                if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows\EventLog\EventForwarding\SubscriptionManager", i.ToString(), out server))
+                {
+                    lock (healthcheckData.GPOEventForwarding)
+                    {
+                        GPOEventForwardingInfo info = new GPOEventForwardingInfo();
+                        info.GPOName = GPO.DisplayName;
+                        info.GPOId = GPO.InternalName;
+                        info.Order = i;
+                        info.Server = server;
+                        healthcheckData.GPOEventForwarding.Add(info);
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        private void ExtractHardeningPath(GPO GPO, RegistryPolReader reader)
+        {
+            var HardenedPaths = reader.SearchRecord(@"Software\Policies\Microsoft\Windows\NetworkProvider\HardenedPaths");
+            if (HardenedPaths.Count > 0)
+            {
+                foreach (var record in HardenedPaths)
+                {
+                    if (string.IsNullOrEmpty(record.Key))
+                        continue;
+                    if (record.Type != Microsoft.Win32.RegistryValueKind.String)
+                        continue;
+                    var stringvalue = UnicodeEncoding.Unicode.GetString(record.ByteValue).TrimEnd('\0');
+                    if (string.IsNullOrEmpty(stringvalue))
+                        continue;
+                    var hardenedPath = new GPPHardenedPath();
+                    hardenedPath.Key = record.Value;
+                    hardenedPath.GPOName = GPO.DisplayName;
+                    hardenedPath.GPOId = GPO.InternalName;
+                    foreach (var v in stringvalue.Split(','))
+                    {
+                        if (string.IsNullOrEmpty(v))
+                            continue;
+                        var w = v.Split('=');
+                        if (w.Length < 2)
+                            continue;
+                        switch (w[0].ToLowerInvariant().Trim())
+                        {
+                            case "requiremutualauthentication":
+                                hardenedPath.RequireMutualAuthentication = int.Parse(w[1]) == 1;
+                                break;
+                            case "requireprivacy":
+                                hardenedPath.RequirePrivacy = int.Parse(w[1]) == 1;
+                                break;
+                            case "requireintegrity":
+                                hardenedPath.RequireIntegrity = int.Parse(w[1]) == 1;
+                                break;
+                        }
+                    }
+                    if (hardenedPath.RequireIntegrity == null && hardenedPath.RequireMutualAuthentication == null && hardenedPath.RequirePrivacy == null)
+                        continue;
+                    lock (healthcheckData.GPOHardenedPath)
+                    {
+                        healthcheckData.GPOHardenedPath.Add(hardenedPath);
+                    }
+                }
+            }
+        }
+
+        private void ExtractPowershellLogging(GPO GPO, RegistryPolReader reader)
+        {
+            int intvalue;
+            if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows\PowerShell\ModuleLogging", "EnableModuleLogging", out intvalue))
+            {
+                GPPSecurityPolicy SecurityPolicy = null;
+                foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
+                {
+                    if (policy.GPOId == GPO.InternalName)
+                    {
+                        SecurityPolicy = policy;
+                        break;
+                    }
+                }
+                if (SecurityPolicy == null)
+                {
+                    SecurityPolicy = new GPPSecurityPolicy();
+                    SecurityPolicy.GPOName = GPO.DisplayName;
+                    SecurityPolicy.GPOId = GPO.InternalName;
+
+                    lock (healthcheckData.GPOLsaPolicy)
+                    {
+                        healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
+                    }
+                    SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
+                }
+                SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("EnableModuleLogging", intvalue));
+            }
+            if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging", "EnableScriptBlockLogging", out intvalue))
+            {
+                GPPSecurityPolicy SecurityPolicy = null;
+                foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
+                {
+                    if (policy.GPOId == GPO.InternalName)
+                    {
+                        SecurityPolicy = policy;
+                        break;
+                    }
+                }
+                if (SecurityPolicy == null)
+                {
+                    SecurityPolicy = new GPPSecurityPolicy();
+                    SecurityPolicy.GPOName = GPO.DisplayName;
+                    SecurityPolicy.GPOId = GPO.InternalName;
+
+                    lock (healthcheckData.GPOLsaPolicy)
+                    {
+                        healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
+                    }
+                    SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
+                }
+                SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("EnableScriptBlockLogging", intvalue));
+            }
+        }
+
+        private void ExtractKerberosSettings(GPO GPO, RegistryPolReader reader)
+        {
+            int intvalue;
+            if (reader.IsValueSet(@"Software\Microsoft\Windows\CurrentVersion\Policies\System\KDC\Parameters", "EnableCbacAndArmor", out intvalue) && intvalue >= 1)
+            {
+                if (reader.IsValueSet(@"Software\Microsoft\Windows\CurrentVersion\Policies\System\KDC\Parameters", "CbacAndArmorLevel", out intvalue))
+                {
+                    GPPSecurityPolicy SecurityPolicy = null;
+                    foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
+                    {
+                        if (policy.GPOId == GPO.InternalName)
+                        {
+                            SecurityPolicy = policy;
+                            break;
+                        }
+                    }
+                    if (SecurityPolicy == null)
+                    {
+                        SecurityPolicy = new GPPSecurityPolicy();
+                        SecurityPolicy.GPOName = GPO.DisplayName;
+                        SecurityPolicy.GPOId = GPO.InternalName;
+
+                        lock (healthcheckData.GPOLsaPolicy)
+                        {
+                            healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
+                        }
+                        SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
+                    }
+                    SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("CbacAndArmorLevel", intvalue));
+                }
+            }
+            if (reader.IsValueSet(@"Software\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters", "EnableCbacAndArmor", out intvalue))
+            {
+                GPPSecurityPolicy SecurityPolicy = null;
+                foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
+                {
+                    if (policy.GPOId == GPO.InternalName)
+                    {
+                        SecurityPolicy = policy;
+                        break;
+                    }
+                }
+                if (SecurityPolicy == null)
+                {
+                    SecurityPolicy = new GPPSecurityPolicy();
+                    SecurityPolicy.GPOName = GPO.DisplayName;
+                    SecurityPolicy.GPOId = GPO.InternalName;
+
+                    lock (healthcheckData.GPOLsaPolicy)
+                    {
+                        healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
+                    }
+                    SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
+                }
+                SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("EnableCbacAndArmor", intvalue));
+            }
+        }
+
+        private void ExtractFirewallRules(GPO GPO, RegistryPolReader reader)
+        {
+            foreach (var record in reader.SearchRecord(@"Software\Policies\Microsoft\WindowsFirewall\FirewallRules"))
+            {
+                if (record.Type != Microsoft.Win32.RegistryValueKind.String)
+                {
+                    Trace.WriteLine("Type for " + record.Key + " is not String: " + record.Type);
+                    continue;
+                }
+                // gammar: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-gpfas/2efe0b76-7b4a-41ff-9050-1023f8196d16
+                var stringvalue = UnicodeEncoding.Unicode.GetString(record.ByteValue).TrimEnd('\0');
+                var values = stringvalue.Split('|');
+                if (values.Length < 2)
+                    continue;
+
+                var fwRule = new GPPFireWallRule()
+                {
+                    GPOName = GPO.DisplayName,
+                    GPOId = GPO.InternalName,
+                    Version = values[0],
+                    Id = record.Value,
+                };
+                foreach (var value in values)
+                {
+                    var v2 = value.Split('=');
+                    if (v2.Length < 2)
+                        continue; // ignore first field also which is version
+                    // Action=Block|Active=TRUE|Dir=Out|RA4=1.0.0.0-9.255.255.255|RA4=11.0.0.0-126.255.255.255|Name=blocktointernet
+                    switch (v2[0].ToLower())
+                    {
+                        case "action":
+                            fwRule.Action = v2[1];
+                            break;
+                        case "active":
                             {
-                                HealthcheckCertificateData data = new HealthcheckCertificateData();
-                                data.Source = "GPO:" + GPO.DisplayName + ";" + gpotarget;
-                                data.Store = storename;
-                                data.Certificate = certificate.GetRawCertData();
-                                lock (healthcheckData.TrustedCertificates)
+                                bool fwActive;
+                                if (bool.TryParse(v2[1], out fwActive))
                                 {
-                                    healthcheckData.TrustedCertificates.Add(data);
+                                    fwRule.Active = fwActive;
                                 }
                             }
-                        }
-                    }
-                    foreach (RegistryPolRecord record in reader.SearchRecord(@"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run"))
-                    {
-                        if (record.Value == "**delvals.")
-                            continue;
-                        string filename = Encoding.Unicode.GetString(record.ByteValue).Trim();
-                        if (string.IsNullOrEmpty(filename))
-                            continue;
-                        filename = filename.Replace("\0", string.Empty);
-                        HealthcheckGPOLoginScriptData loginscript = new HealthcheckGPOLoginScriptData();
-                        loginscript.GPOName = GPO.DisplayName;
-                        loginscript.GPOId = GPO.InternalName;
-                        loginscript.Action = "Logon";
-                        // this is bad, I'm assuming that the file name doesn't contain any space which is wrong.
-                        // but a real command line parsing will bring more anomalies.
-                        var filePart = NativeMethods.SplitArguments(filename);
-                        loginscript.Source = "Registry.pol (" + (gpotarget == "Machine" ? "Computer" : "User") + " section)";
-                        loginscript.CommandLine = filePart[0];
-                        if (loginscript.CommandLine.StartsWith("\\\\"))
-                        {
-                            loginscript.Delegation = CheckScriptPermission(adws, domainInfo, loginscript.CommandLine);
-                        }
-                        if (filePart.Length > 1)
-                        {
-                            for (int i = 1; i < filePart.Length; i++)
+                            break;
+                        case "app":
+                            fwRule.App = v2[1];
+                            break;
+                        case "dir":
+                            fwRule.Direction = v2[1];
+                            break;
+                        case "name":
+                            fwRule.Name = v2[1];
+                            break;
+                        case "lport":
+                            fwRule.LPort = v2[1];
+                            break;
+                        case "rport":
+                            fwRule.RPort = v2[1];
+                            break;
+                        case "lport2_10":
+                            fwRule.LPort = v2[1];
+                            break;
+                        case "rport2_10":
+                            fwRule.RPort = v2[1];
+                            break;
+                        case "protocol":
                             {
-                                if (i > 1)
-                                    loginscript.Parameters += " ";
-                                loginscript.Parameters += filePart[i];
+                                int protocol;
+                                if (int.TryParse(v2[1], out protocol))
+                                    fwRule.Protocol = protocol;
                             }
-                        }
-                        lock (healthcheckData.GPOLoginScript)
-                        {
-                            healthcheckData.GPOLoginScript.Add(loginscript);
-                        }
+                            break;
+                        case "ra4":
+                        case "ra42":
+                            {
+                                if (fwRule.RA4 == null)
+                                    fwRule.RA4 = new List<string>();
+                                fwRule.RA4.Add(v2[1]);
+                            }
+                            break;
+                        case "la4":
+                        case "la42":
+                            {
+                                if (fwRule.LA4 == null)
+                                    fwRule.LA4 = new List<string>();
+                                fwRule.LA4.Add(v2[1]);
+                            }
+                            break;
+                        case "ra6":
+                        case "ra62":
+                            {
+                                if (fwRule.RA6 == null)
+                                    fwRule.RA6 = new List<string>();
+                                fwRule.RA6.Add(v2[1]);
+                            }
+                            break;
+                        case "la6":
+                        case "la62":
+                            {
+                                if (fwRule.LA6 == null)
+                                    fwRule.LA6 = new List<string>();
+                                fwRule.LA6.Add(v2[1]);
+                            }
+                            break;
                     }
+                }
+                lock (healthcheckData.GPPFirewallRules)
+                {
+                    healthcheckData.GPPFirewallRules.Add(fwRule);
+                }
+            }
+        }
+
+        private void ExtractEnableMulticast(GPO GPO, RegistryPolReader reader)
+        {
+            int intvalue;
+            if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows NT\DNSClient", "EnableMulticast", out intvalue))
+            {
+                GPPSecurityPolicy SecurityPolicy = null;
+                foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
+                {
+                    if (policy.GPOId == GPO.InternalName)
+                    {
+                        SecurityPolicy = policy;
+                        break;
+                    }
+                }
+                if (SecurityPolicy == null)
+                {
+                    SecurityPolicy = new GPPSecurityPolicy();
+                    SecurityPolicy.GPOName = GPO.DisplayName;
+                    SecurityPolicy.GPOId = GPO.InternalName;
+
+                    lock (healthcheckData.GPOLsaPolicy)
+                    {
+                        healthcheckData.GPOLsaPolicy.Add(SecurityPolicy);
+                    }
+                    SecurityPolicy.Properties = new List<GPPSecurityPolicyProperty>();
+                }
+                SecurityPolicy.Properties.Add(new GPPSecurityPolicyProperty("EnableMulticast", intvalue));
+            }
+        }
+
+        private int ExtractScreenSavePolicy(GPO GPO, ref GPPSecurityPolicy PSO, RegistryPolReader reader)
+        {
+            int intvalue;
+            //https://support.microsoft.com/en-us/kb/221784
+            if (reader.IsValueSetIntAsStringValue(@"Software\Microsoft\Windows NT\CurrentVersion\Winlogon", "ScreenSaverGracePeriod", out intvalue))
+            {
+                if (PSO == null)
+                {
+                    PSO = new GPPSecurityPolicy();
+                    PSO.GPOName = GPO.DisplayName;
+                    PSO.GPOId = GPO.InternalName;
+                    lock (healthcheckData.GPOScreenSaverPolicy)
+                    {
+                        healthcheckData.GPOScreenSaverPolicy.Add(PSO);
+                    }
+                    PSO.Properties = new List<GPPSecurityPolicyProperty>();
+                }
+                PSO.Properties.Add(new GPPSecurityPolicyProperty("ScreenSaverGracePeriod", intvalue));
+            }
+
+            return intvalue;
+        }
+
+        private void ProcessDefenderASRData(RegistryPolReader reader, GPO gPO)
+        {
+            int asr = 0;
+
+            if (reader.IsValueSet(@"Software\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\ASR", "ExploitGuard_ASR_Rules", out asr))
+            {
+                // ignore GPO if ASR is not enabled
+                if (asr != 1)
+                {
+                    return;
+                }
+            }
+            foreach (RegistryPolRecord record in reader.SearchRecord("Software\\Policies\\Microsoft\\Windows Defender\\Windows Defender Exploit Guard\\ASR\\Rules"))
+            {
+                var data = UnicodeEncoding.Unicode.GetString(record.ByteValue);
+                var intdata = 0;
+                int.TryParse(data, out intdata);
+                var asrdata = new HealthcheckDefenderASRData()
+                {
+                    GPOId = gPO.InternalName,
+                    GPOName = gPO.DisplayName,
+                    ASRRule = record.Value,
+                    Action = intdata,
+                };
+                lock (healthcheckData.GPODefenderASR)
+                {
+                    healthcheckData.GPODefenderASR.Add(asrdata);
                 }
             }
         }
@@ -4582,6 +4928,8 @@ namespace PingCastle.Healthcheck
                             (lapsAnalyzer.LegacyLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.LegacyLAPSIntId))
                             ||
                             (lapsAnalyzer.MsLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSIntId))
+                            ||
+                            (lapsAnalyzer.MsLAPSEncryptedIntId != 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSEncryptedIntId))
                             )
                         {
                             if (x.NTSecurityDescriptor != null)
@@ -4685,6 +5033,9 @@ namespace PingCastle.Healthcheck
 
         private void CheckSmartCard(ADDomainInfo domainInfo, ADWebService adws)
         {
+            if (healthcheckData.DomainFunctionalLevel < 3)
+                return;
+
             string[] smartCardNotOKProperties = new string[] {
                         "distinguishedName",
                         "name",
@@ -4717,6 +5068,9 @@ namespace PingCastle.Healthcheck
                         "distinguishedName",
                         "member",
             };
+
+            healthcheckData.PreWindows2000Members = new List<string>();
+
             WorkOnReturnedObjectByADWS callbackPreWin2000 =
                 (ADItem x) =>
                 {
@@ -4737,6 +5091,7 @@ namespace PingCastle.Healthcheck
                             if (!member.StartsWith("CN=S-"))
                             {
                                 healthcheckData.PreWindows2000NoDefault = true;
+                                healthcheckData.PreWindows2000Members.Add(member);
                                 continue;
                             }
                         }
@@ -4750,6 +5105,7 @@ namespace PingCastle.Healthcheck
             string[] DsHeuristicsproperties = new string[] {
                         "distinguishedName",
                         "dSHeuristics",
+                        "msDS-Other-Settings",
             };
             WorkOnReturnedObjectByADWS callbackdSHeuristics =
                 (ADItem x) =>
@@ -4758,21 +5114,30 @@ namespace PingCastle.Healthcheck
                     {
                         healthcheckData.DSHeuristics = x.DSHeuristics;
                     }
+                    if (x.msDSOtherSettings != null)
+                    {
+                        healthcheckData.DSOtherSettings = new List<string>(x.msDSOtherSettings);
+                    }
                 };
             adws.Enumerate(domainInfo.ConfigurationNamingContext, "(distinguishedName=CN=Directory Service,CN=Windows NT,CN=Services," + domainInfo.ConfigurationNamingContext + ")", DsHeuristicsproperties, callbackdSHeuristics);
         }
 
-        private void CheckMsDsMachineAccountQuota(ADDomainInfo domainInfo, ADWebService adws)
+        private void CheckRootDomainProperties(ADDomainInfo domainInfo, ADWebService adws)
         {
             WorkOnReturnedObjectByADWS callbackDSQuota =
                 (ADItem x) =>
                 {
                     healthcheckData.MachineAccountQuota = x.DSMachineAccountQuota;
+                    healthcheckData.ExpirePasswordsOnSmartCardOnlyAccounts = x.msDSExpirePasswordsOnSmartCardOnlyAccounts;
                 };
-            string[] DSQuotaproperties = new string[] {
+            var properties = new List<string> {
                 "ms-DS-MachineAccountQuota",
             };
-            adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=domain)(distinguishedName=" + domainInfo.DefaultNamingContext + "))", DSQuotaproperties, callbackDSQuota, "Base");
+            // starting Win 2016
+            if (healthcheckData.DomainFunctionalLevel >= 7)
+                properties.Add("msDS-ExpirePasswordsOnSmartCardOnlyAccounts");
+
+            adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=domain)(distinguishedName=" + domainInfo.DefaultNamingContext + "))", properties.ToArray(), callbackDSQuota, "Base");
         }
 
         private void CheckSIDHistoryAuditingGroupPresent(ADDomainInfo domainInfo, ADWebService adws)
@@ -5271,7 +5636,7 @@ namespace PingCastle.Healthcheck
                     functions = new Dictionary<string, int> { { "NetrDfsAddStdRoot", 12 }, { "NetrDfsRemoveStdRoot", 13 } }
                 },
                 new RPCTest {
-                    guid = Guid.Parse("82273fdc-e32a-18c3-3f78-827929dc23ea"), 
+                    guid = Guid.Parse("82273fdc-e32a-18c3-3f78-827929dc23ea"),
                     pipe = "eventlog",
                     functions =    new Dictionary<string, int> { { "ElfrOpenBELW", 9 }}
                 },
@@ -5279,7 +5644,7 @@ namespace PingCastle.Healthcheck
                     guid = Guid.Parse("c681d488-d850-11d0-8c52-00c04fd90f7e"),
                     pipe = "efsrpc",
                     major = 1,
-                    functions = new Dictionary<string, int> { { "EfsRpcAddUsersToFile", 9 }, { "EfsRpcAddUsersToFileEx", 15 }, 
+                    functions = new Dictionary<string, int> { { "EfsRpcAddUsersToFile", 9 }, { "EfsRpcAddUsersToFileEx", 15 },
                                                             {"EfsRpcDecryptFileSrv", 5}, {"EfsRpcDuplicateEncryptionInfoFile",12},
                                                             {"EfsRpcEncryptFileSrv",4 },{"EfsRpcFileKeyInfo",12 },
                                                             {"EfsRpcOpenFileRaw",0 },{"EfsRpcQueryRecoveryAgents",7 },
@@ -5287,13 +5652,13 @@ namespace PingCastle.Healthcheck
                     },
                 },
                 new RPCTest {
-                    guid = Guid.Parse("a8e0653c-2744-4389-a61d-7373df8b2292"), 
+                    guid = Guid.Parse("a8e0653c-2744-4389-a61d-7373df8b2292"),
                     pipe = "Fssagentrpc",
                     major = 1,
                     functions =    new Dictionary<string, int> { { "IsPathShadowCopied", 9 },{ "IsPathSupported", 8 }}
                 },
                 new RPCTest {
-                    guid = Guid.Parse("12345678-1234-ABCD-EF00-0123456789AB"), 
+                    guid = Guid.Parse("12345678-1234-ABCD-EF00-0123456789AB"),
                     pipe = "spoolss",
                     major = 1,
                     minor = 0,
@@ -5302,6 +5667,12 @@ namespace PingCastle.Healthcheck
             };
 
             DC.RPCInterfacesOpen = new List<HealthcheckDCRPCInterface>();
+
+            if (IsDCTheLocalComputer(DC))
+            {
+                Trace.WriteLine("[" + threadId + "] RPC test stopped for " + DC.DCName + " because this is the local computer");
+                return;
+            }
 
             foreach (var ip in DC.IP)
             {
@@ -5323,6 +5694,32 @@ namespace PingCastle.Healthcheck
                     }
                 }
             }
+        }
+
+        bool IsDCTheLocalComputer(HealthcheckDomainController dc)
+        {
+            NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+            foreach (NetworkInterface nic in networkInterfaces)
+            {
+                if (nic.OperationalStatus == OperationalStatus.Up)
+                {
+                    IPInterfaceProperties ipProperties = nic.GetIPProperties();
+                    foreach (UnicastIPAddressInformation ipInfo in ipProperties.UnicastAddresses)
+                    {
+                        if (ipInfo.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                        {
+                            foreach (var ip in dc.IP)
+                            {
+                                if (ip == ipInfo.Address.ToString())
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         private void GenerateTLSConnectionInfo(string dns, HealthcheckDomainController DC, NetworkCredential credentials, int threadId)
@@ -5560,18 +5957,24 @@ namespace PingCastle.Healthcheck
                         msDSNeverRevealGroup[aditem.DistinguishedName] = new List<string>(aditem.msDSNeverRevealGroup);
                 }
             );
-            foreach (var v in msDSRevealOnDemandGroup.Values)
-                foreach (var w in v)
-                {
-                    if (!sidResolution.ContainsKey(w))
-                        sidResolution[w] = w;
-                }
-            foreach (var v in msDSNeverRevealGroup.Values)
-                foreach (var w in v)
-                {
-                    if (!sidResolution.ContainsKey(w))
-                        sidResolution[w] = w;
-                }
+            if (msDSRevealOnDemandGroup != null)
+            {
+                foreach (var v in msDSRevealOnDemandGroup.Values)
+                    foreach (var w in v)
+                    {
+                        if (!sidResolution.ContainsKey(w))
+                            sidResolution[w] = w;
+                    }
+            }
+            if (msDSNeverRevealGroup != null)
+            {
+                foreach (var v in msDSNeverRevealGroup.Values)
+                    foreach (var w in v)
+                    {
+                        if (!sidResolution.ContainsKey(w))
+                            sidResolution[w] = w;
+                    }
+            }
             foreach (var dn in new List<string>(sidResolution.Keys))
             {
                 adws.Enumerate(domainInfo.DefaultNamingContext,
@@ -5579,7 +5982,10 @@ namespace PingCastle.Healthcheck
                                             properties2,
                                             (ADItem aditem) =>
                                             {
-                                                sidResolution[dn] = aditem.ObjectSid.Value;
+                                                if (aditem.ObjectSid != null)
+                                                {
+                                                    sidResolution[dn] = aditem.ObjectSid.Value;
+                                                }
                                             }
                                             );
             }
@@ -5594,7 +6000,7 @@ namespace PingCastle.Healthcheck
                             dc.msDSRevealOnDemandGroup.Add(sidResolution[u]);
                     }
                 }
-                if (msDSNeverRevealGroup.ContainsKey(dc.DistinguishedName))
+                if (msDSNeverRevealGroup != null && msDSNeverRevealGroup.ContainsKey(dc.DistinguishedName))
                 {
                     dc.msDSNeverRevealGroup = new List<string>();
                     foreach (var u in msDSNeverRevealGroup[dc.DistinguishedName])
@@ -5625,6 +6031,26 @@ namespace PingCastle.Healthcheck
                                                 }
                                             }
                                             );
+        }
+
+        private void GenerateRODCKrbtgtOrphans(ADDomainInfo domainInfo, ADWebService adws)
+        {
+            string[] properties = new string[] {
+                        "distinguishedName",
+                        "name",
+                        "sAMAccountName",
+                        "whenCreated",
+                        "lastLogonTimestamp",
+            };
+            // enumerates the account with the flag "smart card required" and not disabled
+            healthcheckData.RODCKrbtgtOrphans = new List<HealthcheckAccountDetailData>();
+            WorkOnReturnedObjectByADWS callback =
+               (ADItem x) =>
+               {
+                   healthcheckData.RODCKrbtgtOrphans.Add(GetAccountDetail(x));
+
+               };
+            adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectclas=user)(!(msDS-KrbTgtLinkBl=*))(sAMAccountName=krbtgt_*)(msDS-SecondaryKrbTgtNumber=*))", properties, callback);
         }
 
         // this function has been designed to avoid LDAP query reentrance (to avoid the 5 connection limit)

@@ -22,9 +22,19 @@ namespace PingCastle.misc
             EndAddress = new IPAddress(endAddress);
         }
 
+        public Subnet(IPAddress startAddress, IPAddress endAddress)
+        {
+            StartAddress = startAddress;
+            _startAddress = startAddress.GetAddressBytes();
+            EndAddress = endAddress;
+            _mask = -1;
+        }
+
         public override string ToString()
         {
-            return StartAddress.ToString() + "/" + _mask;
+            if (_mask >= 0)
+                return StartAddress.ToString() + "/" + _mask;
+            return StartAddress.ToString() + "-" + EndAddress.ToString();
         }
 
         private void ApplyBitMask(byte[] address, bool setBits = false)
@@ -59,22 +69,50 @@ namespace PingCastle.misc
             byte[] ipAddressBytes = ipaddress.GetAddressBytes();
             if (ipAddressBytes.Length != _startAddress.Length)
                 return false;
-            ApplyBitMask(ipAddressBytes);
-            for (int i = 0; i < _startAddress.Length; i++)
+            if (_mask >= 0)
             {
-                if (ipAddressBytes[i] != _startAddress[i]) return false;
+                ApplyBitMask(ipAddressBytes);
+                for (int i = 0; i < _startAddress.Length; i++)
+                {
+                    if (ipAddressBytes[i] != _startAddress[i]) return false;
+                }
+                return true;
             }
-            return true;
+            return CompareIPAddresses(StartAddress, ipaddress) <= 0 && CompareIPAddresses(ipaddress, EndAddress) <= 0;
+        }
+
+        static int CompareIPAddresses(IPAddress ip1, IPAddress ip2)
+        {
+            byte[] ip1Bytes = ip1.GetAddressBytes();
+            byte[] ip2Bytes = ip2.GetAddressBytes();
+
+            if (ip1Bytes.Length != ip2Bytes.Length)
+            {
+                throw new ArgumentException("IP addresses must have the same length.");
+            }
+
+            for (int i = 0; i < ip1Bytes.Length; i++)
+            {
+                if (ip1Bytes[i] < ip2Bytes[i]) return -1;
+                if (ip1Bytes[i] > ip2Bytes[i]) return 1;
+            }
+
+            return 0;
         }
 
         public static Subnet Parse(string subnet)
         {
-            IPAddress lowIP;
+            IPAddress lowIP, highIP;
             int bits;
             var parts = subnet.Split('/');
             if (parts.Length == 2 && IPAddress.TryParse(parts[0], out lowIP) && int.TryParse(parts[1], out bits))
             {
                 return new Subnet(lowIP, bits);
+            }
+            parts = subnet.Split('-');
+            if (parts.Length == 2 && IPAddress.TryParse(parts[0], out lowIP) && IPAddress.TryParse(parts[1], out highIP) && lowIP.AddressFamily == highIP.AddressFamily)
+            {
+                return new Subnet(lowIP, highIP);
             }
             throw new ArgumentException("invalid subnet: " + subnet);
         }

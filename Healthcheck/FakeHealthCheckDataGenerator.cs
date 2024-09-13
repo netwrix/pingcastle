@@ -401,6 +401,11 @@ namespace PingCastle.Healthcheck
             healthcheckData.GPOWSUS = new List<HealthcheckWSUSData>();
         }
 
+        class MockupADItem : ADItem
+        {
+
+        }
+
         private void GenerateUserData(FakeHealthCheckDataGeneratorDomainModel model, HealthcheckData healthcheckData)
         {
             healthcheckData.UserAccountData = new HealthcheckAccountData();
@@ -409,7 +414,7 @@ namespace PingCastle.Healthcheck
             int size = GetCountFromSize(model);
             for (int i = 0; i < size; i++)
             {
-                ADItem x = new ADItem();
+                var x = new MockupADItem();
                 x.DistinguishedName = "CN=123";
                 // disabled
                 x.UserAccountControl += BoolOnChance(15) * 0x00000002;
@@ -438,7 +443,7 @@ namespace PingCastle.Healthcheck
             int size = GetCountFromSize(model);
             for (int i = 0; i < size; i++)
             {
-                ADItem x = new ADItem();
+                var x = new MockupADItem();
                 x.DistinguishedName = "CN=123";
                 // disabled
                 x.UserAccountControl += BoolOnChance(15) * 0x00000002;

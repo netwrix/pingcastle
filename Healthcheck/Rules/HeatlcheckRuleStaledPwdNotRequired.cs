@@ -17,6 +17,17 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
+            if (healthcheckData.UserAccountData.ListPwdNotRequired != null)
+            {
+                if (healthcheckData.UserAccountData.NumberPwdNotRequired < maxNumDisplayAccount)
+                {
+                    for (int i = 0; i < healthcheckData.UserAccountData.NumberPwdNotRequired; i++)
+                    {
+                        AddRawDetail(healthcheckData.UserAccountData.ListPwdNotRequired[i].DistinguishedName);
+                    }
+                }
+                return null;
+            }
             return healthcheckData.UserAccountData.NumberPwdNotRequired;
         }
     }

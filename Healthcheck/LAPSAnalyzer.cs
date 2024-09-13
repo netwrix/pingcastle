@@ -31,12 +31,21 @@ namespace PingCastle.Healthcheck
                 }
                 , "OneLevel");
 
+            // see https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-technical-reference
             adws.Enumerate(domainInfo.SchemaNamingContext, "(name=ms-LAPS-Password)", propertiesLaps,
                 (ADItem aditem) =>
                 {
                     MsLAPSInstalled = aditem.WhenCreated;
                     MsLAPSIntId = aditem.msDSIntId;
                     MsLAPSSchemaId = aditem.SchemaIDGUID;
+                }
+                , "OneLevel");
+
+            adws.Enumerate(domainInfo.SchemaNamingContext, "(name=ms-LAPS-EncryptedPassword)", propertiesLaps,
+                (ADItem aditem) =>
+                {
+                    MsLAPSEncryptedIntId = aditem.msDSIntId;
+                    MsLAPSEncryptedSchemaId = aditem.SchemaIDGUID;
                 }
                 , "OneLevel");
         }
@@ -50,6 +59,9 @@ namespace PingCastle.Healthcheck
         public int MsLAPSIntId { get; private set; }
         public Guid MsLAPSSchemaId { get; set; }
 
+        public int MsLAPSEncryptedIntId { get; private set; }
+        public Guid MsLAPSEncryptedSchemaId { get; set; }
+
         public bool LAPSInstalled { get { return LegacyLAPSInstalled < DateTime.MaxValue || MsLAPSInstalled < DateTime.MaxValue; } }
 
         public List<Guid> LAPSSchemaGuid
@@ -59,6 +71,7 @@ namespace PingCastle.Healthcheck
                 var l = new List<Guid>();
                 if (LegacyLAPSSchemaId != Guid.Empty) l.Add(LegacyLAPSSchemaId);
                 if (MsLAPSSchemaId != Guid.Empty) l.Add(MsLAPSSchemaId);
+                if (MsLAPSEncryptedSchemaId != Guid.Empty) l.Add(MsLAPSEncryptedSchemaId);
                 return l;
             }
         }

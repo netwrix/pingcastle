@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\Costura.Fody.5.7.0\build\Costura.Fody.props" Condition="Exists('packages\Costura.Fody.5.7.0\build\Costura.Fody.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PingCastle</RootNamespace>
     <AssemblyName>PingCastle</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <IsWebBootstrapper>false</IsWebBootstrapper>
@@ -82,23 +83,51 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Costura, Version=5.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Costura.Fody.5.7.0\lib\netstandard1.0\Costura.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.Protocols" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http, Version=4.1.1.3, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Net.Http.4.3.4\lib\net46\System.Net.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
+    <Reference Include="System.Security.Cryptography.Algorithms, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
+    </Reference>
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Text.RegularExpressions, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Text.RegularExpressions.4.3.1\lib\net463\System.Text.RegularExpressions.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -134,6 +163,14 @@
     <Compile Include="Cloud\PublicServices\UserRealmV1.cs" />
     <Compile Include="Cloud\PublicServices\UserRealmV2.cs" />
     <Compile Include="Healthcheck\LAPSAnalyzer.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledTerminalServiceGPO.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledScriptToInternet.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledDefenderASR.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledFolderOptions.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyRootDseAnonBinding.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledAesNotEnabled.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedRODCKrbtgtOrphan.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalySmartCardExpirePassword.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyDCCoerce.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsolete2012.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteDC2012.cs" />
@@ -142,6 +179,7 @@
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledDefaultOUChanged.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyDCLdapsSSLAdvanced.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledOldNtlm.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledPwdLastSetCluster.cs" />
     <Compile Include="Report\ReportCloudCompared.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteFunctionalLevel4.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRuleStaledObsoleteFunctionalLevel3.cs" />
@@ -507,7 +545,9 @@
     <None Include="ADWS\wsdl\wsman.xsd">
       <SubType>Designer</SubType>
     </None>
-    <EmbeddedResource Include="Cloud\Rules\RuleDescription.resx" />
+    <EmbeddedResource Include="Cloud\Rules\RuleDescription.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Cloud\UI\AuthenticationDialog.resx">
       <DependentUpon>AuthenticationDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -521,6 +561,8 @@
     <EmbeddedResource Include="template\bootstrap.min.js.gz" />
     <EmbeddedResource Include="template\jquery.min.js.gz" />
     <EmbeddedResource Include="template\popper.min.js.gz" />
+    <Content Include="FodyWeavers.xml" />
+    <Content Include="FodyWeavers.xsd" />
     <Content Include="template\ProcessTemplate.ps1" />
     <EmbeddedResource Include="template\ReportBase.css.gz" />
     <EmbeddedResource Include="template\ReportCompromiseGraph.css.gz" />
@@ -538,6 +580,7 @@
     <EmbeddedResource Include="template\bootstrap-table-export.min.js.gz" />
     <EmbeddedResource Include="template\tableExport.min.js.gz" />
     <EmbeddedResource Include="template\ReportCloudMain.js.gz" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="changelog.txt" />
@@ -568,7 +611,12 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="PingCastleCommon\PingCastleCommon.csproj">
+      <Project>{5a81e70c-7e84-48c2-a777-4f8060f02c43}</Project>
+      <Name>PingCastleCommon</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>SET PATH=%25PATH%25;"C:\Program Files (x86)\Windows Kits\8.0\bin\x86"
@@ -595,6 +643,16 @@ IF /I "$(ConfigurationName)" == "Debug" (
     <PreBuildEvent>cd $(ProjectDir)\template
 powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File "ProcessTemplate.ps1"</PreBuildEvent>
   </PropertyGroup>
+  <Import Project="packages\Fody.6.8.1\build\Fody.targets" Condition="Exists('packages\Fody.6.8.1\build\Fody.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\Fody.6.8.1\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Fody.6.8.1\build\Fody.targets'))" />
+    <Error Condition="!Exists('packages\Costura.Fody.5.7.0\build\Costura.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Costura.Fody.5.7.0\build\Costura.Fody.props'))" />
+    <Error Condition="!Exists('packages\Costura.Fody.5.7.0\build\Costura.Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Costura.Fody.5.7.0\build\Costura.Fody.targets'))" />
+  </Target>
+  <Import Project="packages\Costura.Fody.5.7.0\build\Costura.Fody.targets" Condition="Exists('packages\Costura.Fody.5.7.0\build\Costura.Fody.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

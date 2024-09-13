@@ -582,6 +582,9 @@ For LmCompatibilityLevel the setting is located in: Network security: LAN Manage
   <data name="A_AdminSDHolder_Rationale" xml:space="preserve">
     <value>Suspicious admin activities detected on {count} user(s)</value>
   </data>
+  <data name="A_AdminSDHolder_Detail" xml:space="preserve">
+    <value>DN: {0}</value>
+  </data>
   <data name="A_Krbtgt_Description" xml:space="preserve">
     <value>The purpose is to alert when the password for the krbtgt account can be used to compromise the whole domain. This password can be used to sign every Kerberos ticket. Monitoring it closely often mitigates the risk of golden ticket attacks greatly.</value>
   </data>
@@ -652,6 +655,12 @@ Second, a more manual way is to essentially reset the password manually once, th
   <data name="P_ServiceDomainAdmin_Rationale" xml:space="preserve">
     <value>Presence of accounts with non-expiring passwords in the domain admin group (at least {threshold} accounts): {count}</value>
   </data>
+  <data name="P_ServiceDomainAdmin_Detail" xml:space="preserve">
+    <value>DN: {0}</value>
+  </data>
+  <data name="S_ServiceDomainAdmin_Detail" xml:space="preserve">
+    <value>DN: {0}</value>
+  </data>
   <data name="P_Delegated_Description" xml:space="preserve">
     <value>The purpose is to ensure that all Administrator Accounts have the configuration flag "this account is sensitive and cannot be delegated" (or are members of the built-in group "Protected Users" when your domain functional level is at least Windows Server 2012 R2).</value>
   </data>
@@ -664,7 +673,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>Presence of Admin accounts which do not have the flag "This account is sensitive and cannot be delegated": {count}</value>
   </data>
   <data name="P_Delegated_Detail" xml:space="preserve">
-    <value>Domain controller: {0} Reason: {1}</value>
+    <value>DN: {0} Reason: {1}</value>
   </data>
   <data name="P_Inactive_Description" xml:space="preserve">
     <value>The purpose is to ensure that all Administrator Accounts in the AD are necessary and used</value>
@@ -760,7 +769,7 @@ It's worth mentioning that prior to version 3.2 of PingCastle, this information 
   <data name="S_OS_2003_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10.   
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Server 2003*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter {(Enabled -eq $true) -and (OperatingSystem -Like "*Server 2003*")} -Property Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion | format-table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2003_Rationale" xml:space="preserve">
     <value>Presence of Windows Server 2003 = {count}</value>
@@ -771,7 +780,7 @@ It's worth mentioning that prior to version 3.2 of PingCastle, this information 
   <data name="S_OS_2000_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Server 2000*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter {(Enabled -eq $true) -and (OperatingSystem -Like "*Server 2000*")} -Property Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion | format-table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2000_Rationale" xml:space="preserve">
     <value>Presence of Windows 2000 = {count}</value>
@@ -782,7 +791,7 @@ It's worth mentioning that prior to version 3.2 of PingCastle, this information 
   <data name="S_OS_XP_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "*Windows XP*" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter {(Enabled -eq $true) -and (OperatingSystem -Like "*Windows XP*")} -Property Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion | format-table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_XP_Rationale" xml:space="preserve">
     <value>Presence of Windows XP = {count}</value>
@@ -793,7 +802,7 @@ It's worth mentioning that prior to version 3.2 of PingCastle, this information 
   <data name="S_OS_NT_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter { operatingsystem -like "* NT *" } -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter {(Enabled -eq $true) -and (OperatingSystem -Like "* NT *")} -Property Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion | format-table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_NT_Rationale" xml:space="preserve">
     <value>Presence of Windows NT = {count}</value>
@@ -863,11 +872,17 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
   <data name="S_PwdNotRequired_Rationale" xml:space="preserve">
     <value>Number of accounts which can have an empty password (can be overridden by GPO): {count}</value>
   </data>
+  <data name="S_PwdNotRequired_Detail" xml:space="preserve">
+    <value>DN: {0}</value>
+  </data>
   <data name="S_DesEnabled_Description" xml:space="preserve">
     <value>The purpose is to verify that no weak encryption algorithm such as DES is used for accounts.</value>
   </data>
   <data name="S_DesEnabled_Solution" xml:space="preserve">
     <value>It is recommended to disable DES as an encryption algorithm in the user configuration dialog or in the "msDSSupportedEncryptionTypes" attribute at LDAP level. It has to be disabled in the property of an account by unchecking the box "Use Kerberos DES encryption for this account". You can also detect which accounts support Kerberos DES encryption by running: &lt;i&gt;Get-ADObject -Filter {UserAccountControl -band 0x200000 -or msDs-supportedEncryptionTypes -band 3}&lt;/i&gt;.</value>
+  </data>
+  <data name="S_DesEnabled_Detail" xml:space="preserve">
+    <value>DN: {0}</value>
   </data>
   <data name="S_DesEnabled_Rationale" xml:space="preserve">
     <value>Presence of DES Enabled accounts = {count}</value>
@@ -892,6 +907,9 @@ Do not apply /quarantine on a forest trust: you will break the transitivity of t
   </data>
   <data name="S_PrimaryGroup_Rationale" xml:space="preserve">
     <value>Presence of wrong primary group for users: {count}</value>
+  </data>
+  <data name="S_PrimaryGroup_Detail" xml:space="preserve">
+    <value>DN: {0}</value>
   </data>
   <data name="S_C_Inactive_Description" xml:space="preserve">
     <value>The purpose is to ensure that there are as few inactive computers as possible within the domain.</value>
@@ -1197,7 +1215,7 @@ It is possible to verify the results provided by the PingCastle solution by usin
     <value>A RSA key certificate with a modulus under 1024 bits is considered unsafe</value>
   </data>
   <data name="P_AdminLogin_TechnicalExplanation" xml:space="preserve">
-    <value>The Native Administrator account serves as the primary administrative account and shares its password with the Directory Services Restore Mode password. This shared password presents a potential security vulnerability as it can be exploited to gain control of the domain, even if the account itself is disabled. This vulnerability is particularly notable in the context of a DCSync attack.
+    <value>The Native Administrator account serves as the primary administrative account and often shares its password with the Directory Services Restore Mode password. This shared password presents a potential security vulnerability as it can be exploited to gain control of the domain, even if the account itself is disabled. This vulnerability is particularly notable in the context of a DCSync attack.
 
 Previously, the last login date was obtained by querying the LastLogonTimestamp LDAP attribute from the Active Directory. However, there was an exception in place, allowing for a 35-day window to prevent this rule from being triggered during domain creation. Since the release of PingCastle version 3.2, the last login date is acquired by connecting to each domain controller and querying the LastLogon attribute.</value>
   </data>
@@ -1231,6 +1249,8 @@ Previously, the last login date was obtained by querying the LastLogonTimestamp 
   </data>
   <data name="S_ADRegistration_TechnicalExplanation" xml:space="preserve">
     <value>By default, a basic user can register up to 10 computers within the domain. This default configuration represents a security issue as basic users shouldn't be able to create such accounts and this task should be handled by administrators.
+    
+    If the value of the attribute ms-DS-MachineAccountQuota is not set (the program see this as "Infinite"), there is no limit to computer addition.
     
     Note: this program checks also the GPO for SeMachineAccountPrivilege assignment. This assignment can be used to restrict the impact of the key ms-DS-MachineAccountQuota.</value>
   </data>
@@ -1485,7 +1505,7 @@ http://blog.backslasher.net/preventing-users-from-adding-computers-to-a-domain.h
   </data>
   <data name="S_DesEnabled_Documentation" xml:space="preserve">
     <value>https://docs.microsoft.com/en-us/archive/blogs/openspecification/msds-supportedencryptiontypes-episode-1-computer-accounts
-https://docs.microsoft.com/en-us/services-hub/health/remediation-steps-ad/remove-the-highly-insecure-des-encryption-from-user-accounts</value>
+https://learn.microsoft.com/en-us/services-hub/unified/health/remediation-steps-ad/remove-the-highly-insecure-des-encryption-from-user-accounts</value>
   </data>
   <data name="S_Domain____Documentation" xml:space="preserve">
     <value />
@@ -1593,16 +1613,22 @@ https://github.com/misterch0c/shadowbroker/tree/master/windows/exploits </value>
     <value>Check if the account has been migrated from a domain which doesn't exist anymore</value>
   </data>
   <data name="A_SMB2SignatureNotEnabled_TechnicalExplanation" xml:space="preserve">
-    <value>Python responder is a tool used to compromise a domain by listening for SMB connections and injecting rogue data into the communications at the network level. SMB v1 does not provide a mechanism to enforce integrity and thus is compromised easily. SMB v2 (and subsequent version SMB v3) provides a way to guarantee the integrity of the network communication via a signature of each packet. By establishing a SMB v2 dialog with domain controllers, PingCastle checks the signature capability by looking at the SMB options provided by the server.</value>
+    <value>If SMB signing is not required on domain controllers, it can lead to several security risks and potential problems like Man-in-the-Middle (MitM) or relaying attacks like e.g. the so called RemotePotato0. An often used attack tool is Python Responder, which can be used to compromise a domain by listening for SMB connections, injecting rogue data into the communications and relaying it to a different system.
+SMB v1 does not provide a mechanism to enforce integrity and thus is compromised easily. SMB v2 (and subsequent version SMB v3) provides a way to guarantee the integrity of the network communication via a signature of each packet. By establishing a SMB v2 dialog with domain controllers, PingCastle checks the signature capability by looking at the SMB options provided by the server.</value>
   </data>
   <data name="A_SMB2SignatureNotRequired_TechnicalExplanation" xml:space="preserve">
-    <value>Python responder is a tool used to compromise a domain by listening for SMB connections and injecting rogue data into the communications at the network level. SMB v1 does not provide a mechanism to enforce integrity and thus is compromised easily. SMB v2 (and subsequent version SMB v3) provides a way to guarantee the integrity of the network communication via a signature of each packet. By establishing a SMB v2 dialog with domain controllers, PingCastle checks the signature capability by looking at the SMB options provided by the server.</value>
+    <value>If SMB signing is not required on domain controllers, it can lead to several security risks and potential problems like Man-in-the-Middle (MitM) or relaying attacks like e.g. the so called RemotePotato0. An often used attack tool is Python Responder, which can be used to compromise a domain by listening for SMB connections, injecting rogue data into the communications and relaying it to a different system.
+SMB v1 does not provide a mechanism to enforce integrity and thus is compromised easily. SMB v2 (and subsequent version SMB v3) provides a way to guarantee the integrity of the network communication via a signature of each packet. By establishing a SMB v2 dialog with domain controllers, PingCastle checks the signature capability by looking at the SMB options provided by the server.</value>
   </data>
   <data name="A_SMB2SignatureNotEnabled_Documentation" xml:space="preserve">
-    <value>https://msdn.microsoft.com/en-us/library/cc246675.aspx</value>
+    <value>https://www.sentinelone.com/labs/relaying-potatoes-another-unexpected-privilege-escalation-vulnerability-in-windows-rpc-protocol/
+https://trustedsec.com/blog/a-comprehensive-guide-on-relaying-anno-2022
+https://msdn.microsoft.com/en-us/library/cc246675.aspx</value>
   </data>
   <data name="A_SMB2SignatureNotRequired_Documentation" xml:space="preserve">
-    <value>https://msdn.microsoft.com/en-us/library/cc246675.aspx</value>
+    <value>https://www.sentinelone.com/labs/relaying-potatoes-another-unexpected-privilege-escalation-vulnerability-in-windows-rpc-protocol/
+https://trustedsec.com/blog/a-comprehensive-guide-on-relaying-anno-2022
+https://msdn.microsoft.com/en-us/library/cc246675.aspx</value>
   </data>
   <data name="S_NoPreAuth_Description" xml:space="preserve">
     <value>The purpose is to ensure that all accounts require Kerberos pre-authentication</value>
@@ -2808,8 +2834,7 @@ https://docs.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-loggi
   <data name="S_OS_Vista_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;
-    You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>  
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter {(Enabled -eq $true) -and (OperatingSystem -Like "*Windows Vista*")} -Property Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion | format-table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_Vista_Rationale" xml:space="preserve">
     <value>Presence of Windows Vista = {count}</value>
@@ -2862,8 +2887,7 @@ https://docs.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-loggi
   <data name="S_OS_2008_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the servers to a more recent version of Windows, starting from Windows Server 2012. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;
-    You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter {(Enabled -eq $true) -and (OperatingSystem -Like "*Server 2008*")} -Property Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion | format-table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2008_TechnicalExplanation" xml:space="preserve">
     <value>The Windows Server 2008 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
@@ -2948,7 +2972,7 @@ https://keychest.net/roca</value>
   <data name="A_CertWeakRsaComponent_TechnicalExplanation" xml:space="preserve">
     <value>The RSA public key is composed of two parts: The modulus and the exponent. The exponent must be a prime number and its value is usually 65537.
     It is not recommended to have a exponent larger than 65537 for compatibility reasons as for example older Windows handle the exponent in 4 bytes.
-  Having a lower exponent, such as 3, give a significant performance boost (up to 8 times), but it is considered less secure.</value>
+  Having a lower exponent, such as 3, gives a significant performance boost (up to 8 times), but it is considered less secure.</value>
   </data>
   <data name="A_CertWeakRsaComponent_Title" xml:space="preserve">
     <value>Check for Certificates using a weak RSA exponent</value>
@@ -3032,7 +3056,7 @@ The NSPI protocol is used internally by Exchange to resolve addresses, and thus 
     <value>Missing: {0}</value>
   </data>
   <data name="P_RODCDeniedGroup_Documentation" xml:space="preserve">
-    <value>https://docs.microsoft.com/en-us/services-hub/health/remediation-steps-ad/review-the-removal-of-default-members-from-the-denied-rodc-password-replication-group</value>
+    <value>https://learn.microsoft.com/en-us/services-hub/unified/health/remediation-steps-ad/review-the-removal-of-default-members-from-the-denied-rodc-password-replication-group</value>
   </data>
   <data name="P_RODCDeniedGroup_Rationale" xml:space="preserve">
     <value>The Denied RODC Password Replication Group group has some of its default members missing</value>
@@ -3443,6 +3467,9 @@ PARTIAL_SECRETS_ACCOUNT (0x04000000) | TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION (0
   <data name="A_PreWin2000Other_Title" xml:space="preserve">
     <value>Check that the "Pre-Windows 2000 Compatible Access" group has not been modified from its default</value>
   </data>
+  <data name="A_PreWin2000Other_Detail" xml:space="preserve">
+    <value>DN: {0}</value>
+  </data>
   <data name="P_ProtectedUsers_Description" xml:space="preserve">
     <value>The purpose is to ensure that all privileged accounts are in the Protected User security group</value>
   </data>
@@ -3670,7 +3697,7 @@ In this case, the DnsAdmins group is not empty and grant to its user the possibi
   <data name="P_RODCRevealOnDemand_Solution" xml:space="preserve">
     <value>Edit the attribute msDS-RevealOnDemandGroup and remove the privileged user or group identified.
     
-    This can be managed in the Password Replication Policy tab of the computer objecct in the Active Directory Users and Computers console.</value>
+    This can be managed in the Password Replication Policy tab of the computer object in the Active Directory Users and Computers console.</value>
   </data>
   <data name="P_RODCRevealOnDemand_TechnicalExplanation" xml:space="preserve">
     <value>There is an attribute on each RODC which enumerates the groups that the RODC can retrieve.
@@ -3704,7 +3731,7 @@ All privileged groups have a RID lower than 1000, than means that the RODC can g
 - Backup Operators;
 - Denied RODC Password Replication Group
 
-    This can be managed in the Password Replication Policy tab of the computer objecct in the Active Directory Users and Computers console.</value>
+    This can be managed in the Password Replication Policy tab of the computer object in the Active Directory Users and Computers console.</value>
   </data>
   <data name="P_RODCNeverReveal_TechnicalExplanation" xml:space="preserve">
     <value>In addition to the group Denied RODC Password Replication Group there is a custom setting set for RODC in an attribute named msDS-NeverRevealGroup.
@@ -3890,8 +3917,7 @@ That means that an extraction of its password (using DCSync for example) can lea
   <data name="S_OS_Win7_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;
-	You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter {(Enabled -eq $true) -and (OperatingSystem -Like "*Windows 7*")} -Property Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion | format-table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_Win7_TechnicalExplanation" xml:space="preserve">
     <value>The Windows 7 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.
@@ -4131,9 +4157,7 @@ https://www.gradenegger.eu/?p=1132</value>
   <data name="S_OS_W10_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the Windows 10 or Windows 11 to a more recent version.    
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;    
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;
-	You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows 1*"}&lt;/i&gt;
-    </value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter {(Enabled -eq $true) -and (OperatingSystem -Like "*Windows 10*")} -Property Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion | format-table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_W10_TechnicalExplanation" xml:space="preserve">
     <value>Some versions of Windows 10 and Windows 11 OS are no longer supported, and may be vulnerable to exploits that are not patched anymore.</value>
@@ -4193,7 +4217,7 @@ In this case, the vulnerability is exploitable even if Exchange has been uninsta
   </data>
   <data name="A_HardenedPaths_Documentation" xml:space="preserve">
     <value>
-https://labs.f-secure.com/archive/how-to-own-any-windows-network-with-group-policy-hijacking-attacks/
+https://labs.withsecure.com/publications/how-to-own-any-windows-network-with-group-policy-hijacking-attacks
 https://talubu.wordpress.com/2018/02/28/configuring-unc-hardened-access-through-group-policy/
 https://adsecurity.org/?p=1405
 https://support.microsoft.com/en-us/topic/ms15-011-vulnerability-in-group-policy-could-allow-remote-code-execution-february-10-2015-91b4bda2-945d-455b-ebbb-01d1ec191328</value>
@@ -4493,8 +4517,7 @@ For the expected values:
   <data name="S_OS_Win8_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the workstations to a more recent version of Windows, starting from Windows 10.     
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;        
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;
-	You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter {(Enabled -eq $true) -and (OperatingSystem -Like "*Windows 8*")} -Property Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion | format-table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_Win8_TechnicalExplanation" xml:space="preserve">
     <value>The Windows 8 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
@@ -4566,7 +4589,7 @@ The best mitigation is to create the DNS records manually as part as the domain 
   </data>
   <data name="A_DCLdapsChannelBinding_Documentation" xml:space="preserve">
     <value>https://support.microsoft.com/en-us/topic/use-the-ldapenforcechannelbinding-registry-entry-to-make-ldap-authentication-over-ssl-tls-more-secure-e9ecfa27-5e57-8519-6ba3-d2c06b21812e
-https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/ldap-channel-binding-and-ldap-signing-requirements-march-2020/ba-p/921536/page/4
+https://support.microsoft.com/en-us/topic/2020-2023-and-2024-ldap-channel-binding-and-ldap-signing-requirements-for-windows-kb4520412-ef185fb8-00f7-167d-744c-f299a66fc00a
 https://oxfordcomputergroup.com/resources/ldap-channel-binding-signing-requirements/
 https://github.com/zyn3rgy/LdapRelayScan
 https://access.redhat.com/articles/4661861
@@ -4609,7 +4632,7 @@ False positives may exists if the PingCastle program is run on the server tested
   </data>
   <data name="A_DCLdapSign_Documentation" xml:space="preserve">
     <value>https://docs.microsoft.com/en-US/troubleshoot/windows-server/identity/enable-ldap-signing-in-windows-server
-https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/ldap-channel-binding-and-ldap-signing-requirements-march-2020/ba-p/921536/page/4
+https://support.microsoft.com/en-us/topic/2020-2023-and-2024-ldap-channel-binding-and-ldap-signing-requirements-for-windows-kb4520412-ef185fb8-00f7-167d-744c-f299a66fc00a
 https://github.com/zyn3rgy/LdapRelayScan</value>
   </data>
   <data name="A_DCLdapSign_Rationale" xml:space="preserve">
@@ -5270,8 +5293,7 @@ https://rickardnobel.se/verify-redirected-computers-container-in-active-director
   <data name="S_OS_2012_Solution" xml:space="preserve">
     <value>In order to solve this security issue, you should upgrade all the servers to a more recent version of Windows, starting from Windows Server 2012. 
     &lt;i&gt;&lt;strong&gt;Use PingCastle.exe and select export on the main menu. Then choose to export computers. PingCastle will produce a list of all your computers with the OS version in a csv file. You can then use Excel to filter them.&lt;/strong&gt;&lt;/i&gt;
-    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter * -Property * | Format-Table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto | where {$_.enabled -eq $true}&lt;/i&gt;
-    You can replace &lt;i&gt;-Filter *&lt;/i&gt; with &lt;i&gt;-Filter {OperatingSystem -Like "Windows Server*"}&lt;/i&gt;</value>
+    Do note that you can get the full details regarding the OS used with the following PowerShell command: &lt;i&gt;Get-ADComputer -Filter {(Enabled -eq $true) -and (OperatingSystem -Like "*Server 2012*")} -Property Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion | format-table Name,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion -Wrap -Auto&lt;/i&gt;</value>
   </data>
   <data name="S_OS_2012_TechnicalExplanation" xml:space="preserve">
     <value>The Windows Server 2012 OS is no longer supported, as it is vulnerable to many publicly known exploits: Administrator's credentials can be captured, security protocols are weak, etc.</value>
@@ -5334,5 +5356,331 @@ Also to avoid EDR alerts or to not perform the scan, you can run PingCastle with
   </data>
   <data name="A_DC_Coerce_Detail" xml:space="preserve">
     <value>DCName: {0} IP: {1} Interface: {2} Function: {3} OpNum: {4}</value>
+  </data>
+  <data name="A_SmartCardPwdRotation_Description" xml:space="preserve">
+    <value>The purpose is to ensure that automatic password rotation for smart card only accounts is in place</value>
+  </data>
+  <data name="A_SmartCardPwdRotation_Documentation" xml:space="preserve">
+    <value>https://learn.microsoft.com/fr-fr/lifecycle/products/windows-server-2012-r2</value>
+  </data>
+  <data name="A_SmartCardPwdRotation_Rationale" xml:space="preserve">
+    <value>msDS-ExpirePasswordsOnSmartCardOnlyAccounts is not set</value>
+  </data>
+  <data name="A_SmartCardPwdRotation_ReportLocation" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="A_SmartCardPwdRotation_Solution" xml:space="preserve">
+    <value>Ensure your domain's functional level is at least Windows Server 2016 or higher.
+    Set the msDS-ExpirePasswordsOnSmartCardOnlyAccounts attribute to TRUE at the domain root.
+    This action will enable the automatic rotation of the password hash for smart card only accounts. </value>
+  </data>
+  <data name="A_SmartCardPwdRotation_TechnicalExplanation" xml:space="preserve">
+    <value>With the introduction of a feature in Windows Server 2016, the password hash for accounts that require smart card authentication can be automatically rotated.
+    This is important because when smart card authentication is used, the password itself is not utilized, leading to the password hash remaining unchanged.
+    An unchanged password hash over an extended period increases the risk of being brute-forced.
+    </value>
+  </data>
+  <data name="A_SmartCardPwdRotation_Title" xml:space="preserve">
+    <value>Automatic password rotation for smart card is not in place</value>
+  </data>
+  <data name="P_RODCKrbtgtOrphan_Description" xml:space="preserve">
+    <value>The objective is to assess if krbtgt accounts created for RODC are still associated to a RODC.</value>
+  </data>
+  <data name="P_RODCKrbtgtOrphan_Documentation" xml:space="preserve">
+    <value>https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/mailbag-rodcs-krbtgt-orphans-and-load-balancing-rodc-connection/ba-p/256064
+    https://specterops.io/blog/2023/01/25/at-the-edge-of-tier-zero-the-curious-case-of-the-rodc/</value>
+  </data>
+  <data name="P_RODCKrbtgtOrphan_Rationale" xml:space="preserve">
+    <value>Orphaned krbtgt accounts are present and not linked to a RODC server</value>
+  </data>
+  <data name="P_RODCKrbtgtOrphan_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#domaincontrollersection"&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="P_RODCKrbtgtOrphan_Solution" xml:space="preserve">
+    <value>Firstly, identify the associated Read-Only Domain Controller (RODC) and ensure it has been decommissioned. 
+    Note that the user executing the scan might not have the necessary permissions to view the RODC.
+    You can utilize the following command to list all RODCs:  &lt;i&gt;Get-ADDomainController -Filter {IsReadOnly -eq $true} &lt;/i&gt;
+    
+    Following this, proceed to delete the associated krbtgt account.
+    Disabling the account will not suffice, as all krbtgt accounts are inherently disabled, serving solely as repositories for encryption material.
+    Please be aware that once removed, this action cannot be undone.  
+    
+    </value>
+  </data>
+  <data name="P_RODCKrbtgtOrphan_TechnicalExplanation" xml:space="preserve">
+    <value>Kerberos tickets are digitally signed data structures, authenticated by the hash of the well-known krbtgt password.
+    To establish a lower trust level, Read-Only Domain Controllers (RODCs) utilize a unique krbtgt account.
+    This account is identifiable by its name, which follows the format ‘krbtgt_XXXX’, where ‘XXXX’ represents a numeric sequence.
+    Ideally, when an RODC is decommissioned, its corresponding krbtgt account should also be deleted.
+    However, this does not always occur as expected.
+    PingCastle is searching these accounts by looking at user objects, starting with krbtgt_ and whose attribute msDS-KrbTgtLinkBl is empty but whose attribute msDS-SecondaryKrbTgtNumber is not empty.
+    Note: the special account krbtgt_AzureAD should not be returned by this search
+  </value>
+  </data>
+  <data name="P_RODCKrbtgtOrphan_Title" xml:space="preserve">
+    <value>Krbtgt accounts created for RODC not associated anymore to a RODC</value>
+  </data>
+  <data name="P_RODCKrbtgtOrphan_Detail" xml:space="preserve">
+    <value>DN: {0} Created: {1}</value>
+  </data>
+  <data name="S_AesNotEnabled_Description" xml:space="preserve">
+    <value>The purpose is to verify that AES is enabled for service accounts.</value>
+  </data>
+  <data name="S_AesNotEnabled_Solution" xml:space="preserve">
+    <value>It is recommended to enable AES as an encryption algorithm in the user configuration dialog or in the "msDSSupportedEncryptionTypes" attribute at LDAP level. 
+    It has to be enabled in the property of an account by checking all the boxes "This account supports Keberos AES XXX encryption".
+  
+    For GMSA account, you have to manually edit the property msDS-SupportedEncryptionTypes</value>
+  </data>
+  <data name="S_AesNotEnabled_Rationale" xml:space="preserve">
+    <value>Presence of service accounts without AES support = {count}</value>
+  </data>
+  <data name="S_AesNotEnabled_Title" xml:space="preserve">
+    <value>Check the use of Kerberos on services accounts without AES support</value>
+  </data>
+  <data name="S_AesNotEnabled_TechnicalExplanation" xml:space="preserve">
+    <value>The default encryption algorithm used by Kerberos is RC4, which directly utilizes the NTLM hash of the user’s password.
+    However, due to the rapid advancements in computing power, it’s recommended to transition from RC4 to the more secure AES algorithm.
+    
+ Before disabling RC4, the first step is to enable AES.
+ It’s important to note that service accounts and user accounts with the ‘serviceprincipalname’ attribute (also known as SPN) need to be configured to support AES. 
+ Without this configuration, AES will not be fully operational.
+ 
+ Accounts are listed if :
+ 1) no password changed occured after the first DC Win 2008 install to initate AES secrets or 
+ 2) they have a SPN and the account is not flaged to use AES for encryption with msDS-SupportedEncryptionTypes
+ 
+ Also be advised that other checks must be performed before disabling RC4 (such as trust accounts, ...). A dedicated section in this report explores AES compatibility.
+    </value>
+  </data>
+  <data name="S_AesNotEnabled_Documentation" xml:space="preserve">
+    <value>https://docs.microsoft.com/en-us/archive/blogs/openspecification/msds-supportedencryptiontypes-episode-1-computer-accounts</value>
+  </data>
+  <data name="S_AesNotEnabled_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#useraccountanalysis"&gt;User information&lt;/a&gt; and &lt;a href="#computeraccountanalysis"&gt;Computer information&lt;/a&gt;</value>
+  </data>
+  <data name="S_PwdLastSet_Cluster_Description" xml:space="preserve">
+    <value>The purpose is to ensure that the regular change of cluster account is active.</value>
+  </data>
+  <data name="S_PwdLastSet_Cluster_Detail" xml:space="preserve">
+    <value>Cluster: {0} LastChange: {1}</value>
+  </data>
+  <data name="S_PwdLastSet_Cluster_Documentation" xml:space="preserve">
+    <value>https://learn.microsoft.com/en-us/windows-server/failover-clustering/configure-ad-accounts</value>
+  </data>
+  <data name="S_PwdLastSet_Cluster_Rationale" xml:space="preserve">
+    <value>Number of Cluster without password change: {count}</value>
+  </data>
+  <data name="S_PwdLastSet_Cluster_ReportLocation" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="S_PwdLastSet_Cluster_Solution" xml:space="preserve">
+    <value>
+      Certain accounts on Windows server clusters have maintained static passwords for over three years, suggesting a lack of secret refreshes.
+      
+      To determine why the password hasn’t been updated, you must examine the cluster configuration and event logs.
+	  Please consult the cited reference document to carry out this process.
+    </value>
+  </data>
+  <data name="S_PwdLastSet_Cluster_TechnicalExplanation" xml:space="preserve">
+    <value>The algorithm identifies clusters by checking three conditions:
+1. The account is active, as indicated by the UserAccountControl flag not being set to 2.
+2. The account was created at least three years ago but has been used within the last 45 days according to the attribute lastlogontimestamp.
+3. The password was last set at least three years prior to the most recent login.
+    </value>
+  </data>
+  <data name="S_PwdLastSet_Cluster_Title" xml:space="preserve">
+    <value>Check if all cluster are using regular password change practices.</value>
+  </data>
+  <data name="A_RootDseAnonBinding_Description" xml:space="preserve">
+    <value>The purpose is to ensure that Anonymous Binding on RootDse is not enabled</value>
+  </data>
+  <data name="A_RootDseAnonBinding_Documentation" xml:space="preserve">
+    <value>https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/3f0137a1-63df-400c-bf97-e1040f055a99
+    https://blog.lithnet.io/2018/12/disabling-unauthenticated-binds-in.html</value>
+  </data>
+  <data name="A_RootDseAnonBinding_Rationale" xml:space="preserve">
+    <value>Anonymous Binding to the rootDse is enabled</value>
+  </data>
+  <data name="A_RootDseAnonBinding_Solution" xml:space="preserve">
+    <value>Edit the attribute msDS-Other-Settings of the object CN=Directory Service,CN=Windows NT,CN=Services,CN=Configuration.
+    Add a new line with the content: DenyUnauthenticatedBind=1
+    </value>
+  </data>
+  <data name="A_RootDseAnonBinding_TechnicalExplanation" xml:space="preserve">
+    <value>The rootDse is a special object that enables clients to discover the functionalities of the server, such as LDAP version or support for special processing.
+    On Windows, it can be accessed by default without binding, which allows everyone to access this data.
+    There is no confidential data in this attribute, only the Operating System version and the name of the domain.
+    Since Windows 2019, the rootDse access can be set to require authentication.
+    You can test the anonymous access of the rootDse object by launching ldp.exe and selecting 'Connect' on the Connection menu.
+    You should receive the error "The server has been configured to deny unauthenticated simple binds."
+</value>
+  </data>
+  <data name="A_RootDseAnonBinding_Title" xml:space="preserve">
+    <value>Ensure that the rootDse Anonymous Binding is disabled</value>
+  </data>
+  <data name="S_FolderOptions_Description" xml:space="preserve">
+    <value>The objective is to ensure scripts do not automatically execute upon opening by default.</value>
+  </data>
+  <data name="S_FolderOptions_Documentation" xml:space="preserve">
+    <value>https://isc.sans.edu/diary/Controlling+JavaScript+Malware+Before+it+Runs/21171</value>
+  </data>
+  <data name="S_FolderOptions_Rationale" xml:space="preserve">
+    <value>Some script extensions, used in phishing, can be directly run by double clicking on it</value>
+  </data>
+  <data name="S_FolderOptions_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#gpofolderoptions"&gt;Folder Options&lt;/a&gt;</value>
+  </data>
+  <data name="S_FolderOptions_Solution" xml:space="preserve">
+    <value>Navigate to Computer Configuration / Preferences / Windows Settings / Folders.
+    Create a new File Type with the "Replace" action for the extension you wish to secure.
+    In "Configure class settings", add a new "open" action with Notepad as the default application: C:\Windows\System32\notepad.exe.
+    </value>
+  </data>
+  <data name="S_FolderOptions_TechnicalExplanation" xml:space="preserve">
+    <value>By default, PowerShell scripts (.ps1) open in Notepad, which blocks these extensions from being exploited in phishing attacks that evade email filters through multi-layered archives. 
+    However, several legacy script extensions (.js, .jse, .vbs, .vbe, .vb, .wsh, .wsf) still execute with their respective engines. 
+    While .js and .jse files are commonly associated with web content and handled by browsers, it’s crucial to recognize their potential for harm when executed directly in Windows.
+    Redirecting these files to open in Notepad safeguards against inadvertent execution without affecting web browsing.
+    The browser navigation is not impacted by this recommendation.
+    Review is recommended for other script files before implementing this security measure.
+    
+    Note: Javascript execution can be mitigated by an "Attack surface reduction rule" named "Impede JavaScript and VBScript to launch executables" available since Windows 10, version 1709.
+    But we still recommend to apply the folder options mitigation as it is more effective.
+    </value>
+  </data>
+  <data name="S_FolderOptions_Title" xml:space="preserve">
+    <value>Verify the Default Application for Script File Execution</value>
+  </data>
+  <data name="S_FolderOptions_Detail" xml:space="preserve">
+    <value>Extension: {0} Reason: {1}</value>
+  </data>
+  <data name="S_DefenderASR_Description" xml:space="preserve">
+    <value>This rule confirms the activation of Defender ASR (Attack Surface Reduction) mitigations within a Group Policy Object (GPO).</value>
+  </data>
+  <data name="S_DefenderASR_Documentation" xml:space="preserve">
+    <value>https://learn.microsoft.com/en-us/defender-endpoint/attack-surface-reduction-rules-reference?view=o365-worldwide#per-asr-rule-alert-and-notification-details
+https://blog.palantir.com/microsoft-defender-attack-surface-reduction-recommendations-a5c7d41c3cf8</value>
+  </data>
+  <data name="S_DefenderASR_Rationale" xml:space="preserve">
+    <value>Not all possible Defender ASR mitigations are in Block or Warn mode</value>
+  </data>
+  <data name="S_DefenderASR_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#gpodefenderASR"&gt;Defender ASR&lt;/a&gt;</value>
+  </data>
+  <data name="S_DefenderASR_Solution" xml:space="preserve">
+    <value>To apply an ASR mitigation, navigate to the GPO setting "Configure Attack Surface Reduction rules" found under Computer Configuration > Policies > Administrative Templates > Windows Components > Windows Defender Antivirus > Windows Defender Exploit Guard > Attack Surface Reduction.
+    Upon enabling this setting, select "Set the state for each ASR rule".
+    Then, input the mitigation’s GUID as the Value name and assign 1 as the Value to enforce the rule in Block mode.
+    Other configurable values include 2 for Audit mode and 6 for Warn mode.
+    For instance, to block JavaScript or VBScript from executing downloaded executable content, use the GUID: d3e037e1-3eb8-44c8-a917-57927947596d.
+    It is recommended to set Defender ASR rules as recommended in the article below.
+	
+    
+    Prior to implementation, conduct an impact analysis to anticipate any potential disruptions, and utilize Audit mode to identify possible issues.
+    </value>
+  </data>
+  <data name="S_DefenderASR_TechnicalExplanation" xml:space="preserve">
+    <value>Microsoft Defender, the default antivirus included with Windows, activates automatically on systems without a pre-installed alternative.
+    Defender’s ASR features, designed to minimize vulnerability to attacks, are available even in the standard version.
+    These protections have been part of Windows since the release of Windows 10 version 1710 and are also applicable to Windows Server 2012 R2.
+	
+  Note: Windows 11 may enable in some conditions those 3 ASR rules: Block abuse of exploited vulnerable signed drivers, Block credential stealing from the Windows local security authority subsystem (lsass.exe), Block persistence through WMI event subscription
+    </value>
+  </data>
+  <data name="S_DefenderASR_Title" xml:space="preserve">
+    <value>Verify that Defender ASR mitigations are in place</value>
+  </data>
+  <data name="S_DefenderASR_Detail" xml:space="preserve">
+    <value>Guid: {0} Label: {1} Reason: {2}</value>
+  </data>
+  <data name="S_FirewallScript_Description" xml:space="preserve">
+    <value>This rule verifies whether programs, such as script engines, are allowed to connect to the internet by default.</value>
+  </data>
+  <data name="S_FirewallScript_Documentation" xml:space="preserve">
+    <value>https://medium.com/@cryps1s/endpoint-isolation-with-the-windows-firewall-462a795f4cfb</value>
+  </data>
+  <data name="S_FirewallScript_Rationale" xml:space="preserve">
+    <value>It is possible for scripts engine used by hackers to connect directly to the Internet</value>
+  </data>
+  <data name="S_FirewallScript_ReportLocation" xml:space="preserve">
+    <value>The detail can be found in &lt;a href="#gpofirewall"&gt;Firewall configuration&lt;/a&gt;</value>
+  </data>
+  <data name="S_FirewallScript_Solution" xml:space="preserve">
+    <value>1) Create Firewall Rules via GPO
+    
+Configure the firewall rules under Computer Configuration / Policies / Windows Settings / Security Settings / Windows Defender Firewall with Advanced Security.
+Ensure the rules are applied on the Outbound side.
+Activate the rules.
+
+2) Network Restrictions:
+We recommend setting the rules as active for the following IP address ranges to allow local network access:
+0.0.0.0 to 9.255.255.255
+11.0.0.0 to 126.255.255.255
+128.0.0.1 to 172.15.255.255
+172.32.0.0 to 192.167.255.255
+192.169.0.0 to 255.255.255.255
+
+Alternatively, you can choose to apply the rules to ALL IP addresses or add your internal proxy IP.
+
+    </value>
+  </data>
+  <data name="S_FirewallScript_TechnicalExplanation" xml:space="preserve">
+    <value>Malicious scripts, often distributed via phishing emails, frequently attempt to connect to the internet to propagate their infection.
+    To mitigate this risk, we recommend implementing a set of firewall rules through Group Policy Objects (GPOs).
+    These rules will prohibit direct internet connections for specific programs.
+    
+    The current list of programs to restrict includes: wscript.exe, mshta.exe, cscript.exe, conhost.exe, and runScriptHelper.exe.
+    </value>
+  </data>
+  <data name="S_FirewallScript_Title" xml:space="preserve">
+    <value>Verify if there are restrictions for internet connectivity of script engines</value>
+  </data>
+  <data name="S_FirewallScript_Detail" xml:space="preserve">
+    <value>Program: {0} Reason: {1}</value>
+  </data>
+  <data name="S_TerminalServicesGPO_Description" xml:space="preserve">
+    <value>This rule verifies the recommended configuration for Terminal Services.</value>
+  </data>
+  <data name="S_TerminalServicesGPO_Documentation" xml:space="preserve">
+    <value>https://woshub.com/remote-desktop-session-time-limit/
+    https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-tsts/ce70794f-2138-43e8-bf6c-2c147887d6a2
+  https://community.spiceworks.com/t/are-redirected-printers-a-security-risk/826344/27</value>
+  </data>
+  <data name="S_TerminalServicesGPO_Rationale" xml:space="preserve">
+    <value>The GPO are not pushing recommended configuration for Terminal Services</value>
+  </data>
+  <data name="S_TerminalServicesGPO_ReportLocation" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="S_TerminalServicesGPO_Solution" xml:space="preserve">
+    <value>The Terminal Services configuration can be found in Policies / Administrative Templates / Windows Components / Remote Desktop Services / Remote Desktop Session Host
+    The details of this rule is located in Printer Redirection and Session Time Limits.
+    
+      PingCastle recommends to set the following Policy:
+Set time limit for disconnected sessions: 2h (aka MaxDisconnectionTime)
+Set time limit for active but idle Remote Desktop Services sessions: 8h (aka MaxIdleTime)
+Do not allow client printer redirection: Enabled (aka fDisableCpm)
+
+This rule is active if nothing is set or if the time limit is set to NEVER.
+    </value>
+  </data>
+  <data name="S_TerminalServicesGPO_TechnicalExplanation" xml:space="preserve">
+    <value>It is a common practice for hackers to look for open sessions on remote servers.
+    This can be done by attempting to open the user registry and checking if there is an access denied error or if the registry hive is not available at all. 
+    If found, the hacker can exploit this information by targeting this computer, or if the session is still active, hijack it and impact the client computer.
+    Indeed, you can access the local drive by default and push a malicious file such as a login script in the start menu of the remote user. 
+    Another alternative is if the session is not secure, to capture the credentials in memory.
+    
+    The printer redirection has no known attack pattern. 
+    However due to past vulnerabilites with the Printer spooler, the complexity of the underlying protocol, the relative absence of need to this feature, we recommend to block it.
+    It can also be a bypass for copy / paste restriction and it is recommended to deny it in most admin bastion.
+    </value>
+  </data>
+  <data name="S_TerminalServicesGPO_Title" xml:space="preserve">
+    <value>Verify Terminal Services configuration best practices in GPO</value>
+  </data>
+  <data name="S_TerminalServicesGPO_Detail" xml:space="preserve">
+    <value>GPO: {0} Reason: {1}</value>
   </data>
 </root>

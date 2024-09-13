@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Web;
 
 namespace PingCastle.Report
 {
@@ -161,10 +162,10 @@ namespace PingCastle.Report
                 sb.Append("    {");
                 sb.Append("      \"id\": " + nodenumber + ",");
                 var nodeShortName = !string.IsNullOrEmpty(node.Domain.DomainNetBIOS) ? node.Domain.DomainNetBIOS : (node.Domain.DomainName.Split('.')[0]);
-                sb.Append("      \"shortname\": \"" + ReportHelper.EscapeJsonString(nodeShortName) + "\"");
+                sb.Append("      \"shortname\": \"" + ReportHelper.EscapeJsonString(ReportHelper.Encode(nodeShortName)) + "\"");
                 if (node.IsPartOfARealForest())
                 {
-                    sb.Append("      ,\"forest\": \"" + ReportHelper.EscapeJsonString(node.Forest.DomainName) + "\"");
+                    sb.Append("      ,\"forest\": \"" + ReportHelper.EscapeJsonString(ReportHelper.Encode(node.Forest.DomainName)) + "\"");
                 }
                 if (node.IsPotentiallyRemoved)
                 {
@@ -176,7 +177,7 @@ namespace PingCastle.Report
                     sb.Append(entity.GetJasonOutput());
                 }
                 HealthcheckData data = node.HealthCheckData;
-                sb.Append("      ,\"name\": \"" + ReportHelper.EscapeJsonString(node.Domain.DomainName) + "\"");
+                sb.Append("      ,\"name\": \"" + ReportHelper.EscapeJsonString(ReportHelper.Encode(node.Domain.DomainName)) + "\"");
                 if (data != null)
                 {
                     sb.Append("      ,\"score\": " + data.GlobalScore);

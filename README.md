@@ -19,12 +19,14 @@ PingCastle is a tool designed to assess quickly the Active Directory security le
 It does not aim at a perfect evaluation but rather as an efficiency compromise.
 
 ```plain
-  \==--O___      PingCastle (Version 3.1.0.0     8/03/2023 7:25:24 PM)
+  \==--O___      PingCastle (Version 3.3.0.0     9/13/2024 7:25:24 PM)
    \  / \  "">   Get Active Directory Security at 80% in 20% of the time
-    \/   \ ,'    End of support: 7/31/2024
-     O"---O
-      \ ,'       PingCastle.Contact@netwrix.com
-       v         https://www.pingcastle.com
+    \/   \ ,'    End of support: 1/31/2026
+     O"---O      To find out more about PingCastle, visit https://www.pingcastle.com         
+      \ ,'       For online documentation, visit https://helpcenter.netwrix.com/category/pingcastle
+       v         For support and questions:
+                 -	Open-source community, visit https://github.com/netwrix/pingcastle/issues
+                 -	Customers, visit https://www.netwrix.com/support.html  	   
 What do you want to do?
 =======================
 Using interactive mode.

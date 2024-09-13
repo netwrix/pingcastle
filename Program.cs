@@ -24,6 +24,7 @@ using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using PingCastleCommon;
 
 namespace PingCastle
 {
@@ -67,6 +68,11 @@ namespace PingCastle
         {
             try
             {
+                // enable the use of TLS1.0
+                //AppContext.SetSwitch("Switch.System.Net.DontEnableSchUseStrongCrypto", true);
+                // enable the use of TLS1.2 if enabled on the system
+                //AppContext.SetSwitch("Switch.System.Net.DontEnableSystemDefaultTlsVersions", false);
+
                 AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
                 AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
                 Trace.WriteLine("Running on dotnet:" + Environment.Version);
@@ -121,6 +127,8 @@ namespace PingCastle
                 else if (args[i].Equals("--out", StringComparison.InvariantCultureIgnoreCase) && i + 1 < args.Length)
                 {
                     string filename = args[++i];
+                    FilesValidator.CheckPathTraversal(filename);
+    
                     var fi = new FileInfo(filename);
                     if (!Directory.Exists(fi.DirectoryName))
                     {
@@ -211,9 +219,11 @@ namespace PingCastle
             ConsoleMenu.Header = @"  \==--O___      PingCastle (Version " + version.ToString(4) + @"     " + ConsoleMenu.GetBuildDateTime(Assembly.GetExecutingAssembly()) + @")
    \  / \  ¨¨>   Get Active Directory Security at 80% in 20% of the time
     \/   \ ,’    " + (license.EndTime < DateTime.MaxValue ? "End of support: " + license.EndTime.ToString("yyyy-MM-dd") : "") + @"
-     O¨---O                                                     
-      \ ,'       Vincent LE TOUX (contact@pingcastle.com)
-       v         twitter: @mysmartlogon       https://www.pingcastle.com";
+     O¨---O      To find out more about PingCastle, visit https://www.pingcastle.com                                              
+      \ ,'       For online documentation, visit https://helpcenter.netwrix.com/category/pingcastle
+       v         For support and questions:
+                 -	Open-source community, visit https://github.com/netwrix/pingcastle/issues
+                 -	Customers, visit https://www.netwrix.com/support.html  ";
 
             if (!ParseCommandLine(args))
                 return;
@@ -255,7 +265,7 @@ namespace PingCastle
             PingCastle.Rules.RuleSet<HealthcheckData>.LoadCustomRules();
         }
 
-        const string basicEditionLicense = "PC2H4sIAAAAAAAEAGNkYGDgAGKGhsd86xjvMDIDmUVA7AYkU4FQgcGVIYUhk6EEiPMZ8oD8fIY0IBkA5OcxpDM4MyQyFANlc8BqjRn0GIyA2ADI1gViP6DqEiCdBqSLgHQykM4FwlQgLxloQiJQnwJDKdCEVAawI4B4crKeGFtAuZZtR1+6YveRBWVcErp3Kook2PQvG1wt2Lw182zyBI4npooXko+9vtP088v5u3IOKxf2p7b6z4hwv31uzz3+U6Kmgj+MLVXvBqXZZr1MtA62z5gRP2HnzK4lSlpbbsUdYN1WmqZ/jL9ZRSJhF9O3+SzLYxfH8Abr9q6dXp+5bhMABKQvnhIBAAA=";
+        const string basicEditionLicense = "PC2H4sIAAAAAAAEAGNkYGDgAGKGhqddLpPuMDIDmSVA7MZQxJAKhAoMrgwpDJlAsUyGfIY8ID+fIQ1IBgD5eQzpDM4MiQzFQNkcsFpjBj0wNgCydYHYD6i6BEinAekiIJ0MpHOBMBXISwaakAjUp8BQCjQBpBvsDCBO0/5r9LZOXyzWeNPMG1smHuJw0Ov0zrFRb6kzr5szxTHoqMPxhd+ymjT93k4wtr0ee4H117lTjDwZx+aevZNQsbFQzPWVseOMtvBF/63Zbu0L0ktZd1DF1/NC7NUzX7mTDsjZLLyRLVq4nX+iPhOLqPCuknQr0fiPpgtiVrhNcthX/6yjfDMAJAREbhQBAAA=";
         string _serialNumber;
         public string GetSerialNumber()
         {

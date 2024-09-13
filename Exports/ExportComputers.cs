@@ -69,6 +69,10 @@ namespace PingCastle.Exports
                             {
                                 d.AddWithoutDetail("LAPSNew");
                             }
+                            else if (lapsAnalyzer.MsLAPSEncryptedIntId != 0 && x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSEncryptedIntId))
+                            {
+                                d.AddWithoutDetail("LAPSNew");
+                            }
 
                             if ((++export % 500) == 0)
                             {
@@ -144,7 +148,11 @@ namespace PingCastle.Exports
                                 var dd = x.ReplPropertyMetaData[lapsAnalyzer.MsLAPSIntId];
                                 data.Add(dd.LastOriginatingChange.ToString("u"));
                             }
-                            else
+                            else if (lapsAnalyzer.MsLAPSEncryptedIntId != 0 && x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSEncryptedIntId))
+                            {
+                                var dd = x.ReplPropertyMetaData[lapsAnalyzer.MsLAPSEncryptedIntId];
+                                data.Add(dd.LastOriginatingChange.ToString("u"));
+                            }
                             {
                                 data.Add(string.Empty);
                             }
@@ -152,7 +160,7 @@ namespace PingCastle.Exports
                         };
 
                     DisplayAdvancement("Starting");
-                    var attributes = new List<string> (HealthcheckAnalyzer.computerProperties);
+                    var attributes = new List<string>(HealthcheckAnalyzer.computerProperties);
                     attributes.Add("replPropertyMetaData");
                     adws.Enumerate(domainInfo.DefaultNamingContext, HealthcheckAnalyzer.computerfilter, attributes.ToArray(), callback, "SubTree");
                     DisplayAdvancement("Done");

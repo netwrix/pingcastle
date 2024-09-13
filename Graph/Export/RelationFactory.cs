@@ -72,7 +72,9 @@ namespace PingCastle.Graph.Export
             if (lapsAnalyzer.LegacyLAPSSchemaId != Guid.Empty)
                 GuidsReadProperties.Add(new KeyValuePair<Guid, RelationType>(lapsAnalyzer.LegacyLAPSSchemaId, RelationType.READ_PROP_MS_MCS_ADMPWD));
             if (lapsAnalyzer.MsLAPSSchemaId != Guid.Empty)
-                GuidsReadProperties.Add(new KeyValuePair<Guid, RelationType>(lapsAnalyzer.MsLAPSSchemaId, RelationType.READ_PROP_MS_LAPS_PASSWORD)); 
+                GuidsReadProperties.Add(new KeyValuePair<Guid, RelationType>(lapsAnalyzer.MsLAPSSchemaId, RelationType.READ_PROP_MS_LAPS_PASSWORD));
+            if (lapsAnalyzer.MsLAPSEncryptedSchemaId != Guid.Empty)
+                GuidsReadProperties.Add(new KeyValuePair<Guid, RelationType>(lapsAnalyzer.MsLAPSEncryptedSchemaId, RelationType.READ_PROP_MS_LAPS_ENCRYPTED_PASSWORD));
         }
 
         // mapping from msDS-AllowedToDelegateTo

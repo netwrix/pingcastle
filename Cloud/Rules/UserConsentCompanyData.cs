@@ -21,10 +21,12 @@ namespace PingCastle.Cloud.Rules
     {
         protected override int? AnalyzeDataNew(HealthCheckCloudData healthCheckCloudData)
         {
+            // disable the rule since MS changed the rule logic
+            /*
             if (healthCheckCloudData.UsersPermissionToUserConsentToAppEnabled == true)
             {
                 AddRawDetail("true");
-            }
+            }*/
             return null;
         }
 

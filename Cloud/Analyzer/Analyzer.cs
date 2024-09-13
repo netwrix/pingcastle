@@ -332,7 +332,7 @@ namespace PingCastle.Cloud.Analyzer
                 }
             }
 
-            var ms = new MicrosoftGraph(new PRTCredential());
+            var ms = new MicrosoftGraph(credential);
             var authorizationPolicies = ms.GetAuthorizationPolicy();
             if (authorizationPolicies != null && authorizationPolicies.Count > 0)
             {

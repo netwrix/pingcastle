@@ -18,12 +18,23 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnThreshold, 20, Threshold: 20, Order: 7)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 15, Order: 8)]
     [RuleANSSI("R40", "paragraph.3.6.3.1")]
-    [RuleMaturityLevel(3)]
+    [RuleDurANSSI(2, "privileged_members_no_admincount", "Privileged groups members having an adminCount attribute which is null or 0")]
     [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]
     public class HeatlcheckRuleAnomalyAdminSDHolder : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
+            if (healthcheckData.AdminSDHolderNotOK != null)
+            {
+                if (healthcheckData.AdminSDHolderNotOK.Count < maxNumDisplayAccount)
+                {
+                    for (int i = 0; i < healthcheckData.AdminSDHolderNotOK.Count; i++)
+                    {
+                        AddRawDetail(healthcheckData.AdminSDHolderNotOK[i].DistinguishedName);
+                    }
+                }
+                return null;
+            }
             return healthcheckData.AdminSDHolderNotOKCount;
         }
     }

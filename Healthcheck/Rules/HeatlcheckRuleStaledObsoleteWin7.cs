@@ -6,6 +6,7 @@
 //
 using PingCastle.Rules;
 using System;
+using System.Diagnostics;
 
 namespace PingCastle.Healthcheck.Rules
 {
@@ -28,6 +29,7 @@ namespace PingCastle.Healthcheck.Rules
             {
                 if (string.Equals(loginscript.CommandLine, "Activate-ProductOnline.ps1", StringComparison.OrdinalIgnoreCase))
                 {
+                    Trace.WriteLine("Windows 7 support found");
                     return 0;
                 }
             }

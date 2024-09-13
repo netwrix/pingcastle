@@ -40,7 +40,6 @@ namespace PingCastle.Healthcheck.Rules
             {
                 return domainadmins.NumberOfMemberPwdNeverExpires;
             }
-            int countnok = 0;
             int countexception = 0;
             foreach (var member in domainadmins.Members)
             {
@@ -53,11 +52,11 @@ namespace PingCastle.Healthcheck.Rules
                     }
                     else
                     {
-                        countnok++;
+                        AddRawDetail(member.DistinguishedName);
                     }
                 }
             }
-            return countnok;
+            return null;
         }
     }
 }

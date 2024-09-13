@@ -314,7 +314,7 @@ namespace PingCastle.Data
                 return (string.Equals(Type, "user", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(Type, "inetOrgPerson", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(Type, "msDS-GroupManagedServiceAccount", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(Type, "msDS-ManagedServiceAccountt", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(Type, "msDS-ManagedServiceAccount", StringComparison.OrdinalIgnoreCase)
                     );
             }
         }

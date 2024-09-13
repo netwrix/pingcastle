@@ -541,7 +541,7 @@ namespace PingCastle.Report
                     Add("</span>");
                 }
                 Add(r.Label);
-                Add(" (<a href=\"https://www.cert.ssi.gouv.fr/uploads/guide-ad.html#");
+                Add(" (<a href=\"https://www.cert.ssi.gouv.fr/uploads/ad_checklist.html#vuln_");
                 Add(r.ID);
                 Add("\">link</a>)");
                 Add("</p>");

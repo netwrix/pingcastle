@@ -17,7 +17,6 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            int adminCanBeDelegated = 0;
             foreach (var member in healthcheckData.AllPrivilegedMembers)
             {
                 if (member.CanBeDelegated)
@@ -49,15 +48,15 @@ namespace PingCastle.Healthcheck.Rules
 
                     if (healthcheckData.SchemaVersion < 69)
                     {
-                        adminCanBeDelegated++;
+                        AddRawDetail(member.DistinguishedName, "Schema too low");
                     }
                     else if (!member.IsInProtectedUser)
                     {
-                        adminCanBeDelegated++;  
+                        AddRawDetail(member.DistinguishedName, "Not a protected user");
                     }
                 }
             }
-            return adminCanBeDelegated;
+            return null;
         }
     }
 }

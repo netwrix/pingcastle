@@ -5,7 +5,7 @@ namespace PingCastle.Healthcheck
     internal class HoneyPotSettings : ConfigurationSection
     {
         static HoneyPotSettings cachedSettings = null;
-        public static HoneyPotSettings GetEncryptionSettings()
+        public static HoneyPotSettings GetHoneyPotSettings()
         {
             if (cachedSettings == null)
                 cachedSettings = ConfigurationManager.GetSection("honeyPotSettings") as HoneyPotSettings;

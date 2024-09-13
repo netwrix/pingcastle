@@ -65,15 +65,25 @@ namespace PingCastle.Scanners
                             LastLogonTimestamp = x.LastLogonTimestamp,
                             OperatingSystem = x.OperatingSystem,
                         };
-                        if (lapsAnalyzer.LegacyLAPSIntId != 0 && x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.LegacyLAPSIntId))
+                        if (x.ReplPropertyMetaData != null)
                         {
-                            computer.HasLegacyLAPS = true;
-                            computer.LegacyLAPSLastChange = x.ReplPropertyMetaData[lapsAnalyzer.LegacyLAPSIntId].LastOriginatingChange;
-                        }
-                        if (lapsAnalyzer.MsLAPSIntId != 0 && x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSIntId))
-                        {
-                            computer.HasMsLAPS = true;
-                            computer.MsLAPSLastChange = x.ReplPropertyMetaData[lapsAnalyzer.MsLAPSIntId].LastOriginatingChange;
+                            if (lapsAnalyzer.LegacyLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.LegacyLAPSIntId))
+                            {
+                                computer.HasLegacyLAPS = true;
+                                computer.LegacyLAPSLastChange = x.ReplPropertyMetaData[lapsAnalyzer.LegacyLAPSIntId].LastOriginatingChange;
+                            }
+                            if (lapsAnalyzer.MsLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSIntId))
+                            {
+                                computer.HasMsLAPS = true;
+                                computer.MsLAPSLastChange = x.ReplPropertyMetaData[lapsAnalyzer.MsLAPSIntId].LastOriginatingChange;
+                            }
+                            if (lapsAnalyzer.MsLAPSEncryptedIntId != 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSEncryptedIntId))
+                            {
+                                computer.HasMsLAPS = true;
+                                var date = x.ReplPropertyMetaData[lapsAnalyzer.MsLAPSIntId].LastOriginatingChange;
+                                if (date > computer.MsLAPSLastChange)
+                                    computer.MsLAPSLastChange = date;
+                            }
                         }
                         computers.Add(computer);
                     };

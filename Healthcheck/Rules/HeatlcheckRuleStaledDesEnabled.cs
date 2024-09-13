@@ -16,6 +16,30 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
+            if (healthcheckData.UserAccountData.ListDesEnabled != null || healthcheckData.ComputerAccountData.ListDesEnabled != null)
+            {
+                if (healthcheckData.UserAccountData.ListDesEnabled != null)
+                {
+                    if (healthcheckData.UserAccountData.NumberDesEnabled < maxNumDisplayAccount)
+                    {
+                        for (int i = 0; i < healthcheckData.UserAccountData.NumberDesEnabled; i++)
+                        {
+                            AddRawDetail(healthcheckData.UserAccountData.ListDesEnabled[i].DistinguishedName);
+                        }
+                    }
+                }
+                if (healthcheckData.ComputerAccountData.ListDesEnabled != null)
+                {
+                    if (healthcheckData.ComputerAccountData.NumberDesEnabled < maxNumDisplayAccount)
+                    {
+                        for (int i = 0; i < healthcheckData.ComputerAccountData.NumberDesEnabled; i++)
+                        {
+                            AddRawDetail(healthcheckData.ComputerAccountData.ListDesEnabled[i].DistinguishedName);
+                        }
+                    }
+                }
+                return null;
+            }
             return healthcheckData.UserAccountData.NumberDesEnabled + healthcheckData.ComputerAccountData.NumberDesEnabled;
         }
     }

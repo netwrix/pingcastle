@@ -5,6 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.RPC;
+using PingCastleCommon;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -81,6 +82,9 @@ Example of FQDN: bastion.local";
                 throw new PingCastleException("The domain " + EnumInboundSid + " couldn't be translated to a sid");
             }
             filename = AddSuffix(filename, "_" + EnumInboundSid);
+
+            FilesValidator.CheckPathTraversal(filename);
+
             using (sw = File.CreateText(filename))
             {
                 sw.WriteLine("SID\tAccount");

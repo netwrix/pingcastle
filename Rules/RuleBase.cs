@@ -19,6 +19,8 @@ namespace PingCastle.Rules
 {
     public abstract class RuleBase<T> : IRuleScore
     {
+        protected const int maxNumDisplayAccount = 100;
+
         public string RiskId { get; set; }
         public string Title { get; private set; }
         public string Description { get; private set; }
@@ -219,7 +221,14 @@ namespace PingCastle.Rules
             if (DetailRationale != null)
             {
                 Rationale = DetailRationale;
-                Rationale = Rationale.Replace("{count}", valueReturnedByAnalysis.ToString());
+                if (valueReturnedByAnalysis == int.MaxValue)
+                {
+                    Rationale = Rationale.Replace("{count}", "Infinite");
+                }
+                else
+                {
+                    Rationale = Rationale.Replace("{count}", valueReturnedByAnalysis.ToString());
+                }
                 Rationale = Rationale.Replace("{threshold}", computation.Threshold.ToString());
                 foreach (var data in ReplacementToDo)
                 {
@@ -242,7 +251,7 @@ namespace PingCastle.Rules
             // remove the application to the GPO output (for simplified analysis)
             var output2 = new Dictionary<IGPOReference, X>();
             foreach (var entry in output)
-            { 
+            {
                 if (!output2.ContainsKey(entry.Value.Key))
                 {
                     output2[entry.Value.Key] = entry.Value.Value;
@@ -306,7 +315,7 @@ namespace PingCastle.Rules
             foreach (var a in applied)
             {
                 Trace.WriteLine("Step 2: OU " + a.Key);
-                foreach(var b in a.Value)
+                foreach (var b in a.Value)
                 {
                     Trace.WriteLine("Step 2:       Order : " + b.Key + " GPO: " + b.Value.Key.GPOName);
                 }

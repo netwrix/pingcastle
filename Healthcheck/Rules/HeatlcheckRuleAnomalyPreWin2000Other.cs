@@ -19,9 +19,12 @@ namespace PingCastle.Healthcheck.Rules
         {
             if (healthcheckData.PreWindows2000NoDefault)
             {
-                return 1;
+                for (int i = 0; i < healthcheckData.PreWindows2000Members.Count; i++)
+                {
+                    AddRawDetail(healthcheckData.PreWindows2000Members[i]);
+                }
             }
-            return 0;
+            return null;
         }
     }
 }

@@ -11,7 +11,7 @@ namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("S-FunctionalLevel3", RiskRuleCategory.StaleObjects, RiskModelCategory.ObsoleteOS)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
-    [RuleDurANSSI(3, "vuln_functional_level", "Insufficient forest and domains functional levels")]
+    [RuleDurANSSI(3, "functional_level", "Insufficient forest and domains functional levels")]
     [RuleIntroducedIn(2, 11, 2)]
     [RuleMitreAttackMitigation(MitreAttackMitigation.UpdateSoftware)]
     public class HeatlcheckRuleStaledObsoleteFunctionalLevel3 : RuleBase<HealthcheckData>

@@ -1,3 +1,37 @@
+3.3.0.0
+* adjusted the rules S-DesEnabled, S-PwdNotRequired, S-PwdNeverExpires, P-Delegated, A-PreWin2000Other, S-PrimaryGroup, P-ServiceDomainAdmin, 
+  A-AdminSDHolder to display directly the list of impacted users in the rule if the number is limited (hardcoded to 100) so Pro / Enterprise users can set accounts in exceptions
+* handle the case where the property ms-DS-MachineAccountQuota has been removed (you can add as many computers as you want)
+* ignore RPC coerce test if the computer used to run PingCastle is the DC (false positive)
+* added the rule S-FirewallScript which recommends firewall rules against script engines (suggestion of Steen Poulsen)
+* added the rule S-TerminalServicesGPO which recommends session timeout for RDP (suggestion of Steen Poulsen)
+* Upgraded .NET Framework version to 4.7.2
+* Release will contain version for 4.5.2 and 4.7.2
+* Upgraded nuget packages
+* Security improvements
+
+3.2.1.0
+* adjust P-DisplaySpecifier to be more relaxed when foreign path are used
+* P-DNSAdmin is not triggered anymore (following our previous notification)
+* added troubleshooting tests in case PingCastle is asked to connect to LDAPS and if the remote certificate is untrusted
+* adjust powershell requests in S-OS-* rules descriptions
+* fix a problem when with S-PwdLastSet-45 / S-PwdLastSet-90 when the DC has an incorrect date and set lastlogondate in the future
+* add support for ms-LAPS-EncryptedPassword
+* fix a problem in AzureAD when PRT was used even if manual credential was provided
+* disabled the rule UserConsentCompanyData because the AAD changed drastically
+* remove computer inherited class (managed service account) from AES missing control
+* added the rule A-SmartCardPwdRotation checking for msDS-ExpirePasswordsOnSmartCardOnlyAccounts
+* added the rule P-RODCKrbtgtOrphan checking for krbtgt_* account associated to RODC that are orphans
+* added the rule S-AesNotEnabled checking for AES not enabled on service accounts
+* added the rule S-PwdLastSet-Cluster checking for password change on clusters (at least every 3 years)
+* added the rule A-RootDseAnonBinding to check for anonymous binding on rootDse for DC with Windows 2019+
+* added the rule S-FolderOptions to recommend to open .js .jse files using notepad instead of the default script engine
+* added the rule S-DefenderASR to implement Defender ASR rules. Even if another AV is installed, it will cover computers in a default state
+* Pro: added a workaround to fix issues when ClientSecret is not defined for AAD authentication
+
+3.2.0.1
+* fix a regression in S-ADRegistration if multiple SeMachineAccountPrivilege have been defined, including Everyone like group and if MachineAccountQuota is not zero
+
 3.2.0.0
 * added a RPC scanner for DC (python coercer like script but without exploiting) and --skip-dc-rpc to disable this scan
 * added the rule A-DC-Coerce matching the RPC scanner output

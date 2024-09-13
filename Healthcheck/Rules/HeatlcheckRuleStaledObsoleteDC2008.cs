@@ -12,7 +12,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleSTIG("V-8551", "The domain functional level must be at a Windows Server version still supported by Microsoft.")]
     [RuleANSSI("R12", "subsection.3.1")]
-    [RuleMaturityLevel(1)]
+    [RuleDurANSSI(1, "warning_dc_obsolete", "DC/RODC with an obsolete operating system")]
     [RuleMitreAttackMitigation(MitreAttackMitigation.UpdateSoftware)]
     public class HeatlcheckRuleStaledObsoleteDC2008 : RuleBase<HealthcheckData>
     {

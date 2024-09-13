@@ -64,13 +64,15 @@ namespace PingCastle.ADWS
         [AttributeUsage(AttributeTargets.Property)]
         private class ADAttributeAttribute : Attribute
         {
-            public ADAttributeAttribute(string aDAttribute, ADAttributeValueKind valueKind)
+            public ADAttributeAttribute(string aDAttribute, ADAttributeValueKind valueKind, object defaultValue = null)
             {
                 ADAttribute = aDAttribute;
                 ValueKind = valueKind;
+                DefaultValue = defaultValue;
             }
             public string ADAttribute { get; set; }
             public ADAttributeValueKind ValueKind { get; set; }
+            public object DefaultValue { get; set; }
         }
 
         private enum ADAttributeValueKind
@@ -118,7 +120,24 @@ namespace PingCastle.ADWS
                 var attributes = prop.GetCustomAttributes(typeof(ADAttributeAttribute), false);
                 if (attributes != null && attributes.Length != 0)
                 {
-                    AttributeTranslation.Add(((ADAttributeAttribute)attributes[0]).ADAttribute.ToLowerInvariant(), new ADAttributeTranslation((ADAttributeAttribute)attributes[0], prop));
+                    var attribute = (ADAttributeAttribute)attributes[0];
+                    AttributeTranslation.Add(attribute.ADAttribute.ToLowerInvariant(), new ADAttributeTranslation(attribute, prop));
+                }
+            }
+        }
+
+        protected ADItem()
+        {
+            foreach (var prop in typeof(ADItem).GetProperties())
+            {
+                var attributes = prop.GetCustomAttributes(typeof(ADAttributeAttribute), false);
+                if (attributes != null && attributes.Length != 0)
+                {
+                    var attribute = (ADAttributeAttribute)attributes[0];
+                    if (attribute.DefaultValue != null)
+                    {
+                        prop.SetValue(this, attribute.DefaultValue);
+                    }
                 }
             }
         }
@@ -149,7 +168,7 @@ namespace PingCastle.ADWS
         public string DnsRoot { get; set; }
         [ADAttributeAttribute("dSHeuristics", ADAttributeValueKind.StringValue)]
         public string DSHeuristics { get; set; }
-        [ADAttributeAttribute("ms-DS-MachineAccountQuota", ADAttributeValueKind.IntValue)]
+        [ADAttributeAttribute("ms-DS-MachineAccountQuota", ADAttributeValueKind.IntValue, int.MaxValue)]
         public int DSMachineAccountQuota { get; set; }
         [ADAttributeAttribute("flags", ADAttributeValueKind.IntValue)]
         public int Flags { get; set; }
@@ -187,6 +206,8 @@ namespace PingCastle.ADWS
         public SecurityIdentifier msDSCreatorSID { get; set; }
         [ADAttributeAttribute("msDS-EnabledFeature", ADAttributeValueKind.StringArrayValue)]
         public string[] msDSEnabledFeature { get; set; }
+        [ADAttributeAttribute("msDS-ExpirePasswordsOnSmartCardOnlyAccounts", ADAttributeValueKind.BoolValue)]
+        public bool msDSExpirePasswordsOnSmartCardOnlyAccounts { get; set; }
         [ADAttributeAttribute("msDS-IntId", ADAttributeValueKind.IntValue)]
         public int msDSIntId { get; set; }
         [ADAttributeAttribute("msDS-SupportedEncryptionTypes", ADAttributeValueKind.IntValue)]
@@ -197,6 +218,8 @@ namespace PingCastle.ADWS
         public long msDSMaximumPasswordAge { get; set; }
         [ADAttributeAttribute("msDS-MinimumPasswordLength", ADAttributeValueKind.IntValue)]
         public int msDSMinimumPasswordLength { get; set; }
+        [ADAttributeAttribute("msDS-Other-Settings", ADAttributeValueKind.StringArrayValue)]
+        public string[] msDSOtherSettings { get; set; }
         [ADAttributeAttribute("msDS-PasswordComplexityEnabled", ADAttributeValueKind.BoolValue)]
         public bool msDSPasswordComplexityEnabled { get; set; }
         [ADAttributeAttribute("msDS-PasswordHistoryLength", ADAttributeValueKind.IntValue)]

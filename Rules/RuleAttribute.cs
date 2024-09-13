@@ -391,7 +391,7 @@ namespace PingCastle.Rules
         {
             get
             {
-                return "https://www.cert.ssi.gouv.fr/uploads/guide-ad.html#" + ID;
+                return "https://www.cert.ssi.gouv.fr/uploads/ad_checklist.html#vuln_" + ID;
             }
         }
 

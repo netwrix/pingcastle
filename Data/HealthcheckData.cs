@@ -388,6 +388,74 @@ namespace PingCastle.Healthcheck
         public List<HealthcheckScriptDelegationData> Delegation { get; set; }
     }
 
+    // from: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-gpfas/2efe0b76-7b4a-41ff-9050-1023f8196d16
+    [DebuggerDisplay("{GPOName} {Name} {Direction} {Action}")]
+    public class GPPFireWallRule : IGPOReference
+    {
+        public string GPOName { get; set; }
+        public string GPOId { get; set; }
+
+        [XmlAttribute]
+        [DefaultValue(null)]
+        public string Id { get; set; }
+
+        public List<string> RA4 { get; set; }
+        public List<string> RA6 { get; set; }
+        public List<string> LA4 { get; set; }
+        public List<string> LA6 { get; set; }
+
+        [XmlAttribute]
+        [DefaultValue(null)]
+        public string LPort { get; set; }
+
+        [XmlAttribute]
+        [DefaultValue(null)]
+        public string RPort { get; set; }
+
+        [XmlAttribute]
+        [DefaultValue(null)]
+        public string Version { get; set; }
+
+        [XmlAttribute]
+        [DefaultValue(null)]
+        public string Name { get; set; }
+
+        [DefaultValue(null)]
+        public int? Protocol { get; set; }
+
+        [XmlAttribute]
+        [DefaultValue(false)]
+        public bool Active { get; set; }
+
+        [XmlAttribute]
+        [DefaultValue(null)]
+        public string Direction { get; set; }
+
+        [XmlAttribute]
+        [DefaultValue(null)]
+        public string Action { get; set; }
+
+        [XmlAttribute]
+        [DefaultValue(null)]
+        public string App { get; set; }
+    }
+
+    [DebuggerDisplay("{GPOName}")]
+    public class GPPTerminalServiceConfig : IGPOReference
+    {
+        public string GPOName { get; set; }
+        public string GPOId { get; set; }
+
+        [DefaultValue(null)]
+        public int? MaxIdleTime { get; set; }
+
+        [DefaultValue(null)]
+        public int? MaxDisconnectionTime { get; set; }
+
+        [DefaultValue(null)]
+        public bool? fDisableCpm { get; set; }
+    }
+
     [DebuggerDisplay("{Property} {Value}")]
     public class GPPSecurityPolicyProperty
     {
@@ -814,6 +882,7 @@ namespace PingCastle.Healthcheck
         {
             IsServer = x.OperatingSystem.Contains("Server");
             IsLTSC = x.OperatingSystem.IndexOf("LTSC", StringComparison.OrdinalIgnoreCase) >= 0 || x.OperatingSystem.IndexOf("LTSB", StringComparison.OrdinalIgnoreCase) >= 0;
+            IsIOT = x.OperatingSystem.IndexOf(" IOT", StringComparison.OrdinalIgnoreCase) >= 0;
             OSVersion = x.OperatingSystemVersion;
             data = new HealthcheckAccountData();
             data.DotNotRecordDetail = true;
@@ -826,6 +895,8 @@ namespace PingCastle.Healthcheck
         [XmlAttribute]
         [DefaultValue(false)]
         public bool IsLTSC { get; set; }
+        [DefaultValue(false)]
+        public bool IsIOT { get; set; }
         [XmlAttribute]
         public int NumberOfOccurence { get; set; }
         public HealthcheckAccountData data { get; set; }
@@ -956,6 +1027,40 @@ namespace PingCastle.Healthcheck
         public int Value { get; set; }
     }
 
+    [DebuggerDisplay("{GPOName} {FileExt} {OpenApp}")]
+    public class GPPFolderOption : IGPOReference
+    {
+        public string GPOName { get; set; }
+
+        public string GPOId { get; set; }
+        [XmlAttribute]
+        [DefaultValue(null)]
+        public string OpenApp { get; set; }
+
+        [XmlAttribute]
+        [DefaultValue(null)]
+        public string FileExt { get; set; }
+
+        [XmlAttribute]
+        [DefaultValue(null)]
+        public string Action { get; set; }
+    }
+
+    [DebuggerDisplay("{GPOName} {FileExt} {OpenApp}")]
+    public class HealthcheckDefenderASRData : IGPOReference
+    {
+        public string GPOName { get; set; }
+
+        public string GPOId { get; set; }
+        [XmlAttribute]
+        [DefaultValue(null)]
+        public string ASRRule { get; set; }
+
+        [XmlAttribute]
+        [DefaultValue(null)]
+        public int Action { get; set; }
+    }
+
     //public class HealthcheckSiteTopologyData
     //{
 
@@ -1016,7 +1121,7 @@ namespace PingCastle.Healthcheck
 
         [XmlAttribute]
         public string Interface { get; set; }
-        
+
         [XmlAttribute]
         public int OpNum { get; set; }
 
@@ -1038,6 +1143,7 @@ namespace PingCastle.Healthcheck
         public string DistinguishedName { get; set; }
 
         public string OperatingSystem { get; set; }
+        public string OperatingSystemVersion { get; set; }
 
         public string OwnerSID { get; set; }
 
@@ -1102,6 +1208,7 @@ namespace PingCastle.Healthcheck
         public DateTime AdminLocalLogin { get; set; }
 
         public List<HealthcheckDCRPCInterface> RPCInterfacesOpen { get; set; }
+
     }
 
     [XmlType("delegation")]
@@ -1430,9 +1537,15 @@ namespace PingCastle.Healthcheck
         public bool ShouldSerializePreWindows2000AuthenticatedUsers() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public bool PreWindows2000AuthenticatedUsers { get; set; }
 
+        public bool ShouldSerializePreWindows2000Members() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public List<string> PreWindows2000Members { get; set; }
+
         [DefaultValue(null)]
         [XmlAttribute]
         public string DSHeuristics { get; set; }
+
+        [DefaultValue(null)]
+        public List<string> DSOtherSettings { get; set; }
 
         public bool ShouldSerializeUsingNTFRSForSYSVOL() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public bool UsingNTFRSForSYSVOL { get; set; }
@@ -1462,6 +1575,9 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeListComputerPwdNotChanged() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> ListComputerPwdNotChanged { get; set; }
+
+        public bool ShouldSerializeListClusterPwdNotChanged() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
+        public List<HealthcheckAccountDetailData> ListClusterPwdNotChanged { get; set; }
 
         public bool ShouldSerializeGPOInfo() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<GPOInfo> GPOInfo { get; set; }
@@ -1506,6 +1622,12 @@ namespace PingCastle.Healthcheck
         public bool ShouldSerializeGPPFileDeployed() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<GPPFileDeployed> GPPFileDeployed { get; set; }
 
+        public bool ShouldSerializeGPPFirewallRules() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public List<GPPFireWallRule> GPPFirewallRules { get; set; }
+
+        public bool ShouldSerializeGPPTerminalServiceConfigs() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public List<GPPTerminalServiceConfig> GPPTerminalServiceConfigs {get;set;}
+
         public bool ShouldSerializeGPPRightAssignment() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<GPPRightAssignment> GPPRightAssignment { get; set; }
 
@@ -1525,6 +1647,12 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeGPOLsaPolicy() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<GPPSecurityPolicy> GPOLsaPolicy { get; set; }
+
+        public bool ShouldSerializeGPOFolderOptions() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public List<GPPFolderOption> GPOFolderOptions { get; set; }
+
+        public bool ShouldSerializeGPODefenderASR() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public List<HealthcheckDefenderASRData> GPODefenderASR { get; set; }
 
         public bool ShouldSerializeGPOScreenSaverPolicy() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<GPPSecurityPolicy> GPOScreenSaverPolicy { get; set; }
@@ -1580,6 +1708,9 @@ namespace PingCastle.Healthcheck
         public bool ShouldSerializeSmartCardNotOK() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> SmartCardNotOK { get; set; }
 
+        public bool ShouldSerializeRODCKrbtgtOrphans() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
+        public List<HealthcheckAccountDetailData> RODCKrbtgtOrphans { get; set; }
+
         public bool ShouldSerializeDelegations() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckDelegationData> Delegations { get; set; }
 
@@ -1600,6 +1731,11 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeMachineAccountQuota() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public int MachineAccountQuota { get; set; }
+
+        public bool ShouldSerializeExpirePasswordsOnSmartCardOnlyAccounts() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        [DefaultValue(false)]
+        [XmlAttribute]
+        public bool ExpirePasswordsOnSmartCardOnlyAccounts { get; set; }
 
         public bool ShouldSerializeListHoneyPot() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthcheckAccountDetailData> ListHoneyPot { get; set; }
@@ -1648,6 +1784,10 @@ namespace PingCastle.Healthcheck
         public string AzureADName { get; set; }
         public string AzureADId { get; set; }
         public string AzureADKerberosSid { get; set; }
+
+        [DefaultValue(0)]
+        [XmlAttribute]
+        public uint WinTrustLevel { get; set; }
 
         public List<HealthCheckDisplaySpecifier> DisplaySpecifier { get; set; }
 

@@ -13,8 +13,8 @@ namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("S-ADRegistration", RiskRuleCategory.StaleObjects, RiskModelCategory.Provisioning)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-    [RuleMaturityLevel(3)]
     [RuleMitreAttackMitigation(MitreAttackMitigation.UserAccountManagement)]
+    [RuleDurANSSI(4, "user_accounts_machineaccountquota", "Unrestricted domain join")]
     public class HeatlcheckRuleStaleADRegistrationEnabled : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

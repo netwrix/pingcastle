@@ -1405,6 +1405,7 @@ This is the PingCastle program sending reports for:
             }
             catch (ReflectionTypeLoadException ex)
             {
+                WriteInRed("[" + DateTime.Now.ToLongTimeString() + "] An exception occured when doing the task: " + taskname);
                 WriteInRed("Exception: " + ex.Message);
                 foreach (Type type in new List<Type>(ex.Types))
                 {
@@ -1416,11 +1417,16 @@ This is the PingCastle program sending reports for:
             // default exception message
             catch (Exception ex)
             {
+                WriteInRed("[" + DateTime.Now.ToLongTimeString() + "] An exception occured when doing the task: " + taskname);
                 // type EndpointNotFoundException is located in Service Model using dotnet 3.0. What if run on dotnet 2.0 ?
                 if (ex.GetType().FullName == "System.ServiceModel.EndpointNotFoundException")
                 {
-                    WriteInRed("[" + DateTime.Now.ToLongTimeString() + "] An exception occured when doing the task: " + taskname);
                     WriteInRed("Exception: " + ex.Message);
+                }
+                else if (ex.GetType().FullName == "System.Runtime.InteropServices.COMException")
+                {
+                    WriteInRed("Exception: " + ex.Message);
+                    WriteInRed("HRESULT: " + ex.HResult);
                 }
                 // type DirectoryServicesCOMException not found in dotnet core
                 else if (ex.GetType().FullName == "System.DirectoryServices.DirectoryServicesCOMException")
@@ -1438,12 +1444,10 @@ This is the PingCastle program sending reports for:
                 }
                 else if (ex.GetType().FullName == "System.DirectoryServices.ActiveDirectory.ActiveDirectoryServerDownException")
                 {
-                    WriteInRed("[" + DateTime.Now.ToLongTimeString() + "] An exception occured when doing the task: " + taskname);
                     WriteInRed("Active Directory not Found: " + ex.Message);
                 }
                 else if (ex.GetType().FullName == "System.DirectoryServices.ActiveDirectory.ActiveDirectoryObjectNotFoundException")
                 {
-                    WriteInRed("[" + DateTime.Now.ToLongTimeString() + "] An exception occured when doing the task: " + taskname);
                     WriteInRed("Active Directory Not Found: " + ex.Message);
                 }
                 else

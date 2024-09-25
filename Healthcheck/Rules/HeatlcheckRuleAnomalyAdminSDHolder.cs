@@ -32,8 +32,8 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         AddRawDetail(healthcheckData.AdminSDHolderNotOK[i].DistinguishedName);
                     }
+                    return null;
                 }
-                return null;
             }
             return healthcheckData.AdminSDHolderNotOKCount;
         }

@@ -38,8 +38,10 @@ namespace PingCastle.Healthcheck.Rules
                         }
                     }
                 }
-                return null;
             }
+
+            if (healthcheckData.UserAccountData.NumberDesEnabled + healthcheckData.ComputerAccountData.NumberDesEnabled < maxNumDisplayAccount)
+                return null;
             return healthcheckData.UserAccountData.NumberDesEnabled + healthcheckData.ComputerAccountData.NumberDesEnabled;
         }
     }

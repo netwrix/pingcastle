@@ -24,8 +24,8 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         AddRawDetail(healthcheckData.UserAccountData.ListBadPrimaryGroup[i].DistinguishedName);
                     }
+                    return null;
                 }
-                return null;
             }
             return healthcheckData.UserAccountData.NumberBadPrimaryGroup;
         }

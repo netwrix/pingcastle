@@ -1,3 +1,6 @@
+3.3.0.1
+* fix an issue where rule is not displayed when impacted users/computers count is less than 100.
+
 3.3.0.0
 * adjusted the rules S-DesEnabled, S-PwdNotRequired, S-PwdNeverExpires, P-Delegated, A-PreWin2000Other, S-PrimaryGroup, P-ServiceDomainAdmin, 
   A-AdminSDHolder to display directly the list of impacted users in the rule if the number is limited (hardcoded to 100) so Pro / Enterprise users can set accounts in exceptions

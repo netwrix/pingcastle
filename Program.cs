@@ -219,7 +219,7 @@ namespace PingCastle
             ConsoleMenu.Header = @"  \==--O___      PingCastle (Version " + version.ToString(4) + @"     " + ConsoleMenu.GetBuildDateTime(Assembly.GetExecutingAssembly()) + @")
    \  / \  ¨¨>   Get Active Directory Security at 80% in 20% of the time
     \/   \ ,’    " + (license.EndTime < DateTime.MaxValue ? "End of support: " + license.EndTime.ToString("yyyy-MM-dd") : "") + @"
-     O¨---O      To find out more about PingCastle, visit https://www.pingcastle.com                                              
+     O¨---O      To find out more about PingCastle, visit https://www.pingcastle.com
       \ ,'       For online documentation, visit https://helpcenter.netwrix.com/category/pingcastle
        v         For support and questions:
                  -	Open-source community, visit https://github.com/netwrix/pingcastle/issues

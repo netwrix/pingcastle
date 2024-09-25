@@ -176,7 +176,7 @@
     <value>The purpose is to make sure that there is a proper password policy in place for the native local administrator account.</value>
   </data>
   <data name="A_LAPS_Not_Installed_Solution" xml:space="preserve">
-    <value>If you don't have any provisioning process or password solution to manage local administrators, you should install the LAPS solution. If you mitigate the risk differently, you should add this rule as an exception, as the risk is covered.</value>
+    <value>If you don't have any provisioning process or password solution to manage local administrators, you should install the LAPS solution. If you address the risk through alternative measures, you can disregard this finding. Customers using Netwrix PingCastle Pro or Enterprise versions can add this item as an exception.</value>
   </data>
   <data name="A_LAPS_Not_Installed_Rationale" xml:space="preserve">
     <value>LAPS doesn't seem to be installed</value>

@@ -900,6 +900,9 @@ namespace PingCastle.Healthcheck
                         if (!string.IsNullOrEmpty(x.OperatingSystemVersion) && x.OperatingSystem != null && x.OperatingSystem.Contains("Windows"))
                         {
                             string key = (x.OperatingSystem.Contains("Server") ? "s" : "w") + "|" + x.OperatingSystemVersion;
+                            var isLTSC = x.OperatingSystem.Contains("LTSC") || x.OperatingSystem.Contains("LTSB");
+                            if (isLTSC)
+                                key += "|LTSC";
                             if (!operatingSystemVersion.ContainsKey(key))
                             {
                                 operatingSystemVersion[key] = new HealthcheckOSVersionData(x);

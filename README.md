@@ -7,12 +7,12 @@ We're excited to share an important update to our release cycle. Moving forward,
 ### Upcoming Plans:
 - **Next Release**: The upcoming release, expected in the next few months, will focus on:
   - Addressing reported bugs.
-  - Supporting all **ADCS (Active Directory Certificate Services)** 1-15 attacks.
+  - Updating and supporting more Active Directory Certificate Service vulnerable configurations.
   - Rebranding
  
 - **Community Launch**: We're also building a **community platform** where we'll provide:
   - Regular updates on new features.
- - Product Roadmaps.
+  - Product Roadmaps.
   - A place for collaboration, feedback, and discussions with our contributors and users.
  
 Stay tuned for more updates, and thank you for your continued support!

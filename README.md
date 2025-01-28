@@ -1,5 +1,22 @@
 # PingCastle by Netwrix
 
+## Release Cycle Update 🚀
+ 
+We're excited to share an important update to our release cycle. Moving forward, we will transition from time-based releases (every 6 months) to **feature-based releases**. This change will allow us to deliver new features, improvements, and bug fixes as soon as they are ready, ensuring a more agile and responsive development process.
+ 
+### Upcoming Plans:
+- **Next Release**: The upcoming release, expected in the next few months, will focus on:
+  - Addressing reported bugs.
+  - Supporting all **ADCS (Active Directory Certificate Services)** 1-15 attacks.
+  - Rebranding
+ 
+- **Community Launch**: We're also building a **community platform** where we'll provide:
+  - Regular updates on new features.
+ - Product Roadmaps.
+  - A place for collaboration, feedback, and discussions with our contributors and users.
+ 
+Stay tuned for more updates, and thank you for your continued support!
+
 ## Acquisition Announcement
 
 We are excited to announce that PingCastle has been acquired by [Netwrix](http://www.netwrix.com/)!

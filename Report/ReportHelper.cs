@@ -28,6 +28,8 @@ namespace PingCastle.Report
                     return "Windows Server 2012 R2";
                 case 7:
                     return "Windows Server 2016";
+                case 10:
+                    return "Windows Server 2025";
                 default:
                     return "Unknown: " + DomainFunctionalLevel;
             }
@@ -55,6 +57,8 @@ namespace PingCastle.Report
                     return "Windows Server 2012 R2";
                 case 7:
                     return "Windows Server 2016";
+                case 10:
+                    return "Windows Server 2025";
                 default:
                     return "Unknown: " + ForestFunctionalLevel;
             }
@@ -82,6 +86,8 @@ namespace PingCastle.Report
                     return "Windows Server 2016";
                 case 88:
                     return "Windows Server 2019";
+                case 91:
+                    return "Windows Server 2025";
                 case 0:
                     return "Not recorded at report time";
                 default:

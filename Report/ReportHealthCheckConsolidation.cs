@@ -50,7 +50,7 @@ namespace PingCastle.Report
         protected override void ReferenceJSAndCSS()
         {
             AddStyle(TemplateManager.LoadReportHealthCheckConsolidationCss());
-            if (!string.IsNullOrEmpty(_license.Edition))
+            if (!_license.IsBasic())
             {
                 AddScript(TemplateManager.LoadTableExportJs());
                 AddScript(TemplateManager.LoadBootstrapTableExportJs());
@@ -164,7 +164,7 @@ namespace PingCastle.Report
                         if (AdditionInfoDelegate != null)
                             AddCellText(AdditionInfoDelegate(data.Domain));
                         AddCellText(ReportHelper.GetEnumDescription(rule.Category));
-                        if (string.IsNullOrEmpty(_license.Edition))
+                        if (_license.IsBasic())
                         {
                             AddCellText(rule.RiskId);
                         }
@@ -1153,7 +1153,7 @@ namespace PingCastle.Report
             {
                 GenerateSection("Password Age Distribution", () =>
                 {
-                    if (string.IsNullOrEmpty(_license.Edition))
+                    if (_license.IsBasic())
                     {
                         AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
                     }

@@ -27,22 +27,44 @@ namespace PingCastle.Cloud.Credentials
 
         Dictionary<Type, Token> cache = new Dictionary<Type, Token>();
         public Token LastTokenQueried { get; protected set; }
+
+        public bool ForceRefreshByRefreshToken { get; set; }
+
         public async Task<Token> GetToken<T>() where T : IAzureService
         {
-            Token token;
             if (cache.ContainsKey(typeof(T)))
             {
-                token = cache[typeof(T)];
+              var  caschedToken = cache[typeof(T)];
 
-                // TODO refresh
+                var networkLatency = 5;
+                var expiresOn = DateTimeOffset.FromUnixTimeSeconds(caschedToken.expires_on).AddSeconds(-networkLatency);
 
-                return token;
+                if (expiresOn <= DateTime.UtcNow || ForceRefreshByRefreshToken)
+                {
+                    caschedToken = await TokenFactory.RefreshToken<T>(tenantId, caschedToken);
+                    UpdateTokenCache<T>(caschedToken);
+                }
+
+                return caschedToken;
             }
-            token = await TokenFactory.GetToken<T>(this);
+
+            var newToken = await TokenFactory.GetToken<T>(this);
+            UpdateTokenCache<T>(newToken);
+
+            return newToken;
+        }
+
+        private void UpdateTokenCache<T>(Token token) where T : IAzureService
+        {
+            if (token.expires_on == 0)
+            {
+                token.expires_on = (uint)((DateTimeOffset)DateTime.UtcNow.AddSeconds(token.expires_in)).ToUnixTimeSeconds();
+            }
+
             LastTokenQueried = token;
             cache[typeof(T)] = token;
-            return token;
         }
+
         string tenantId;
         public string Tenantid
         {

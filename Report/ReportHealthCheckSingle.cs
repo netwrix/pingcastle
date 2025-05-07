@@ -65,7 +65,7 @@ namespace PingCastle.Report
 
         void AdjustReportIfNeeded()
         {
-            if (!string.IsNullOrEmpty(_license.Edition) && _license.Edition != "Basic")
+            if (!_license.IsBasic())
             {
                 if (_license.CustomerNotice != null && _license.CustomerNotice.StartsWith("Free "))
                 {
@@ -95,7 +95,7 @@ namespace PingCastle.Report
             AddStyle(TemplateManager.LoadReportCompromiseGraphCss());
             AddScript(TemplateManager.LoadVisJs());
             AddScript(TemplateManager.LoadReportCompromiseGraphJs());
-            if (!string.IsNullOrEmpty(_license.Edition))
+            if (!_license.IsBasic())
             {
                 AddScript(TemplateManager.LoadTableExportJs());
                 AddScript(TemplateManager.LoadBootstrapTableExportJs());
@@ -124,7 +124,7 @@ namespace PingCastle.Report
 ");
             Add(@"<div class=""alert alert-info"">
 This report has been generated with the ");
-            Add(String.IsNullOrEmpty(_license.Edition) ? "Basic" : _license.Edition);
+            Add(_license.IsBasic() ? "Basic" : _license.Edition);
             Add(@" Edition of PingCastle");
             if (!string.IsNullOrEmpty(_license.CustomerNotice))
             {
@@ -133,7 +133,7 @@ This report has been generated with the ");
                 AddEncoded(_license.CustomerNotice);
                 Add(@""">?</i>.");
             }
-            if (String.IsNullOrEmpty(_license.Edition))
+            if (_license.IsBasic())
             {
                 Add(@"
 <br><strong class='auditor'>Being part of a commercial package is forbidden</strong> (selling the information contained in the report).<br>
@@ -212,7 +212,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
         protected void GenerateContent()
         {
-            if (Report.version >= new Version(3, 0) && !string.IsNullOrEmpty(_license.Edition) && _license.Edition != "Basic")
+            if (Report.version >= new Version(3, 0) && !_license.IsBasic())
             {
                 if (!Report.IntegrityVerified)
                 {
@@ -273,7 +273,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         protected void GenerateMaturityInformation()
         {
             Add(@"<p>This section represents the maturity score (inspired from <a href='https://www.cert.ssi.gouv.fr/dur/CERTFR-2020-DUR-001/'>ANSSI</a>).</p>");
-            if (string.IsNullOrEmpty(_license.Edition))
+            if (_license.IsBasic())
             {
                 AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
                 return;
@@ -482,7 +482,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         protected void GenerateMitreAttackInformation()
         {
             AddParagraph(@"This section represents an evaluation of the techniques available in the <a href=""https://attack.mitre.org/"">MITRE ATT&CK&#174;</a>");
-            if (string.IsNullOrEmpty(_license.Edition))
+            if (_license.IsBasic())
             {
                 AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
                 return;
@@ -966,7 +966,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             if (Report.PasswordDistribution != null && Report.PasswordDistribution.Count > 0)
             {
                 GenerateSubSection("Password Age Distribution", "passworddistribution");
-                if (string.IsNullOrEmpty(_license.Edition))
+                if (_license.IsBasic())
                 {
                     AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
                 }
@@ -1201,7 +1201,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
 
             GenerateSubSection("LAPS Analysis", "lapsanalysis");
-            if (string.IsNullOrEmpty(_license.Edition))
+            if (_license.IsBasic())
             {
                 AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
             }
@@ -1236,27 +1236,35 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add("<div class='row'>");
 
 
-                        int total = 0; var laps = new List<int>(); var tooltip = new List<string>();
-                        int totalServer = 0; var lapsServer = new List<int>(); var tooltipServer = new List<string>();
+                        int total = 0; 
+                        var laps = new List<int>();
+                        var tooltip = new List<string>();
+                        int totalServer = 0; 
+                        var lapsServer = new List<int>();
+                        var tooltipServer = new List<string>();
+
+                        // ToDo: there is no link between laps int list and its tooltip, they only connection is the shared index.
+                        // It's probably worth changing it to a connected structure that would contain Legacy LAPS number, Windows LAPS number and the tooltip (or data for its generation)
+                        // Like at least Class LAPSData (int LegacyLAPS, int WindowsLAPS, string Tooltip)
                         foreach (var os in Report.OperatingSystemVersion)
                         {
 
                             if (!os.IsServer)
                             {
                                 total += os.data.NumberEnabled;
-                                if (os.data.NumberLAPS != 0)
+                                if (os.data.NumberLAPS != 0 || os.data.NumberLAPSNew != 0)
                                 {
-                                    laps.Add(os.data.NumberLAPS);
-                                    tooltip.Add(GetOSVersionString(os) + " [" + os.data.NumberEnabled + " - " + Math.Round((decimal)os.data.NumberLAPS * 100 / os.data.NumberEnabled) + "%]");
+                                    laps.Add(os.data.NumberLAPS + os.data.NumberLAPSNew);
+                                    tooltip.Add(GetOSVersionString(os) + " [" + os.data.NumberEnabled + " - " + Math.Round((decimal)(os.data.NumberLAPS + os.data.NumberLAPSNew) * 100 / os.data.NumberEnabled) + "%]");
                                 }
                             }
                             else
                             {
                                 totalServer += os.data.NumberEnabled;
-                                if (os.data.NumberLAPS != 0)
+                                if (os.data.NumberLAPS != 0 || os.data.NumberLAPSNew != 0)
                                 {
-                                    lapsServer.Add(os.data.NumberLAPS);
-                                    tooltipServer.Add(GetOSVersionString(os) + " [" + os.data.NumberEnabled + " - " + Math.Round((decimal)os.data.NumberLAPS * 100 / os.data.NumberEnabled) + "%]");
+                                    lapsServer.Add(os.data.NumberLAPS + os.data.NumberLAPSNew);
+                                    tooltipServer.Add(GetOSVersionString(os) + " [" + os.data.NumberEnabled + " - " + Math.Round((decimal)(os.data.NumberLAPS + os.data.NumberLAPSNew) * 100 / os.data.NumberEnabled) + "%]");
                                 }
                             }
                         }
@@ -1265,12 +1273,12 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add(@"<div class=""card"">
   <div class=""card-body"">
     <h5 class=""card-title"">Enabled computers with LAPS (");
-                        Add((laps.Sum() + lapsServer.Sum()).ToString("#,##0"));
+                        Add((laps.Sum()+ lapsServer.Sum()).ToString("#,##0"));
                         Add(@") over all enabled computers (");
                         Add((total + totalServer).ToString("#,##0"));
                         Add(@")</h5>
     ");
-                        AddPie(50, Report.ComputerAccountData.NumberEnabled, Report.ComputerAccountData.NumberLAPS);
+                        AddPie(50, Report.ComputerAccountData.NumberEnabled, Report.ComputerAccountData.NumberLAPS, Report.ComputerAccountData.NumberLAPSNew);
                         Add(@"
   </div>
 </div>");
@@ -1311,7 +1319,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         AddBeginTable("lapsos");
                         AddHeaderText("Operating System");
                         AddHeaderText("Number of Enabled");
-                        AddHeaderText("Number of LAPS installed");
+                        AddHeaderText("Number of Legacy LAPS");
+                        AddHeaderText("Number of Windows LAPS");
+                        AddHeaderText("Number of LAPS Total");
                         AddHeaderText("Ratio (%)");
                         AddBeginTableData();
                         foreach (var os in Report.OperatingSystemVersion)
@@ -1320,9 +1330,11 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             AddCellText(GetOSVersionString(os));
                             AddCellNum(os.data.NumberEnabled);
                             AddCellNum(os.data.NumberLAPS);
+                            AddCellNum(os.data.NumberLAPSNew);
+                            AddCellNum(os.data.NumberLAPS + os.data.NumberLAPSNew);
                             if (os.data.NumberEnabled > 0)
                             {
-                                AddCellNum((int)Math.Round((decimal)os.data.NumberLAPS * 100 / os.data.NumberEnabled));
+                                AddCellNum((int)Math.Round((decimal)(os.data.NumberLAPS + os.data.NumberLAPSNew) * 100 / os.data.NumberEnabled));
                             }
                             else
                             {
@@ -1638,7 +1650,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 Add("</div></div>");
             }
             GenerateSubSection("Last Logon Distribution", "adminlastlogondistribution");
-            if (string.IsNullOrEmpty(_license.Edition))
+            if (_license.IsBasic())
             {
                 AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
             }
@@ -3141,7 +3153,7 @@ Here are the settings found in GPO.");
             GenerateSubSection("Replacement of RC4 by AES in kerberos");
             AddParagraph(@"This section checks for known pain points in AES activation and RC4 removal for kerberos");
             bool OK;
-            if (string.IsNullOrEmpty(_license.Edition))
+            if (_license.IsBasic())
             {
                 AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
                 return;

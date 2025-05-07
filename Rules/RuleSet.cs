@@ -1,4 +1,6 @@
 ﻿using PingCastle.Healthcheck;
+using PingCastle.PingCastleLicense;
+
 //
 // Copyright (c) Ping Castle. All rights reserved.
 // https://www.pingcastle.com
@@ -135,7 +137,7 @@ namespace PingCastle.Rules
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("An exception occured when running the rule : " + ruleName);
                     Trace.WriteLine("An exception occured when running the rule : " + ruleName);
-                    Console.WriteLine("Please contact support@pingcastle.com with the following details so the problem can be fixed");
+                    DisplaySupportMessage();
                     Console.ResetColor();
                     Console.WriteLine("Message: " + ex.Message);
                     Trace.WriteLine("Message: " + ex.Message);
@@ -228,6 +230,16 @@ namespace PingCastle.Rules
             if (_cachedRules.ContainsKey(ruleid))
                 return _cachedRules[ruleid];
             return null;
+
+        }
+        private void DisplaySupportMessage()
+        {
+            var license = LicenseCache.Instance.GetLicense();
+            var isBasicLicense = license.IsBasic();
+            if (isBasicLicense)
+                Console.WriteLine("Please visit https://github.com/netwrix/pingcastle/issues to log an issue with the following details so the problem can be fixed");
+            else
+                Console.WriteLine("Please contact Netwrix support via the support portal (https://www.netwrix.com/support.html) with the following details so the problem can be fixed");
 
         }
     }

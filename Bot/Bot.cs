@@ -1,5 +1,6 @@
 ﻿using PingCastle.Data;
 using PingCastle.Healthcheck;
+using PingCastle.PingCastleLicense;
 using PingCastle.Report;
 using PingCastle.Rules;
 using System;
@@ -195,7 +196,7 @@ namespace PingCastle.Bot
                 {
                     HealthcheckData healthcheckData = DataHelper<HealthcheckData>.LoadXml(ms, "bot", null);
                     var endUserReportGenerator = new ReportHealthCheckSingle();
-                    var license = LicenseManager.Validate(typeof(Program), new Program()) as ADHealthCheckingLicense;
+                    var license = LicenseCache.Instance.GetLicense();
                     var report = endUserReportGenerator.GenerateReportFile(healthcheckData, license, healthcheckData.GetHumanReadableFileName());
 
                     var o = new BotInputOutput();

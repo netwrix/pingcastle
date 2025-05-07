@@ -5,24 +5,22 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Reflection;
 
 namespace PingCastle.Cloud.RESTServices.Azure
 {
     public class EndPointAttribute : Attribute
     {
-        public EndPointAttribute(string Authorize, string Token)
+        public EndPointAttribute(string authorize, string token, string scope = null)
         {
-            this.AuthorizeEndPoint = Authorize;
-            this.TokenEndPoint = Token;
+            AuthorizeEndPoint = authorize;
+            TokenEndPoint = token;
+            Scope = scope;
         }
 
         public string AuthorizeEndPoint { get; private set; }
         public string TokenEndPoint { get; private set; }
+        public string Scope { get; private set; }
 
         public static EndPointAttribute GetEndPointAttribute<T>() where T : IAzureService
         {

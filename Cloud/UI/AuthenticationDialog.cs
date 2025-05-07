@@ -183,6 +183,7 @@ namespace PingCastle.Cloud.UI
                     { "msafed", "0"}, //azureAD only
                 };
 
+
             if (use_login_hint && credential.LastTokenQueried != null)
             {
                 Trace.WriteLine("LastTokenQueried");

@@ -330,10 +330,6 @@ namespace PingCastle.Cloud.Data
 
         public string ProvisionDirectorySynchronizationStatus { get; set; }
 
-        public List<string> ProvisionCompanyTags { get; set; }
-
-        public string ProvisionCompanyType { get; set; }
-
         public bool? ProvisionPasswordSynchronizationEnabled { get; set; }
 
         public List<string> ProvisionAuthorizedServiceInstances { get; set; }

@@ -1,5 +1,6 @@
 3.3.0.1
 * fix an issue where rule is not displayed when impacted users/computers count is less than 100.
+* fix incorrect identification of Windows LTSC and non-LTSC builds for accurate version detection.
 
 3.3.0.0
 * adjusted the rules S-DesEnabled, S-PwdNotRequired, S-PwdNeverExpires, P-Delegated, A-PreWin2000Other, S-PrimaryGroup, P-ServiceDomainAdmin, 

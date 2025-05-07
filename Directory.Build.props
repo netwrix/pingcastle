@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <Version></Version>
+    <FileVersion></FileVersion>
+    <AssemblyVersion></AssemblyVersion>
+    <ProductVersion></ProductVersion>
+    <Company>Netwrix Corporation</Company>
+    <Product>PingCastle</Product>
+    <Copyright></Copyright>
+  </PropertyGroup>
+</Project>

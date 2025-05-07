@@ -79,7 +79,7 @@ namespace PingCastle.Report
             }
             sb.Append("\"");
 
-            if (string.IsNullOrEmpty(license.Edition) || string.Equals(license.Edition, "Basic", StringComparison.OrdinalIgnoreCase) || shareStat)
+            if (license.IsBasic() || shareStat)
             {
                 sb.Append(",\"id\":\"");
                 using (SHA256 hashstring = SHA256.Create())

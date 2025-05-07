@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -395,13 +396,24 @@ namespace PingCastle
             var path = assembly.Location;
             if (string.IsNullOrEmpty(path))
             {
-                System.Diagnostics.Trace.WriteLine("In memory location detected");
+                Trace.WriteLine("In memory location detected");
                 return 0x80070002;
             }
-            else if (File.Exists(path))
+
+            if (File.Exists(path))
             {
-                return CheckWinTrustFlags(path);
+                var resultCode = CheckWinTrustFlags(path);
+
+                if (resultCode != 0)
+                    Trace.WriteLine($"Trust error code: {resultCode}");
+
+                return resultCode;
             }
+            else
+            {
+                Trace.WriteLine($"File {path} doesn't exist");
+            }
+
             return 0;
         }
 

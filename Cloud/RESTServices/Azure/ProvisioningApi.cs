@@ -1678,7 +1678,7 @@ namespace PingCastle.Cloud.RESTServices.Azure
                 request.Headers.Add(myHeader);
                 ClientVersionHeader clientVersionHeader = new ClientVersionHeader();
                 clientVersionHeader.ClientId = new Guid("50afce61-c917-435b-8c6d-60aa5a8b8aa7");
-                clientVersionHeader.Version = "1.2.183.66";
+                clientVersionHeader.Version = "1.2.183.81";
                 request.Headers.Add(MessageHeader.CreateHeader("ClientVersionHeader", "http://provisioning.microsoftonline.com/", clientVersionHeader));
                 ContractVersionHeader contractVersionHeader = new ContractVersionHeader();
                 contractVersionHeader.BecVersion = Version.Version47;

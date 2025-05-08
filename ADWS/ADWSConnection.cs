@@ -421,7 +421,7 @@ namespace PingCastle.ADWS
                             }
                         }
                     }
-					throw new PingCastleException("An ADWS exception occured (fault:" + ex.Message + ";reason:" + ex.Reason + ").\r\nADWS is a faster protocol than LDAP but bound to a default 30 minutes limitation. If this error persists, we recommand to force the LDAP protocol. Run PingCastle with the following switches: --protocol LDAPOnly --interactive");
+					throw new PingCastleException("An ADWS exception occured (fault:" + ex.Message + ";reason:" + ex.Reason + ").\r\nADWS is a faster protocol than LDAP but bound to a default 30 minutes limitation. If this error persists, we recommend to force the LDAP protocol. Run PingCastle with the following switches: --protocol LDAPOnly --interactive");
 				}
 				Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "]Pull successful");
 				if (pullResponse.EndOfSequence != null)

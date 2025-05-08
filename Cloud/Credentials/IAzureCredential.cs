@@ -20,5 +20,6 @@ namespace PingCastle.Cloud.Credentials
         string TenantidToQuery { get; set; }
         Task<Token> GetToken<T>() where T : IAzureService;
         Token LastTokenQueried { get; }
+        bool ForceRefreshByRefreshToken { get; set; }
     }
 }

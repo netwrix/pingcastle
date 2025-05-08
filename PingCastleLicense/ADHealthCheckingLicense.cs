@@ -13,69 +13,13 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace ADSecurityHealthCheck
-{
-    internal class ADHealthCheckingLicenseSettings : PingCastle.ADHealthCheckingLicenseSettings
-    {
-    }
-}
-
 namespace PingCastle
 {
-
-    public interface IPingCastleLicenseInfo
-    {
-        string GetSerialNumber();
-    }
-
-    public class ADHealthCheckingLicenseProvider : LicenseProvider
-    {
-
-        #region Public Methods
-
-        /// <summary>
-        /// Gets a license for an instance or type of component.
-        /// </summary>
-        /// <param name="context">A <see cref="LicenseContext"/> that specifies where you can use the licensed object.</param>
-        /// <param name="type">A <see cref="System.Type"/> that represents the component requesting the license.</param>
-        /// <param name="instance">An object that is requesting the license.</param>
-        /// <param name="allowExceptions">true if a <see cref="LicenseException"/> should be thrown when the component cannot be granted a license; otherwise, false.</param>
-        /// <returns>A valid <see cref="License"/>.</returns>
-        public override License GetLicense(LicenseContext context, Type type, object instance, bool allowExceptions)
-        {
-            IPingCastleLicenseInfo licenseInfo = (IPingCastleLicenseInfo)instance;
-            return new ADHealthCheckingLicense(licenseInfo.GetSerialNumber());
-        }
-        #endregion
-
-    }
-
-    internal class ADHealthCheckingLicenseSettings : ConfigurationSection
-    {
-        private static ADHealthCheckingLicenseSettings settings;
-
-        public static ADHealthCheckingLicenseSettings Settings
-        {
-            get
-            {
-                if (settings == null)
-                    settings = ConfigurationManager.GetSection("LicenseSettings") as ADHealthCheckingLicenseSettings;
-                return settings;
-            }
-        }
-
-        [ConfigurationProperty("license", IsRequired = false)]
-        public string License
-        {
-            get { return (string)this["license"]; }
-            set { this["license"] = value; }
-        }
-    }
-
     public class ADHealthCheckingLicense : License, IDisposable
     {
         private bool _disposed = false;
         private string _licKey = null;
+        private string edition;
 
         public ADHealthCheckingLicense(string license)
             : this(license, true)
@@ -100,7 +44,17 @@ namespace PingCastle
         public DateTime EndTime { get; set; }
         public string DomainLimitation { get; set; }
         public string CustomerNotice { get; set; }
-        public string Edition { get; set; }
+        public string Edition
+        {
+            get
+            {
+                return string.IsNullOrEmpty(edition) ? "Basic" : edition;
+            }
+            set
+            {
+                edition = value;
+            }
+        }
         public int? DomainNumberLimit { get; set; }
 
         /// <summary>
@@ -299,6 +253,11 @@ namespace PingCastle
                 }
                 _disposed = true;
             }
+        }
+
+        public bool IsBasic()
+        {
+            return string.Equals(Edition, "Basic", StringComparison.OrdinalIgnoreCase);
         }
 
     }

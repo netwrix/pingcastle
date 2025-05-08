@@ -25,6 +25,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using PingCastleCommon;
+using PingCastle.PingCastleLicense;
 
 namespace PingCastle
 {
@@ -144,6 +145,7 @@ namespace PingCastle
             try
             {
                 license = LicenseManager.Validate(typeof(Program), this) as ADHealthCheckingLicense;
+                LicenseCache.Instance.StoreLicense(license);
             }
             catch (Exception ex)
             {
@@ -256,16 +258,14 @@ namespace PingCastle
 
         private void LoadCustomRules(Tasks tasks)
         {
-            if (string.IsNullOrEmpty(tasks.License.Edition))
-                return;
             if (string.Equals(tasks.License.Edition, "Auditor", StringComparison.OrdinalIgnoreCase))
                 return;
-            if (string.Equals(tasks.License.Edition, "Basic", StringComparison.OrdinalIgnoreCase))
+            if (tasks.License.IsBasic())
                 return;
             PingCastle.Rules.RuleSet<HealthcheckData>.LoadCustomRules();
         }
 
-        const string basicEditionLicense = "PC2H4sIAAAAAAAEAGNkYGDgAGKGhqddLpPuMDIDmSVA7MZQxJAKhAoMrgwpDJlAsUyGfIY8ID+fIQ1IBgD5eQzpDM4MiQzFQNkcsFpjBj0wNgCydYHYD6i6BEinAekiIJ0MpHOBMBXISwaakAjUp8BQCjQBpBvsDCBO0/5r9LZOXyzWeNPMG1smHuJw0Ov0zrFRb6kzr5szxTHoqMPxhd+ymjT93k4wtr0ee4H117lTjDwZx+aevZNQsbFQzPWVseOMtvBF/63Zbu0L0ktZd1DF1/NC7NUzX7mTDsjZLLyRLVq4nX+iPhOLqPCuknQr0fiPpgtiVrhNcthX/6yjfDMAJAREbhQBAAA=";
+        const string basicEditionLicense = "PC2H4sIAAAAAAAEAGNkYGDgAGKGA/z7YhvuMrIAmVxA7MSQyFDMkMmQDJJjaABil6fnvrjOb/hn/GEZ/+Z3S/bzrGhPMj1x6m3/d7fGD5bHDXo1OF6kHzlR6dnWcWCtS+aF4iPex3K082zeakvI2MrpKTWZfTqu3TUp5EMju8MO5QuFG84YedpnvGN/GR4wRWzBo4s/VP+cffxpl2/wJiPByG2PDEQN67LTp4jVq3iv0HdxLV0HAPphV02qAAAA";
         string _serialNumber;
         public string GetSerialNumber()
         {

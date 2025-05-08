@@ -27,7 +27,6 @@ using System.Threading;
 using TinyJson;
 using System.Xml.Serialization;
 using System.Xml;
-using System.Net.Http;
 
 namespace PingCastle
 {
@@ -126,7 +125,7 @@ namespace PingCastle
                 () =>
                 {
                     HealthcheckAnalyzer hcroot = new HealthcheckAnalyzer();
-                    hcroot.limitHoneyPot = string.IsNullOrEmpty(License.Edition);
+                    hcroot.LimitHoneyPot = License.IsBasic();
                     domains = hcroot.GetAllReachableDomains(Settings.Port, Settings.Credential);
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine("List of domains that will be queried");
@@ -155,7 +154,7 @@ namespace PingCastle
                             {
                                 Console.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] " + "Starting the analysis of " + domain);
                                 HealthcheckAnalyzer hc = new HealthcheckAnalyzer();
-                                hc.limitHoneyPot = string.IsNullOrEmpty(License.Edition);
+                                hc.LimitHoneyPot = License.IsBasic();
 
                                 var data = hc.GenerateCartoReport(domain, Settings.Port, Settings.Credential, Settings.AnalyzeReachableDomains);
                                 consolidation.Add(data);
@@ -499,7 +498,7 @@ namespace PingCastle
                 () =>
                 {
                     HealthcheckAnalyzer hcroot = new HealthcheckAnalyzer();
-                    hcroot.limitHoneyPot = string.IsNullOrEmpty(License.Edition);
+                    hcroot.LimitHoneyPot = License.IsBasic();
                     var reachableDomains = hcroot.GetAllReachableDomains(Settings.Port, Settings.Credential);
                     List<HealthcheckAnalyzer.ReachableDomainInfo> domainsfiltered = new List<HealthcheckAnalyzer.ReachableDomainInfo>();
                     Console.ForegroundColor = ConsoleColor.Yellow;
@@ -548,7 +547,7 @@ namespace PingCastle
                 () =>
                 {
                     var analyzer = new HealthcheckAnalyzer();
-                    analyzer.limitHoneyPot = string.IsNullOrEmpty(License.Edition);
+                    analyzer.LimitHoneyPot = License.IsBasic();
                     pingCastleReport = analyzer.PerformAnalyze(new PingCastleAnalyzerParameters()
                     {
                         Server = server,
@@ -874,7 +873,7 @@ namespace PingCastle
             {
                 Trace.WriteLine("using filename:" + filename);
                 var request = "{\"xmlReport\": \"" + ReportHelper.EscapeJsonString(xml) + "\",\"filename\":\"" + ReportHelper.EscapeJsonString(filename) + "\"}";
-                byte[] data = Encoding.ASCII.GetBytes(request);
+                byte[] data = Encoding.UTF8.GetBytes(request);
                 answer = client.UploadData(Settings.apiEndpoint + "api/Agent/SendReport", "POST", data);
                 var o = Encoding.Default.GetString(answer);
                 Trace.WriteLine("answer:" + o);
@@ -1041,7 +1040,7 @@ namespace PingCastle
                 }
                 if (deserializedResult.CustomRules != null && deserializedResult.CustomRules.Count != 0)
                 {
-                    if (string.IsNullOrEmpty(License.Edition) || License.Edition == "Auditor")
+                    if (License.IsBasic() || License.Edition == "Auditor")
                     {
                         Trace.WriteLine("Custom rules not allowed");
                     }

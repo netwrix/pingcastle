@@ -4,12 +4,12 @@ using System.Runtime.InteropServices;
 // Les informations générales relatives à un assembly dépendent de 
 // l'ensemble d'attributs suivant. Changez les valeurs de ces attributs pour modifier les informations
 // associées à un assembly.
-[assembly: AssemblyTitle("Ping Castle")]
+[assembly: AssemblyTitle("PingCastle")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Ping Castle")]
-[assembly: AssemblyProduct("Ping Castle")]
-[assembly: AssemblyCopyright("Copyright ©  2015-2024 Vincent LE TOUX / Ping Castle")]
+[assembly: AssemblyCompany("Netwrix Corporation")]
+[assembly: AssemblyProduct("PingCastle")]
+[assembly: AssemblyCopyright("Copyright © Netwrix Corporation")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -28,5 +28,5 @@ using System.Runtime.InteropServices;
 //      Numéro de build
 //      Révision
 //
-[assembly: AssemblyVersion("3.3.0.1")]
-[assembly: AssemblyFileVersion("3.3.0.1")]
+[assembly: AssemblyVersion("3.3.0.11")]
+[assembly: AssemblyFileVersion("3.3.0.11")]

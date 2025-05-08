@@ -639,7 +639,7 @@ namespace PingCastle.Report
 
         protected void Brand(ADHealthCheckingLicense license)
         {
-            if (!string.IsNullOrEmpty(license.Edition))
+            if (!license.IsBasic())
             {
                 try
                 {
@@ -1148,8 +1148,10 @@ namespace PingCastle.Report
                             case 19041: return "Windows Server 2019 2004";
                             case 19042: return "Windows Server 2019 20H2";
                             // https://learn.microsoft.com/en-us/windows-server/get-started/windows-server-release-info
-                            case 20348: return "Windows Server 2022";
-                            default: return "Windows Server 2022 (Build " + release + ")";
+                            case 20348: return "Windows Server 2022 21H2";
+                            case 25398: return "Windows Server 2022 23H2";
+                            case 26100: return "Windows Server 2025 24H2";
+                            default: return "Windows Server (Build " + release + ")";
                         }
                     }
                 }
@@ -1189,6 +1191,7 @@ namespace PingCastle.Report
                     string w;
                     switch (release)
                     {
+                        case 26100: w = "Windows 11 24H2"; break;
                         case 22631: w = "Windows 11 23H2"; break;
                         case 22621: w = "Windows 11 22H2"; break;
                         case 22000: w = "Windows 11 21H2"; break;

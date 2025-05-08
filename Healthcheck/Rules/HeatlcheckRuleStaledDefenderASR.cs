@@ -20,8 +20,15 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
+            // This rule is dependent on Windows version.
+            if (healthcheckData.OperatingSystemVersion == null)
+            {
+                return 0;
+            }
+
             // ignore preview rules (for the moment)
-            var expectedMigations = new Dictionary<string, string>
+            // Set capacity to nine as there will be either eight or nine entries in the dictionary, depending on the presence of the Block WebShell entry
+            var expectedMitigations = new Dictionary<string, string>(9)
             {
                 {"7674ba52-37eb-4a4f-a9a1-f0f9a1619a2c","Block Adobe Reader from creating child processes"},
                 {"9e6c4e1f-7d60-472f-ba1a-a39ef669e4b2","Block credential stealing from the Windows local security authority subsystem (lsass.exe)"},
@@ -32,8 +39,13 @@ namespace PingCastle.Healthcheck.Rules
                 {"b2b3f03d-6a65-4f7b-a9c7-1c7ef74a9ba4","Block untrusted and unsigned processes that run from USB"},
 
                 {"56a863a9-875e-4185-98a7-b882c64b5ce5","Block abuse of exploited vulnerable signed drivers"},
-                {"a8f5898e-1dc8-49a9-9878-85004b8a61e6","Block Webshell creation for Servers"},
             };
+
+            // Block WebShell is only relevant if there are Exchange Servers present.
+            if (healthcheckData.ExchangeServers.Count > 0)
+            {
+                expectedMitigations.Add("a8f5898e-1dc8-49a9-9878-85004b8a61e6", "Block Webshell creation for Servers");
+            }
 
             var auditMitigations = new Dictionary<string, string>
             {
@@ -56,9 +68,6 @@ namespace PingCastle.Healthcheck.Rules
             // server at least Windows 2012
             // Windows at least Windows 10
 
-            if (healthcheckData.OperatingSystemVersion == null)
-                return 0;
-
             bool enforce = false;
             foreach (var osVersion in healthcheckData.OperatingSystemVersion)
             {
@@ -76,14 +85,18 @@ namespace PingCastle.Healthcheck.Rules
                     enforce = true;
                     break;
                 }
+
                 if (!osVersion.IsServer && major >= 10)
                 {
                     enforce = true;
                     break;
                 }
             }
+
             if (!enforce)
+            {
                 return 0;
+            }
 
             var foundAndBlocked = new List<string>();
             var foundAndNotBlocked = new List<string>();
@@ -91,19 +104,21 @@ namespace PingCastle.Healthcheck.Rules
             {
                 foreach (var option in healthcheckData.GPODefenderASR)
                 {
+                    var asrRule = option.ASRRule.ToLowerInvariant();
                     if (option.Action == 1 || option.Action == 6)
                     {
-                        if (!foundAndBlocked.Contains(option.ASRRule.ToLowerInvariant()))
-                            foundAndBlocked.Add(option.ASRRule.ToLowerInvariant());
+                        if (!foundAndBlocked.Contains(asrRule))
+                            foundAndBlocked.Add(asrRule);
                     }
                     else if (option.Action == 2)
                     {
-                        if (!foundAndNotBlocked.Contains(option.ASRRule.ToLowerInvariant()))
-                            foundAndNotBlocked.Add(option.ASRRule.ToLowerInvariant());
+                        if (!foundAndNotBlocked.Contains(asrRule))
+                            foundAndNotBlocked.Add(asrRule);
                     }
                 }
             }
-            foreach (var ext in expectedMigations)
+
+            foreach (var ext in expectedMitigations)
             {
                 if (!foundAndBlocked.Contains(ext.Key))
                 {
@@ -117,6 +132,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             foreach (var ext in auditMitigations)
             {
                 if (!foundAndBlocked.Contains(ext.Key) && !foundAndNotBlocked.Contains(ext.Key))

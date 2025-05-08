@@ -12,6 +12,7 @@ using PingCastle.Cloud.UI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.DirectoryServices.Protocols;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -54,24 +55,45 @@ namespace PingCastle.Cloud.Tokens
         public static async Task<Token> RefreshToken<T>(string TenantId, Token token) where T : IAzureService
         {
             Trace.WriteLine("Called RefreshToken");
+
             var service = AzureServiceAttribute.GetAzureServiceAttribute<T>();
-            var httpClient = HttpClientHelper.GetHttpClient();
+
+            var parameters = new Dictionary<string, string>()
+            {
+                { "client_id", service.ClientID.ToString() },
+                { "grant_type", "refresh_token" },
+                { "refresh_token", token.refresh_token },
+            };
+
             var endpoint = EndPointAttribute.GetEndPointAttribute<T>();
-            using (var response = await httpClient.PostAsync(endpoint.AuthorizeEndPoint.Replace("common", TenantId),
-                new FormUrlEncodedContent(
-                    new Dictionary<string, string>()
-                    {
-                        { "resource", service.Resource },
-                        { "client_id", service.ClientID.ToString() },
-                        {"grant_type", "refresh_token"},
-                        {"refresh_token", token.refresh_token},
-                        { "scope","openid"},
-                    })))
+            if (string.IsNullOrEmpty(endpoint.Scope))
+            {
+                parameters["resource"] = service.Resource;
+                parameters["scope"] = "openid";
+            }
+            else
+            {
+                parameters["scope"] = endpoint.Scope;
+            }
+
+            var uri = endpoint.TokenEndPoint;
+            if (!string.IsNullOrEmpty(TenantId))
+                uri = uri.Replace("common", TenantId);
+
+            var httpContent = new FormUrlEncodedContent(parameters);
+            var httpClient = HttpClientHelper.GetHttpClient();
+
+            using (var response = await httpClient.PostAsync(uri, httpContent))
             {
                 response.EnsureSuccessStatusCode();
 
-                var responseString = await response.Content.ReadAsStringAsync();
+                if (response.Content == null)
+                {
+                    throw new ErrorResponseException("refresh token content is null");
+                }
 
+                var responseString = await response.Content.ReadAsStringAsync();
+               
                 return Token.LoadFromString(responseString);
             }
         }
@@ -348,20 +370,22 @@ namespace PingCastle.Cloud.Tokens
         public static async Task<string> RunGetToken<T>(IAzureCredential credential, string code, string redirectUri, string code_verifier = null) where T : IAzureService
         {
             var service = AzureServiceAttribute.GetAzureServiceAttribute<T>();
+            var endpoint = EndPointAttribute.GetEndPointAttribute<T>();
             var httpClient = HttpClientHelper.GetHttpClient();
             var input = new Dictionary<string, string>()
                     {
                         { "client_id", service.ClientID.ToString() },
-                        {"grant_type", "authorization_code"},
-                        {"code", code},
-                        { "redirect_uri", redirectUri},
+                        { "grant_type", "authorization_code" },
+                        { "code", code },
+                        { "redirect_uri", redirectUri },
+                        { "scope", "openid profile email offline_access" },
                     };
+
             if (!string.IsNullOrEmpty(code_verifier))
             {
                 input.Add("code_verifier", code_verifier);
             }
-
-            var endpoint = EndPointAttribute.GetEndPointAttribute<T>();
+            
             var tep = endpoint.TokenEndPoint;
             if (!string.IsNullOrEmpty(credential.TenantidToQuery))
             {

@@ -8,6 +8,7 @@ using PingCastle.ADWS;
 using PingCastle.Data;
 using PingCastle.Graph.Reporting;
 using PingCastle.misc;
+using PingCastle.PingCastleLicense;
 using PingCastle.RPC;
 using PingCastle.Rules;
 using PingCastle.Scanners;
@@ -16,6 +17,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Security;
@@ -43,7 +45,17 @@ namespace PingCastle.Healthcheck
         private const string LatinUpperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private const string LatinLowerCase = "abcdefghijklmnopqrstuvwxyz";
 
-        public bool limitHoneyPot = true;
+        private static readonly string[] CommonAccountProperties = new string[] {
+                                                                    "distinguishedName",
+                                                                    "name",
+                                                                    "sAMAccountName",
+                                                                    "whenCreated",
+                                                                    "lastLogonTimestamp",
+                                                                    "replPropertyMetaData",
+                                                                    "pwdLastSet",
+                                                                    };
+
+        public bool LimitHoneyPot = true;
 
         public HealthcheckAnalyzer()
         {
@@ -62,6 +74,17 @@ namespace PingCastle.Healthcheck
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
             Console.WriteLine(value);
             Trace.WriteLine(value);
+        }
+
+        private void DisplayContactSupport()
+        {
+            var license = LicenseCache.Instance.GetLicense();
+            var IsBasicEdition = license.IsBasic();
+
+            if (IsBasicEdition)
+                DisplayAdvancementWarning("Please visit https://github.com/netwrix/pingcastle/issues to log an issue with a trace file.");
+            else
+                DisplayAdvancementWarning("Please visit the Netwrix support portal, https://www.netwrix.com/support.html, to open a support case with the trace file generated.");
         }
 
         private void DisplayAdvancementWarning(string data)
@@ -185,7 +208,7 @@ namespace PingCastle.Healthcheck
             var s = HoneyPotSettings.GetHoneyPotSettings();
             if (s == null)
                 return;
-            if (s.HoneyPots.Count > 25 && limitHoneyPot)
+            if (s.HoneyPots.Count > 25 && LimitHoneyPot)
             {
                 throw new PingCastleException("You entered more than 25 HoneyPots in the configuration. Honey Pots should not be used as a way to setup exceptions to rules");
             }
@@ -571,7 +594,7 @@ namespace PingCastle.Healthcheck
                     {
                         Trace.WriteLine("Exception while working on " + x.DistinguishedName);
                         DisplayAdvancementWarning("Exception while working on " + x.DistinguishedName + "(" + ex.Message + ")");
-                        DisplayAdvancementWarning("Please contact support@pingcastle.com with a trace file to have this error fixed");
+                        DisplayContactSupport();
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine(ex.StackTrace);
                         Console.ResetColor();
@@ -1024,7 +1047,7 @@ namespace PingCastle.Healthcheck
                     {
                         Trace.WriteLine("Exception while working on " + x.DistinguishedName);
                         DisplayAdvancementWarning("Exception while working on " + x.DistinguishedName + "(" + ex.Message + ")");
-                        DisplayAdvancementWarning("Please contact support@pingcastle.com with a trace file to have this error fixed");
+                        DisplayContactSupport();
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine(ex.StackTrace);
                         Console.ResetColor();
@@ -1105,71 +1128,41 @@ namespace PingCastle.Healthcheck
 
         public static string GetOperatingSystem(string os)
         {
-            if (String.IsNullOrEmpty(os))
+            if (string.IsNullOrEmpty(os))
             {
                 return "OperatingSystem not set";
             }
+
             os = os.Replace('\u00A0', ' ');
-            if (Regex.Match(os, @"windows(.*) 2000", RegexOptions.IgnoreCase).Success)
+
+            var osPatterns = new Dictionary<string, string>
             {
-                return "Windows 2000";
-            }
-            if (Regex.Match(os, @"windows server(.*) 2003", RegexOptions.IgnoreCase).Success)
+                { @"windows(.*) 2000", "Windows 2000" },
+                { @"windows server(.*) 2003", "Windows 2003" },
+                { @"windows server(.*) 2008", "Windows 2008" },
+                { @"windows server(.*) 2012", "Windows 2012" },
+                { @"windows server(.*) 2016", "Windows 2016" },
+                { @"windows server(.*) 2019", "Windows 2019" },
+                { @"windows server(.*) 2022", "Windows 2022" },
+                { @"windows server(.*) 2025", "Windows 2025" },
+                { @"windows(.*) Embedded", "Windows Embedded" },
+                { @"windows(.*) 7", "Windows 7" },
+                { @"windows(.*) 8", "Windows 8" },
+                { @"windows(.*) XP", "Windows XP" },
+                { @"windows(.*) 10", "Windows 10" },
+                { @"windows(.*) 11", "Windows 11" },
+                { @"windows(.*) Vista", "Windows Vista" },
+                { @"windows(.*) NT", "Windows NT" },
+            };
+
+            foreach (var pattern in osPatterns)
             {
-                return "Windows 2003";
+                if (Regex.IsMatch(os, pattern.Key, RegexOptions.IgnoreCase))
+                {
+                    return pattern.Value;
+                }
             }
-            if (Regex.Match(os, @"windows server(.*) 2008", RegexOptions.IgnoreCase).Success)
-            {
-                return "Windows 2008";
-            }
-            if (Regex.Match(os, @"windows server(.*) 2012", RegexOptions.IgnoreCase).Success)
-            {
-                return "Windows 2012";
-            }
-            if (Regex.Match(os, @"windows server(.*) 2016", RegexOptions.IgnoreCase).Success)
-            {
-                return "Windows 2016";
-            }
-            if (Regex.Match(os, @"windows server(.*) 2019", RegexOptions.IgnoreCase).Success)
-            {
-                return "Windows 2019";
-            }
-            if (Regex.Match(os, @"windows server(.*) 2022", RegexOptions.IgnoreCase).Success)
-            {
-                return "Windows 2022";
-            }
-            if (Regex.Match(os, @"windows(.*) Embedded", RegexOptions.IgnoreCase).Success)
-            {
-                return "Windows Embedded";
-            }
-            if (Regex.Match(os, @"windows(.*) 7", RegexOptions.IgnoreCase).Success)
-            {
-                return "Windows 7";
-            }
-            if (Regex.Match(os, @"windows(.*) 8", RegexOptions.IgnoreCase).Success)
-            {
-                return "Windows 8";
-            }
-            if (Regex.Match(os, @"windows(.*) XP", RegexOptions.IgnoreCase).Success)
-            {
-                return "Windows XP";
-            }
-            if (Regex.Match(os, @"windows(.*) 10", RegexOptions.IgnoreCase).Success)
-            {
-                return "Windows 10";
-            }
-            if (Regex.Match(os, @"windows(.*) 11", RegexOptions.IgnoreCase).Success)
-            {
-                return "Windows 11";
-            }
-            if (Regex.Match(os, @"windows(.*) Vista", RegexOptions.IgnoreCase).Success)
-            {
-                return "Windows Vista";
-            }
-            if (Regex.Match(os, @"windows(.*) NT", RegexOptions.IgnoreCase).Success)
-            {
-                return "Windows NT";
-            }
+
             return os;
         }
 
@@ -4979,17 +4972,6 @@ namespace PingCastle.Healthcheck
 
         private void CheckAdminSDHolderNotOK(ADDomainInfo domainInfo, ADWebService adws)
         {
-
-            // adding the domain sid
-            string[] propertiesAdminCount = new string[] {
-                        "distinguishedName",
-                        "name",
-                        "sAMAccountName",
-                        "whenCreated",
-                        "lastLogonTimestamp",
-                        "replPropertyMetaData",
-            };
-
             List<string> privilegedUser = new List<string>();
             foreach (var member in healthcheckData.AllPrivilegedMembers)
             {
@@ -5029,8 +5011,9 @@ namespace PingCastle.Healthcheck
                         healthcheckData.AdminSDHolderNotOK.Add(w);
                     }
                 };
-
-            adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=user)(objectCategory=person)(admincount=1)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(!(sAMAccountName=krbtgt)))", propertiesAdminCount, callbackAdminSDHolder);
+            
+            var filter = "(&(objectClass=user)(objectCategory=person)(admincount=1)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(!(sAMAccountName=krbtgt)))";
+            adws.Enumerate(domainInfo.DefaultNamingContext, filter, CommonAccountProperties, callbackAdminSDHolder);
             healthcheckData.AdminSDHolderNotOKCount = healthcheckData.AdminSDHolderNotOK.Count;
         }
 
@@ -5038,15 +5021,6 @@ namespace PingCastle.Healthcheck
         {
             if (healthcheckData.DomainFunctionalLevel < 3)
                 return;
-
-            string[] smartCardNotOKProperties = new string[] {
-                        "distinguishedName",
-                        "name",
-                        "sAMAccountName",
-                        "whenCreated",
-                        "lastLogonTimestamp",
-                        "replPropertyMetaData",
-            };
 
             // enumerates the account with the flag "smart card required" and not disabled
             healthcheckData.SmartCardNotOK = new List<HealthcheckAccountDetailData>();
@@ -5061,7 +5035,8 @@ namespace PingCastle.Healthcheck
                     }
                 };
 
-            adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectCategory=person)(objectClass=user)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(userAccountControl:1.2.840.113556.1.4.803:=262144))", smartCardNotOKProperties, callbackSmartCard);
+            var filter = "(&(objectCategory=person)(objectClass=user)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(userAccountControl:1.2.840.113556.1.4.803:=262144))";
+            adws.Enumerate(domainInfo.DefaultNamingContext, filter, CommonAccountProperties, callbackSmartCard);
             healthcheckData.SmartCardNotOKCount = healthcheckData.SmartCardNotOK.Count;
         }
 
@@ -5276,16 +5251,6 @@ namespace PingCastle.Healthcheck
 
         private void CheckUnixPassword(ADDomainInfo domainInfo, ADWebService adws)
         {
-            // adding the domain sid
-            string[] propertiesUnixPassword = new string[] {
-                        "distinguishedName",
-                        "name",
-                        "sAMAccountName",
-                        "whenCreated",
-                        "lastLogonTimestamp",
-                        "replPropertyMetaData",
-            };
-
             healthcheckData.UnixPasswordUsers = new List<HealthcheckAccountDetailData>();
 
             WorkOnReturnedObjectByADWS callbackUnixPassword =
@@ -5305,7 +5270,9 @@ namespace PingCastle.Healthcheck
                         w.Event = x.ReplPropertyMetaData[591734].LastOriginatingChange;
                     }
                 };
-            adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectCategory=person)(!userAccountControl:1.2.840.113556.1.4.803:=2)(|(unixUserPassword=*)(userPassword=*)))", propertiesUnixPassword, callbackUnixPassword);
+
+            var filter = "(&(objectCategory=person)(!userAccountControl:1.2.840.113556.1.4.803:=2)(|(unixUserPassword=*)(userPassword=*)))";
+            adws.Enumerate(domainInfo.DefaultNamingContext, filter, CommonAccountProperties, callbackUnixPassword);
             healthcheckData.UnixPasswordUsersCount = healthcheckData.UnixPasswordUsers.Count;
         }
 
@@ -5364,21 +5331,15 @@ namespace PingCastle.Healthcheck
             if (healthcheckData.JavaClassFound)
             {
                 healthcheckData.JavaClassFoundDetail = new List<HealthcheckAccountDetailData>();
-                string[] propertiesJavaUser = new string[] {
-                        "distinguishedName",
-                        "name",
-                        "sAMAccountName",
-                        "whenCreated",
-                        "lastLogonTimestamp",
-                        "replPropertyMetaData",
-                };
+                
                 WorkOnReturnedObjectByADWS callbackJavaUser =
                 (ADItem x) =>
                 {
                     var w = GetAccountDetail(x);
                     healthcheckData.JavaClassFoundDetail.Add(w);
                 };
-                adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectCategory=person)(!userAccountControl:1.2.840.113556.1.4.803:=2)(|((javacodebase=*)(javafactory=*)(javaclassname=*)(javaserializeddata=*)(javaremotelocation=*))))", propertiesJavaUser, callbackJavaUser);
+                var filter = "(&(objectCategory=person)(!userAccountControl:1.2.840.113556.1.4.803:=2)(|((javacodebase=*)(javafactory=*)(javaclassname=*)(javaserializeddata=*)(javaremotelocation=*))))";
+                adws.Enumerate(domainInfo.DefaultNamingContext, filter, CommonAccountProperties, callbackJavaUser);
             }
         }
 
@@ -6038,22 +5999,16 @@ namespace PingCastle.Healthcheck
 
         private void GenerateRODCKrbtgtOrphans(ADDomainInfo domainInfo, ADWebService adws)
         {
-            string[] properties = new string[] {
-                        "distinguishedName",
-                        "name",
-                        "sAMAccountName",
-                        "whenCreated",
-                        "lastLogonTimestamp",
-            };
             // enumerates the account with the flag "smart card required" and not disabled
             healthcheckData.RODCKrbtgtOrphans = new List<HealthcheckAccountDetailData>();
             WorkOnReturnedObjectByADWS callback =
                (ADItem x) =>
                {
                    healthcheckData.RODCKrbtgtOrphans.Add(GetAccountDetail(x));
-
                };
-            adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectclas=user)(!(msDS-KrbTgtLinkBl=*))(sAMAccountName=krbtgt_*)(msDS-SecondaryKrbTgtNumber=*))", properties, callback);
+
+            var filter = "(&(objectclas=user)(!(msDS-KrbTgtLinkBl=*))(sAMAccountName=krbtgt_*)(msDS-SecondaryKrbTgtNumber=*))";
+            adws.Enumerate(domainInfo.DefaultNamingContext, filter, CommonAccountProperties.Where(p => p != "replPropertyMetaData").ToArray(), callback);
         }
 
         // this function has been designed to avoid LDAP query reentrance (to avoid the 5 connection limit)

@@ -24,6 +24,7 @@ namespace PingCastle.Cloud.Credentials
 {
     public class CertificateCredential : IDisposable, IAzureCredential
     {
+        public bool ForceRefreshByRefreshToken { get; set; }
         private CertificateCredential()
         {
 

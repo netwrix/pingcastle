@@ -1,22 +1,5 @@
 # PingCastle by Netwrix
 
-## Release Cycle Update 🚀
- 
-We're excited to share an important update to our release cycle. Moving forward, we will transition from time-based releases (every 6 months) to **feature-based releases**. This change will allow us to deliver new features, improvements, and bug fixes as soon as they are ready, ensuring a more agile and responsive development process.
- 
-### Upcoming Plans:
-- **Next Release**: The upcoming release, expected in the next few months, will focus on:
-  - Addressing reported bugs.
-  - Updating and supporting more Active Directory Certificate Service vulnerable configurations.
-  - Rebranding
- 
-- **Community Launch**: We're also building a **community platform** where we'll provide:
-  - Regular updates on new features.
-  - Product Roadmaps.
-  - A place for collaboration, feedback, and discussions with our contributors and users.
- 
-Stay tuned for more updates, and thank you for your continued support!
-
 ## Acquisition Announcement
 
 We are excited to announce that PingCastle has been acquired by [Netwrix](http://www.netwrix.com/)!
@@ -27,13 +10,22 @@ PingCastle has a long history of offering both open source and commercial editio
 
 Netwrix, an industry leader in Active Directory security solutions and other cybersecurity solutions, ensures a brighter digital future for more than 13,500 customers worldwide. Netwrix empowers security professionals to face digital threats with confidence by enabling them to identify and protect sensitive data as well as to detect, respond to, and recover from attacks.
 
+## Stay Connected & Contribute
+ 
+We welcome all PingCastle users: open source contributors, IT admins, and security professionals, to get involved and help shape the future of PingCastle.
+ 
+- **Join the Netwrix Community**: [community.netwrix.com](https://community.netwrix.com)&nbsp;&nbsp; 
+Get announcements, view the roadmap, submit feature ideas, and connect with other users.
+- **Contribute on GitHub** [github.com/netwrix/pingcastle](https://github.com/netwrix/pingcastle)
+Submit pull requests, review open issues, or explore the codebase.&nbsp; 
+
 ## Introduction
 
-The risk level regarding Active Directory security has changed.
-Several vulnerabilities have been made popular with tools like [mimikatz](https://github.com/gentilkiwi/mimikatz) or sites likes [adsecurity.org](http://adsecurity.org/).
+The threat landscape for Active Directory security continues to evolve at a rapid pace.
+Well-known tools like [mimikatz](https://github.com/gentilkiwi/mimikatz) and resources such as [adsecurity.org](http://adsecurity.org/) have exposed and popularized numerous vulnerabilities that organizations must address.
 
-PingCastle is a tool designed to assess quickly the Active Directory security level with a methodology based on risk assessment and a maturity framework.
-It does not aim at a perfect evaluation but rather as an efficiency compromise.
+PingCastle provides a streamlined approach to evaluating Active Directory security using a comprehensive risk assessment methodology and maturity framework.
+Rather than pursuing exhaustive evaluation at the expense of efficiency, PingCastle delivers the optimal balance—identifying 80% of critical security issues while requiring just 20% of the time and effort of traditional assessment methods.
 
 ```plain
   \==--O___      PingCastle (Version 3.3.0.0     9/13/2024 7:25:24 PM)
@@ -42,8 +34,8 @@ It does not aim at a perfect evaluation but rather as an efficiency compromise.
      O"---O      To find out more about PingCastle, visit https://www.pingcastle.com         
       \ ,'       For online documentation, visit https://helpcenter.netwrix.com/category/pingcastle
        v         For support and questions:
-                 -	Open-source community, visit https://github.com/netwrix/pingcastle/issues
-                 -	Customers, visit https://www.netwrix.com/support.html  	   
+                 -  Open-source community, visit https://github.com/netwrix/pingcastle/issues
+                 -  Customers, visit https://www.netwrix.com/support.html      
 What do you want to do?
 =======================
 Using interactive mode.
@@ -68,28 +60,36 @@ PingCastle is a c# project which can be built from Visual Studio 2012 to Visual 
 
 ## Features & Bugs
 
-For reporting bugs or requesting features in the open source edition of PingCastle, please create a Github issue.
+For reporting bugs or requesting features in the open source edition of PingCastle, we recommend using the [Netwrix Community](https://community.netwrix.com). Alternatively, you can submit an issue on GitHub.
 
 Customers of a commercially available edition should contact [Netwrix technical support](https://www.netwrix.com/support.html).
 
+Additionally, both open source users and customers can visit the [Netwrix Community](https://community.netwrix.com) to ask questions, suggest improvements, and stay updated on the latest developments.
+
 ## License
 
-PingCastle source code is licensed under a proprietary license and the Non-Profit Open Software License ("Non-Profit OSL") 3.0.
+PingCastle is available under two licensing options:
 
-Except if a license is purchased, you are not allowed to make any profit from this source code.
-To be more specific:
+1. **Open Source Edition**: Licensed under the Non-Profit Open Software License ("Non-Profit OSL") 3.0.
+   * Organizations may use PingCastle internally without purchasing a license, even in for-profit companies.
+   * This includes usage by a company's own IT staff or their contracted IT service providers.
+   * You cannot monetize PingCastle or offer it as a paid service to others under this license.
 
-* It is allowed to run PingCastle without purchasing any license on for profit companies if the company itself (or its ITSM provider) run it.
-* To build services based on PingCastle AND earning money from that, you MUST purchase a license.
+2. **Commercial License**: Available for purchase.
+   * Required for anyone who wants to incorporate PingCastle into commercial services or products.
+   * Necessary if you plan to generate revenue by providing PingCastle-based services to other organizations.
 
-Ping Castle uses the following Open source components:
+In summary: Use it freely for internal purposes; purchase a license if you plan to make money from it.
+
+PingCastle uses the following open source components:
 
 * [Bootstrap](https://getbootstrap.com/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
 * [JQuery](https://jquery.org) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
 * [vis.js](http://visjs.org/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
 * [popper.js](https://popper.js.org/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
 * [Bootstrap Table](https://bootstrap-table.com/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+* [FodyWeavers](https://github.com/Fody/Fody) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
 
 ## Author
 
-*	General Contact: [PingCastle.Contact@netwrix.com](mailto:PingCastle.Contact@netwrix.com)
+* General Contact: [PingCastle.Contact@netwrix.com](mailto:PingCastle.Contact@netwrix.com)

@@ -84,7 +84,7 @@ namespace PingCastle.Report
 ");
             Add(@"<div class=""alert alert-info"">
 This report has been generated with the ");
-            Add(String.IsNullOrEmpty(_license.Edition) ? "Basic" : _license.Edition);
+            Add(_license.IsBasic() ? "Basic" : _license.Edition);
             Add(@" Edition of PingCastle");
             if (!string.IsNullOrEmpty(_license.CustomerNotice))
             {
@@ -93,7 +93,7 @@ This report has been generated with the ");
                 AddEncoded(_license.CustomerNotice);
                 Add(@""">?</i>.");
             }
-            if (String.IsNullOrEmpty(_license.Edition))
+            if (_license.IsBasic())
             {
                 Add(@"
 <br><strong class='auditor'>Being part of a commercial package is forbidden</strong> (selling the information contained in the report).<br>
@@ -391,7 +391,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         protected void GenerateMaturityInformation()
         {
             Add(@"<p>This section represents the maturity score (inspired from <a href='https://www.cert.ssi.gouv.fr/dur/CERTFR-2020-DUR-001/'>ANSSI</a>).</p>");
-            if (string.IsNullOrEmpty(_license.Edition))
+            if (_license.IsBasic())
             {
                 AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
                 return;
@@ -600,7 +600,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         protected void GenerateMitreAttackInformation()
         {
             AddParagraph(@"This section represents an evaluation of the techniques available in the <a href=""https://attack.mitre.org/"">MITRE ATT&CK&#174;</a>");
-            if (string.IsNullOrEmpty(_license.Edition))
+            if (_license.IsBasic())
             {
                 AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
                 return;
@@ -1614,7 +1614,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         AddCellText(member.PasswordNeverExpires.ToString(), (bool)member.PasswordNeverExpires);
                     else
                         AddCellText(null);
-                    AddCellText(member.MFAStatus == null || member.MFAStatus.Count == 0 ? "Unkown" : string.Join(",", member.MFAStatus.ToArray())); ;
+                    AddCellText(member.MFAStatus == null || member.MFAStatus.Count == 0 ? "Unknown" : string.Join(",", member.MFAStatus.ToArray())); ;
                     AddCellText(member.RoleMemberType);
                     AddCellText(member.OverallProvisioningStatus);
                     AddCellText(member.IsLicensed.ToString());

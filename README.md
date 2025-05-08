@@ -64,7 +64,7 @@ Check <https://www.pingcastle.com> for the documentation and methodology
 
 ## Build
 
-PingCastle is a c# project which can be build from Visual Studio 2012 to Visual Studio 2022
+PingCastle is a c# project which can be built from Visual Studio 2012 to Visual Studio 2022.
 
 ## Features & Bugs
 

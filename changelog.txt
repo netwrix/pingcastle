@@ -1,3 +1,6 @@
+3.3.0.12
+The change log will no longer be maintained, please go to the Netwrix PingCastle Community news to see the change log. Direct link: https://community.netwrix.com/c/products/pingcastle/news
+
 3.3.0.11
 Migrate from ProvisioningAPI to Graph API
 Fixed some typos

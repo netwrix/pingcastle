@@ -66,7 +66,7 @@ namespace PingCastle.Healthcheck.Rules
                                 }
                                 break;
                             case 19045:
-                                if (healthcheckData.GenerationDate > new DateTime(2025, 05, 13))
+                                if (healthcheckData.GenerationDate > new DateTime(2025, 10, 14))
                                 {
                                     AddRawDetail("Windows 10 22H2", osVersion.data.Number, osVersion.data.NumberActive);
                                     totalActive += osVersion.data.NumberActive;

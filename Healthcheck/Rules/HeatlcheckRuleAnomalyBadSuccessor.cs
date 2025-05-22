@@ -75,10 +75,10 @@ namespace PingCastle.Healthcheck.Rules
                     // Check for risky permissions
                     var riskyRights = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        "CreateChild",
-                        "WriteDacl",
-                        "WriteOwner",
-                        "GenericAll",
+                        "CreateChild (All Objects)",
+                        "WriteDacl (All Objects)",
+                        "WriteOwner (All Objects)",
+                        "GenericAll (All Objects)",
                         "GenericAll (msDS-DelegatedManagedServiceAccount)",
                         "WriteDacl (msDS-DelegatedManagedServiceAccount)",
                         "WriteOwner (msDS-DelegatedManagedServiceAccount)",

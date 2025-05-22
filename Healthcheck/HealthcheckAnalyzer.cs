@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) Ping Castle. All rights reserved.
 // https://www.pingcastle.com
 //
@@ -1870,23 +1870,51 @@ namespace PingCastle.Healthcheck
                 {
                     gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "CreateChild");
                 }
-                // Check for dMSA-specific delegations
+                // Check for dMSA-specific delegations for BadSuccessor
+                // Generic ACEs
+                if (accessrule.ObjectType == new Guid("00000000-0000-0000-0000-000000000000") 
+                    && accessrule.InheritedObjectType == new Guid("00000000-0000-0000-0000-000000000000")) // Generic All
+                {
+                    if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.GenericAll) == ActiveDirectoryRights.GenericAll)
+                    {
+                        gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "GenericAll (All Objects)");
+                    }
+                    if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteDacl) == ActiveDirectoryRights.WriteDacl)
+                    {
+                        gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "WriteDacl (All Objects)");
+                    }
+                    if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteOwner) == ActiveDirectoryRights.WriteOwner)
+                    {
+                        gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "WriteOwner (All Objects)");
+                    }
+                    if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.CreateChild) == ActiveDirectoryRights.CreateChild)
+                    {
+                        gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "CreateChild (All Objects)");
+                    }
+                }
+                // Object Specific ACEs on msDS-DelegatedManagedServiceAccount class
+                if (accessrule.ObjectType == new Guid("00000000-0000-0000-0000-000000000000") 
+                    && accessrule.InheritedObjectType == new Guid("0feb936f-47b3-49f2-9386-1dedc2c23765"))
+                {
+                    if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteDacl) == ActiveDirectoryRights.WriteDacl)
+                    {
+                        gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "WriteDacl (msDS-DelegatedManagedServiceAccount)");
+                    }
+                    if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteOwner) == ActiveDirectoryRights.WriteOwner)
+                    {
+                        gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "WriteOwner (msDS-DelegatedManagedServiceAccount)");
+                    }
+                    if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.GenericAll) == ActiveDirectoryRights.GenericAll)
+                    {
+                        gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "GenericAll (msDS-DelegatedManagedServiceAccount)");
+                    }
+
+                }
+                // Specific handling of msds-delegatedManageServiceAccount creation
                 if ((accessrule.ObjectFlags & ObjectAceFlags.ObjectAceTypePresent) == ObjectAceFlags.ObjectAceTypePresent)
                 {
                     if (accessrule.ObjectType == new Guid("0feb936f-47b3-49f2-9386-1dedc2c23765")) // msDS-DelegatedManagedServiceAccount
                     {
-                        if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.GenericAll) == ActiveDirectoryRights.GenericAll)
-                        {
-                            gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "GenericAll (msDS-DelegatedManagedServiceAccount)");
-                        }
-                        if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteDacl) == ActiveDirectoryRights.WriteDacl)
-                        {
-                            gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "WriteDacl (msDS-DelegatedManagedServiceAccount)");
-                        }
-                        if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteOwner) == ActiveDirectoryRights.WriteOwner)
-                        {
-                            gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "WriteOwner (msDS-DelegatedManagedServiceAccount)");
-                        }
                         if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.CreateChild) == ActiveDirectoryRights.CreateChild)
                         {
                             gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "CreateChild (msDS-DelegatedManagedServiceAccount)");
@@ -1966,7 +1994,7 @@ namespace PingCastle.Healthcheck
                                     gotDelegation((SecurityIdentifier)accessrule.IdentityReference, controlproperty.Value);
                                 }
                             }
-                        }
+                        }   
                     }
                 }
                 if (((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.ExtendedRight) != 0 || ((int)accessrule.ActiveDirectoryRights & 4096) != 0) && accessrule.ObjectType == EnrollPermission)

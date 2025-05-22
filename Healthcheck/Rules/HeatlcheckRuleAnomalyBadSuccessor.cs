@@ -22,7 +22,7 @@ namespace PingCastle.Healthcheck.Rules
             bool has2025DC = false;
             foreach (var dc in healthcheckData.DomainControllers)
             {
-                if (IsWindowsServer2025(dc.OperatingSystemVersion, true))
+                if (dc.OperatingSystem == "Windows 2025")
                 {
                     has2025DC = true;
                     break;
@@ -71,7 +71,7 @@ namespace PingCastle.Healthcheck.Rules
                     string principalDisplay = !string.IsNullOrEmpty(delegation.Account)
                         ? delegation.Account
                         : (!string.IsNullOrEmpty(delegation.SecurityIdentifier) ? delegation.SecurityIdentifier : "(unknown)");
-                    
+
                     // Check for risky permissions
                     var riskyRights = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                     {
@@ -84,13 +84,13 @@ namespace PingCastle.Healthcheck.Rules
                         "WriteOwner (msDS-DelegatedManagedServiceAccount)",
                         "CreateChild (msDS-DelegatedManagedServiceAccount)"
                     };
-                    
+
                     // delegation.Right is in the form of "WriteDacl,WriteOwner" etc.
                     // Split and then add a row for each specific permission found
                     if (!string.IsNullOrEmpty(delegation.Right))
                     {
                         var rights = delegation.Right.Split(',').Select(r => r.Trim());
-                    
+
                         foreach (var right in rights)
                         {
                             if (riskyRights.Contains(right))
@@ -103,29 +103,13 @@ namespace PingCastle.Healthcheck.Rules
             }
             if (findings.Count == 0)
                 return null;
-            
+
             // Report Findings
             foreach (var f in findings)
             {
                 AddRawDetail(f.Principal, f.Permission, f.OU);
             }
             return findings.Count;
-        }
-        
-        // Helper: Parse Windows Server 2025 from OS version string
-        private bool IsWindowsServer2025(string osVersion, bool isServer)
-        {
-            if (string.IsNullOrEmpty(osVersion) || !isServer)
-                return false;
-            // Format: "10.0 (26100)"
-            var re = new Regex(@"(?<major>\d+)\.(?<minor>\d+) \((?<release>\d+)\)");
-            var m = re.Match(osVersion);
-            if (!m.Success)
-                return false;
-            int major = int.Parse(m.Groups["major"].Value);
-            int minor = int.Parse(m.Groups["minor"].Value);
-            int release = int.Parse(m.Groups["release"].Value);
-            return major == 10 && minor == 0 && release >= 26100;
         }
     }
 }

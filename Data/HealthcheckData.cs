@@ -204,6 +204,8 @@ namespace PingCastle.Healthcheck
         public string Email { get; set; }
 
         public string Class { get; set; }
+
+        public string Sid { get; set; }
     }
 
     [DebuggerDisplay("{GroupName}")]
@@ -247,6 +249,8 @@ namespace PingCastle.Healthcheck
         public int NumberOfServiceAccount { get; set; }
 
         public int NumberOfMemberInProtectedUsers { get; set; }
+
+        public string Sid { get; set; }
 
         public bool ShouldSerializeMembers() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthCheckGroupMemberData> Members { get; set; }

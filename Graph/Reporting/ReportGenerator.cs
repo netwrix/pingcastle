@@ -520,6 +520,15 @@ namespace PingCastle.Graph.Reporting
             data.GroupName = groupName;
             data.DistinguishedName = rootNode.ADItem.DistinguishedName;
             data.Members = new List<HealthCheckGroupMemberData>();
+
+            if (rootNode.ADItem != null && rootNode.ADItem.ObjectSid != null)
+            {
+                data.Sid = rootNode.ADItem.ObjectSid.Value;
+            }
+            else if (!string.IsNullOrEmpty(rootNode.Sid))
+            {
+                data.Sid = rootNode.Sid;
+            }
             foreach (Node x in members)
             {
                 // avoid computer included in the "cert publisher" group)
@@ -535,6 +544,7 @@ namespace PingCastle.Graph.Reporting
         private HealthCheckGroupMemberData BuildMemberDetail(ADWebService adws, HealthCheckGroupData data, Node node)
         {
             HealthCheckGroupMemberData member = new HealthCheckGroupMemberData();
+            member.Sid = node.Sid;
             if (node.ADItem == null)
             {
                 data.NumberOfExternalMember++;

@@ -1864,6 +1864,36 @@ namespace PingCastle.Healthcheck
                 {
                     gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "WriteOwner");
                 }
+                // ADS_RIGHT_DS_CREATE_CHILD (generic, not for a specific object type)
+                if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.CreateChild) == ActiveDirectoryRights.CreateChild
+                    && (accessrule.ObjectFlags & ObjectAceFlags.ObjectAceTypePresent) == 0)
+                {
+                    gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "CreateChild");
+                }
+                // Check for dMSA-specific delegations
+                if ((accessrule.ObjectFlags & ObjectAceFlags.ObjectAceTypePresent) == ObjectAceFlags.ObjectAceTypePresent)
+                {
+                    if (accessrule.ObjectType == new Guid("0feb936f-47b3-49f2-9386-1dedc2c23765")) // msDS-DelegatedManagedServiceAccount
+                    {
+                        if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.GenericAll) == ActiveDirectoryRights.GenericAll)
+                        {
+                            gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "GenericAll (msDS-DelegatedManagedServiceAccount)");
+                        }
+                        if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteDacl) == ActiveDirectoryRights.WriteDacl)
+                        {
+                            gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "WriteDacl (msDS-DelegatedManagedServiceAccount)");
+                        }
+                        if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteOwner) == ActiveDirectoryRights.WriteOwner)
+                        {
+                            gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "WriteOwner (msDS-DelegatedManagedServiceAccount)");
+                        }
+                        if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.CreateChild) == ActiveDirectoryRights.CreateChild)
+                        {
+                            gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "CreateChild (msDS-DelegatedManagedServiceAccount)");
+                        }
+                    }
+                }
+                
                 if (accessrule.ObjectFlags == ObjectAceFlags.None)
                 {
                     // ADS_RIGHT_DS_CONTROL_ACCESS

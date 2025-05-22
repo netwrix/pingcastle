@@ -5683,4 +5683,29 @@ This rule is active if nothing is set or if the time limit is set to NEVER.
   <data name="S_TerminalServicesGPO_Detail" xml:space="preserve">
     <value>GPO: {0} Reason: {1}</value>
   </data>
+    <data name="A_BadSuccessor_Title" xml:space="preserve">
+      <value>Bad Successor Delegation Detected</value>
+    </data>
+    <data name="A_BadSuccessor_Description" xml:space="preserve">
+      <value>One or more Organizational Units (OUs) in your Active Directory domain have delegations granting non-privileged users or groups the ability to create or control msDS-DelegatedManagedServiceAccount objects</value>
+    </data>
+    <data name="A_BadSuccessor_Solution" xml:space="preserve">
+      <value>Review the affected OUs and restrict delegations that grant non-privileged users or groups permissions such as Create All Child Objects, WriteDACL, WriteOwner, or FullControl over msDS-DelegatedManagedServiceAccount objects. Only highly trusted administrators should have these rights.</value>
+    </data>
+    <data name="A_BadSuccessor_Rationale" xml:space="preserve">
+      <value>Bad Successor Delegation Detected: {count}</value>
+    </data>
+    <data name="A_BadSuccessor_Detail" xml:space="preserve">
+      <value>Principal: {0} Permission: {1} OU: {2}</value>
+    </data>
+    <data name="A_BadSuccessor_TechnicalExplanation" xml:space="preserve">
+      <value>This rule detects when non-privileged users or groups are granted dangerous permissions over msDS-DelegatedManagedServiceAccount (dMSA) objects in OUs, specifically in environments with Windows Server 2025 Domain Controllers. Such delegations enable attackers to exploit the "BadSuccessor" vulnerability through two primary attack vectors: membership hijacking and cryptographic key extraction.
+
+In membership hijacking attacks, attackers can forge the msDS-ManagedAccountPrecededByLink attribute to migrate group memberships and permissions from any target account to an attacker-controlled dMSA. Additionally, attackers can extract password hashes from the dMSA Key Package's "Previous Key" field, which contains the superseded account's password hash and enables Kerberos ticket decryption.
+
+The detection triggers when specific high-risk permissions are assigned to OUs with inheritance set to "All Descendant Objects" or targeting the dMSA object type. These monitored permissions include Create All Child Objects, Write DACL (Permissions), Write Owner, and Full Control. Each of these permissions can facilitate different aspects of dMSA abuse, from creating malicious service accounts to modifying existing ones or taking over their ownership.</value>
+    </data>
+    <data name="A_BadSuccessor_Documentation" xml:space="preserve">
+      <value>https://www.akamai.com/blog/security-research/abusing-dmsa-for-privilege-escalation-in-active-directory#badsuccessor</value>
+    </data>
 </root>

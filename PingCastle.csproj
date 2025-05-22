@@ -472,6 +472,7 @@
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedDelegationKeyAdmin.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedExchangeAdminSDHolder.cs" />
     <Compile Include="Healthcheck\Rules\HeatlcheckRulePrivilegedUnconstrainedDelegation.cs" />
+    <Compile Include="Healthcheck\Rules\HeatlcheckRuleAnomalyBadSuccessor.cs" />
     <Compile Include="misc\NamedPipeTester.cs" />
     <Compile Include="misc\ConnectionTester.cs" />
     <Compile Include="misc\DnsQuery.cs" />

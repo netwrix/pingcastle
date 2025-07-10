@@ -89,7 +89,7 @@ namespace PingCastle.Graph.Reporting
                         new GraphSingleObject("CN=Users," + data.DefaultNamingContext, "Users container", CompromiseGraphDataObjectRisk.Medium),
                         new GraphSingleObject("CN=Computers," + data.DefaultNamingContext, "Computers container", CompromiseGraphDataObjectRisk.Medium),
                         new GraphSingleObject("CN=NTAuthCertificates,CN=Public Key Services,CN=Services," + data.ConfigurationNamingContext, "Certificate store", CompromiseGraphDataObjectRisk.Medium),
-                        new GraphSingleObject("CN=AdminSDHolder,CN=System," + data.DefaultNamingContext, "AdminSDHolder container", CompromiseGraphDataObjectRisk.Critical),
+                        new GraphSingleObject("CN=AdminSDHolder,CN=System," + data.DefaultNamingContext, "AdminSDHolder object", CompromiseGraphDataObjectRisk.Critical),
                     }
                 },
                 {

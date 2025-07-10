@@ -1,7 +1,7 @@
-﻿using PingCastle.ADWS;
-using PingCastle.Healthcheck;
+﻿using PingCastle.UserInterface;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.IO;
 using System.Security.Principal;
@@ -11,6 +11,7 @@ namespace PingCastle.Exports
 {
     public class ExportChanges : ExportBase
     {
+        private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
 
         public override string Name
         {
@@ -46,9 +47,7 @@ namespace PingCastle.Exports
                     EventHandler<ObjectChangedEventArgs> callback =
                         (object sender, ObjectChangedEventArgs e) =>
                         {
-                            Console.ForegroundColor = ConsoleColor.Yellow;
-                            DisplayAdvancement(e.Result.DistinguishedName);
-                            Console.ResetColor();
+                            DisplayAdvancementWarning(e.Result.DistinguishedName);
                             foreach (string attributeName in e.Result.Attributes.AttributeNames)
                             {
                                 foreach (byte[] item in e.Result.Attributes[attributeName].GetValues(typeof(byte[])))
@@ -91,7 +90,6 @@ namespace PingCastle.Exports
                                         }
                                     }
 
-                                    //Console.WriteLine("{0}: {1}", attributeName, i);
                                     var data = new List<string>();
                                     data.Add(DateTime.Now.ToString("u"));
                                     data.Add(e.Result.DistinguishedName);
@@ -114,13 +112,21 @@ namespace PingCastle.Exports
 
                         DisplayAdvancement("Waiting for changes...");
                         DisplayAdvancement("Press ENTER to stop monitoring the changes");
-                        Console.ReadLine();
+                        _ui.AskForString();
                     }
                 }
 
                 DisplayAdvancement("Done");
             }
         }
+
+        private static void DisplayAdvancementWarning(string data)
+        {
+            string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
+            UserInterfaceFactory.GetUserInterface().DisplayWarning(value);
+            Trace.WriteLine(value);
+        }
+
 
         public class ChangeNotifier : IDisposable
         {

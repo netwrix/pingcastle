@@ -1,14 +1,16 @@
-﻿using System;
+﻿using PingCastle.UserInterface;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace PingCastle.Scanners
 {
-    public class AntivirusScanner : ScannerBase
+    public sealed class AntivirusScanner : ScannerBase
     {
-
         public override string Name { get { return "antivirus"; } }
         public override string Description { get { return "Check for computers without known antivirus installed. It is used to detect unprotected computers but may also report computers with unknown antivirus."; } }
 
@@ -25,7 +27,7 @@ namespace PingCastle.Scanners
             {"EPSecurityService", "Bitdefender Endpoint Security Service"},
             {"EPUpdateService", "Bitdefender Endpoint Update Service"},
 
-            {"CiscoAMP", "Cisco Secure endpoint"}, 
+            {"CiscoAMP", "Cisco Secure endpoint"},
 
             {"CSFalconService", "CrowdStrike Falcon Sensor Service"},
 
@@ -118,7 +120,7 @@ namespace PingCastle.Scanners
 
         };
 
-        static List<string> customService = new List<string>();
+        private readonly List<string> _customService = new List<string>();
 
         override protected string GetCsvHeader()
         {
@@ -127,32 +129,52 @@ namespace PingCastle.Scanners
 
         public override DisplayState QueryForAdditionalParameterInInteractiveMode()
         {
+            // Load any custom service names from the command line settings
+            if (!Settings.AntivirusCustomServiceNames.IsNullOrEmpty())
+            {
+                _customService.Clear();
+                _customService.AddRange(Settings.AntivirusCustomServiceNames);
+            }
+
+            // For a batch scan we will need scanning mode to have been set
+            if (ScanningMode != 0)
+            {
+                // Use default if the server is not set.
+                Settings.Server ??= IPGlobalProperties.GetIPGlobalProperties().DomainName;
+                // All other settings will have been set at the command line, so return.
+                return DisplayState.Run;
+            }
+
             var state = base.QueryForAdditionalParameterInInteractiveMode();
             if (state != DisplayState.Run)
                 return state;
 
-            string input = null;
-            customService.Clear();
-            do
+            // If we haven't got the list of custom services, ask the user.
+            if (_customService.Count == 0)
             {
-                ConsoleMenu.Title = "Enter additional Service Name to check";
-                ConsoleMenu.Information = @"This scanner enumerate all well known services attributed to antivirus suppliers.
+                IUserInterface userInterface = UserInterfaceFactory.GetUserInterface();
+                do
+                {
+                    userInterface.Title = "Enter additional Service Name to check";
+                    userInterface.Information = @"This scanner enumerate all well known services attributed to antivirus suppliers.
 You can enter additional service to check. Enter them one by one and complete with an empty line.
 Use the name provided in the service list. Example: Enter 'SepMasterService' for the service 'Symantec Endpoint Protection'.
 Or just press enter to use the default.";
-                input = ConsoleMenu.AskForString();
-                if (!String.IsNullOrEmpty(input))
-                {
-                    if (!customService.Contains(input))
+
+                    string input = userInterface.AskForString();
+                    if (!string.IsNullOrEmpty(input))
                     {
-                        customService.Add(input);
+                        if (!_customService.Contains(input))
+                        {
+                            _customService.Add(input);
+                        }
                     }
-                }
-                else
-                {
-                    break;
-                }
-            } while (true);
+                    else
+                    {
+                        break;
+                    }
+                } while (true);
+            }
             return DisplayState.Run;
         }
 
@@ -162,8 +184,7 @@ Or just press enter to use the default.";
             NativeMethods.UNICODE_STRING us = new NativeMethods.UNICODE_STRING();
             NativeMethods.LSA_OBJECT_ATTRIBUTES loa = new NativeMethods.LSA_OBJECT_ATTRIBUTES();
             us.Initialize(computer);
-            IntPtr PolicyHandle = IntPtr.Zero;
-            uint ret = NativeMethods.LsaOpenPolicy(ref us, ref loa, 0x00000800, out PolicyHandle);
+            uint ret = NativeMethods.LsaOpenPolicy(ref us, ref loa, 0x00000800, out IntPtr policyHandle);
             us.Dispose();
             if (ret != 0)
             {
@@ -172,24 +193,16 @@ Or just press enter to use the default.";
                 sb.Append("\tUnable to connect\tPingCastle couldn't connect to the computer. The error was 0x" + ret.ToString("x"));
                 return sb.ToString();
             }
-            var names = new NativeMethods.UNICODE_STRING[AVReference.Count + customService.Count];
+            var names = new NativeMethods.UNICODE_STRING[AVReference.Count + _customService.Count];
             try
             {
-                int i = 0;
-                foreach (var entry in AVReference)
-                {
-                    names[i] = new NativeMethods.UNICODE_STRING();
-                    names[i].Initialize("NT Service\\" + entry.Key);
-                    i++;
-                }
-                foreach (var entry in customService)
-                {
-                    names[i] = new NativeMethods.UNICODE_STRING();
-                    names[i].Initialize("NT Service\\" + entry);
-                    i++;
-                }
-                IntPtr ReferencedDomains, Sids;
-                ret = NativeMethods.LsaLookupNames(PolicyHandle, names.Length, names, out ReferencedDomains, out Sids);
+                PrepareNameList(names);
+
+                // Make the call to translate all the names into SIDs
+                ret = NativeMethods.LsaLookupNames(policyHandle, names.Length, names,
+                    out IntPtr referencedDomains, out IntPtr sids);
+
+                // Handle error codes
                 if (ret == 0xC0000073) //STATUS_NONE_MAPPED
                 {
                     sb.Append(computer);
@@ -203,62 +216,102 @@ Or just press enter to use the default.";
                     sb.Append("\tUnable to lookup\tPingCastle couldn't translate the SID to the computer. The error was 0x" + ret.ToString("x"));
                     return sb.ToString();
                 }
+
                 try
                 {
-                    var domainList = (NativeMethods.LSA_REFERENCED_DOMAIN_LIST)Marshal.PtrToStructure(ReferencedDomains, typeof(NativeMethods.LSA_REFERENCED_DOMAIN_LIST));
-                    if (domainList.Entries > 0)
-                    {
-                        var trustInfo = (NativeMethods.LSA_TRUST_INFORMATION)Marshal.PtrToStructure(domainList.Domains, typeof(NativeMethods.LSA_TRUST_INFORMATION));
-                    }
-                    NativeMethods.LSA_TRANSLATED_SID[] translated;
-                    MarshalUnmananagedArray2Struct<NativeMethods.LSA_TRANSLATED_SID>(Sids, names.Length, out translated);
+                    MarshalUnmananagedArray2Struct(sids, names.Length,
+                        out NativeMethods.LSA_TRANSLATED_SID[] translated);
 
-                    i = 0;
-                    foreach (var entry in AVReference)
-                    {
-                        if (translated[i].DomainIndex >= 0)
-                        {
-                            if (sb.Length != 0)
-                            {
-                                sb.Append("\r\n");
-                            }
-                            sb.Append(computer);
-                            sb.Append("\t");
-                            sb.Append(entry.Key);
-                            sb.Append("\t");
-                            sb.Append(entry.Value);
-                        }
-                        i++;
-                    }
-                    foreach (var entry in customService)
-                    {
-                        if (sb.Length != 0)
-                        {
-                            sb.Append("\r\n");
-                        }
-                        sb.Append(computer);
-                        sb.Append("\t");
-                        sb.Append(entry);
-                        sb.Append("\t");
-                        sb.Append("Custom search");
-                        i++;
-                    }
+                    var avEntries = ProcessResultToList(computer, translated, sb);
+
+                    OutputEntriesToTabDelimitedStringBuilder(sb, avEntries);
                 }
                 finally
                 {
-                    NativeMethods.LsaFreeMemory(ReferencedDomains);
-                    NativeMethods.LsaFreeMemory(Sids);
+                    NativeMethods.LsaFreeMemory(referencedDomains);
+                    NativeMethods.LsaFreeMemory(sids);
                 }
             }
             finally
             {
-                NativeMethods.LsaClose(PolicyHandle);
+                NativeMethods.LsaClose(policyHandle);
                 for (int k = 0; k < names.Length; k++)
                 {
                     names[k].Dispose();
                 }
             }
             return sb.ToString();
+        }
+
+        private static void OutputEntriesToTabDelimitedStringBuilder(StringBuilder sb, List<AntivirusEntry> avEntries)
+        {
+           foreach(var entry in avEntries)
+           {
+               if (sb.Length != 0)
+               {
+                   sb.Append("\r\n");
+               }
+               sb.Append(entry.Computer);
+               sb.Append("\t");
+               sb.Append(entry.ServiceName);
+               sb.Append("\t");
+               sb.Append(entry.Description);
+           }
+        }
+
+        private List<AntivirusEntry> ProcessResultToList(
+            string computer,
+            NativeMethods.LSA_TRANSLATED_SID[] translated,
+            StringBuilder sb)
+        {
+            List<AntivirusEntry> antivirusEntries = new List<AntivirusEntry>();
+
+            var i = 0;
+            foreach (var entry in AVReference)
+            {
+                if (translated[i].DomainIndex >= 0)
+                {
+                    antivirusEntries.Add(new AntivirusEntry
+                    {
+                        Computer = computer,
+                        ServiceName = entry.Key,
+                        Description = entry.Value
+                    });
+                }
+                i++;
+            }
+            foreach (var entry in _customService)
+            {
+                if (translated[i].DomainIndex >= 0)
+                {
+                    antivirusEntries.Add(new AntivirusEntry
+                    {
+                        Computer = computer,
+                        ServiceName = entry,
+                        Description = "Custom Search"
+                    });
+                }
+                i++;
+            }
+
+            return antivirusEntries;
+        }
+
+        private void PrepareNameList(NativeMethods.UNICODE_STRING[] names)
+        {
+            int i = 0;
+            foreach (var entry in AVReference)
+            {
+                names[i] = new NativeMethods.UNICODE_STRING();
+                names[i].Initialize("NT Service\\" + entry.Key);
+                i++;
+            }
+            foreach (var entry in _customService)
+            {
+                names[i] = new NativeMethods.UNICODE_STRING();
+                names[i].Initialize("NT Service\\" + entry);
+                i++;
+            }
         }
 
         public static void MarshalUnmananagedArray2Struct<T>(IntPtr unmanagedArray, int length, out T[] mangagedArray)
@@ -272,13 +325,13 @@ Or just press enter to use the default.";
                 mangagedArray[i] = (T)Marshal.PtrToStructure(ins, typeof(T));
             }
         }
+    }
 
-        private static void DisplayAdvancement(string computer, string data)
-        {
-            string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-            if (ScanningMode == 1)
-                Console.WriteLine(value);
-            Trace.WriteLine(value);
-        }
+    public struct AntivirusEntry
+    {
+        public string Computer { get; set; }
+        [DisplayName("Service Found")]
+        public string  ServiceName { get; set; }
+        public string Description { get; set; }
     }
 }

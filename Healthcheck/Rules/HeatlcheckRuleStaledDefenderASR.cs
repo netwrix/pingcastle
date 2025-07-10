@@ -5,7 +5,6 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.Rules;
-using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -42,7 +41,7 @@ namespace PingCastle.Healthcheck.Rules
             };
 
             // Block WebShell is only relevant if there are Exchange Servers present.
-            if (healthcheckData.ExchangeServers.Count > 0)
+            if (healthcheckData.ExchangeServers?.Count > 0)
             {
                 expectedMitigations.Add("a8f5898e-1dc8-49a9-9878-85004b8a61e6", "Block Webshell creation for Servers");
             }

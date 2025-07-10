@@ -5,7 +5,6 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.Rules;
-using System;
 using System.Collections.Generic;
 
 namespace PingCastle.Healthcheck.Rules
@@ -19,7 +18,7 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            var dangerousFileExtensions = new string[] { "js", "jse" };
+            var dangerousFileExtensions = new string[] { "js", "jse", "vbs", "vbe", "vb", "wsh", "wsf" };
             var found = new List<string>();
             if (healthcheckData.GPOFolderOptions != null)
             {

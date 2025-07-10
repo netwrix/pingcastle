@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
-
-namespace PingCastle.Exports
+﻿namespace PingCastle.Exports
 {
     public interface IExport
     {
-        void Initialize(RuntimeSettings settings);
+        void Initialize(RuntimeSettings initialisationSettings);
         void Export(string filename);
         string Name { get; }
         string Description { get; }

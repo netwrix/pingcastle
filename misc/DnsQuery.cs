@@ -5,14 +5,11 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace PingCastle.misc
 {
@@ -45,16 +42,6 @@ namespace PingCastle.misc
     {
         public ushort Xid;
         public ushort Flags;
-        /*public byte RecursionDesired;
-        public byte Truncation;
-        public byte Authoritative;
-        public byte Opcode;
-        public byte IsResponse;
-        public byte ResponseCode;
-        public byte CheckingDisabled;
-        public byte AuthenticatedData;
-        public byte Reserved;
-        public byte RecursionAvailable;*/
         public ushort QuestionCount;
         public ushort AnswerCount;
         public ushort NameServerCount;

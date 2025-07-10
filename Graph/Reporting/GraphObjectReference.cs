@@ -43,14 +43,14 @@ namespace PingCastle.Graph.Reporting
         public const string Users = "Users";
         public const string DomainUsers = "Domain Users";
         public const string DomainComputers = "Domain Computers";
-        
+
         public const string GroupPolicyCreatorOwners = "Group Policy Creator Owners";
         public const string ExchangeDomainServers = "Exchange Domain Servers";
         public const string ExchangeEnterpriseServers = "Exchange Enterprise Servers";
         public const string ExchangeAdmins = "Exchange Admins";
         public const string OrganizationManagement = "Organization Management";
         public const string ExchangeWindowsPermissions = "Exchange Windows Permissions";
-        
+
         public Dictionary<CompromiseGraphDataTypology, List<GraphSingleObject>> Objects { get; set; }
         public List<string> TechnicalObjects { get; set; }
 
@@ -95,9 +95,9 @@ namespace PingCastle.Graph.Reporting
             {
                 Objects[typology].Sort((GraphSingleObject a, GraphSingleObject b)
                     =>
-                    {
-                        return String.Compare(a.Description, b.Description);
-                    });
+                {
+                    return String.Compare(a.Description, b.Description);
+                });
             }
             TechnicalObjects = new List<string>();
             TechnicalObjects.Add(data.DomainSid.Value + "-525");

@@ -4,18 +4,6 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using PingCastle.ADWS;
-using PingCastle.misc;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.Net.Sockets;
-using System.Security.Principal;
-using System.Text;
-using System.Threading;
-
 namespace PingCastle.Scanners
 {
     public class ComputerVersion : ScannerBase

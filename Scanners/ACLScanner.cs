@@ -3,12 +3,12 @@ using PingCastle.Graph.Database;
 using PingCastle.Graph.Export;
 using PingCastle.Graph.Reporting;
 using PingCastle.misc;
+using PingCastle.UserInterface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices;
 using System.IO;
-using System.Net;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Threading;
@@ -24,6 +24,8 @@ namespace PingCastle.Scanners
         public static List<string> UserList = new List<string>();
 
         RuntimeSettings Settings;
+
+        private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
 
         public void Initialize(RuntimeSettings settings)
         {
@@ -148,11 +150,11 @@ namespace PingCastle.Scanners
             UserList.Clear();
             do
             {
-                ConsoleMenu.Title = "Enter users or groups to check";
-                ConsoleMenu.Information = @"This scanner enumerate all objects' where a user or a group have write access.
+                _ui.Title = "Enter users or groups to check";
+                _ui.Information = @"This scanner enumerate all objects' where a user or a group have write access.
 You can enter many users or groups. Enter them one by one and complete with an empty line. SAMAccountName or SID are accepted.
 Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Authenticated Users and Domain Users groups).";
-                input = ConsoleMenu.AskForString();
+                input = _ui.AskForString();
                 if (!String.IsNullOrEmpty(input))
                 {
                     UserList.Add(input);
@@ -434,10 +436,10 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
             }
         }
 
-        private static void DisplayAdvancement(string data)
+        private void DisplayAdvancement(string data)
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-            Console.WriteLine(value);
+            _ui.DisplayMessage(value);
             Trace.WriteLine(value);
         }
     }

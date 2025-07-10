@@ -1,3 +1,4 @@
+
 # PingCastle by Netwrix
 
 ## Acquisition Announcement

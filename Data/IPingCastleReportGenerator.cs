@@ -6,6 +6,7 @@ namespace PingCastle.Data
 
     public class PingCastleAnalyzerParameters
     {
+        public bool IsPrivilegedMode { get; set; }
         public string Server { get; set; }
         public int Port { get; set; }
         public NetworkCredential Credential { get; set; }

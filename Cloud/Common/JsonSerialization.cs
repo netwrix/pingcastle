@@ -6,11 +6,8 @@
 //
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace PingCastle.Cloud.Common
 {
@@ -18,23 +15,10 @@ namespace PingCastle.Cloud.Common
     {
         public static T LoadFromString(string input)
         {
-            /*using (var stream = new MemoryStream())
-            {
-                var bytes = Encoding.UTF8.GetBytes(input);
-                stream.Write(bytes, 0, bytes.Length);
-                stream.Position = 0;
-                return LoadFromStream(stream);
-            }*/
-
             return JsonConvert.DeserializeObject<T>(input);
         }
         public static T LoadFromStream(Stream input)
         {
-            /*T t;
-            var serializer = new DataContractJsonSerializer(typeof(T));
-
-            t = (T)serializer.ReadObject(input);
-            */
             using (StreamReader sr = new StreamReader(input))
             using (JsonReader reader = new JsonTextReader(sr))
             {
@@ -46,14 +30,6 @@ namespace PingCastle.Cloud.Common
         public string ToJsonString()
         {
             return JsonConvert.SerializeObject(this);
-            /*
-            var serializer = new DataContractJsonSerializer(typeof(T));
-            using (var ms = new MemoryStream())
-            {
-                serializer.WriteObject(ms, this);
-                var buf = ms.ToArray();
-                return Encoding.UTF8.GetString(buf);
-            }*/
         }
 
         public string ToBase64JsonString()
@@ -77,16 +53,6 @@ namespace PingCastle.Cloud.Common
             var payloadBytes = Convert.FromBase64String(payload.PadRight(payload.Length + (payload.Length * 3) % 4, '='));
             var payloadString = Encoding.UTF8.GetString(payloadBytes);
             return JsonConvert.DeserializeObject<T>(payloadString);
-            /*T t;
-            var serializer = new DataContractJsonSerializer(typeof(T));
-            using (var stream = new MemoryStream())
-            {
-                stream.Write(payloadString, 0, payloadString.Length);
-                stream.Position = 0;
-                t = (T)serializer.ReadObject(stream);
-            }
-
-            return t;*/
         }
     }
 }

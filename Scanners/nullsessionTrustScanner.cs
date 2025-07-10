@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
 
 namespace PingCastle.Scanners
 {
@@ -63,7 +62,7 @@ namespace PingCastle.Scanners
         private static void DisplayAdvancement(string data)
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-            Console.WriteLine(value);
+            UserInterfaceFactory.GetUserInterface().DisplayMessage(value);
             Trace.WriteLine(value);
         }
     }

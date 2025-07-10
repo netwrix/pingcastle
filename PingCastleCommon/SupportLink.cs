@@ -6,7 +6,8 @@ namespace PingCastleCommon
     {
         public static string Url { get; private set; }
         public static string Text { get; } = "contact our support";
-        public static string NetwrixSupportUrl = "https://www.netwrix.com/support.html";
+        public static string LinkTitle { get; } = "Support Portal";
+        public static string NetwrixSupportUrl = "https://www.netwrix.com/support.html";        
 
         public static void Initialize(IConfiguration configuration)
         {

@@ -8,7 +8,7 @@ using System.Configuration;
 
 namespace PingCastle
 {
-    internal class ADHealthCheckingLicenseSettings : ConfigurationSection
+    public class ADHealthCheckingLicenseSettings : ConfigurationSection
     {
         private static ADHealthCheckingLicenseSettings settings;
 

@@ -6,16 +6,13 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.Cloud.Common;
-using PingCastle.Cloud.RESTServices.Azure;
 using PingCastle.Rules;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace PingCastle.Cloud.Data
@@ -224,6 +221,8 @@ namespace PingCastle.Cloud.Data
         public string Rationale { get; set; }
 
         public List<string> Details { get; set; }
+
+        public List<ExtraDetail> ExtraDetails { get; set; }
 
         public RiskRuleCategory Category { get; set; }
         public RiskModelCategory Model { get; set; }

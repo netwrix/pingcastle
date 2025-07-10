@@ -8,10 +8,8 @@ using Newtonsoft.Json;
 using PingCastle.Rules;
 using PingCastle.template;
 using PingCastle.Cloud.Data;
-using PingCastle.Cloud.Rules;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Net.Mail;
 using PingCastle.Data;
@@ -60,11 +58,12 @@ namespace PingCastle.Report
             AddScript(TemplateManager.LoadBootstrapTableJs());
             AddScript(TemplateManager.LoadReportBaseJs());
             AddScript(TemplateManager.LoadReportCloudMainJs());
+            AddStyle(TemplateManager.LoadFontAwesomeCss());
         }
 
         protected override void GenerateBodyInformation()
         {
-            GenerateNavigation("HealthCheck report", Report.TenantName, Report.GenerationDate);
+            GenerateNavigation("HealthCheck report", Report.TenantName);
             GenerateAbout();
             Add(@"
 <div id=""wrapper"" class=""container well"">
@@ -73,16 +72,18 @@ namespace PingCastle.Report
 			<p>PingCastle reports work best with Javascript enabled.</p>
 		</div>
 	</noscript>
-<div class=""row""><div class=""col-lg-12""><h1>");
-            Add(Report.TenantName);
-            Add(@" - Healthcheck analysis</h1>
-			<h3>Date: ");
+<div class=""row"">
+		<div class=""col-lg-12"">
+		 <div class=""d-flex justify-content-between align-items-center report-header"">
+        <h1>");
+            Add(@"Healthcheck analysis</h1>
+    <h3 class=""report-date"">Date: ");
             Add(Report.GenerationDate.ToString("yyyy-MM-dd"));
             Add(@" - Engine version: ");
             Add(Report.EngineVersion);
-            Add(@"</h3>
+            Add(@"</h3></div>
 ");
-            Add(@"<div class=""alert alert-info"">
+            Add(@"<div class=""alert alert-info notif"">
 This report has been generated with the ");
             Add(_license.IsBasic() ? "Basic" : _license.Edition);
             Add(@" Edition of PingCastle");
@@ -91,7 +92,7 @@ This report has been generated with the ");
                 Add(@"&nbsp;<i class=""info-mark d-print-none"" data-bs-placement=""bottom"" data-bs-toggle=""tooltip""");
                 Add(@" title="""" data-bs-original-title=""");
                 AddEncoded(_license.CustomerNotice);
-                Add(@""">?</i>.");
+                Add(@"""></i>.");
             }
             if (_license.IsBasic())
             {
@@ -165,10 +166,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			<a data-bs-toggle=""collapse"" data-bs-target=""#" + id + @""">
 				<h2>");
             Add(title);
-            /*Add(@" [");
-            Add(GetRulesNumberForCategory(rules, category).ToString());
-            Add(@" rules matched on a total of ");
-            Add(GetApplicableRulesNumberForCategory(applicableRules, category).ToString());*/
             Add(@"</h2>
 			</a>
 		</div></div>
@@ -179,7 +176,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             bool hasRule = false;
             foreach (HealthCheckCloudDataRiskRule rule in rules)
             {
-                //if (rule.Category == category)
                 {
                     hasRule = true;
                     break;
@@ -546,13 +542,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         Add("To reach the maximum level ");
                     }
-                    /*Add("From ");
-                    Add("<span class=\"badge grade-");
-                    Add(level);
-                    Add("\">");
-                    Add("Level ");
-                    Add(level);
-                    Add("</span> ");*/
                     Add(" you need to fix the following rules:</p>");
                     GenerateAccordion("rulesmaturity" + i, () =>
                     {

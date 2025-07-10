@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Permissions;
 using System.Text;
+using static PingCastle.Scanners.Smb2Protocol;
 
 namespace PingCastle.Scanners
 {
@@ -27,6 +28,287 @@ namespace PingCastle.Scanners
         private static byte[] mechTypes = new byte[] { 0x30, 0x0c, 0x06, 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x02, 0x02, 0x0a, };
 
         public const uint STATUS_MORE_PROCESSING_REQUIRED = 0xc0000016;
+        public const int STATUS_NOT_SUPPORTED = unchecked((int)0xC00000BB);
+
+        // Enums for SMB protocol constants
+        [Flags]
+        public enum SMB2_NEGOTIATE_CONTEXT_TYPES : ushort
+        {
+            SMB2_PREAUTH_INTEGRITY_CAPABILITIES = 0x0001,
+            SMB2_ENCRYPTION_CAPABILITIES = 0x0002,
+            SMB2_COMPRESSION_CAPABILITIES = 0x0003,
+            SMB2_NETNAME_NEGOTIATE_CONTEXT_ID = 0x0005,
+            SMB2_TRANSPORT_CAPABILITIES = 0x0006,
+            SMB2_RDMA_TRANSFORM_CAPABILITIES = 0x0007,
+            SMB2_SIGNING_CAPABILITIES = 0x0008,
+            SMB2_CONTEXTTYPE_RESERVED = 0x0100
+        }
+
+        [Flags]
+        public enum SMB2_CAPABILITIES : uint
+        {
+            SMB2_GLOBAL_CAP_DFS = 0x00000001,
+            SMB2_GLOBAL_CAP_LEASING = 0x00000002,
+            SMB2_GLOBAL_CAP_LARGE_MTU = 0x00000004,
+            SMB2_GLOBAL_CAP_MULTI_CHANNEL = 0x00000008,
+            SMB2_GLOBAL_CAP_PERSISTENT_HANDLES = 0x00000010,
+            SMB2_GLOBAL_CAP_DIRECTORY_LEASING = 0x00000020,
+            SMB2_GLOBAL_CAP_ENCRYPTION = 0x00000040,
+            SMB2_GLOBAL_CAP_NOTIFICATIONS = 0x00000080
+        }
+
+        [Flags]
+        public enum SMB2_SECURITY_MODE : ushort
+        {
+            SMB2_NEGOTIATE_SIGNING_ENABLED = 0x0001,
+            SMB2_NEGOTIATE_SIGNING_REQUIRED = 0x0002
+        }
+
+        // For PreAuth Integrity Hash Algorithm IDs
+        public enum SMB2_HASH_ALGORITHM : ushort
+        {
+            SMB2_SHA_512 = 0x0001
+        }
+
+        // For Encryption Algorithm IDs
+        public enum SMB2_ENCRYPTION_ALGORITHM : ushort
+        {
+            SMB2_ENCRYPTION_AES128_CCM = 0x0001,
+            SMB2_ENCRYPTION_AES128_GCM = 0x0002,
+            SMB2_ENCRYPTION_AES256_CCM = 0x0003,
+            SMB2_ENCRYPTION_AES256_GCM = 0x0004
+        }
+
+        // For Dialect values
+        public enum SMB2_DIALECTS : ushort
+        {
+            SMB2_DIALECT_2_0_2 = 0x0202,
+            SMB2_DIALECT_2_1 = 0x0210,
+            SMB2_DIALECT_3_0 = 0x0300,
+            SMB2_DIALECT_3_0_2 = 0x0302,
+            SMB2_DIALECT_3_1_1 = 0x0311
+        }
+
+        // Updated struct to support SMB 3.1.1 negotiate contexts
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
+        public struct SMB2_NegotiateRequest
+        {
+            [FieldOffset(0)]
+            public ushort StructureSize;
+            [FieldOffset(2)]
+            public ushort DialectCount;
+            [FieldOffset(4)]
+            public ushort SecurityMode;
+            [FieldOffset(6)]
+            public ushort Reserved;
+            [FieldOffset(8)]
+            public uint Capabilities;
+            [FieldOffset(12)]
+            public Guid ClientGuid;
+            // This field is a union - either ClientStartTime or NegotiateContext fields
+            [FieldOffset(28)]
+            public uint NegotiateContextOffset;
+            [FieldOffset(32)]
+            public ushort NegotiateContextCount;
+            [FieldOffset(34)]
+            public ushort Reserved2;
+            // Used for non-SMB 3.1.1 dialects
+            [FieldOffset(28)]
+            public ulong ClientStartTime;
+            [FieldOffset(36)]
+            public ushort DialectToTest; // First dialect in the Dialects array
+        }
+
+        // Structure for negotiate contexts
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SMB2_NEGOTIATE_CONTEXT
+        {
+            public SMB2_NEGOTIATE_CONTEXT_TYPES ContextType;
+            public UInt16 DataLength;
+            public UInt32 Reserved;
+        }
+
+        // Methods for building SMB 3.1.1 negotiate packets
+        public byte[] BuildNegotiatePacket(int dialect)
+        {
+            byte[] header = GenerateSmb2HeaderFromCommand(SBM2_Command.SMB2_NEGOTIATE);
+            byte[] message = GetNegotiateMessageSmbv2(dialect);
+
+            // Combine header and message
+            byte[] packet = BuildPacket(header, message);
+            return packet;
+        }
+
+        // MS-SMB2  2.2.3 SMB2 NEGOTIATE Request
+        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+        public byte[] GetNegotiateMessageSmbv2(int DialectToTest)
+        {
+            SMB2_NegotiateRequest request = new SMB2_NegotiateRequest
+            {
+                StructureSize = 36,
+                DialectCount = 1,
+                SecurityMode = (ushort)SMB2_SECURITY_MODE.SMB2_NEGOTIATE_SIGNING_ENABLED,
+                Reserved = 0,
+                ClientGuid = Guid.NewGuid(),
+                DialectToTest = (UInt16)DialectToTest
+            };
+
+            // Set capabilities based on dialect
+            if (DialectToTest >= (int)SMB2_DIALECTS.SMB2_DIALECT_3_0)
+            {
+                request.Capabilities = (UInt32)(
+                    SMB2_CAPABILITIES.SMB2_GLOBAL_CAP_DFS |
+                    SMB2_CAPABILITIES.SMB2_GLOBAL_CAP_LEASING |
+                    SMB2_CAPABILITIES.SMB2_GLOBAL_CAP_LARGE_MTU);
+
+                if (DialectToTest >= (int)SMB2_DIALECTS.SMB2_DIALECT_3_1_1)
+                {
+                    request.Capabilities |= (UInt32)(
+                        SMB2_CAPABILITIES.SMB2_GLOBAL_CAP_DIRECTORY_LEASING |
+                        SMB2_CAPABILITIES.SMB2_GLOBAL_CAP_ENCRYPTION);
+                }
+            }
+            else
+            {
+                request.Capabilities = (UInt32)SMB2_CAPABILITIES.SMB2_GLOBAL_CAP_DFS;
+            }
+
+            // For SMB 3.1.1 (0x0311), we need to add NegotiateContexts
+            if (DialectToTest == (int)SMB2_DIALECTS.SMB2_DIALECT_3_1_1)
+            {
+                // Set NegotiateContext fields
+                request.NegotiateContextCount = 2; // We'll add Preauth and Encryption contexts
+                request.Reserved2 = 0;
+
+                // Create the base negotiate request byte array (includes one dialect)
+                int baseSize = Marshal.SizeOf(typeof(SMB2_NegotiateRequest));
+
+                // Calculate the NegotiateContextOffset
+                // SMB2 header (64 bytes) + base request (36 bytes) + dialects (2 bytes per dialect) + padding
+                int headerSize = 64; // Size of SMB2_Header
+                int sizeBeforeContext = headerSize + baseSize;
+                // Add padding to align to 8 byte boundary
+                int padding = CalculatePadding(sizeBeforeContext);
+                int contextOffset = sizeBeforeContext + padding;
+
+                // Update the offset in our request
+                request.NegotiateContextOffset = (UInt32)contextOffset;
+
+                // Build the complete packet
+                var baseRequest = StructureToByteArray(request);
+                var fullRequest = new List<byte>(baseRequest);
+
+                ApplyPadding(fullRequest, padding);
+
+                // Add PREAUTH_INTEGRITY_CAPABILITIES context
+                SMB2_NEGOTIATE_CONTEXT preAuthContext = new SMB2_NEGOTIATE_CONTEXT();
+                preAuthContext.ContextType = SMB2_NEGOTIATE_CONTEXT_TYPES.SMB2_PREAUTH_INTEGRITY_CAPABILITIES;
+                preAuthContext.DataLength = 38; // HashAlgorithmCount(2) + SaltLength(2) + HashAlgorithm(2) + SaltData(32)
+                preAuthContext.Reserved = 0;
+
+                byte[] preAuthContextHeader = StructureToByteArray(preAuthContext);
+                fullRequest.AddRange(preAuthContextHeader);
+
+                // Create preauth integrity data with salt
+                var preAuthData = new List<byte>();
+
+                // Add preauth integrity data - use explicit cast to get the underlying ushort value
+                preAuthData.AddRange(new byte[] {
+                    0x01, 0x00, // HashAlgorithmCount = 1
+                    0x20, 0x00, // SaltLength = 32 (changed from 0x00, 0x00)
+                    (byte)((ushort)SMB2_HASH_ALGORITHM.SMB2_SHA_512 & 0xFF),
+                    (byte)((ushort)SMB2_HASH_ALGORITHM.SMB2_SHA_512 >> 8)
+                });
+
+                // Generate cryptographically secure salt
+                byte[] salt = new byte[32];
+                using (var rng = RandomNumberGenerator.Create())
+                {
+                    rng.GetBytes(salt);
+                }
+
+                preAuthData.AddRange(salt);
+
+                fullRequest.AddRange(preAuthData);
+
+                // Pad to next 8-byte boundary
+                int nextPadding = CalculatePadding(fullRequest.Count);
+                ApplyPadding(fullRequest, nextPadding);
+
+                // Add ENCRYPTION_CAPABILITIES context
+                SMB2_NEGOTIATE_CONTEXT encryptContext = new SMB2_NEGOTIATE_CONTEXT();
+                encryptContext.ContextType = SMB2_NEGOTIATE_CONTEXT_TYPES.SMB2_ENCRYPTION_CAPABILITIES;
+                encryptContext.DataLength = 4; // CipherCount(2) + Ciphers(2)
+                encryptContext.Reserved = 0;
+
+                byte[] encryptContextHeader = StructureToByteArray(encryptContext);
+                fullRequest.AddRange(encryptContextHeader);
+
+                // Add encryption capabilities data - use explicit cast to get the underlying ushort value
+                byte[] encryptData = new byte[] {
+                    0x01, 0x00, // CipherCount = 1
+                    (byte)((ushort)SMB2_ENCRYPTION_ALGORITHM.SMB2_ENCRYPTION_AES128_GCM & 0xFF),
+                    (byte)((ushort)SMB2_ENCRYPTION_ALGORITHM.SMB2_ENCRYPTION_AES128_GCM >> 8)  // Ciphers[0] = AES-128-GCM (0x0002)
+                };
+
+                fullRequest.AddRange(encryptData);
+
+                return fullRequest.ToArray();
+            }
+            else
+            {
+                // For pre-SMB 3.1.1 dialects, use the simple approach
+                request.ClientStartTime = 0;
+                return StructureToByteArray(request);
+            }
+        }
+
+        private static void ApplyPadding(List<byte> request, int padding)
+        {
+            for (int i = 0; i < padding; i++)
+            {
+                request.Add(0);
+            }
+        }
+
+        private static int CalculatePadding(int length)
+        {
+            return (8 - (length % 8)) % 8;
+        }
+
+        // Helper method to convert a structure to a byte array
+        private byte[] StructureToByteArray<T>(T structure) where T : struct
+        {
+            int size = Marshal.SizeOf(structure);
+            byte[] arr = new byte[size];
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+
+            try
+            {
+                Marshal.StructureToPtr(structure, ptr, true);
+                Marshal.Copy(ptr, arr, 0, size);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
+
+            return arr;
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+        public byte[] GenerateSmb2HeaderFromCommand(SBM2_Command command)
+        {
+            SMB2_Header header = new SMB2_Header();
+            header.ProtocolId = 0x424D53FE;
+            header.Command = (UInt16)command;  // Cast to UInt16 instead of byte
+            header.StructureSize = 64;
+            header.MessageId = _messageId++;
+            header.Reserved = 0xFEFF;
+            header.SessionId = _sessionid;
+            header.TreeId = _TreeId;
+            return getBytes(header);
+        }
 
         // https://msdn.microsoft.com/en-us/library/cc246529.aspx
         [StructLayout(LayoutKind.Explicit)]
@@ -61,27 +343,7 @@ namespace PingCastle.Scanners
             [FieldOffset(56)]
             public UInt64 Signature2;
         }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
-        public struct SMB2_NegotiateRequest
-        {
-            [FieldOffset(0)]
-            public UInt16 StructureSize;
-            [FieldOffset(2)]
-            public UInt16 DialectCount;
-            [FieldOffset(4)]
-            public UInt16 SecurityMode;
-            [FieldOffset(6)]
-            public UInt16 Reserved;
-            [FieldOffset(8)]
-            public UInt32 Capabilities;
-            [FieldOffset(12)]
-            public Guid ClientGuid;
-            [FieldOffset(28)]
-            public UInt64 ClientStartTime;
-            [FieldOffset(36)]
-            public UInt16 DialectToTest;
-        }
-
+        
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
         public struct SMB2_NegotiateResponse
         {
@@ -235,22 +497,6 @@ namespace PingCastle.Scanners
             public uint Index { get; set; }
         }
 
-        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public byte[] GenerateSmb2HeaderFromCommand(SBM2_Command command)
-        {
-            SMB2_Header header = new SMB2_Header();
-            header.ProtocolId = 0x424D53FE;
-            header.Command = (byte)command;
-            header.StructureSize = 64;
-            header.MessageId = _messageId++;
-            header.Reserved = 0xFEFF;
-            header.SessionId = _sessionid;
-            header.TreeId = _TreeId;
-            return getBytes(header);
-        }
-
-
-
         public static byte[] getBytes(object structure)
         {
             int size = Marshal.SizeOf(structure);
@@ -261,20 +507,6 @@ namespace PingCastle.Scanners
             Marshal.Copy(ptr, arr, 0, size);
             Marshal.FreeHGlobal(ptr);
             return arr;
-        }
-
-        // MS-SMB2  2.2.3 SMB2 NEGOTIATE Request
-        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public static byte[] GetNegotiateMessageSmbv2(int DialectToTest)
-        {
-            SMB2_NegotiateRequest request = new SMB2_NegotiateRequest();
-            request.StructureSize = 36;
-            request.DialectCount = 1;
-            request.SecurityMode = 1; // signing enabled
-            request.ClientGuid = Guid.NewGuid();
-            request.DialectToTest = (UInt16)DialectToTest;
-            request.Capabilities = 1; //DFS
-            return getBytes(request);
         }
 
         // MS-SMB2  2.2.3 SMB2 NEGOTIATE Request
@@ -359,99 +591,6 @@ namespace PingCastle.Scanners
             return (byte)(size / 0x100);
         }
 
-        static byte[] AESEncrypt(byte[] key, byte[] iv, byte[] data)
-        {
-            using (MemoryStream ms = new MemoryStream())
-            {
-                var aes = Rijndael.Create();
-
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.None;
-
-                using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(key, iv), CryptoStreamMode.Write))
-                {
-                    cs.Write(data, 0, data.Length);
-                    cs.FlushFinalBlock();
-
-                    return ms.ToArray();
-                }
-            }
-        }
-
-        static byte[] Rol(byte[] b)
-        {
-            byte[] r = new byte[b.Length];
-            byte carry = 0;
-
-            for (int i = b.Length - 1; i >= 0; i--)
-            {
-                ushort u = (ushort)(b[i] << 1);
-                r[i] = (byte)((u & 0xff) + carry);
-                carry = (byte)((u & 0xff00) >> 8);
-            }
-
-            return r;
-        }
-
-        byte[] AESCMAC(byte[] key, byte[] data)
-        {
-            // SubKey generation
-            // step 1, AES-128 with key K is applied to an all-zero input block.
-            byte[] L = AESEncrypt(key, new byte[16], new byte[16]);
-
-            // step 2, K1 is derived through the following operation:
-            byte[] FirstSubkey = Rol(L); //If the most significant bit of L is equal to 0, K1 is the left-shift of L by 1 bit.
-            if ((L[0] & 0x80) == 0x80)
-                FirstSubkey[15] ^= 0x87; // Otherwise, K1 is the exclusive-OR of const_Rb and the left-shift of L by 1 bit.
-
-            // step 3, K2 is derived through the following operation:
-            byte[] SecondSubkey = Rol(FirstSubkey); // If the most significant bit of K1 is equal to 0, K2 is the left-shift of K1 by 1 bit.
-            if ((FirstSubkey[0] & 0x80) == 0x80)
-                SecondSubkey[15] ^= 0x87; // Otherwise, K2 is the exclusive-OR of const_Rb and the left-shift of K1 by 1 bit.
-
-            byte[] d = new byte[((int)data.Length / 16) * 16];
-            Array.Copy(data, d, data.Length);
-
-            // MAC computing
-            if (((data.Length != 0) && (data.Length % 16 == 0)) == true)
-            {
-                // If the size of the input message block is equal to a positive multiple of the block size (namely, 128 bits),
-                // the last block shall be exclusive-OR'ed with K1 before processing
-                for (int j = 0; j < FirstSubkey.Length; j++)
-                    d[d.Length - 16 + j] ^= FirstSubkey[j];
-            }
-            else
-            {
-                // Otherwise, the last block shall be padded with 10^i
-
-                d[data.Length] = 0x80;
-
-                for (int i = 1; i < 16 - data.Length % 16; i++)
-                {
-                    d[data.Length + i] = 0;
-                }
-
-                // and exclusive-OR'ed with K2
-                for (int j = 0; j < SecondSubkey.Length; j++)
-                    d[d.Length - 16 + j] ^= SecondSubkey[j];
-            }
-
-            // The result of the previous process will be the input of the last encryption.
-            byte[] encResult = AESEncrypt(key, new byte[16], d);
-
-            byte[] HashValue = new byte[16];
-            Array.Copy(encResult, encResult.Length - HashValue.Length, HashValue, 0, HashValue.Length);
-
-            return HashValue;
-        }
-
-        public byte[] BuildNegotiatePacket(int dialect)
-        {
-            byte[] header = GenerateSmb2HeaderFromCommand(SBM2_Command.SMB2_NEGOTIATE);
-            byte[] negotiatemessage = GetNegotiateMessageSmbv2(dialect);
-            return BuildPacket(header, negotiatemessage);
-        }
-
         public byte[] BuildSessionSetupPacket(byte[] NTLMSSPMessage, byte[] MIC)
         {
             int MIClen = (MIC == null ? 0 : MIC.Length + 4);
@@ -485,11 +624,36 @@ namespace PingCastle.Scanners
         public byte[] ReadPacket()
         {
             byte[] netbios = new byte[4];
-            if (_stream.Read(netbios, 0, netbios.Length) != netbios.Length)
-                throw new Smb2NotWellFormatedException(_server);
-            int size = netbios[0] << 24 | netbios[1] << 16 | netbios[2] << 8 | netbios[3] << 0;
+            int bytesRead = 0;
+            int totalRead = 0;
+
+            // Read the full NetBIOS header (4 bytes)
+            while (totalRead < 4)
+            {
+                bytesRead = _stream.Read(netbios, totalRead, netbios.Length - totalRead);
+                if (bytesRead == 0)
+                    throw new IOException("Connection closed by remote host");
+                totalRead += bytesRead;
+            }
+
+            // NetBIOS header format: first byte is message type, next 3 bytes are length
+            int size = ((netbios[1] & 0xFF) << 16) | ((netbios[2] & 0xFF) << 8) | (netbios[3] & 0xFF);
+
+            if (size == 0)
+                return new byte[0];
+
             byte[] output = new byte[size];
-            _stream.Read(output, 0, size);
+            totalRead = 0;
+
+            // Read the entire message
+            while (totalRead < size)
+            {
+                bytesRead = _stream.Read(output, totalRead, size - totalRead);
+                if (bytesRead == 0)
+                    throw new IOException("Connection closed while reading message body");
+                totalRead += bytesRead;
+            }
+
             return output;
         }
 
@@ -518,12 +682,23 @@ namespace PingCastle.Scanners
                     continue;
                 size += array.Length;
             }
+
+            // NetBIOS header: 4 bytes for size (size is the length WITHOUT the 4-byte header)
             byte[] output = new byte[size + 4];
-            var byteSize = BitConverter.GetBytes(size);
-            output[0] = byteSize[3];
-            output[1] = byteSize[2];
-            output[2] = byteSize[1];
-            output[3] = byteSize[0];
+
+            // NetBIOS message header (first byte should be 0 for regular message)
+            output[0] = 0;
+
+            // Size in NetBIOS format (the 3 remaining bytes represent the size)
+            if (size > 0xFFFFFF)
+            {
+                throw new InvalidOperationException("SMB message too large");
+            }
+
+            output[1] = (byte)((size >> 16) & 0xFF);  // Most significant byte
+            output[2] = (byte)((size >> 8) & 0xFF);   // Middle byte
+            output[3] = (byte)(size & 0xFF);          // Least significant byte
+
             int offset = 4;
             foreach (var array in bytes)
             {
@@ -532,6 +707,7 @@ namespace PingCastle.Scanners
                 Array.Copy(array, 0, output, offset, array.Length);
                 offset += array.Length;
             }
+
             return output;
         }
 
@@ -752,6 +928,7 @@ namespace PingCastle.Scanners
             TcpClient client = new TcpClient();
             client.ReceiveTimeout = 500;
             client.SendTimeout = 500;
+
             try
             {
                 client.Connect(server, 445);
@@ -760,6 +937,7 @@ namespace PingCastle.Scanners
             {
                 throw new SmbPortClosedException(server);
             }
+
             try
             {
                 NetworkStream stream = client.GetStream();
@@ -767,13 +945,13 @@ namespace PingCastle.Scanners
                 var smb2 = new Smb2Protocol(stream, server);
                 smb2.LogPrefix = logPrefix;
                 var negotiateresponse = smb2.SendNegotiateRequest(dialect);
+
                 if ((negotiateresponse.SecurityMode & 1) != 0)
                 {
                     securityMode = SMBSecurityModeEnum.SmbSigningEnabled;
-
                     if ((negotiateresponse.SecurityMode & 2) != 0)
                     {
-                        securityMode |= SMBSecurityModeEnum.SmbSigningRequired;
+                        securityMode = SMBSecurityModeEnum.SmbSigningRequired;
                     }
                 }
                 else
@@ -784,9 +962,35 @@ namespace PingCastle.Scanners
                 Trace.WriteLine(logPrefix + "Checking " + server + " for SMBV2 dialect 0x" + dialect.ToString("X2") + " = Supported");
                 return true;
             }
-            catch (Exception)
+            catch (Win32Exception ex)
             {
-                throw new Smb2NotSupportedException(server);
+                // Handle specific Win32 exceptions differently 
+                Trace.WriteLine(logPrefix + "Checking " + server + " for SMBV2 dialect 0x" + dialect.ToString("X2") +
+                              " = Win32 error: 0x" + ex.NativeErrorCode.ToString("X8") + " - " + ex.Message);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // This gives us details on what's failing in our implementation
+                Trace.WriteLine(logPrefix + "Checking " + server + " for SMBV2 dialect 0x" + dialect.ToString("X2") +
+                              " = Exception error: " + ex.GetType().Name + " - " + ex.Message);
+
+                // For debugging purposes, log the stack trace too
+                Trace.WriteLine(logPrefix + "Stack trace: " + ex.StackTrace);
+
+                if (dialect == (int)SMB2_DIALECTS.SMB2_DIALECT_3_1_1)
+                {
+                    // Special handling for SMB 3.1.1
+                    Trace.WriteLine(logPrefix + "SMB 3.1.1 specific error: " + ex.Message);
+                    return false;
+                }
+
+                // For other dialects, maintain the original behavior
+                return false;
+            }
+            finally
+            {
+                client.Close();
             }
         }
 

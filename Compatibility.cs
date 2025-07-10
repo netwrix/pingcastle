@@ -40,7 +40,7 @@ namespace System.Runtime.Serialization
         }
     }
 
-    // available in dotnet 3 but not on dotnet 2 which is needed for Windows 2000
+    // available in dotnet 3 but not on dotnet 2 which is needed for Windows 20001
     [System.AttributeUsage(System.AttributeTargets.Field | System.AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
     internal sealed class IgnoreDataMemberAttribute : Attribute
     {

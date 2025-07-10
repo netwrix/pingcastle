@@ -30,8 +30,6 @@ namespace PingCastle.ADWS
             if (bv_val == IntPtr.Zero)
                 return null;
             return Marshal.PtrToStringAuto(bv_val, bv_len);
-            /*var bytes = GetByteArray();
-            return Encoding.UTF8.GetString(bytes, 0, bytes.Length);*/
 
         }
 

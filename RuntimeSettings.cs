@@ -1,11 +1,10 @@
-﻿using PingCastle.ADWS;
-using PingCastle.Exports;
-using PingCastle.Report;
+﻿using PingCastle.Exports;
 using PingCastle.Scanners;
 using PingCastle.Cloud.Common;
 using PingCastle.Cloud.Credentials;
 using PingCastle.Cloud.RESTServices.Azure;
 using PingCastle.Cloud.Tokens;
+using PingCastle.UserInterface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,13 +12,11 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
 using System.Security;
-using PingCastleCommon;
 
 namespace PingCastle
 {
+
     public enum DisplayState
     {
         Exit,
@@ -30,6 +27,7 @@ namespace PingCastle
         AskForScannerParameter,
         ProtocolMenu,
         ExportMenu,
+        PrivilegedModeMenu
     }
 
     public class RuntimeSettings
@@ -55,6 +53,10 @@ namespace PingCastle
 
         public string InitForExportAsGuest { get; set; }
 
+        public bool IsPrivilegedMode { get; set; }
+
+        public bool IsAgentLicense { get; set; }
+
         public string sendXmlTo;
         public string sendHtmlTo;
         public string sendAllTo;
@@ -65,6 +67,7 @@ namespace PingCastle
         public bool ExploreTerminalDomains;
         public bool ExploreForestTrust;
         public List<string> DomainToNotExplore;
+        public List<string> AntivirusCustomServiceNames;
         public bool EncryptReport = false;
         public string mailNotification;
         public string smtpLogin;
@@ -77,6 +80,8 @@ namespace PingCastle
         public bool AnalyzeReachableDomains;
         public string botPipe;
 
+        private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
+
         internal string privateKey = null;
         internal string tenantid = null;
         internal string clientid = null;
@@ -86,33 +91,45 @@ namespace PingCastle
         internal bool p12passSet = false;
         internal bool usePrt = false;
 
+        public void SetPrivateKey(string privateKey) => this.privateKey = privateKey;
+        public void SetTenantId(string tenantId) => tenantid = tenantId;
+        public void SetClientId(string clientId) => clientid = clientId;
+        public void SetThumbprint(string thumbPrint) => thumbprint = thumbPrint;
+        public void SetP12File(string p12File) => p12file = p12File;
+        public void SetP12Pass(string p12Pass)
+        {
+            p12pass = p12Pass;
+            p12passSet = true;
+        }
+        public void SetUsePrt(bool usePrt) => this.usePrt = usePrt;
+
         private bool CheckCertificate()
         {
             if (!string.IsNullOrEmpty(thumbprint) || !string.IsNullOrEmpty(privateKey))
             {
                 if (string.IsNullOrEmpty(thumbprint))
                 {
-                    WriteInRed("--thumbprint must be completed when --private-key is set");
+                    WriteError("--thumbprint must be completed when --private-key is set");
                     return false;
                 }
                 if (string.IsNullOrEmpty(privateKey))
                 {
-                    WriteInRed("--private-key must be completed when --thumbprint is set");
+                    WriteError("--private-key must be completed when --thumbprint is set");
                     return false;
                 }
                 if (string.IsNullOrEmpty(clientid))
                 {
-                    WriteInRed("--clientid must be set when certificate authentication is configured");
+                    WriteError("--clientid must be set when certificate authentication is configured");
                     return false;
                 }
                 if (string.IsNullOrEmpty(tenantid))
                 {
-                    WriteInRed("--tenantid must be set when certificate authentication is configured");
+                    WriteError("--tenantid must be set when certificate authentication is configured");
                     return false;
                 }
                 if (!string.IsNullOrEmpty(p12file))
                 {
-                    WriteInRed("--p12-file cannot be combined with --private-key");
+                    WriteError("--p12-file cannot be combined with --private-key");
                     return false;
                 }
             }
@@ -160,8 +177,8 @@ namespace PingCastle
                 }
                 if (string.IsNullOrEmpty(Server))
                 {
-                    WriteInRed("This computer is not connected to a domain. The program couldn't guess the domain or server to connect.");
-                    WriteInRed("Please run again this program with the flag --server <my.domain.com> or --server <mydomaincontroller.my.domain.com>");
+                    WriteError("This computer is not connected to a domain. The program couldn't guess the domain or server to connect.");
+                    WriteError("Please run again this program with the flag --server <my.domain.com> or --server <mydomaincontroller.my.domain.com>");
                     return DisplayState.Exit;
                 }
                 if (!string.IsNullOrEmpty(User))
@@ -226,7 +243,7 @@ namespace PingCastle
                 }
                 if (!Directory.Exists(InputDirectory))
                 {
-                    WriteInRed("No input directory has been provided");
+                    WriteError("No input directory has been provided");
                     return DisplayState.Exit;
                 }
             }
@@ -244,24 +261,25 @@ namespace PingCastle
         {
             var scanners = PingCastleFactory.GetAllScanners();
 
-            var choices = new List<ConsoleMenuItem>();
+            var choices = new List<MenuItem>();
             foreach (var scanner in scanners)
             {
                 Type scannerType = scanner.Value;
                 IScanner iscanner = PingCastleFactory.LoadScanner(scannerType);
                 string description = iscanner.Description;
-                choices.Add(new ConsoleMenuItem(scanner.Key, description));
+                choices.Add(new MenuItem(scanner.Key, description));
             }
-            choices.Sort((ConsoleMenuItem a, ConsoleMenuItem b)
+            choices.Sort((MenuItem a, MenuItem b)
                 =>
             {
                 return String.Compare(a.Choice, b.Choice);
             }
             );
-            ConsoleMenu.Notice = "WARNING: Checking a lot of workstations may raise security alerts.";
-            ConsoleMenu.Title = "Select a scanner";
-            ConsoleMenu.Information = "What scanner whould you like to run ?";
-            int choice = ConsoleMenu.SelectMenuCompact(choices, 1);
+            _ui.Notice = "WARNING: Checking a lot of workstations may raise security alerts.";
+            _ui.Title = "Select a scanner";
+            _ui.Information = "What scanner would you like to run ?";
+            _ui.IsCompactStyle = true;
+            int choice = _ui.SelectMenu(choices, 1);
             if (choice == 0)
             {
                 return DisplayState.Exit;
@@ -270,27 +288,64 @@ namespace PingCastle
             return DisplayState.Run;
         }
 
+        public DisplayState DisplayPrivilegedModeMenu()
+        {
+            var choices = new List<MenuItem>
+            {
+                new MenuItem("Yes") {LongDescription = "Include checks that require high levels of Active Directory access"},
+                new MenuItem("No") {LongDescription = "(Default) Do not include specific checks that require high levels of Active Directory access"}
+            };
+
+            _ui.Title = "Select the healthcheck mode";
+            _ui.Information = "Do you want to use privileged mode?";
+            _ui.IsAddExitItem = false;
+
+            var choice = _ui.SelectMenu(choices, 2);
+            IsPrivilegedMode = choice == 1;
+
+            return DisplayState.Run;
+        }
+
+        public DisplayState DisplayAskAgentLicenseMenu()
+        {
+            var choices = new List<MenuItem>
+            {
+                new MenuItem("No") {LongDescription = "Default mode. License from config file"},
+                new MenuItem("Yes") {LongDescription = "An agent license will be used"}
+            };
+
+            _ui.Title = "Please specify the license type";
+            _ui.Information = "Do you want to use an agent license?";
+            _ui.IsAddExitItem = false;
+
+            var choice = _ui.SelectMenu(choices, 1);
+            IsAgentLicense = choice == 2;
+
+            return DisplayState.Run;
+        }
+
         public DisplayState DisplayExportMenu()
         {
             var exports = PingCastleFactory.GetAllExport();
 
-            var choices = new List<ConsoleMenuItem>();
+            var choices = new List<MenuItem>();
             foreach (var export in exports)
             {
                 Type exportType = export.Value;
                 IExport iexport = PingCastleFactory.LoadExport(exportType);
                 string description = iexport.Description;
-                choices.Add(new ConsoleMenuItem(export.Key, description));
+                choices.Add(new MenuItem(export.Key, description));
             }
-            choices.Sort((ConsoleMenuItem a, ConsoleMenuItem b)
+            choices.Sort((MenuItem a, MenuItem b)
                 =>
             {
                 return String.Compare(a.Choice, b.Choice);
             }
             );
-            ConsoleMenu.Title = "Select an export";
-            ConsoleMenu.Information = "What export whould you like to run ?";
-            int choice = ConsoleMenu.SelectMenu(choices, 1);
+
+            _ui.Title = "Select an export";
+            _ui.Information = "What export whould you like to run ?";
+            int choice = _ui.SelectMenu(choices, 1);
             if (choice == 0)
             {
                 return DisplayState.Exit;
@@ -302,18 +357,19 @@ namespace PingCastle
         DisplayState DisplayAskServer()
         {
             var defaultServer = IPGlobalProperties.GetIPGlobalProperties().DomainName;
+
             while (true)
             {
                 if (!String.IsNullOrEmpty(defaultServer) || string.Equals(defaultServer, "(None)", StringComparison.OrdinalIgnoreCase))
                 {
-                    ConsoleMenu.Information = "Please specify the domain or server to investigate (default:" + defaultServer + ")";
+                    _ui.Information = "Please specify the domain or server to investigate (default:" + defaultServer + ")";
                 }
                 else
                 {
-                    ConsoleMenu.Information = "Please specify the domain or server to investigate:";
+                    _ui.Information = "Please specify the domain or server to investigate:";
                 }
-                ConsoleMenu.Title = "Select a domain or server";
-                Server = ConsoleMenu.AskForString();
+                _ui.Title = "Select a domain or server";
+                Server = _ui.AskForString();
                 if (!String.IsNullOrEmpty(Server))
                 {
                     break;
@@ -327,22 +383,61 @@ namespace PingCastle
             return DisplayState.Run;
         }
 
+        public DisplayState AskAgentLogin()
+        {
+            if(!string.IsNullOrEmpty(apiEndpoint) && !string.IsNullOrEmpty(apiKey))
+                return DisplayState.Run;
+
+            _ui.Title = "Please specify the agent login settings:";
+            while(true)
+            {
+                if(string.IsNullOrEmpty(apiEndpoint))
+                {
+                    _ui.Information = "Enter the agent api endpoint:";
+                    apiEndpoint = _ui.AskForString(false);
+                    
+                    if (!Uri.TryCreate(apiEndpoint, UriKind.Absolute, out var uri))
+                    {
+                        apiEndpoint = null;
+                        _ui.Notice = "Unable to convert api-endpoint into an URI. Please try again.";
+                        continue;
+                    }
+
+                    _ui.Notice = "";
+
+                    if (!string.IsNullOrEmpty(apiKey))
+                        break;
+                }
+                else if(string.IsNullOrEmpty(apiKey))
+                {
+                    _ui.Information = "Enter the agent api key:";
+                    apiKey = _ui.AskForString(false);
+                    if(string.IsNullOrEmpty(apiKey))
+                        continue;
+
+                    break;
+                }
+            }
+
+            return DisplayState.Run;
+        }
+       
 
         private DisplayState DisplayAskAzureADCredential()
         {
-            List<ConsoleMenuItem> choices = new List<ConsoleMenuItem>() {
-                new ConsoleMenuItem("askcredential","Ask credentials", "The identity may be asked multiple times during the healthcheck."),
+            List<MenuItem> choices = new List<MenuItem>() {
+                new MenuItem("askcredential","Ask credentials", "The identity may be asked multiple times during the healthcheck."),
             };
 
             var tokens = TokenFactory.GetRegisteredPRTIdentities();
             if (tokens.Count > 0)
             {
-                choices.Insert(0, new ConsoleMenuItem("useprt", "Use SSO with the PRT stored on this computer", "Use the Primary Refresh Token available on this computer to connect automatically without credential prompting."));
+                choices.Insert(0, new MenuItem("useprt", "Use SSO with the PRT stored on this computer", "Use the Primary Refresh Token available on this computer to connect automatically without credential prompting."));
             }
 
-            ConsoleMenu.Title = "Which identity do you want to use?";
-            ConsoleMenu.Information = "The program will use the choosen identity to perform the operation on the Azure Tenant.";
-            int choice = ConsoleMenu.SelectMenu(choices);
+            _ui.Title = "Which identity do you want to use?";
+            _ui.Information = "The program will use the coosen identity to perform the operation on the Azure Tenant.";
+            int choice = _ui.SelectMenu(choices);
             if (choice == 0)
                 return DisplayState.Exit;
 
@@ -376,24 +471,24 @@ namespace PingCastle
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _ui.DisplayMessage(ex.Message);
                 return DisplayState.Exit;
             }
             HttpClientHelper.LogComment = null;
 
 
-            List<ConsoleMenuItem> choices = new List<ConsoleMenuItem>();
+            List<MenuItem> choices = new List<MenuItem>();
             foreach (var t in p.responses)
             {
                 foreach (var t2 in t.content.value)
                 {
-                    choices.Add(new ConsoleMenuItem(t2.tenantId, t2.displayName + " (" + t2.countryCode + ")"));
+                    choices.Add(new MenuItem(t2.tenantId, t2.displayName + " (" + t2.countryCode + ")"));
                 }
             }
 
-            ConsoleMenu.Title = "Which tenant do you want to use?";
-            ConsoleMenu.Information = "The program will use the choosen tenant to perform the operation on the Azure Tenant.";
-            int choice = ConsoleMenu.SelectMenu(choices);
+            _ui.Title = "Which tenant do you want to use?";
+            _ui.Information = "The program will use the chosen tenant to perform the operation on the Azure Tenant.";
+            int choice = _ui.SelectMenu(choices);
             if (choice == 0)
                 return DisplayState.Exit;
 
@@ -407,10 +502,10 @@ namespace PingCastle
         {
             while (String.IsNullOrEmpty(InputFile) || !File.Exists(InputFile))
             {
-                ConsoleMenu.Title = "Select an existing file";
-                ConsoleMenu.Information = "Please specify the file to open.";
-                InputFile = ConsoleMenu.AskForString();
-                ConsoleMenu.Notice = "The file " + InputFile + " was not found";
+                _ui.Title = "Select an existing file";
+                _ui.Information = "Please specify the file to open.";
+                InputFile = _ui.AskForString();
+                _ui.Notice = "The file " + InputFile + " was not found";
             }
             return DisplayState.Run;
         }
@@ -419,10 +514,10 @@ namespace PingCastle
         {
             while (String.IsNullOrEmpty(InputDirectory) || !Directory.Exists(InputDirectory))
             {
-                ConsoleMenu.Title = "Select an existing directory";
-                ConsoleMenu.Information = "Please specify the directory to open.";
-                InputFile = ConsoleMenu.AskForString();
-                ConsoleMenu.Notice = "The directory " + InputFile + " was not found";
+                _ui.Title = "Select an existing directory";
+                _ui.Information = "Please specify the directory to open.";
+                InputFile = _ui.AskForString();
+                _ui.Notice = "The directory " + InputFile + " was not found";
             }
             return DisplayState.Run;
         }
@@ -431,56 +526,27 @@ namespace PingCastle
         {
             while (String.IsNullOrEmpty(InitForExportAsGuest))
             {
-                ConsoleMenu.Title = "Select the seed";
-                ConsoleMenu.Information = @"To start the export, the program need to have a first user. It can be its objectId or its UPN (firstname.lastname@domain.com). The program accept many values if there are separted by a comma.";
-                InitForExportAsGuest = ConsoleMenu.AskForString();
+                _ui.Title = "Select the seed";
+                _ui.Information = @"To start the export, the program need to have a first user. It can be its objectId or its UPN (firstname.lastname@domain.com). The program accept many values if there are separted by a comma.";
+                InitForExportAsGuest = _ui.AskForString();
 
                 // error message in case the query is not complete
-                ConsoleMenu.Notice = "The seed cannot be empty";
+                _ui.Notice = "The seed cannot be empty";
             }
             return DisplayState.Run;
         }
 
         private bool AskCredential()
         {
-            Password = new SecureString();
-            Console.WriteLine("Enter password: ");
-            ConsoleKeyInfo nextKey = Console.ReadKey(true);
-
-            while (nextKey.Key != ConsoleKey.Enter)
-            {
-                if (nextKey.Key == ConsoleKey.Backspace)
-                {
-                    if (Password.Length > 0)
-                    {
-                        Password.RemoveAt(Password.Length - 1);
-                        // erase the last * as well
-                        Console.Write(nextKey.KeyChar);
-                        Console.Write(" ");
-                        Console.Write(nextKey.KeyChar);
-                    }
-                }
-                else
-                {
-                    Password.AppendChar(nextKey.KeyChar);
-                    Console.Write("*");
-                }
-                nextKey = Console.ReadKey(true);
-            }
-            Console.WriteLine();
+            Password = _ui.ReadInputPassword("Enter the password");
             return true;
         }
 
-
-
-
         #endregion
-        private void WriteInRed(string data)
+        private void WriteError(string data)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(data);
+            _ui.DisplayError(data);
             Trace.WriteLine("[Red]" + data);
-            Console.ResetColor();
         }
     }
 }

@@ -4,16 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using Newtonsoft.Json;
-using PingCastle.Rules;
-using PingCastle.template;
 using PingCastle.Cloud.Data;
-using PingCastle.Cloud.Rules;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
-using PingCastle.Healthcheck;
 
 namespace PingCastle.Report
 {

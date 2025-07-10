@@ -99,10 +99,8 @@ namespace PingCastle.Data
             XmlDocument xmlDoc = GetXmlDocumentClearText(data);
 
             XmlElement elementToEncrypt = xmlDoc.DocumentElement;
-            Rijndael sessionKey = null;
 
-            // Create a 256 bit Rijndael key.
-            sessionKey = new RijndaelManaged();
+            using var sessionKey = Aes.Create();
             sessionKey.KeySize = 256;
 
             EncryptedXml eXml = new EncryptedXml();

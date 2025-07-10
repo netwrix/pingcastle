@@ -180,7 +180,8 @@ function ShowTooltip(target, x, y) {
     var network = getData('Network').filter(function (element) {
         return element.start >= view.start && element.end <= view.end && (element.start != view.start || element.end != view.end) && element.start <= ip && ip <= element.end && sourceExcluded.indexOf(element.source) === -1;
     });
-    tooltip.css({ top: y, left: x + 20 });
+    target.parent().css('position', 'relative');
+    tooltip.css({position: 'absolute', top: y, left: x + 20 });
     tooltip.attr('data-bs-original-title', function (i, val) {
         if (network.length == 0) return 'No network found';
         var data = 'Network:<br>';

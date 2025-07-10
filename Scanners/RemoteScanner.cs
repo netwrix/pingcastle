@@ -5,6 +5,8 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 // Contribution from woundride(https://github.com/woundride)
+
+using PingCastle.UserInterface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,8 +15,10 @@ using System.Text;
 
 namespace PingCastle.Scanners
 {
+
     public class RemoteScanner : ScannerBase
     {
+        private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
 
         public override string Name { get { return "remote"; } }
         public override string Description { get { return "Check if a remote desktop solution is installed on the computer."; } }
@@ -68,12 +72,12 @@ namespace PingCastle.Scanners
             customService.Clear();
             do
             {
-                ConsoleMenu.Title = "Enter additional Service Name to check";
-                ConsoleMenu.Information = @"This scanner enumerate all well known services attributed to remote desktop solutions.
+                _ui.Title = "Enter additional Service Name to check";
+                _ui.Information = @"This scanner enumerate all well known services attributed to remote desktop solutions.
 You can enter additional service to check. Enter them one by one and complete with an empty line.
 Use the name provided in the service list. Example: Enter 'TeamViewer5' for the service 'TeamViewer version 5'.
 Or just press enter to use the default.";
-                input = ConsoleMenu.AskForString();
+                input = _ui.AskForString();
                 if (!String.IsNullOrEmpty(input))
                 {
                     if (!customService.Contains(input))
@@ -204,14 +208,6 @@ Or just press enter to use the default.";
                 IntPtr ins = new IntPtr(unmanagedArray.ToInt64() + i * size);
                 mangagedArray[i] = (T)Marshal.PtrToStructure(ins, typeof(T));
             }
-        }
-
-        private static void DisplayAdvancement(string computer, string data)
-        {
-            string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-            if (ScanningMode == 1)
-                Console.WriteLine(value);
-            Trace.WriteLine(value);
         }
     }
 }

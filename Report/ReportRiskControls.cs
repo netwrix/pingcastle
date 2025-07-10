@@ -2,11 +2,21 @@
 using PingCastle.Rules;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace PingCastle.Report
 {
     public abstract class ReportRiskControls<T> : ReportBase where T : IRiskEvaluation
     {
+        protected ADHealthCheckingLicense _license;
+
+        public ReportRiskControls(ADHealthCheckingLicense license)
+        {
+            _license = license;
+        }
+
 
         int GetRulesNumberForCategory(List<HealthcheckRiskRule> rules, RiskRuleCategory category)
         {
@@ -104,12 +114,17 @@ namespace PingCastle.Report
         protected void GenerateRiskModelPanel(List<HealthcheckRiskRule> rules, int numberOfDomain = 1)
         {
             Add(@"
-		<div class=""row d-print-none""><div class=""col-lg-12"">
-			<a data-bs-toggle=""collapse"" data-bs-target=""#riskModel"">
-				<h2>Risk model <i class=""info-mark d-print-none has-tooltip"" data-bs-placement=""bottom"" title="""" data-bs-original-title=""Left-click on the headlines in the boxes for more details."">?</i></h2>
-			</a>
-		</div></div>
-		<div class=""row collapse show d-print-none"" id=""riskModel"">
+		<div class=""row d-print-none"">
+            <div class=""col-lg-12"">
+			    <a> 
+                    <h2 class=""sub-section risk-sub-section"">
+                    Risk model
+                    </h2>
+                </a>
+        <p>Left-click on the headlines in the boxes for more details</p>
+		    </div>
+        </div>
+		<div class=""row cd-print-none"">
 			<div class=""col-md-12 table-responsive"">
 				<table class=""model_table"">
 					<thead><tr><th>Stale Objects</th><th>Privileged accounts</th><th>Trusts</th><th>Anomalies</th></tr></thead>
@@ -219,11 +234,12 @@ namespace PingCastle.Report
 				</table>
 			</div>
 			<div class=""col-md-12"" id=""maturityModel"">
-		Legend: <br>
+		<div class=""mb-2"">Legend: <br></div>
+            <i class=""risk_model_no_detections"">&nbsp;</i> score is 0 - no risk identified<br>
 			<i class=""risk_model_none"">&nbsp;</i> score is 0 - no risk identified but some improvements detected<br>
 			<i class=""risk_model_low"">&nbsp;</i> score between 1 and 10  - a few actions have been identified<br>
 			<i class=""risk_model_medium"">&nbsp;</i> score between 10 and 30 - rules should be looked with attention<br>
-			<i class=""risk_model_high"">&nbsp;</i> score higher than 30 - major risks identified
+			<i class=""risk_model_high"">&nbsp;</i> score higher than 30 - major risks identified<br>
 			</div>
 		</div>");
         }
@@ -359,21 +375,14 @@ namespace PingCastle.Report
             var tokens = GetTokens(details[0]);
             if (tokens == null)
                 return null;
-            for (int i = 1; i < details.Count; i++)
+
+            foreach (var detail in details.Skip(1))
             {
-                var t = GetTokens(details[i]);
-                if (t == null)
+                var curTokens = GetTokens(detail);
+                if (curTokens == null)
                     return null;
-                var toRemove = new List<string>();
-                foreach (var t1 in tokens)
-                {
-                    if (!t.Contains(t1))
-                        toRemove.Add(t1);
-                }
-                foreach (var t1 in toRemove)
-                {
-                    tokens.Remove(t1);
-                }
+
+                tokens.RemoveAll(t => !curTokens.Contains(t));
             }
             return tokens;
         }
@@ -382,18 +391,65 @@ namespace PingCastle.Report
         {
             if (string.IsNullOrEmpty(detail))
                 return null;
-            var tokens = new List<string>();
-            var test = detail.Replace("Domain controller:", "Domain_controller:").Split(' ');
-            if (test.Length <= 1 || !test[0].EndsWith(":"))
+
+            detail = detail.Replace("Domain controller:", "Domain_controller:");
+            
+            var items = detail.Split(' ');
+            if (items.Length <= 1 || !items[0].EndsWith(":"))
                 return null;
-            for (int i = 0; i < test.Length; i++)
+
+            var tokens = new List<string>();
+            foreach (var item in items)
             {
-                if (!string.IsNullOrEmpty(test[i]) && test[i].EndsWith(":"))
+                if (!string.IsNullOrEmpty(item) && item.EndsWith(":"))
                 {
-                    tokens.Add(test[i]);
+                    var itemWithoutDetiailIndex = Regex.Replace(item, "<.*?>", "");
+                    tokens.Add(itemWithoutDetiailIndex);
                 }
             }
             return tokens;
+        }
+              
+        private void AddExtendedDetailInfo(ExtraDetail detail)
+        {
+            if (detail?.DetailItems == null)
+                return;
+
+            AddBeginTooltip(true, true);
+
+            Add($"<div class='text-start'>Details:<br><ul>");
+
+            foreach (var item in detail.DetailItems)
+            {
+                Add("<li>");
+
+                switch (item)
+                {
+                    case ListDetailItem list:
+                        {
+                            Add($"{list.Name}<ul>");
+                            foreach (var value in list.Values)
+                            {
+                                Add("<li>");
+                                AddEncoded(value);
+                                Add("</li>");
+                            }
+                            Add("</ul>");
+                        }
+                        break;
+                    case TextDetailItem text:
+                        {
+                            AddEncoded($"{text.Name}: {text.Value}");
+                        }
+                        break;
+                }
+
+                Add("</li>");
+            }
+
+            Add("</ul></div>");
+
+            AddEndTooltip();
         }
 
         protected void GenerateIndicatorPanelDetail(string category, HealthcheckRiskRule rule, string optionalId = null)
@@ -418,7 +474,10 @@ namespace PingCastle.Report
                         Add(NewLineToBR(hcrule.TechnicalExplanation));
                         Add("</p>\r\n<strong>Advised solution:</strong><p class=\"text-justify\">");
                         Add(NewLineToBR(hcrule.Solution));
-                        Add("</p>\r\n<strong>Points:</strong><p>");
+                        Add("</p>\r\n");
+                        if (_license.IsBasic() && hcrule.RelevantProducts != null)
+                            Add(GenerateRelevantProductsElement(hcrule.RiskId.Replace("-", "_"), hcrule.RelevantProducts));
+                        Add("<strong>Points:</strong><p>");
                         Add(NewLineToBR(hcrule.GetComputationModelString()));
                         Add("</p>\r\n");
                         if (!String.IsNullOrEmpty(hcrule.Documentation))
@@ -457,24 +516,58 @@ namespace PingCastle.Report
                                     Add("<th>Action Plan</th>");
                                 }
                                 Add("</tr></thead><tbody>");
-                                foreach (var d in rule.Details)
+                                foreach (var detail in rule.Details)
                                 {
-                                    if (string.IsNullOrEmpty(d))
+                                    if (string.IsNullOrEmpty(detail))
                                         continue;
                                     Add("<tr>");
-                                    var t = d.Replace("Domain controller:", "Domain_controller:").Split(' ');
+
+                                    var t = detail.Replace("Domain controller:", "Domain_controller:").Split(' ');
+
+                                    var currentDetailIndex = -1;
+                                    var previousDetailIndex = -1;
+
                                     for (int i = 0, j = 0; i < t.Length && j <= tokens.Count; i++)
                                     {
-                                        if (j < tokens.Count && t[i] == tokens[j])
+                                        var item = t[i];
+
+                                        if (item.StartsWith("<"))
+                                        {
+                                            var namePosition = item.IndexOf('>', 1);
+                                            var temp = item.Substring(namePosition + 1);
+
+                                            var strIndex = item.Substring(1, namePosition - 1);
+                                            item = temp;
+                                                                                       
+                                            if (!int.TryParse(strIndex, out currentDetailIndex))
+                                            {
+                                                continue;
+                                            }
+                                        }
+
+                                        if (j < tokens.Count && item == tokens[j])
                                         {
                                             if (j != 0)
+                                            {
+                                                if (previousDetailIndex != -1)
+                                                {
+                                                    AddExtendedDetailInfo(rule.ExtraDetails[previousDetailIndex]);
+                                                    previousDetailIndex = -1;
+                                                }
+
                                                 Add("</td>");
+                                            }
+
+                                            previousDetailIndex = currentDetailIndex;
+                                            currentDetailIndex = -1;
+
                                             j++;
                                             Add("<td>");
+                                           
                                         }
                                         else
                                         {
-                                            Add(t[i]);
+                                            Add(item);
                                             Add(" ");
                                         }
                                     }
@@ -482,7 +575,7 @@ namespace PingCastle.Report
                                     if (ActionPlanOrchestrator != null)
                                     {
                                         Add("<td>");
-                                        ActionPlanOrchestrator.GenerateDetailledActionPlan(sb, rule, hcrule, d);
+                                        ActionPlanOrchestrator.GenerateDetailledActionPlan(sb, rule, hcrule, detail);
                                         Add("</td>");
                                     }
                                     Add("</tr>");
@@ -493,12 +586,51 @@ namespace PingCastle.Report
                             else
                             {
                                 Add("<p>");
-                                Add(String.Join("<br>\r\n", rule.Details.ToArray()));
+                                Add(String.Join("<br>\r\n", rule.Details));
                                 Add("</p>");
                             }
                         }
                     }
                 });
+        }
+
+        protected string GenerateRelevantProductsElement(string ruleName, string relevantProductsVerbiage)
+        {
+            var sb = new StringBuilder(1000);
+            sb.AppendLine($"<div class=\"relevantproductsheader mb-2\" data-bs-toggle=\"collapse\" aria-expanded=\"false\" href=\"#relevantProducts_{ruleName}\" aria-controls=\"relevantProducts_{ruleName}\">");
+            sb.AppendLine("<span class=\"icon-container ms-0\">");
+            sb.AppendLine("<span class=\"icon icon-down\">");
+            sb.AppendLine("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\">");
+            sb.AppendLine("<path d=\"M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z\" />");
+            sb.AppendLine("</svg>");
+            sb.AppendLine("</span>");
+            sb.AppendLine("<span class=\"icon icon-up\">");
+            sb.AppendLine("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\">");
+            sb.AppendLine("<path d=\"M233.4 105.4c12.5-12.5 32.8-12.5 45.3 0l192 192c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L256 173.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l192-192z\" />");
+            sb.AppendLine("</svg>");
+            sb.AppendLine("</span>");
+            sb.AppendLine("</span>");
+            sb.AppendLine("<strong>Relevant Netwrix Products</strong>");
+            sb.AppendLine("</div>");
+            sb.AppendLine($"<div class=\"card-body collapse pb-0 pt-0\" id=\"relevantProducts_{ruleName}\">");
+            sb.AppendLine("<ul class=\"list-unstyled mb-0\">");
+
+            var products = relevantProductsVerbiage.Split(new[] { @"\r\n" }, StringSplitOptions.None);
+            foreach (var product in products)
+            {
+                var parts = product.Split('|');
+                if (ReportBase.RelevantProductsLinks.TryGetValue(parts[0], out string productLink))
+                    sb.AppendLine($"<li class=\"icon-padded-text\">{productLink}{parts[1]}</li>");
+                else
+                    sb.AppendLine($"<li class=\"icon-padded-text\">{product}</li>");
+            }
+
+            sb.AppendLine("</ul>");
+            sb.AppendLine("</div>");
+            sb.AppendLine("<br>");
+            sb.AppendLine("<p></p>\r\n");
+
+            return sb.ToString();
         }
         #endregion indicators
     }

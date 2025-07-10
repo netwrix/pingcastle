@@ -9,11 +9,11 @@ using PingCastle.Data;
 using PingCastle.Graph.Database;
 using PingCastle.Graph.Reporting;
 using PingCastle.misc;
+using PingCastle.UserInterface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
-using System.Security.Principal;
 using System.Threading;
 
 namespace PingCastle.Graph.Export
@@ -49,6 +49,7 @@ namespace PingCastle.Graph.Export
         private ADDomainInfo domainInfo;
         private ADWebService adws;
         private NetworkCredential Credential;
+        private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
 
         public ExportDataFromActiveDirectoryLive(ADDomainInfo domainInfo, ADWebService adws, NetworkCredential credential)
         {
@@ -61,7 +62,7 @@ namespace PingCastle.Graph.Export
         private void DisplayAdvancement(string data)
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-            Console.WriteLine(value);
+            _ui.DisplayMessage(value);
             Trace.WriteLine(value);
         }
 

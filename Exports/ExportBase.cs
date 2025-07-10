@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net;
-using System.Text;
 
 namespace PingCastle.Exports
 {
@@ -14,9 +12,9 @@ namespace PingCastle.Exports
 
         protected RuntimeSettings Settings;
 
-        public void Initialize(RuntimeSettings settings)
+        public void Initialize(RuntimeSettings initialisationSettings)
         {
-            Settings = settings;
+            Settings = initialisationSettings;
         }
 
         public DisplayState QueryForAdditionalParameterInInteractiveMode()
@@ -29,7 +27,7 @@ namespace PingCastle.Exports
         protected static void DisplayAdvancement(string data)
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-            Console.WriteLine(value);
+            UserInterfaceFactory.GetUserInterface().DisplayMessage(value);
             Trace.WriteLine(value);
         }
 

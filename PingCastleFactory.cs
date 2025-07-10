@@ -1,8 +1,8 @@
 ﻿using PingCastle.Data;
 using PingCastle.Exports;
 using PingCastle.Healthcheck;
-using PingCastle.Report;
 using PingCastle.Scanners;
+using PingCastle.UserInterface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,6 +14,7 @@ namespace PingCastle
     {
         public static Dictionary<string, Type> GetAllScanners()
         {
+            IUserInterface ui = UserInterfaceFactory.GetUserInterface();
             var output = new Dictionary<string, Type>();
             foreach (Type type in Assembly.GetAssembly(typeof(PingCastleFactory)).GetExportedTypes())
             {
@@ -27,7 +28,7 @@ namespace PingCastle
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("Unable to load the class " + type + " (" + ex.Message + ")");
+                        ui.DisplayMessage("Unable to load the class " + type + " (" + ex.Message + ")");
                     }
                 }
             }

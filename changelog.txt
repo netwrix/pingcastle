@@ -6,8 +6,8 @@ Migrate from ProvisioningAPI to Graph API
 Fixed some typos
 Merged PR for Windows Server 2025 support: https://github.com/netwrix/pingcastle/pull/269
 Implemented filtering of ASR Rule based on presence of exchange
- 
-3.3.0.1
+
+ 3.3.0.1
 * fix an issue where rule is not displayed when impacted users/computers count is less than 100.
 * fix incorrect identification of Windows LTSC and non-LTSC builds for accurate version detection.
 

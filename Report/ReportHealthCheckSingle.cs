@@ -12,13 +12,10 @@ using PingCastle.Rules;
 using PingCastle.template;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace PingCastle.Report
@@ -29,15 +26,15 @@ namespace PingCastle.Report
         protected HealthcheckData Report;
         public static int MaxNumberUsersInHtmlReport = 100;
         public static string MaxNumberUsersInHtmlReportMessage = "Output limited to {0} items - go to the advanced menu before running the report or add \"--no-enum-limit\" to remove that limit";
-        protected ADHealthCheckingLicense _license;
 
-        public string GenerateReportFile(HealthcheckData report, ADHealthCheckingLicense license, string filename)
+        public ReportHealthCheckSingle(ADHealthCheckingLicense license) : base(license) { }
+        
+        public string GenerateReportFile(HealthcheckData report, string filename)
         {
             Report = report;
-            _license = license;
             report.InitializeReportingData();
             ReportID = GenerateUniqueID(report);
-            Brand(license);
+            Brand(_license);
             return GenerateReportFile(filename);
         }
 
@@ -47,20 +44,14 @@ namespace PingCastle.Report
             return GenerateUniqueID(report.Domain.DomainName, long.Parse(s[s.Length - 1]));
         }
 
-        public string GenerateRawContent(HealthcheckData report, ADHealthCheckingLicense aDHealthCheckingLicense)
+        public string GenerateRawContent(HealthcheckData report)
         {
             Report = report;
-            _license = aDHealthCheckingLicense;
             AdjustReportIfNeeded();
             report.InitializeReportingData();
             sb.Length = 0;
             GenerateContent();
             return sb.ToString();
-        }
-
-        public string GenerateRawContent(HealthcheckData report)
-        {
-            return GenerateRawContent(report, null);
         }
 
         void AdjustReportIfNeeded()
@@ -104,7 +95,7 @@ namespace PingCastle.Report
 
         protected override void GenerateBodyInformation()
         {
-            GenerateNavigation("HealthCheck report", Report.DomainFQDN, Report.GenerationDate);
+            GenerateNavigation("HealthCheck report", Report.DomainFQDN);
             GenerateAbout();
             Add(@"
 <div id=""wrapper"" class=""container well"">
@@ -113,16 +104,18 @@ namespace PingCastle.Report
 			<p>PingCastle reports work best with Javascript enabled.</p>
 		</div>
 	</noscript>
-<div class=""row""><div class=""col-lg-12""><h1>");
-            Add(Report.DomainFQDN);
-            Add(@" - Healthcheck analysis</h1>
-			<h3>Date: ");
-            Add(Report.GenerationDate.ToString("yyyy-MM-dd"));
-            Add(@" - Engine version: ");
-            Add(Report.EngineVersion);
-            Add(@"</h3>
+<div class=""row"">
+        <div class=""col-lg-12"">
+ <div class=""d-flex justify-content-between align-items-center report-header"">
+        <h1>");
+           Add(@"Healthcheck analysis</h1>
+    <h3 class=""report-date"">Date: ");
+Add(Report.GenerationDate.ToString("yyyy-MM-dd"));
+Add(@" - Engine version: ");
+Add(Report.EngineVersion);
+Add(@"</h3></div>
 ");
-            Add(@"<div class=""alert alert-info"">
+            Add(@"<div class=""alert alert-info notif"">
 This report has been generated with the ");
             Add(_license.IsBasic() ? "Basic" : _license.Edition);
             Add(@" Edition of PingCastle");
@@ -131,7 +124,7 @@ This report has been generated with the ");
                 Add(@"&nbsp;<i class=""info-mark d-print-none"" data-bs-placement=""bottom"" data-bs-toggle=""tooltip""");
                 Add(@" title="""" data-bs-original-title=""");
                 AddEncoded(_license.CustomerNotice);
-                Add(@""">?</i>.");
+                Add(@"""></i>.");
             }
             if (_license.IsBasic())
             {
@@ -171,7 +164,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
     <div class=""modal-content"">
       <div class=""modal-header"">
         <h4 class=""modal-title"">Privacy notice</h4>
-        <button type=""button"" class=""btn-close"" data-bs-dismiss=""modal"" aria-label=""Close""></button>
+        <button type=""button"" class=""btn-close btn-close-white"" data-bs-dismiss=""modal"" aria-label=""Close""></button>
       </div>
       <div class=""modal-body"">
         <p>To produce the statistics page, PingCastle will collect anonymous information in order to build this database.</p>
@@ -189,7 +182,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 <p>Informations not listed here are not sent to PingCastle</p>
       </div>
       <div class=""modal-footer"">
-        <button type=""button"" class=""btn btn-secondary"" data-bs-dismiss=""modal"">Close</button>
+        <button type=""button"" class=""btn btn-primary"" data-bs-dismiss=""modal"">Close</button>
       </div>
     </div>
   </div>
@@ -206,7 +199,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 AddHiddenValue(item.Key, item.Value);
             }
-            Add(@"<button type='submit' class='btn btn-default'>Compare with statistics</button></form>");
+            Add(@"<button type='submit' class='btn submit-btn'>Compare with statistics</button></form>");
             AddParagraph("<a href='#' data-bs-toggle='modal' data-bs-target='#privacyNoticeStatistics' class='d-print-none'>Privacy notice</a>");
         }
 
@@ -428,13 +421,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         Add("To reach the maximum level ");
                     }
-                    /*Add("From ");
-                    Add("<span class=\"badge grade-");
-                    Add(level);
-                    Add("\">");
-                    Add("Level ");
-                    Add(level);
-                    Add("</span> ");*/
                     Add(" you need to fix the following rules:</p>");
                     GenerateAccordion("rulesmaturity" + i, () =>
                     {
@@ -916,6 +902,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             AddHeaderText("Nb Disabled", "Indicates the number of accounts set as disabled.");
             AddHeaderText("Nb Active", "Indicates the number of enabled accounts where at least one logon occurred in the last 6 months.");
             AddHeaderText("Nb Inactive", "Indicates the number of enabled accounts without any logon during the last 6 months.");
+            AddHeaderText("Nb AccessDenied", "Indicates the number of accounts to which there is no access from rights restriction.");
             if (!computerView)
             {
                 AddHeaderText("Nb Locked", "Indicates the number of enabled accounts set as locked.");
@@ -952,6 +939,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             AddCellNum(Report.UserAccountData.NumberDisabled);
             AddCellNum(Report.UserAccountData.NumberActive);
             SectionList("usersaccordion", "sectioninactiveuser", Report.UserAccountData.NumberInactive, Report.UserAccountData.ListInactive);
+            AddCellNum(Report.UserAccountData.NumberAccessDenied);
             SectionList("usersaccordion", "sectionlockeduser", Report.UserAccountData.NumberLocked, Report.UserAccountData.ListLocked);
             SectionList("usersaccordion", "sectionneverexpiresuser", Report.UserAccountData.NumberPwdNeverExpires, Report.UserAccountData.ListPwdNeverExpires);
             SectionList("usersaccordion", "sectionsidhistoryuser", Report.UserAccountData.NumberSidHistory, Report.UserAccountData.ListSidHistory);
@@ -1475,6 +1463,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             AddBeginTable("Domain Controllers list");
                             AddHeaderText("Domain controller");
                             AddHeaderText("Operating System");
+                            AddHeaderText("IsGlobalCatalog");
+                            AddHeaderText("IsReadOnly");
                             AddHeaderText("Creation Date", "Indicates the creation date of the underlying computer object.");
                             AddHeaderText("Startup Time");
                             AddHeaderText("Uptime");
@@ -1502,8 +1492,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                                 AddBeginRow();
                                 AddCellText(dc.DCName);
                                 AddCellText(dc.OperatingSystem);
+                                AddCellText(dc.IsGlobalCatalog.HasValue ? dc.IsGlobalCatalog.Value.ToString().ToUpper() : "Unknown");
+                                AddCellText(dc.IsReadOnly.HasValue ? dc.IsReadOnly.Value.ToString().ToUpper() : "Unknown");
                                 AddCellText((dc.CreationDate == DateTime.MinValue ? "Unknown" : dc.CreationDate.ToString("u")));
-                                AddCellText((dc.StartupTime == DateTime.MinValue ? (dc.LastComputerLogonDate.AddDays(60) < DateTime.Now ? "Inactive?" : "Unknown") : (dc.StartupTime.AddMonths(6) < DateTime.Now ? /*"<span class='unticked'>" + */dc.StartupTime.ToString("u")/* + "</span>"*/ : dc.StartupTime.ToString("u"))));
+                                AddCellText((dc.StartupTime == DateTime.MinValue ? (dc.LastComputerLogonDate.AddDays(60) < DateTime.Now ? "Inactive?" : "Unknown") : (dc.StartupTime.AddMonths(6) < DateTime.Now ? dc.StartupTime.ToString("u") : dc.StartupTime.ToString("u"))));
                                 AddCellText((dc.StartupTime == DateTime.MinValue ? "" : (DateTime.Now.Subtract(dc.StartupTime)).Days.ToString("D3") + " days"));
                                 AddCellText((String.IsNullOrEmpty(dc.OwnerName) ? dc.OwnerSID : dc.OwnerName));
                                 AddCellText((dc.HasNullSession ? "YES" : "NO"), true, !dc.HasNullSession);
@@ -2454,7 +2446,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 					<i class=""legend_group"">g</i> group<br>
 					<i class=""legend_ou"">o</i> OU<br>
 					<i class=""legend_gpo"">x</i> GPO<br>
-					<i class=""legend_unknown"">?</i> Other<br>
+					<i class=""legend_unknown""></i> Other<br>
 					Settings: <br>
 					<div class=""custom-control custom-switch"">
 						<input type=""checkbox"" class=""custom-control-input"" checked id=""switch-1-");
@@ -2758,7 +2750,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddParagraph("The account AZUREADSSOACC is used under the hood to provide SSO functionalities with AzureAD.");
                 Add(@"
 		<div class=""row""><div class=""col-lg-12"">
-<p>The password of the AZUREADSSOACC account should be changed twice every 40 days. You can check this <a href=""https://github.com/MicrosoftDocs/azure-docs/blob/main/articles/active-directory/hybrid/connect/tshoot-connect-sso.md"">documentation</a> to have the procedure.</p>
+<p>The password of the AZUREADSSOACC account should be changed twice every 40 days. You can check this <a href=""https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/tshoot-connect-sso"">documentation</a> to have the procedure.</p>
 <p>You can use the version gathered using replication metadata from two reports to guess the frequency of the password change or if the two consecutive resets have been done. Version starts at 1.</p>
 <p><strong>AZUREADSSOACC password last changed: </strong> " + Report.AzureADSSOLastPwdChange.ToString("u") + @"
 <strong>version: </strong> " + Report.AzureADSSOVersion + @"
@@ -3974,8 +3966,6 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                                     if (s.Length > 0 && !string.IsNullOrEmpty(s[0]) && s[0].Contains("="))
                                     {
                                         var TemplateOid = new Oid(s[0].Split('=')[1]);
-                                        /*var MajorVersion = int.Parse(s[1].Split('=')[1]);
-                                        var MinorVersion = int.Parse(s[2].Split('=')[1]);*/
 
                                         templateName = string.IsNullOrEmpty(TemplateOid.FriendlyName) ? TemplateOid.Value : TemplateOid.FriendlyName;
                                         if (Report.CertificateTemplates != null)
@@ -4051,7 +4041,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             AddEndTable();
         }
 
-        void AddNameWithCA(string Name, List<string> CA)
+        void AddNameWithCA(string Name, IReadOnlyCollection<string> CA)
         {
             Add(@"<td class='text'>");
             AddEncoded(Name);

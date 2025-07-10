@@ -8,16 +8,13 @@ using Microsoft.Win32.SafeHandles;
 using PingCastle.Cloud.RESTServices.Azure;
 using PingCastle.Cloud.Tokens;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace PingCastle.Cloud.Credentials
@@ -333,9 +330,6 @@ namespace PingCastle.Cloud.Credentials
             offset += blob.cbPrime1;
             param.Q = ReadData(data, offset, blob.cbPrime2);
             offset += blob.cbPrime2;
-            /*if (blob.Magic == 0x33415352)
-            {
-            }*/
 
             var output = RSA.Create();
             output.ImportParameters(param);

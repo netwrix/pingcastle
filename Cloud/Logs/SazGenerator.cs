@@ -7,12 +7,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.IO.Packaging;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
@@ -20,6 +19,7 @@ namespace PingCastle.Cloud.Logs
 {
     public class SazGenerator : IDisposable
     {
+        private static readonly SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
         public SazGenerator() : this("log.saz")
         {
 
@@ -57,60 +57,80 @@ namespace PingCastle.Cloud.Logs
         }
 
         // called from multiple threads
-        public int RecordBeginQuery(HttpRequestMessage request)
+        public async Task<int> RecordBeginQueryAsync(HttpRequestMessage request)
         {
-            lock (entries)
+            await  semaphore.WaitAsync();
+
+            try
             {
                 entries.Add(entryNum, new sazentry { uri = request.RequestUri, StartTime = DateTime.Now });
 
                 var requestPart = archive.CreatePart(UriForPart(entryNum, 'c'), "text/plain");
-                using (var requestStream = requestPart.GetStream(System.IO.FileMode.Create))
+                using (var requestStream = requestPart.GetStream(FileMode.Create))
                 {
                     var b = RequestMessageToString(request);
                     requestStream.Write(b, 0, b.Length);
                     if (request.Content != null)
                     {
-                        request.Content.CopyToAsync(requestStream).GetAwaiter().GetResult();
+                        await request.Content.CopyToAsync(requestStream);
                     }
                 }
+
                 return entryNum++;
+            }
+            finally
+            {
+                semaphore.Release();
             }
         }
 
         // called from multiple threads
-        public void RecordEndQuery(int sessionId, HttpResponseMessage response)
+        public async Task RecordEndQueryAsync(int sessionId, HttpResponseMessage response)
         {
             //copy the response stream to a stream which can be rewinded
+            var originalContent = response.Content;
+
             var ms = new MemoryStream();
-            response.Content.CopyToAsync(ms).GetAwaiter().GetResult();
+            await response.Content.CopyToAsync(ms);
             ms.Position = 0;
 
-            var rc = response.Content;
-            response.Content = new StreamContent(ms);
-
-            lock (entries)
+            var newContent = new StreamContent(ms);
+            foreach (var header in originalContent.Headers)
             {
-                var entry = entries[sessionId];
+                newContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
+            response.Content = newContent;
+            
+            await semaphore.WaitAsync();
+
+            try
+            {
+                entries.TryGetValue(sessionId, out var entry);
+
                 TimeSpan duration = DateTimeOffset.UtcNow.Subtract(entry.StartTime);
 
                 var responsePart = archive.CreatePart(UriForPart(sessionId, 's'), "text/plain");
 
-                using (var responseStream = responsePart.GetStream(System.IO.FileMode.Create))
+                using (var responseStream = responsePart.GetStream(FileMode.Create))
                 {
                     var b = ResponseMessageToString(response);
                     responseStream.Write(b, 0, b.Length);
                     if (response.Content != null)
                     {
-                        response.Content.CopyToAsync(responseStream).GetAwaiter().GetResult();
+                        await response.Content.CopyToAsync(responseStream);
                     }
                 }
 
                 var metadataPart = archive.CreatePart(UriForPart(sessionId, 'm'), "application/xml");
                 var metadata = CreateMetadataForSession(sessionId, entry.StartTime, duration);
-                using (var metadataStream = metadataPart.GetStream(System.IO.FileMode.Create))
+                using (var metadataStream = metadataPart.GetStream(FileMode.Create))
                 {
                     metadata.WriteToStream(metadataStream);
                 }
+            }
+            finally
+            {
+                semaphore.Release();
             }
         }
 

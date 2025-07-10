@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+using PingCastle.UserInterface;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -22,8 +23,6 @@ namespace PingCastle.Healthcheck
 {
     internal class EncryptionSettings : ConfigurationSection
     {
-        //public static EncryptionSettings settings = 
-
         static EncryptionSettings cachedSettings = null;
         public static EncryptionSettings GetEncryptionSettings()
         {
@@ -214,9 +213,11 @@ namespace PingCastle.Healthcheck
 
         public static void GenerateRSAKey()
         {
+            IUserInterface ui = UserInterfaceFactory.GetUserInterface();
+
             RSACryptoServiceProvider RSA = new RSACryptoServiceProvider();
-            Console.WriteLine("Public Key (used on the encryption side):");
-            Console.WriteLine(@"<encryptionSettings encryptionKey=""default"">
+            ui.DisplayMessage("Public Key (used on the encryption side):");
+            ui.DisplayMessage(@"<encryptionSettings encryptionKey=""default"">
     <RSAKeys>
       <!-- encryption key -->
       <KeySettings name=""default"" publicKey=""" + XmlEscape(RSA.ToXmlString(false)) + @"""/>
@@ -224,15 +225,15 @@ namespace PingCastle.Healthcheck
     </RSAKeys>
 </encryptionSettings>");
 
-            Console.WriteLine("Private Key (used on the decryption side):");
-            Console.WriteLine(@"<encryptionSettings encryptionKey=""default"">
+            ui.DisplayMessage("Private Key (used on the decryption side):");
+            ui.DisplayMessage(@"<encryptionSettings encryptionKey=""default"">
     <RSAKeys>
       <!-- decryption key -->
       <KeySettings name=""" + Guid.NewGuid() + @""" privateKey=""" + XmlEscape(RSA.ToXmlString(true)) + @"""/>
       <!--  end -->
     </RSAKeys>
 </encryptionSettings>");
-            Console.WriteLine("Done");
+            ui.DisplayMessage("Done");
         }
 
         public static List<RSA> GetAllPrivateKeys()

@@ -55,7 +55,7 @@ namespace PingCastle.Scanners
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
             if (ScanningMode == 1)
-                Console.WriteLine(value);
+                UserInterfaceFactory.GetUserInterface().DisplayError(value);
             Trace.WriteLine(value);
         }
     }

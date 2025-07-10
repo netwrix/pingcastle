@@ -40,7 +40,7 @@ namespace PingCastle.Report
 #if DEBUG
             versionString += " Beta";
 #endif
-            GenerateNavigation("Healthcheck Rules", null, DateTime.Now);
+            GenerateNavigation("Healthcheck Rules", null);
             GenerateAbout();
             Add(@"
 <div id=""wrapper"" class=""container well"">

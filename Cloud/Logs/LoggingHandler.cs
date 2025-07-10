@@ -4,11 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,19 +14,25 @@ namespace PingCastle.Cloud.Logs
     {
         private SazGenerator _sazGenerator;
 
+        public LoggingHandler(SazGenerator sazGenerator)
+        {
+            _sazGenerator = sazGenerator;
+        }
+
         public LoggingHandler(SazGenerator sazGenerator, HttpMessageHandler innerHandler)
             : base(innerHandler)
         {
             _sazGenerator = sazGenerator;
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+            CancellationToken cancellationToken)
         {
-            int num = _sazGenerator.RecordBeginQuery(request);
+            int num = await _sazGenerator.RecordBeginQueryAsync(request);
 
             HttpResponseMessage response = await base.SendAsync(request, cancellationToken);
 
-            _sazGenerator.RecordEndQuery(num, response);
+            await _sazGenerator.RecordEndQueryAsync(num, response);
 
             return response;
         }

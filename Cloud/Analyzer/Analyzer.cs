@@ -24,6 +24,7 @@ using Microsoft.Graph.Beta.Models;
 using PingCastle.Cloud.MsGraph;
 using System.Collections.Concurrent;
 using PingCastle.misc;
+using PingCastle.UserInterface;
 
 namespace PingCastle.Cloud.Analyzer
 {
@@ -31,16 +32,19 @@ namespace PingCastle.Cloud.Analyzer
     {
         HealthCheckCloudData data;
         private IAzureCredential credential;
+        const int MaxParallel = 20;
 
         private static readonly List<string> EnabledMfa = new List<string>() { "Enabled" };
         private static readonly List<string> DisabledMfa = new List<string>() { "Disabled" };
         private static readonly List<string> EnforcedMfa = new List<string>() { "Enforced" };
+        private readonly IUserInterface _ui;
 
         public Analyzer(IAzureCredential credential)
         {
             this.credential = credential;
+            _ui = UserInterfaceFactory.GetUserInterface();
         }
-        const int MaxParallel = 20;
+
 
         public async Task<HealthCheckCloudData> Analyze()
         {
@@ -58,7 +62,7 @@ namespace PingCastle.Cloud.Analyzer
 
                 DisplayAdvancement("Authenticate");
 
-                Token AzureToken = await credential.GetToken<GraphAPI>();
+                Token AzureToken = await credential.GetToken<MsGraphApiFacade>();
 
                 data.TenantId = credential.Tenantid;
                 var jwt = AzureToken.ToJwtToken();
@@ -98,19 +102,19 @@ namespace PingCastle.Cloud.Analyzer
                     DisplayAdvancement("UsersPermissionToReadOtherUsersEnabled is False. Only an admin will be able to analyze users & admins");
                 }
 
-                RunTask("Policies", AnalyzePolicies);
+                await RunTaskAsync("Policies", AnalyzePolicies);
 
                 RunTask("AD Connect", AnalyzeADConnect);
 
-                RunTask("Applications and permissions", AnalyzeApplications);
+                await RunTaskAsync("Applications and permissions", AnalyzeApplications);
 
                 var adminCache = await RunTaskAsync("Roles", AnalyzeAdminRoles);
 
-                RunTask("Users", () => { AnalyzeAllUsers(adminCache); });
+                await RunTaskAsync("Users", () => AnalyzeAllUsers(adminCache));
 
                 RunTask("Foreign domains", AnalyseForeignDomains);
 
-                RunTask("Outlook online", () => AnalyzeOutlookOnline());
+                RunTask("Outlook online", AnalyzeOutlookOnline);
 
                 DisplayAdvancement("Computing risks");
                 var rules = new RuleSet<HealthCheckCloudData>();
@@ -122,6 +126,7 @@ namespace PingCastle.Cloud.Analyzer
                     risk.RiskId = rule.RiskId;
                     risk.Rationale = rule.Rationale;
                     risk.Details = rule.Details;
+                    risk.ExtraDetails = rule.ExtraDetails;
                     data.RiskRules.Add(risk);
                 }
 
@@ -204,103 +209,125 @@ namespace PingCastle.Cloud.Analyzer
             DisplayAdvancementWarning("Continuing");
         }
 
-        private void AnalyzeApplications()
+        private async Task AnalyzeApplications()
         {
-            var g = new GraphAPI(credential);
+            var graph = GraphApiClientFactory.Create(credential);
+            var permissions = await graph.GetAllOAuth2PermissionGrantsAsync().ToListAsync();
+            var appRolesCache = new ConcurrentDictionary<string, IReadOnlyDictionary<string, AppRole>>();
+            var applications = new ConcurrentBag<HealthCheckCloudDataApplication>();
 
-            var servicePrincipals = g.GetServicePrincipals().ToDictionary(x => x.objectId);
-            DisplayAdvancement(servicePrincipals.Count + " applications found");
-            var k = g.GetOAuth2PermissionGrants();
-
-            data.Applications = new List<HealthCheckCloudDataApplication>();
-            foreach (var app in servicePrincipals.Values)
+            var allTasks = new List<Task>();
+            await foreach (var sp in graph.GetAllServicePrincipalsAsync())
             {
-                var a = new HealthCheckCloudDataApplication
-                {
-                    objectId = app.objectId,
-                    appDisplayName = app.appDisplayName,
-                    appOwnerTenantId = app.appOwnerTenantId,
-                    appId = app.appId,
-                    DelegatedPermissions = new List<HealthCheckCloudDataApplicationOAuth2PermissionGrant>(),
-                    MemberOf = new List<HealthCheckCloudDataApplicationMemberOf>(),
-                    ApplicationPermissions = new List<HealthCheckCloudDataApplicationRoleAssignedTo>(),
-                };
-                data.Applications.Add(a);
-
-                var delegatedPermissions = k.Where(x => x.clientId == app.objectId);
-                foreach (var permission in delegatedPermissions)
-                {
-                    /*if (permission.expiryTime < DateTime.Now)
-                        continue;*/
-                    foreach (var s in permission.scope.Split(' '))
-                    {
-                        if (string.IsNullOrEmpty(s))
-                            continue;
-                        a.DelegatedPermissions.Add(new HealthCheckCloudDataApplicationOAuth2PermissionGrant()
-                        {
-                            permission = s,
-                            resourceId = permission.resourceId,
-                            consentType = permission.consentType,
-                            principalId = permission.principalId,
-                        });
-                    }
-                }
+                allTasks.Add(Task.Run(() => AddApplicationData(graph, permissions, appRolesCache, applications, sp)));
             }
-            Parallel.ForEach(data.Applications, new ParallelOptions { MaxDegreeOfParallelism = MaxParallel },
-                app =>
-                {
-                    try
-                    {
-                        var roles = g.GetAppRoleAssignedTo(app.objectId);
-                        var members = g.GetMemberOf(app.objectId);
+            DisplayAdvancement($"{allTasks.Count} applications found");
+            await Task.WhenAll(allTasks);
 
-                        foreach (var role in roles)
-                        {
-                            app.ApplicationPermissions.Add(new HealthCheckCloudDataApplicationRoleAssignedTo
-                            {
-                                resourceDisplayName = role.resourceDisplayName,
-                                resourceId = role.resourceId,
-                                permissionId = role.id,
-                                principalType = role.principalType,
-                            });
-                        }
-                        foreach (var member in members)
-                        {
-                            app.MemberOf.Add(new HealthCheckCloudDataApplicationMemberOf
-                            {
-                                displayName = member.displayName,
-                                roleTemplateId = member.roleTemplateId,
-                            });
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace.WriteLine("Exception when analyzing " + app.objectId);
-                        Trace.WriteLine(ex.ToString());
-                    }
-                });
+            data.Applications = new List<HealthCheckCloudDataApplication>(applications);
 
-            var refResource = new Dictionary<string, GraphAPI.AzureADObject>();
-            foreach (var app in data.Applications)
+            var nonEmptyAppsCount = data.Applications
+                .Where(x => x.ApplicationPermissions.Count > 0 || x.DelegatedPermissions.Count > 0 || x.MemberOf.Count > 0)
+                .Count();
+            DisplayAdvancement($"{nonEmptyAppsCount} applications found with permissions assigned and having roles");
+        }
+
+        private async Task AddApplicationData(IGraphApiClient graph,
+            List<OAuth2PermissionGrant> permissions,
+            ConcurrentDictionary<string, IReadOnlyDictionary<string, AppRole>> appRolesCache,
+            ConcurrentBag<HealthCheckCloudDataApplication> applications,
+            ServicePrincipal sp)
+        {
+            var appData = new HealthCheckCloudDataApplication
             {
-                foreach (var permission in app.ApplicationPermissions)
+                objectId = sp.Id,
+                appDisplayName = sp.DisplayName,
+                appOwnerTenantId = sp.AppOwnerOrganizationId?.ToString(),
+                appId = sp.AppId,
+                DelegatedPermissions = new List<HealthCheckCloudDataApplicationOAuth2PermissionGrant>(),
+                MemberOf = new List<HealthCheckCloudDataApplicationMemberOf>(),
+                ApplicationPermissions = new List<HealthCheckCloudDataApplicationRoleAssignedTo>(),
+            };
+            applications.Add(appData);
+
+            var delegatedPermissions = permissions.Where(x => x.ClientId == sp.Id);
+            foreach (var permission in delegatedPermissions)
+            {
+                foreach (var scope in permission.Scope.Split(' '))
                 {
-                    if (permission.principalType != "ServicePrincipal")
+                    if (string.IsNullOrEmpty(scope))
                         continue;
-                    if (!refResource.ContainsKey(permission.resourceId))
+                    appData.DelegatedPermissions.Add(new HealthCheckCloudDataApplicationOAuth2PermissionGrant()
                     {
-                        refResource[permission.resourceId] = g.GetObjectsByObjectIds(permission.resourceId);
-                    }
-                    var appRoles = refResource[permission.resourceId].appRoles;
-                    foreach (var role in appRoles)
-                    {
-                        if (permission.permissionId == role.id)
-                        {
-                            permission.permission = role.value;
-                        }
-                    }
+                        permission = scope,
+                        resourceId = permission.ResourceId,
+                        consentType = permission.ConsentType,
+                        principalId = permission.PrincipalId,
+                    });
                 }
             }
+
+            try
+            {
+                await foreach (var roleAssignment in graph.GetAppRoleAssignmentsToServicePrincipalAsync(sp.Id))
+                {
+                    var permission = new HealthCheckCloudDataApplicationRoleAssignedTo
+                    {
+                        resourceDisplayName = roleAssignment.ResourceDisplayName,
+                        resourceId = roleAssignment.ResourceId?.ToString(),
+                        permissionId = roleAssignment.AppRoleId?.ToString(),
+                        principalType = roleAssignment.PrincipalType,
+                    };
+
+                    if (permission.principalType == "ServicePrincipal")
+                    {
+                        if (!appRolesCache.TryGetValue(permission.resourceId, out var appRoles))
+                        {
+                            var roles = await graph.GetServicePrincipalAppRolesAsync(permission.resourceId);
+                            appRoles = roles.ToDictionary(k => k.Id?.ToString());
+                            appRolesCache[permission.resourceId] = appRoles;
+                        }
+
+                        if (appRoles.TryGetValue(permission.permissionId, out var appRole))
+                        {
+                            permission.permission = appRole.Value;
+                        }
+                    }
+
+                    appData.ApplicationPermissions.Add(permission);
+                }
+
+                await foreach (var member in graph.GetServicePrincipalMembershipAsync(sp.Id))
+                {
+                    appData.MemberOf.Add(new HealthCheckCloudDataApplicationMemberOf
+                    {
+                        displayName = GetDirectoryObjectDisplayName(member),
+                        roleTemplateId = member is DirectoryRole role ? role.RoleTemplateId : null,
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("Exception when analyzing " + sp.Id);
+                Trace.WriteLine(ex.ToString());
+            }
+        }
+
+        private string GetDirectoryObjectDisplayName(DirectoryObject directoryObject)
+        {
+            if (directoryObject == null) return null;
+
+            return directoryObject switch
+            {
+                User user => user.DisplayName,
+                Group group => group.DisplayName,
+                DirectoryRole role => role.DisplayName,
+                AdministrativeUnit adminUnit => adminUnit.DisplayName,
+                Device device => device.DisplayName,
+                Organization org => org.DisplayName,
+                ServicePrincipal sp => sp.DisplayName, 
+                OrgContact contact => contact.DisplayName
+            };
         }
 
         private void AnalyzeADConnect()
@@ -352,153 +379,125 @@ namespace PingCastle.Cloud.Analyzer
             }
         }
 
-        private void AnalyzePolicies()
+        private async Task AnalyzePolicies()
         {
-            var graph = new GraphAPI(credential);
-            var p = graph.GetPolicies();
-
-            data.CrossTenantPolicies = new List<HealthCheckCloudDataCrossTenantPolicy>();
-
-            foreach (var policy in p.value)
+            var graph = GraphApiClientFactory.Create(credential);
+            var allTasks = new List<Task>
             {
-                if (policy.policyType == 28)
-                {
-                    ExtractCrossTenantPolicy(policy);
-                }
-                if (policy.policyType == 7)
-                {
-                    ExtractPasswordManagementPolicy(policy);
-                }
-                if (policy.policyType == 6)
-                {
-                    ExtractNetworkPolicy(policy);
-                }
-            }
+                Task.Run(() => FillCrossTenantPolicies(graph)),
+                Task.Run(() => FillNetworkPolicies(graph)),
+                Task.Run(() => FillAuthorizationPolicy(graph)),
+            };
 
-            var ms = new MicrosoftGraph(credential);
-            var authorizationPolicies = ms.GetAuthorizationPolicy();
-            if (authorizationPolicies != null && authorizationPolicies.Count > 0)
-            {
-                var authorizationPolicy = authorizationPolicies[0];
-                data.PolicyGuestUserRoleId = authorizationPolicy.guestUserRoleId;
-                data.PolicyAllowEmailVerifiedUsersToJoinOrganization = authorizationPolicy.allowEmailVerifiedUsersToJoinOrganization;
-            }
-
+            await Task.WhenAll(allTasks);
         }
 
-        private void ExtractNetworkPolicy(GraphAPI.PolicyResponse policy)
+        private async Task FillAuthorizationPolicy(IGraphApiClient graph)
+        {
+            var authorizationPolicy = await graph.GetAuthorizationPolicyAsync();
+            if (authorizationPolicy != null)
+            {
+                if (authorizationPolicy.GuestUserRoleId.HasValue)
+                    data.PolicyGuestUserRoleId = authorizationPolicy.GuestUserRoleId.Value.ToString();
+                data.PolicyAllowEmailVerifiedUsersToJoinOrganization = authorizationPolicy.AllowEmailVerifiedUsersToJoinOrganization;
+            }
+        }
+
+        private async Task FillNetworkPolicies(IGraphApiClient graph)
         {
             data.NetworkPolicies = new List<HealthCheckCloudDataNetworkPolicy>();
 
-            foreach (var detail in policy.policyDetail)
+            await foreach (var location in graph.GetNamedLocationsAsync())
             {
-                var policyDetail = GraphAPI.PolicyDetail.LoadFromString(detail);
-                var kn = policyDetail.KnownNetworkPolicies;
-                if (kn == null)
-                    continue;
-                if (kn.CidrIpRanges != null)
+                if (location is IpNamedLocation ipLoc)
                 {
-                    foreach (var cidr in kn.CidrIpRanges)
+                    foreach (var range in ipLoc.IpRanges)
                     {
-                        data.NetworkPolicies.Add(new HealthCheckCloudDataNetworkPolicy()
+                        string cidrAddress = null;
+                        if (range is IPv4CidrRange ipv4Range)
                         {
-                            Name = kn.NetworkName,
-                            Definition = cidr,
-                            Type = "CIDR",
-                            Trusted = kn.Categories.Contains("trusted"),
-                            ApplyToUnknownCountry = kn.ApplyToUnknownCountry,
-                        });
-                    }
-
-                }
-                if (kn.CountryIsoCodes != null)
-                {
-                    foreach (var country in kn.CountryIsoCodes)
-                    {
-                        data.NetworkPolicies.Add(new HealthCheckCloudDataNetworkPolicy()
+                            cidrAddress = ipv4Range.CidrAddress;
+                        }
+                        else if (range is IPv6CidrRange ipv6Range)
                         {
-                            Name = kn.NetworkName,
-                            Definition = country,
-                            Type = "Country",
-                            Trusted = kn.Categories.Contains("trusted"),
-                            ApplyToUnknownCountry = kn.ApplyToUnknownCountry,
-                        });
-                    }
+                            cidrAddress = ipv6Range.CidrAddress;
+                        }
 
-                }
-            }
-        }
-
-        private void ExtractPasswordManagementPolicy(GraphAPI.PolicyResponse policy)
-        {
-            foreach (var detail in policy.policyDetail)
-            {
-                var policyDetail = GraphAPI.PolicyDetail.LoadFromString(detail);
-                var pm = policyDetail.PasswordManagementPolicy;
-                if (pm == null)
-                    continue;
-                foreach (var p in pm)
-                {
-                    //p.SelfServePasswordResetPolicy.
-                }
-            }
-        }
-
-        private void ExtractCrossTenantPolicy(GraphAPI.PolicyResponse policy)
-        {
-            foreach (var detail in policy.policyDetail)
-            {
-                var policyDetail = GraphAPI.PolicyDetail.LoadFromString(detail);
-                var cta = policyDetail.CrossTenantAccessPolicy;
-                if (cta == null)
-                    continue;
-
-                var lastModified = cta.LastModified;
-
-                foreach (var tg in cta.TenantGroup)
-                {
-                    bool? allowB2BFrom = null;
-                    bool? allowNativeFederationFrom = null;
-                    bool? allowB2BTo = null;
-                    bool? allowNativeFederationTo = null;
-                    if (tg.FromMyTenancy != null)
-                    {
-                        foreach (var t in tg.FromMyTenancy)
+                        if (!string.IsNullOrEmpty(cidrAddress))
                         {
-                            if (t.AllowB2B != null)
-                                allowB2BFrom = t.AllowB2B.Value;
-                            if (t.AllowNativeFederation != null)
-                                allowNativeFederationFrom = t.AllowNativeFederation.Value;
+                            data.NetworkPolicies.Add(new HealthCheckCloudDataNetworkPolicy()
+                            {
+                                Name = ipLoc.DisplayName,
+                                Definition = cidrAddress,
+                                Type = "CIDR", 
+                                Trusted = ipLoc.IsTrusted ?? false,
+                                ApplyToUnknownCountry = false // Not applicable to IP
+                            });
                         }
                     }
-                    if (tg.ToMyTenancy != null)
+                }
+                else if (location is CountryNamedLocation countryLoc)
+                {
+                    foreach (var countryCode in countryLoc.CountriesAndRegions)
                     {
-                        foreach (var t in tg.ToMyTenancy)
+                        if (!string.IsNullOrEmpty(countryCode))
                         {
-                            if (t.AllowB2B != null)
-                                allowB2BTo = t.AllowB2B.Value;
-                            if (t.AllowNativeFederation != null)
-                                allowNativeFederationTo = t.AllowNativeFederation.Value;
+                            data.NetworkPolicies.Add(new HealthCheckCloudDataNetworkPolicy()
+                            {
+                                Name = countryLoc.DisplayName,
+                                Definition = countryCode,
+                                Type = "Country",
+                                Trusted = false, // Countries don't have a Trusted flag
+                                ApplyToUnknownCountry = countryLoc.IncludeUnknownCountriesAndRegions ?? false,
+                            });
                         }
-                    }
-                    foreach (var t in tg.Tenants)
-                    {
-                        var ctp = new HealthCheckCloudDataCrossTenantPolicy()
-                        {
-                            TenantId = t,
-                            lastModified = lastModified,
-                            AllowB2BFrom = allowB2BFrom,
-                            AllowB2BTo = allowB2BTo,
-                            AllowNativeFederationFrom = allowNativeFederationFrom,
-                            AllowNativeFederationTo = allowNativeFederationTo,
-                        };
-                        data.CrossTenantPolicies.Add(ctp);
                     }
                 }
             }
         }
 
-        private void AnalyzeAllUsers(IReadOnlyDictionary<string, HealthCheckCloudDataRoleMember> adminCache)
+        private async Task FillCrossTenantPolicies(IGraphApiClient graph)
+        {
+            var cta = await graph.GetCrossTenantAccessPolicyAsync();
+            if (cta == null)
+                return;
+
+            var lastModified = await graph.GetPolicyLastModificationDate(cta.Id);
+
+            data.CrossTenantPolicies = new List<HealthCheckCloudDataCrossTenantPolicy>();
+            await foreach (var partner in graph.GetPartnerCrossTenantAccessPoliciesAsync())
+            {
+                if (string.IsNullOrEmpty(partner?.TenantId)) continue; 
+
+                var b2bIn = partner.B2bCollaborationInbound;
+                var b2bOut = partner.B2bCollaborationOutbound;
+                var dcIn = partner.B2bDirectConnectInbound;
+                var dcOut = partner.B2bDirectConnectOutbound;
+
+                var ctp = new HealthCheckCloudDataCrossTenantPolicy()
+                {
+                    TenantId = partner.TenantId,
+                    lastModified = lastModified?.ToString(), 
+                    AllowB2BFrom = IsAllowAccess(b2bIn?.UsersAndGroups?.AccessType),
+                    AllowB2BTo = IsAllowAccess(b2bOut?.UsersAndGroups?.AccessType),
+                    AllowNativeFederationFrom = IsAllowAccess(dcIn?.UsersAndGroups?.AccessType),
+                    AllowNativeFederationTo = IsAllowAccess(dcOut?.UsersAndGroups?.AccessType),
+                };
+                data.CrossTenantPolicies.Add(ctp);
+            }
+        }
+
+        private bool? IsAllowAccess(CrossTenantAccessPolicyTargetConfigurationAccessType? accessType)
+        {
+            return accessType switch
+            {
+                CrossTenantAccessPolicyTargetConfigurationAccessType.Allowed => true,
+                CrossTenantAccessPolicyTargetConfigurationAccessType.Blocked => false,
+                _ => null
+            };
+        }
+
+        private async Task AnalyzeAllUsers(IReadOnlyDictionary<string, HealthCheckCloudDataRoleMember> adminCache)
         {
             var appPermissionsToComplete = new Dictionary<string, List<HealthCheckCloudDataApplicationOAuth2PermissionGrant>>();
             if (data.Applications != null)
@@ -524,70 +523,63 @@ namespace PingCastle.Cloud.Analyzer
             data.UsersPasswordNeverExpires = new List<HealthCheckCloudDataUser>();
             data.UsersInactive = new List<HealthCheckCloudDataUser>();
             data.OldInvitations = new List<HealthCheckCloudDataUser>();
-
-            Dictionary<string, int> MFAMethod = new Dictionary<string, int>();
-            Dictionary<string, int> MFAMethodDefault = new Dictionary<string, int>();
             data.NumberOfUsers = 0;
 
-            var properties = new string[] {
-                "userPrincipalName",
-                "userType",
-                "immutableId",
-                "userState",
-                "userStateChangedOn",
-            };
-
-            var graph = new GraphAPI(credential);
-            graph.GetUsers(properties, (GraphAPI.User user) =>
+            var graph = GraphApiClientFactory.Create(credential);
+            await foreach (var user in graph.GetAllUsersAsync())
             {
                 data.NumberOfUsers++;
 
                 if ((data.NumberOfUsers % 500) == 0)
                 {
-                    Console.Write("+");
+                    _ui.AddText("+");
                     Trace.Write("+");
                 }
 
-                if (user.objectId != null)
+                var userType = user.UserType?.ToString();
+
+                if (user.Id != null && adminCache?.Count > 0)
                 {
-                    if (adminCache.TryGetValue(user.objectId, out var member))
+                    if (adminCache.TryGetValue(user.Id, out var member))
                     {
-                        member.WhenCreated = user.createdDateTime;
-                        member.HasImmutableId = user.immutableId != null;
+                        member.WhenCreated = user.CreatedDateTime?.UtcDateTime;
+                        member.LastPasswordChangeTimestamp = user.LastPasswordChangeDateTime?.UtcDateTime;
+                        member.PasswordNeverExpires = user.PasswordPolicies?.ToString().Contains("DisablePasswordExpiration") ?? false;
+                        member.HasImmutableId = user.OnPremisesImmutableId != null;
                     }
-                    if (appPermissionsToComplete.TryGetValue(user.objectId, out var permissions))
+                    if (appPermissionsToComplete.TryGetValue(user.Id, out var permissions))
                     {
                         foreach (var permission in permissions)
                         {
-                            permission.principalDisplayName = user.userPrincipalName;
+                            permission.principalDisplayName = user.UserPrincipalName;
                         }
                     }
                 }
 
-                int index = user.userPrincipalName.IndexOf("#EXT#@");
-                if (user.userType == "Guest" && index > 0)
+                int index = user.UserPrincipalName.IndexOf("#EXT#@");
+                if (userType == "Guest" && index > 0)
                 {
                     data.NumberofGuests++;
-                    int index2 = user.userPrincipalName.LastIndexOf("_", index);
+                    int index2 = user.UserPrincipalName.LastIndexOf("_", index);
                     if (index2 > 0)
                     {
-                        string domain = user.userPrincipalName.Substring(index2 + 1, index - index2 - 1).ToLowerInvariant();
+                        string domain = user.UserPrincipalName.Substring(index2 + 1, index - index2 - 1).ToLowerInvariant();
                         if (!ForeignDomainsGuest.ContainsKey(domain))
                             ForeignDomainsGuest[domain] = 0;
                         ForeignDomainsGuest[domain]++;
                     }
-                    if (user.userState == "PendingAcceptance")
+                    if (user.ExternalUserState == "PendingAcceptance")
                     {
-                        if (user.userStateChangedOn != null && user.userStateChangedOn.Value.AddMonths(1) < now)
+                        if (DateTimeOffset.TryParse(user.ExternalUserStateChangeDateTime, out var userStateChangedOn) && userStateChangedOn.UtcDateTime.AddMonths(1) < now)
                         {
                             data.OldInvitations.Add(new HealthCheckCloudDataUser()
                             {
-                                ObjectId = user.objectId,
-                                UserPrincipalName = user.userPrincipalName,
-                                WhenCreated = user.createdDateTime,
-                                //LastPasswordChangeTimestamp = user.LastPasswordChangeTimestamp,
-                                //PasswordNeverExpires = user.PasswordNeverExpires,
-                                HasImmutableId = user.immutableId != null,
+                                ObjectId = user.Id,
+                                UserPrincipalName = user.UserPrincipalName,
+                                WhenCreated = user.CreatedDateTime?.UtcDateTime,
+                                LastPasswordChangeTimestamp = user.LastPasswordChangeDateTime?.UtcDateTime,
+                                PasswordNeverExpires = user.PasswordPolicies?.Contains("DisablePasswordExpiration"),
+                                HasImmutableId = user.OnPremisesImmutableId != null,
                             });
                         }
                     }
@@ -598,10 +590,10 @@ namespace PingCastle.Cloud.Analyzer
                     if (index > 0)
                     {
                         data.NumberofExternalMembers++;
-                        int index2 = user.userPrincipalName.LastIndexOf("_", index);
+                        int index2 = user.UserPrincipalName.LastIndexOf("_", index);
                         if (index2 > 0)
                         {
-                            string domain = user.userPrincipalName.Substring(index2 + 1, index - index2 - 1).ToLowerInvariant();
+                            string domain = user.UserPrincipalName.Substring(index2 + 1, index - index2 - 1).ToLowerInvariant();
                             if (!ForeignDomainsMember.ContainsKey(domain))
                                 ForeignDomainsMember[domain] = 0;
                             ForeignDomainsMember[domain]++;
@@ -610,7 +602,7 @@ namespace PingCastle.Cloud.Analyzer
                     else
                     {
                         data.NumberofInternalMembers++;
-                        if (!string.IsNullOrEmpty(user.immutableId))
+                        if (!string.IsNullOrEmpty(user.OnPremisesImmutableId))
                         {
                             data.NumberofSyncInternalMembers++;
                         }
@@ -618,152 +610,12 @@ namespace PingCastle.Cloud.Analyzer
                         {
                             data.NumberofPureAureInternalMembers++;
                         }
-
-                        /*if (user.LastPasswordChangeTimestamp != null && user.LastPasswordChangeTimestamp.Value.AddDays(90) < now)
-                        {
-                            data.UsersInactive.Add(new HealthCheckCloudDataUser()
-                            {
-                                ObjectId = user.objectId,
-                                UserPrincipalName = user.userPrincipalName,
-                                WhenCreated = user.createdDateTime,
-                                LastPasswordChangeTimestamp = user.LastPasswordChangeTimestamp,
-                                PasswordNeverExpires = user.PasswordNeverExpires,
-                                HasImmutableId = user.immutableId != null,
-                            });
-                        }
-                        if (user.PasswordNeverExpires != null && user.PasswordNeverExpires.Value)
-                        {
-                            data.UsersPasswordNeverExpires.Add(new HealthCheckCloudDataUser()
-                            {
-                                ObjectId = user.objectId,
-                                UserPrincipalName = user.userPrincipalName,
-                                WhenCreated = user.createdDateTime,
-                                LastPasswordChangeTimestamp = user.LastPasswordChangeTimestamp,
-                                PasswordNeverExpires = user.PasswordNeverExpires,
-                                HasImmutableId = user.immutableId != null,
-                            });
-                        }*/
                     }
                 }
-            });
+            }
 
-            /*
-            var provisioningApi = new ProvisioningApi(credential);
-            
-            var properties = new string[] {
-                "UserPrincipalName",
-                "LastPasswordChangeTimestamp",
-                "UserType",
-                "PasswordNeverExpires",
-                "StrongAuthenticationMethods",
-                "ImmutableId",
-            };
 
-            ProvisioningApi.ListUserResults r = null;
-            do
-            {
-                if (r == null)
-                {
-                    var k = provisioningApi.ListUsers(properties);
-                    r = k.ReturnValue;
-                }
-                else
-                {
-                    Console.Write("+");
-                    Trace.Write("+");
-                    var k = provisioningApi.NavigateUserResults(r.ListContext);
-                    r = k.ReturnValue;
-                }
-                foreach (var user in r.Results)
-                {
-                    data.NumberOfUsers++;
-
-                    if (user.ObjectId != null && adminCache.ContainsKey((Guid)user.ObjectId))
-                    {
-                        var m = adminCache[(Guid)user.ObjectId];
-                        m.WhenCreated = user.WhenCreated;
-                        m.LastPasswordChangeTimestamp = user.LastPasswordChangeTimestamp;
-                        m.PasswordNeverExpires = user.PasswordNeverExpires;
-                        m.HasImmutableId = user.ImmutableId != null;
-                    }
-                    if (user.ObjectId != null && appPermissionsToComplete.ContainsKey((Guid)user.ObjectId))
-                    {
-                        foreach (var permission in appPermissionsToComplete[(Guid)user.ObjectId])
-                        {
-                            permission.principalDisplayName = user.UserPrincipalName;
-                        }
-                    }
-
-                    int index = user.UserPrincipalName.IndexOf("#EXT#@");
-                    if (user.UserType.HasValue && user.UserType.Value == ProvisioningApi.UserType.Guest && index > 0)
-                    {
-                        data.NumberofGuests++;
-                        int index2 = user.UserPrincipalName.LastIndexOf("_", index);
-                        if (index2 > 0)
-                        {
-                            string domain = user.UserPrincipalName.Substring(index2 + 1, index - index2 - 1).ToLowerInvariant();
-                            if (!ForeignDomainsGuest.ContainsKey(domain))
-                                ForeignDomainsGuest[domain] = 0;
-                            ForeignDomainsGuest[domain]++;
-                        }
-                    }
-                    else
-                    {
-                        data.NumberofMembers++;
-                        if (index > 0)
-                        {
-                            data.NumberofExternalMembers++;
-                            int index2 = user.UserPrincipalName.LastIndexOf("_", index);
-                            if (index2 > 0)
-                            {
-                                string domain = user.UserPrincipalName.Substring(index2 + 1, index - index2 - 1).ToLowerInvariant();
-                                if (!ForeignDomainsMember.ContainsKey(domain))
-                                    ForeignDomainsMember[domain] = 0;
-                                ForeignDomainsMember[domain]++;
-                            }
-                        }
-                        else
-                        {
-                            data.NumberofInternalMembers++;
-                            if (!string.IsNullOrEmpty(user.ImmutableId))
-                            {
-                                data.NumberofSyncInternalMembers++;
-                            }
-                            else
-                            {
-                                data.NumberofPureAureInternalMembers++;
-                            }
-
-                            if (user.LastPasswordChangeTimestamp != null && user.LastPasswordChangeTimestamp.Value.AddDays(90) < now)
-                            {
-                                data.UsersInactive.Add(new HealthCheckCloudDataUser()
-                                {
-                                    ObjectId = user.ObjectId,
-                                    UserPrincipalName = user.UserPrincipalName,
-                                    WhenCreated = user.WhenCreated,
-                                    LastPasswordChangeTimestamp = user.LastPasswordChangeTimestamp,
-                                    PasswordNeverExpires = user.PasswordNeverExpires,
-                                    HasImmutableId = user.ImmutableId != null,
-                                });
-                            }
-                            if (user.PasswordNeverExpires != null && user.PasswordNeverExpires.Value)
-                            {
-                                data.UsersPasswordNeverExpires.Add(new HealthCheckCloudDataUser()
-                                {
-                                    ObjectId = user.ObjectId,
-                                    UserPrincipalName = user.UserPrincipalName,
-                                    WhenCreated = user.WhenCreated,
-                                    LastPasswordChangeTimestamp = user.LastPasswordChangeTimestamp,
-                                    PasswordNeverExpires = user.PasswordNeverExpires,
-                                    HasImmutableId = user.ImmutableId != null,
-                                });
-                            }
-                        }
-                    }
-                }
-            } while (!r.IsLastPage);
-            */
-            Console.WriteLine();
+            _ui.DisplayMessage("");
 
             var fd = new Dictionary<string, HealthCheckCloudDataForeignDomains>();
             foreach (var domain in ForeignDomainsGuest.Keys)
@@ -879,8 +731,7 @@ namespace PingCastle.Cloud.Analyzer
                         IsLicensed = member.AssignedLicenses.Any(),
                         LastDirSyncTime = member.OnPremisesLastSyncDateTime?.UtcDateTime,
                         RoleMemberType = "User",
-                        OverallProvisioningStatus = await CalculateOverallProvisioningStatus(api, member.Id),
-                        ValidationStatus = member.State,
+                        OverallProvisioningStatus = await CalculateOverallProvisioningStatus(api, member.Id)
                     });
 
                     r.members.Add(hcMember);
@@ -1072,16 +923,14 @@ namespace PingCastle.Cloud.Analyzer
         private void DisplayAdvancement(string data)
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-            Console.WriteLine(value);
+            _ui.DisplayMessage(data);
             Trace.WriteLine(value);
         }
 
         private void DisplayAdvancementWarning(string data)
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(value);
-            Console.ResetColor();
+            _ui.DisplayWarning(data);
             Trace.WriteLine(value);
         }
     }

@@ -9,10 +9,7 @@ using PingCastle.Healthcheck;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Resources;
-using System.Text;
-using System.Xml;
 using System.Xml.Serialization;
 
 namespace PingCastle.Rules
@@ -20,6 +17,7 @@ namespace PingCastle.Rules
     public abstract class RuleBase<T> : IRuleScore
     {
         protected const int maxNumDisplayAccount = 100;
+        private static Dictionary<string, ResourceManager> _resourceManagers = new Dictionary<string, ResourceManager>(2);
 
         public string RiskId { get; set; }
         public string Title { get; private set; }
@@ -27,6 +25,7 @@ namespace PingCastle.Rules
         public string TechnicalExplanation { get; private set; }
         public string Solution { get; private set; }
         public string Documentation { get; private set; }
+        public string RelevantProducts { get; private set; }
         public RiskRuleCategory Category { get; set; }
         public RiskModelCategory Model { get; set; }
         private string DetailRationale;
@@ -38,6 +37,8 @@ namespace PingCastle.Rules
         public string Rationale { get; set; }
 
         public List<string> Details { get; set; }
+
+        public List<ExtraDetail> ExtraDetails { get; set; }
 
         public int MaturityLevel { get; set; }
 
@@ -61,17 +62,21 @@ namespace PingCastle.Rules
 
         public List<RuleComputationAttribute> RuleComputation { get; private set; }
 
-        ResourceManager _resourceManager;
-        protected ResourceManager ResourceManager
+        private ResourceManager _resourceManager;
+        protected ResourceManager ResourceManager => _resourceManager ??= InitResourceManager();
+
+
+        private ResourceManager InitResourceManager()
         {
-            get
+            var currentType = GetType();
+            var @namespace = currentType.Namespace;
+            if (!_resourceManagers.TryGetValue(@namespace, out var resourceManager))
             {
-                if (_resourceManager == null)
-                {
-                    _resourceManager = new ResourceManager(GetType().Namespace + ".RuleDescription", GetType().Assembly);
-                }
-                return _resourceManager;
+                resourceManager = new ResourceManager($"{@namespace}.RuleDescription", currentType.Assembly);
+                _resourceManagers[@namespace] = resourceManager;
             }
+
+            return resourceManager;
         }
 
         protected RuleBase()
@@ -99,6 +104,7 @@ namespace PingCastle.Rules
             Title = ResourceManager.GetString(resourceKey + "_Title");
             Description = ResourceManager.GetString(resourceKey + "_Description");
             TechnicalExplanation = ResourceManager.GetString(resourceKey + "_TechnicalExplanation");
+            RelevantProducts = ResourceManager.GetString(resourceKey + "_RelevantProducts");
             Solution = ResourceManager.GetString(resourceKey + "_Solution");
             Documentation = ResourceManager.GetString(resourceKey + "_Documentation");
             DetailRationale = ResourceManager.GetString(resourceKey + "_Rationale");
@@ -166,6 +172,14 @@ namespace PingCastle.Rules
         public void AddRawDetail(params object[] data)
         {
             AddDetail(String.Format(DetailFormatString, data));
+        }
+
+        public void AddExtraDetail(ExtraDetail detail)
+        {
+            if (ExtraDetails == null)
+                ExtraDetails = new List<ExtraDetail>();
+
+            ExtraDetails.Add(detail);
         }
 
         public bool Analyze(T healthcheckData)

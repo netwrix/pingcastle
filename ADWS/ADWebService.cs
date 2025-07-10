@@ -4,6 +4,7 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+using PingCastle.UserInterface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -64,6 +65,8 @@ namespace PingCastle.ADWS
 
         private IADConnection connection { get; set; }
         private IADConnection fallBackConnection { get; set; }
+
+        private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
 
         #region connection establishment
         private void EstablishConnection()
@@ -297,9 +300,9 @@ namespace PingCastle.ADWS
                 Trace.WriteLine("StackTrace: " + ex.StackTrace);
                 if (fallBackConnection == null)
                     throw;
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("The AD query failed. Using the alternative protocol (" + fallBackConnection.GetType().Name + ")");
-                Console.ResetColor();
+
+                _ui.DisplayWarning("The AD query failed. Using the alternative protocol (" + fallBackConnection.GetType().Name + ")");
+
                 if (preambleWithReentry != null)
                     preambleWithReentry();
                 fallBackConnection.Enumerate(distinguishedName, filter, properties, callback, scope);

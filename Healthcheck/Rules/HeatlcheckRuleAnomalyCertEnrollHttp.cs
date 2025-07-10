@@ -5,10 +5,6 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.Rules;
-using System;
-using System.Diagnostics;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 
 namespace PingCastle.Healthcheck.Rules
 {

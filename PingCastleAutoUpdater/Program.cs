@@ -1,4 +1,5 @@
-﻿using PingCastleCommon;
+﻿using PingCastleAutoUpdater.ConfigurationMerge;
+using PingCastleCommon;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -201,15 +202,21 @@ namespace PingCastleAutoUpdater
                     foreach (var entry in archive.Entries)
                     {
 						FilesValidator.CheckPathTraversal(entry.FullName);
-						var fullEntryPath = Path.GetFullPath(entry.FullName);
+						var targetFilePath = Path.GetFullPath(entry.FullName);
                         // do not save .config file except if it doesn't exists 
                         // and do not overwrite the updater file because it's running !
-                        if (fullEntryPath.EndsWith(".config", StringComparison.OrdinalIgnoreCase))
+                        string appConfigFile = AppDomain.CurrentDomain.FriendlyName + ".config";
+                        if (targetFilePath.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
+							&& !Path.GetFileName(targetFilePath).Equals(appConfigFile, StringComparison.OrdinalIgnoreCase))
                         {
-                            if (!File.Exists(fullEntryPath))
-                            {
+                            // Copy if not present.
+							if(!File.Exists(targetFilePath))
+							{
                                 performCopy(entry);
-                            }
+								continue;
+							}
+
+                            MergeConfiguration(entry, targetFilePath);
                         }
                         else
                         {
@@ -232,16 +239,42 @@ namespace PingCastleAutoUpdater
             }
         }
 
-        static void performCopy(ZipArchiveEntry entry)
+        private static void MergeConfiguration(ZipArchiveEntry entry, string targetFilePath)
+        {
+			// Copy into temp file ready to merge.
+            string tempName = $"tempNew_{entry.FullName}";
+            performCopy(entry, tempName);
+
+            var service = new ConfigMergeService(new ConfigLoader(), new ConfigMerger(), new ConfigSaver());
+            try
+            {
+				// Calculate full path name for temp file
+                string exePath = new Uri(Assembly.GetExecutingAssembly().GetName().CodeBase).LocalPath;
+                string sourceFilePath = FilesValidator.CheckPathTraversal(tempName, Path.GetDirectoryName(exePath));
+
+                service.MergeConfigFiles(targetFilePath, sourceFilePath);
+
+				// Clear temp file
+                File.Delete(sourceFilePath);
+                Console.WriteLine("Config files merged successfully!");
+            }
+            catch (ConfigException ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        }
+
+        static void performCopy(ZipArchiveEntry entry, string alternativeName = null)
         {
             using (var e = entry.Open())
             {
-                string exePath = new Uri(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase).LocalPath;
+                string exePath = new Uri(Assembly.GetExecutingAssembly().GetName().CodeBase).LocalPath;
 				string exeFullPath = Path.GetFullPath(exePath);
                 // Check for path traversal and zip slip
-                string entryFullPath = FilesValidator.CheckPathTraversal(entry.FullName, Path.GetDirectoryName(exePath));
+                var entryFullName = alternativeName ?? entry.FullName;
+                string entryFullPath = FilesValidator.CheckPathTraversal(entryFullName, Path.GetDirectoryName(exePath));
 
-                Console.WriteLine("Saving " + entry.FullName);
+                Console.WriteLine("Saving " + entryFullName);
                 if (File.Exists(entryFullPath))
                 {
                     // if we try to overwrite the current exe, it will fail

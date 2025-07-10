@@ -1,20 +1,21 @@
 ﻿using PingCastle.ADWS;
+using PingCastle.UserInterface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Text.RegularExpressions;
 
 namespace PingCastle.Scanners
 {
     public class LAPSBitLocker : IScanner
     {
-
         public string Name { get { return "laps_bitlocker"; } }
         public string Description { get { return "Check on the AD if LAPS and/or BitLocker has been enabled for all computers on the domain."; } }
 
         RuntimeSettings Settings;
+
+        private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
 
         public void Initialize(RuntimeSettings settings)
         {
@@ -142,10 +143,10 @@ namespace PingCastle.Scanners
             }
         }
 
-        private static void DisplayAdvancement(string data)
+        private void DisplayAdvancement(string data)
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-            Console.WriteLine(value);
+            _ui.DisplayError(value);
             Trace.WriteLine(value);
         }
 
@@ -153,7 +154,5 @@ namespace PingCastle.Scanners
         {
             return Settings.EnsureDataCompleted("Server");
         }
-
-
     }
 }

@@ -6,21 +6,15 @@
 //
 using PingCastle.Cloud.Common;
 using PingCastle.Cloud.Credentials;
-using PingCastle.Cloud.RESTServices;
 using PingCastle.Cloud.RESTServices.Azure;
 using PingCastle.Cloud.Tokens;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
 
@@ -208,10 +202,10 @@ namespace PingCastle.Cloud.UI
         }
 
         int logSessionId;
-        private void WebBrowserNavigatingHandler(object sender, WebBrowserNavigatingEventArgs e)
+        private async void WebBrowserNavigatingHandler(object sender, WebBrowserNavigatingEventArgs e)
         {
             Trace.WriteLine("Navigating to:" + e.Url);
-            logSessionId = HttpClientHelper.LogNavigating(e.Url);
+            logSessionId = await HttpClientHelper.LogNavigatingAsync(e.Url);
             if (CheckFinalPage(e.Url))
             {
                 Trace.WriteLine("Navigating: Final page");
@@ -224,10 +218,10 @@ namespace PingCastle.Cloud.UI
             }
         }
 
-        private void WebBrowserNavigatedHandler(object sender, WebBrowserNavigatedEventArgs e)
+        private async void WebBrowserNavigatedHandler(object sender, WebBrowserNavigatedEventArgs e)
         {
             Trace.WriteLine("Navigated to:" + e.Url);
-            HttpClientHelper.LogNavigated(logSessionId, e.Url, webBrowser.DocumentText); 
+            await HttpClientHelper.LogNavigatedAsync(logSessionId, e.Url, webBrowser.DocumentText); 
             if (CheckFinalPage(e.Url))
             {
                 Trace.WriteLine("Final page");

@@ -5,12 +5,12 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.RPC;
+using PingCastle.UserInterface;
 using PingCastleCommon;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Security.Principal;
@@ -27,6 +27,8 @@ namespace PingCastle.Scanners
 
         RuntimeSettings Settings;
 
+        private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
+
         public void Initialize(RuntimeSettings settings)
         {
             Settings = settings;
@@ -38,21 +40,22 @@ namespace PingCastle.Scanners
             if (state != DisplayState.Run)
                 return state;
 
+            IUserInterface userInterface = UserInterfaceFactory.GetUserInterface();
             do
             {
-                ConsoleMenu.Title = "Select the targeted domain";
-                ConsoleMenu.Information = @"This scanner enumerate all the users of a trusted domain. Typically it can be a domain trusted by a domain you trust or an inbound trust such as a bastion.
+                userInterface.Title = "Select the targeted domain";
+                userInterface.Information = @"This scanner enumerate all the users of a trusted domain. Typically it can be a domain trusted by a domain you trust or an inbound trust such as a bastion.
 The server for the pivot will be asked next.
 
 Please enter the foreign domain targeted using its FQDN or sids
 Example of SID: S-1-5-21-4005144719-3948538632-2546531719
 Example of FQDN: bastion.local";
-                EnumInboundSid = ConsoleMenu.AskForString();
+                EnumInboundSid = userInterface.AskForString();
 
                 // error message in case the query is not complete
-                ConsoleMenu.Notice = "The SID of FQDN cannot be empty";
+                userInterface.Notice = "The SID of FQDN cannot be empty";
             } while (String.IsNullOrEmpty(EnumInboundSid));
-            ConsoleMenu.Notice = null;
+            userInterface.Notice = null;
 
             return DisplayState.Run;
         }
@@ -101,19 +104,17 @@ Example of FQDN: bastion.local";
             return Path.Combine(fDir, String.Concat(fName, suffix, fExt));
         }
 
-        private static void DisplayAdvancement(string data)
+        private void DisplayAdvancement(string data)
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-            Console.WriteLine(value);
+            _ui.DisplayError(value);
             Trace.WriteLine(value);
         }
 
-        private static void DisplayError(string data)
+        private void DisplayError(string data)
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(value);
-            Console.ResetColor();
+            _ui.DisplayError(value);
             Trace.WriteLine(value);
         }
 

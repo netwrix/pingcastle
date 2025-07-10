@@ -1,5 +1,7 @@
 ﻿using PingCastle.Healthcheck;
 using PingCastle.PingCastleLicense;
+using PingCastle.UserInterface;
+
 
 //
 // Copyright (c) Ping Castle. All rights reserved.
@@ -17,8 +19,10 @@ namespace PingCastle.Rules
     public class RuleSet<T> where T : IRiskEvaluation
     {
         private static Dictionary<string, RuleBase<T>> _cachedRules = null;
+        private static readonly object _lock = new object();
 
         public IInfrastructureSettings InfrastructureSettings { get; set; }
+        private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
 
         public static IEnumerable<RuleBase<T>> Rules
         {
@@ -26,7 +30,13 @@ namespace PingCastle.Rules
             {
                 if (_cachedRules == null || _cachedRules.Count == 0)
                 {
-                    ReloadRules();
+                    lock(_lock)
+                    {
+                        if (_cachedRules == null || _cachedRules.Count == 0)
+                        {
+                            ReloadRules();
+                        }
+                    }
                 }
                 return _cachedRules.Values;
             }
@@ -96,7 +106,8 @@ namespace PingCastle.Rules
             }
             catch (Exception ex)
             {
-                Console.WriteLine("An error occured while loading custom rules: " + ex.Message);
+
+                UserInterfaceFactory.GetUserInterface().DisplayMessage("An error occured while loading custom rules: " + ex.Message);
                 Trace.WriteLine("Unable to load custom rules");
                 var e = ex;
                 while (e != null)
@@ -134,18 +145,16 @@ namespace PingCastle.Rules
                 }
                 catch (Exception ex)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("An exception occured when running the rule : " + ruleName);
+                    _ui.DisplayError("An exception occured when running the rule : " + ruleName);
                     Trace.WriteLine("An exception occured when running the rule : " + ruleName);
                     DisplaySupportMessage();
-                    Console.ResetColor();
-                    Console.WriteLine("Message: " + ex.Message);
+                    _ui.DisplayMessage("Message: " + ex.Message);
                     Trace.WriteLine("Message: " + ex.Message);
-                    Console.WriteLine("StackTrace: " + ex.StackTrace);
+                    _ui.DisplayStackTrace("StackTrace: " + ex.StackTrace);
                     Trace.WriteLine("StackTrace: " + ex.StackTrace);
                     if (ex.InnerException != null)
                     {
-                        Console.WriteLine("Inner StackTrace: " + ex.InnerException.StackTrace);
+                        _ui.DisplayStackTrace("Inner StackTrace: " + ex.InnerException.StackTrace);
                         Trace.WriteLine("Inner StackTrace: " + ex.InnerException.StackTrace);
                     }
                 }
@@ -235,11 +244,11 @@ namespace PingCastle.Rules
         private void DisplaySupportMessage()
         {
             var license = LicenseCache.Instance.GetLicense();
-            var isBasicLicense = license.IsBasic();
+            var isBasicLicense = license?.IsBasic() ?? true;
             if (isBasicLicense)
-                Console.WriteLine("Please visit https://github.com/netwrix/pingcastle/issues to log an issue with the following details so the problem can be fixed");
+                _ui.DisplayError("Please visit https://github.com/netwrix/pingcastle/issues to log an issue with the following details so the problem can be fixed");
             else
-                Console.WriteLine("Please contact Netwrix support via the support portal (https://www.netwrix.com/support.html) with the following details so the problem can be fixed");
+                _ui.DisplayError("Please contact Netwrix support via the support portal (https://www.netwrix.com/support.html) with the following details so the problem can be fixed");
 
         }
     }

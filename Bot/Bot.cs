@@ -3,9 +3,9 @@ using PingCastle.Healthcheck;
 using PingCastle.PingCastleLicense;
 using PingCastle.Report;
 using PingCastle.Rules;
+using PingCastle.UserInterface;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Xml;
@@ -17,13 +17,15 @@ namespace PingCastle.Bot
 
     public class Bot
     {
+        private readonly IUserInterface _userIo = UserInterfaceFactory.GetUserInterface();
+
         public void Run(string pipeName)
         {
             BotInputOutput input;
             bool stop = false;
 
             XmlSerializer xs = new XmlSerializer(typeof(BotInputOutput));
-            Console.WriteLine("Bot: hello");
+            _userIo.DisplayMessage("Bot: hello");
             using (var pipe = BotStream.OpenPipeStream(pipeName))
             {
                 while (!stop)
@@ -42,12 +44,12 @@ namespace PingCastle.Bot
                             int r = pipe.Read(data, read, count - read);
                             if (r == 0)
                             {
-                                Console.WriteLine("Pipe shutdown");
+                                _userIo.DisplayMessage("Pipe shutdown");
                                 return;
                             }
                             read += r;
                         }
-                        Console.WriteLine("Bot: message received");
+                        _userIo.DisplayMessage("Bot: message received");
                         using (var ms = new MemoryStream(data))
                         {
                             input = (BotInputOutput)xs.Deserialize(ms);
@@ -55,11 +57,10 @@ namespace PingCastle.Bot
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("Exception when reading the input " + ex.Message);
-                        Console.WriteLine("StackTrace:" + ex.StackTrace);
+                        _userIo.DisplayError("Exception when reading the input " + ex.Message);
+                        _userIo.DisplayStackTrace("StackTrace:" + ex.StackTrace);
                         return;
                     }
-
 
                     BotInputOutput output;
                     string order = GetItem(input, "Command");
@@ -90,11 +91,11 @@ namespace PingCastle.Bot
                     catch (Exception ex)
                     {
                         output = ExceptionOutput("Exception during the job " + ex.Message, ex.StackTrace);
-                        Console.WriteLine("Exception:" + ex.Message);
-                        Console.WriteLine("StackTrace:" + ex.StackTrace);
+                        _userIo.DisplayMessage("Exception:" + ex.Message);
+                        _userIo.DisplayStackTrace("StackTrace:" + ex.StackTrace);
                     }
 
-                    Console.WriteLine("Writing data");
+                    _userIo.DisplayMessage("Writing data");
 
                     using (var ms = new MemoryStream())
                     using (XmlWriter writer = XmlWriter.Create(ms))
@@ -105,11 +106,11 @@ namespace PingCastle.Bot
                         var t = BitConverter.GetBytes((int)ms.Length);
                         pipe.Write(t, 0, 4);
                         pipe.Write(buffer, 0, (int)ms.Length);
-                        Console.WriteLine("Bot: message sent");
+                        _userIo.DisplayMessage("Bot: message sent");
                     }
                 }
             }
-            Console.WriteLine("Exiting");
+            _userIo.DisplayMessage("Exiting");
         }
 
         private string GetItem(BotInputOutput input, string key)
@@ -181,8 +182,8 @@ namespace PingCastle.Bot
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Exception:" + ex.Message);
-                Console.WriteLine("StackTrace:" + ex.StackTrace);
+                _userIo.DisplayError("Exception:" + ex.Message);
+                _userIo.DisplayStackTrace("StackTrace:" + ex.StackTrace);
                 return ExceptionOutput("Exception during the healthcheck " + ex.Message, ex.StackTrace);
             }
         }
@@ -195,9 +196,9 @@ namespace PingCastle.Bot
                 using (var ms = new MemoryStream(UnicodeEncoding.UTF8.GetBytes(xml)))
                 {
                     HealthcheckData healthcheckData = DataHelper<HealthcheckData>.LoadXml(ms, "bot", null);
-                    var endUserReportGenerator = new ReportHealthCheckSingle();
                     var license = LicenseCache.Instance.GetLicense();
-                    var report = endUserReportGenerator.GenerateReportFile(healthcheckData, license, healthcheckData.GetHumanReadableFileName());
+                    var endUserReportGenerator = new ReportHealthCheckSingle(license);
+                    var report = endUserReportGenerator.GenerateReportFile(healthcheckData, healthcheckData.GetHumanReadableFileName());
 
                     var o = new BotInputOutput();
                     o.Data = new List<BotData>();
@@ -208,8 +209,8 @@ namespace PingCastle.Bot
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Exception:" + ex.Message);
-                Console.WriteLine("StackTrace:" + ex.StackTrace);
+                _userIo.DisplayError("Exception:" + ex.Message);
+                _userIo.DisplayStackTrace("StackTrace:" + ex.StackTrace);
                 return ExceptionOutput("Exception during the job " + ex.Message, ex.StackTrace);
             }
         }

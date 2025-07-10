@@ -1,8 +1,6 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 
 
 namespace PingCastle.misc

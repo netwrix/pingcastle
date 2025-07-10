@@ -9,6 +9,7 @@ using PingCastle.Cloud.Credentials;
 using PingCastle.Cloud.RESTServices;
 using PingCastle.Cloud.RESTServices.Azure;
 using PingCastle.Cloud.UI;
+using PingCastle.UserInterface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,9 +17,7 @@ using System.DirectoryServices.Protocols;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -143,16 +142,18 @@ namespace PingCastle.Cloud.Tokens
                 string responseString = await response.Content.ReadAsStringAsync();
                 if ((int)response.StatusCode >= 400)
                 {
+                    IUserInterface io = UserInterfaceFactory.GetUserInterface();
+
                     var error = GetTokenError.LoadFromString(responseString);
-                    Console.WriteLine("Error: " + error.error);
+                    io.DisplayMessage("Error: " + error.error);
                     Trace.WriteLine("Error: " + error.error);
-                    Console.WriteLine("Description: " + error.error_description);
+                    io.DisplayMessage("Description: " + error.error_description);
                     Trace.WriteLine("Description: " + error.error_description);
-                    Console.WriteLine("Url: " + error.error_uri);
+                    io.DisplayMessage("Url: " + error.error_uri);
                     Trace.WriteLine("Url: " + error.error_uri);
-                    Console.WriteLine("correlation_id: " + error.correlation_id);
+                    io.DisplayMessage("correlation_id: " + error.correlation_id);
                     Trace.WriteLine("correlation_id: " + error.correlation_id);
-                    Console.WriteLine("trace_id: " + error.trace_id);
+                    io.DisplayMessage("trace_id: " + error.trace_id);
                     Trace.WriteLine("trace_id: " + error.trace_id);
                 }
                 response.EnsureSuccessStatusCode();

@@ -6,9 +6,11 @@
 //
 using PingCastle.Data;
 using PingCastle.Healthcheck;
+using PingCastle.Properties;
 using PingCastle.template;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Globalization;
 using System.IO;
@@ -16,7 +18,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows;
 
 namespace PingCastle.Report
 {
@@ -57,10 +58,11 @@ namespace PingCastle.Report
             TabDelegate = tabDelegate;
         }
 
-        private List<string> CSSToAdd = new List<string> { 
+        private List<string> CSSToAdd = new List<string> {
             TemplateManager.LoadBootstrapCss(),
             TemplateManager.LoadBootstrapTableCss(),
             TemplateManager.LoadReportBaseCss(),
+            TemplateManager.LoadFontAwesomeCss()
         };
 
         private List<string> JSToAdd = new List<string> { 
@@ -68,7 +70,7 @@ namespace PingCastle.Report
             TemplateManager.LoadPopperJs(), 
             TemplateManager.LoadBootstrapJs(),
             TemplateManager.LoadBootstrapTableJs(),
-            TemplateManager.LoadReportBaseJs(),
+            TemplateManager.LoadReportBaseJs()
         };
 
         public string GenerateReportFile(string filename)
@@ -87,14 +89,6 @@ namespace PingCastle.Report
             Add("<title>");
             GenerateTitleInformation();
             Add("</title>");
-            /*Add("<base href=\"");
-            Add(PingCastleEnterpriseBaseUrl);
-            if (!string.IsNullOrEmpty(ReportID))
-            {
-                AddEncoded(ReportID);
-                Add("/");
-            }
-            Add("\">");*/
             Add(favicon);
             GenerateCss();
             reportSB = reportSB.Replace("<%=Header%>", sb.ToString());
@@ -392,8 +386,8 @@ namespace PingCastle.Report
 
         protected void AddEndTooltip()
         {
-            Add(@""">?</i>");
-        }
+            Add(@"""></i>");
+        }    
 
         protected void AddHeaderText(string text, string tooltip, bool widetooltip, bool html = false)
         {
@@ -596,7 +590,7 @@ namespace PingCastle.Report
 				<h4 class=""modal-title"">");
             AddEncoded(title);
             Add(@"</h4>
-					<button type=""button"" class=""btn-close"" data-bs-dismiss=""modal"" aria-label=""Close""></button>
+					<button type=""button"" class=""btn-close btn-close-white"" data-bs-dismiss=""modal"" aria-label=""Close""></button>
 			</div>
 			<div class=""modal-body");
             if (modalType == ShowModalType.FullScreen)
@@ -617,7 +611,7 @@ namespace PingCastle.Report
                 Add(" modal-full-screen-footer");
             }
             Add(@""">
-				<button type=""button"" class=""btn btn-secondary"" data-bs-dismiss=""modal"">Close</button>
+				<button type=""button"" class=""btn btn-primary"" data-bs-dismiss=""modal"">Close</button>
 			</div>
 		</div>
 	</div>
@@ -634,8 +628,8 @@ namespace PingCastle.Report
 
         protected abstract void GenerateBodyInformation();
 
-        protected static string favicon = @"<link href=""data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAE10lEQVRYw71XfWwTdRhet4xBssFigMja61rafbK5bGFuiqh1ISaMP2QI++jaXtvUZGKIigUkUTTzmwUxIQtRYBZHr3e9rjYOY4zLlprMEDROJagZAzEgMYiTZJvr7zrmc0cHXekXxfWSJ9f2rvc8977P+76/X0YGDsKubiSuwh2ELy8SfPVZGek+QG4hTjkhDPUrPh8grOYJwhXlCV9tSZMAdnUDBEwRZ8HsTcivE0bxJQR1QEyJ0L8+e2EFcEWlhJFfuS3gFoIQcpG4VMcRmUbcd58wqJeJ/2FYfhGwDegG9gKrUhfAly4H0UgUAWGQTyAiw8Sl3kv6qpaDcDMwDswCQaCH5fqWpCRA8D2YQ1zK/vgCQnCprgv9j9aD8FCIfA4XAGVqAj7fIBrxg6QEMIop4i7ZADI7IIQJ8AP5qaeBobYnJ0D5O6LwsIvzrADhQWAUGHJxfEOA1TwE09LEU6EUPnsk8y4rQfO0VIqxyW+IHgh4KnVWs6HaaDI/85J9t+Z4r1Pl599ZSbjiRlz/Ec8QcD4rRdRdrCOcNlcYaE6mErS1qITxGAYkeKDzam9VsdlibWptaz8DCPp2488Wq20H8daUg/TCndGS/wN8IUWXK9YSvix2k4NaCvkdi0I+DvJ9gwcbKIOR3gXiqy2t+tk5QITvoqNODZLRONELSs9mqI/wohshJl8YbJPNF+BZk4sb/BGGOw/y1lefb1WD6DDIp8LJQwK+P9bZrIQ3hpLykFTOiq/x3F1o/QW3K+GkLhPqGgir3omS9OOmoQCrXW+hjTVtesMAyIKR5CJw7fL2DlsZxDuSEyAhAAE9SIk8I9TVZHC1Fmc9zrpL7k3yPx1rCvTthkYx39GI54Drk7TZCrNp3k2uiqSUvoJSXnbr7UG6FuQjoY4mdrcXOp59biXe7nQ88hBm4A0TBJgR3pkE5KOYO83EW50zL/8gfDuiq/105NjHFPL7aRICZlGSL2NOPCblNzr5jJhSvHmtwFfI7qgAEL4ZIWDkaI8DKTAyILiRSEC7weSYYCtLQHI5Cvk0DNoDbxXic/QSBGEF8A0wDVwBbKc+sS2maVpsOJ1IxQiIpmMJgFC//9CTqATFdxGO/xu/7YG5l8VtQvCAKKKAdfdtQkutHufqNchVN1S/9i+jrurc2aI0muitIDoBwkuRUYHAM512Won7D4DwN8kLDDWGkG8F+aK7XB2pWvCAb6W8ie3XiXUCo2Dxu/7c0ZpCq9n0AEJuB+mwWAHAWXx/an/X+3l+91v3T/Loii7Vi3B5vdD/eGYKqyP1nhhGQi4VPyAyXeLQ+XBfE2WizRtNtEWsoHWAFzgNvM5xHDqdPuXl2ZbEQ0l+DSE+Cedv7uOZfJAOhBk4AFjuZX24VjJPUouTQqfXfUIFwvMRVdR1L+tDcSidS66rUcNjfNsqELrDyCdg6m2pC3CX5krDIvFQgSeobuKpXIq1YBmI3wN6ARoClqQsQPDVZUFAbwLyvzCwdmOEL537H0pYxvHeLAj4XzYq++P0c2xeVE2o7+wF3KiobaE+ENHPqUFcq8Ucly3wVk2lQ5gn5/UAp/ywaNDgKXsatmpckThY/gitiq5J+Xap8tK3WeXLb+6UGMUvWC03EV9ddkY6D2y9cpDrN9CU1kHAgub7P7CsZhuj7eUMAAAAAElFTkSuQmCC"" rel=""icon"" type=""image/x-icon"" />";
-        protected static string brandLogo = @"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";
+        protected static string favicon = $@"<link href=""data:image/x-icon;base64,{Resources.ReportFavicon}"" rel=""icon"" type=""image/x-icon"" />";
+        protected static string brandLogo = Resources.BrandLogo;
 
         protected void Brand(ADHealthCheckingLicense license)
         {
@@ -657,12 +651,12 @@ namespace PingCastle.Report
             }
         }
 
-        protected void GenerateNavigation(string title, string domain, DateTime generationDate)
+        protected void GenerateNavigation(string title, string domain)
         {
             Add(@"
 <nav class=""navbar py-0 navbar-expand-lg navbar-custom fixed-top border-bottom"">
 	<div class=""container"">
-		<a href=""#"" class=""navbar-brand"">
+		<a href=""#"" class=""navbar-brand brand-logo"">
 			<img src=""data:image/png;base64,");
             Add(brandLogo);
             Add(@""" />
@@ -680,15 +674,7 @@ namespace PingCastle.Report
                 Add(title);
             else
                 Add(domain);
-            Add(@"
-					</a>
-				</li>
-				<li class=""nav-item"">
-					<a class=""nav-link p-3"" href=""#"" role=""button"">
-");
-            Add(generationDate.ToString("yyyy-MM-dd"));
-            Add(@"
-					</a>
+            Add(@"</a>
 				</li>
 				<li class=""nav-item"">
 					<a class=""nav-link p-3"" role=""button"" href=""#modalAbout"" data-bs-toggle=""modal"">About</a>
@@ -768,7 +754,7 @@ namespace PingCastle.Report
 
         protected void GenerateAbout()
         {
-            GenerateAbout(@"<p><strong>Generated by <a href=""https://www.pingcastle.com"">Ping Castle</a> all rights reserved</strong></p>
+            GenerateAbout(@"<p><strong>Generated by <a href=""https://www.pingcastle.com"">Netwrix PingCastle</a> all rights reserved</strong></p>
 <p>Options:</p>
 <div class='form-check'>
   <input class='form-check-input' type='checkbox' value='' id='optionWideScreen'>
@@ -788,12 +774,16 @@ namespace PingCastle.Report
     Expand all collapsed items
   </label>
 </div>
+<br>
 <p>Open source components:</p>
 <ul>
 <li><a href=""https://getbootstrap.com/"">Bootstrap</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
 <li><a href=""https://bootstrap-table.com/"">Bootstrap Table</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
+<li><a href=""https://github.com/Fody/Fody"">Fody</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
+<li><a href=""https://github.com/Fody/Costura"">Fody Costura</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
 <li><a href=""https://popper.js.org/"">Popper.js</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
 <li><a href=""https://jquery.org/"">jQuery</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
+<li><a href=""https://fontawesome.com/"">Font-Awesome</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
 </ul>");
         }
         protected void GenerateAbout(string aboutString)
@@ -806,7 +796,7 @@ namespace PingCastle.Report
         <div class=""modal-content"">
             <div class=""modal-header"">
                 <h4 class=""modal-title"">About</h4>
-                <button type=""button"" class=""btn-close"" data-bs-dismiss=""modal"" aria-label=""Close""></button>
+                <button type=""button"" class=""btn-close btn-close-white"" data-bs-dismiss=""modal"" aria-label=""Close""></button>
             </div>
             <div class=""modal-body"">
                 <div class=""row"">
@@ -818,7 +808,7 @@ namespace PingCastle.Report
                 </div>
             </div>
             <div class=""modal-footer"">
-                <button type=""button"" class=""btn btn-secondary"" data-bs-dismiss=""modal"">Close</button>
+                <button type=""button"" class=""btn btn-primary"" data-bs-dismiss=""modal"">Close</button>
             </div>
         </div>
 
@@ -837,9 +827,9 @@ namespace PingCastle.Report
 	<div class=""row"">
 		<div class=""col-lg-12"">
 			<div class=""starter-template"">
-				<div class=""card border-pc-orange mb-4 mt-4 lead fs-6"">
-					<div class=""card-header h3 text-white bg-pc-orange fw-bold"">
-						<a class=""sectionheader text-white""data-bs-toggle=""collapse"" aria-expanded=""true"" href=""#panel" + id + @""">" + title + @"</a>
+				<div class=""mb-4 mt-4 lead fs-6"">
+					<div class=""h3 fw-bold"">
+						<a class=""sectionheader""data-bs-toggle=""collapse"" aria-expanded=""true"" href=""#panel" + id + @""">" + title + @"</a>
 					</div>
 					<div class=""card-body collapse show"" id=""panel" + id + @""">
 ");
@@ -868,7 +858,7 @@ namespace PingCastle.Report
             }
             Add(@"
 		<div class=""row""><div class=""col-lg-12 mt-2"">
-			<h2>");
+			<h2 class=""sub-section"">");
             AddEncoded(title);
             Add(@"</h2>
 		</div></div>
@@ -948,7 +938,7 @@ namespace PingCastle.Report
             Add(@""" data-parent=""#");
             Add(dataParent);
             Add(@""">
-      <div class=""card-body"">
+      <div class=""card-body risk-card"">
         ");
             content();
             Add(@"
@@ -970,7 +960,7 @@ namespace PingCastle.Report
         protected void GenerateTabHeader(string title, string id, string selectedTab, bool defaultIfTabEmpty = false)
         {
             bool isActive = (String.IsNullOrEmpty(selectedTab) ? defaultIfTabEmpty : selectedTab == id);
-            Add(@"<li class=""nav-item""><a href=""#");
+            Add(@"<li class=""nav-item tab-item""><a href=""#");
             Add(id);
             Add(@""" class=""nav-link ");
             if (isActive)
@@ -1858,10 +1848,28 @@ namespace PingCastle.Report
                                 "#ffed6f",
         };
 
+        protected static readonly IReadOnlyDictionary<string, string> RelevantProductsLinks = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>
+        {
+            {"Netwrix Threat Manager", GenerateProductLinkElement("Netwrix Threat Manager", "https://www.netwrix.com/threat_detection_software.html?utm_source=pingcastle&utm_medium=product&utm_campaign=pc_recommendation") },
+            {"Netwrix Directory Manager", GenerateProductLinkElement("Netwrix Directory Manager", "https://www.netwrix.com/directory-manager-solution.html?utm_source=pingcastle&utm_medium=product&utm_campaign=pc_recommendation") },
+            {"Netwrix Auditor", GenerateProductLinkElement("Netwrix Auditor", "https://www.netwrix.com/auditor.html?utm_source=pingcastle&utm_medium=product&utm_campaign=pc_recommendation") },
+            {"Netwrix Password Policy Enforcer", GenerateProductLinkElement("Netwrix Password Policy Enforcer", "https://www.netwrix.com/password_policy_enforcer.html?utm_source=pingcastle&utm_medium=product&utm_campaign=pc_recommendation") },
+            {"Netwrix Privilege Secure", GenerateProductLinkElement("Netwrix Privilege Secure", "https://www.netwrix.com/privilege_secure.html?utm_source=pingcastle&utm_medium=product&utm_campaign=pc_recommendation") },
+            {"Netwrix Access Analyzer", GenerateProductLinkElement("Netwrix Access Analyzer", "https://www.netwrix.com/access-analyzer.html?utm_source=pingcastle&utm_medium=product&utm_campaign=pc_recommendation") },
+            {"Netwrix Recovery for Active Directory", GenerateProductLinkElement("Netwrix Recovery for Active Directory", "https://www.netwrix.com/active_directory_recovery_software.html?utm_source=pingcastle&utm_medium=product&utm_campaign=pc_recommendation") },
+            {"Netwrix Identity Manager", GenerateProductLinkElement("Netwrix Identity Manager", "https://www.netwrix.com/identity-manager-solution.html?utm_source=pingcastle&utm_medium=product&utm_campaign=pc_recommendation") },
+            {"Netwrix Endpoint Privilege Manager", GenerateProductLinkElement("Netwrix Endpoint Privilege Manager", "https://www.netwrix.com/endpoint-privilege-manager-solution.html?utm_source=pingcastle&utm_medium=product&utm_campaign=pc_recommendation") }
+        });
+
+        protected static string GenerateProductLinkElement(string productName, string productUrl)
+            => $@"<a href={productUrl}>
+                    <span class=""icon-inline icon-left""><svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 512 512""><path fill=""#0068DA"" d=""M320 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l82.7 0L201.4 265.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L448 109.3l0 82.7c0 17.7 14.3 32 32 32s32-14.3 32-32l0-160c0-17.7-14.3-32-32-32L320 0zM80 32C35.8 32 0 67.8 0 112L0 432c0 44.2 35.8 80 80 80l320 0c44.2 0 80-35.8 80-80l0-112c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 112c0 8.8-7.2 16-16 16L80 448c-8.8 0-16-7.2-16-16l0-320c0-8.8 7.2-16 16-16l112 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L80 32z""/></svg></span>
+                    {productName}</a>";
+
         string GetColor(int index, int NumberOfKeys)
         {
             if (NumberOfKeys == 1)
-                return "#Fa9C1A";
+                return "#77A9E3";
             return colors[index % colors.Length];
         }
     }

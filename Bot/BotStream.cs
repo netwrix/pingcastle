@@ -21,7 +21,7 @@ namespace PingCastle.Bot
 
         public static FileStream OpenPipeStream(string pipeName)
         {
-            Console.WriteLine("Opening pipe :" + pipeName);
+            UserInterfaceFactory.GetUserInterface().DisplayMessage("Opening pipe :" + pipeName);
             IntPtr p = CreateFile(@"\\.\pipe\" + pipeName, GENERIC_READ + GENERIC_WRITE, 0, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
             if (p.ToInt32() == -1)
             {

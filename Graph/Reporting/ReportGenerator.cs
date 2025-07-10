@@ -9,6 +9,7 @@ using PingCastle.Data;
 using PingCastle.Graph.Database;
 using PingCastle.Graph.Export;
 using PingCastle.Healthcheck;
+using PingCastle.UserInterface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,6 +30,7 @@ namespace PingCastle.Graph.Reporting
 
         private IDataStorage storage;
         private List<string> stopNodes = new List<string>();
+        private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
 
         public void PerformAnalyze(HealthcheckData data, ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
         {
@@ -187,7 +189,7 @@ namespace PingCastle.Graph.Reporting
             }
         }
 
-        void PrepareDetailedData(ADWebService adws, ADDomainInfo domainInfo, HealthcheckData data, GraphObjectReference ObjectReference)
+        private void PrepareDetailedData(ADWebService adws, ADDomainInfo domainInfo, HealthcheckData data, GraphObjectReference ObjectReference)
         {
             foreach (var typology in ObjectReference.Objects.Keys)
             {
@@ -324,7 +326,7 @@ namespace PingCastle.Graph.Reporting
                     if (typology == CompromiseGraphDataTypology.PrivilegedAccount && (name.EndsWith("-519") || name.EndsWith("-518") || name.EndsWith("-498") || name.Equals("S-1-5-32-557")))
                         return;
                     Trace.WriteLine("Id not found for name=" + name);
-                    Console.WriteLine("The report " + description + " starting from " + name + " couldn't be built because the object wasn't found");
+                    _ui.DisplayMessage("The report " + description + " starting from " + name + " couldn't be built because the object wasn't found");
                     return;
                 }
                 Dictionary<int, Node> chartNodes = new Dictionary<int, Node>();
@@ -363,11 +365,9 @@ namespace PingCastle.Graph.Reporting
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Exception: " + ex.Message);
-                Console.WriteLine(ex.StackTrace);
+                _ui.DisplayError("Exception: " + ex.Message);
+                _ui.DisplayStackTrace(ex.StackTrace);
                 Trace.WriteLine(ex.ToString());
-                Console.ResetColor();
             }
         }
 
@@ -520,6 +520,16 @@ namespace PingCastle.Graph.Reporting
             data.GroupName = groupName;
             data.DistinguishedName = rootNode.ADItem.DistinguishedName;
             data.Members = new List<HealthCheckGroupMemberData>();
+
+            if (rootNode.ADItem?.ObjectSid != null)
+            {
+                data.Sid = rootNode.ADItem.ObjectSid.Value;
+            }
+            else if (!string.IsNullOrEmpty(rootNode.Sid))
+            {
+                data.Sid = rootNode.Sid;
+            }
+
             foreach (Node x in members)
             {
                 // avoid computer included in the "cert publisher" group)
@@ -535,6 +545,7 @@ namespace PingCastle.Graph.Reporting
         private HealthCheckGroupMemberData BuildMemberDetail(ADWebService adws, HealthCheckGroupData data, Node node)
         {
             HealthCheckGroupMemberData member = new HealthCheckGroupMemberData();
+            member.Sid = node.Sid;
             if (node.ADItem == null)
             {
                 data.NumberOfExternalMember++;

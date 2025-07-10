@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using System.Web;
 
 namespace PingCastle.Report
 {
@@ -74,7 +73,7 @@ namespace PingCastle.Report
 
         protected override void GenerateBodyInformation()
         {
-            GenerateNavigation("Active Directory map " + (FullNodeMap ? "full" : "simple"), null, DateTime.Now);
+            GenerateNavigation("Active Directory map " + (FullNodeMap ? "full" : "simple"), null);
             GenerateAbout();
             Add(@"
 <noscript>

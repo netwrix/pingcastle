@@ -6,7 +6,6 @@
 //
 using System;
 using System.ComponentModel;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -260,5 +259,14 @@ namespace PingCastle
             return string.Equals(Edition, "Basic", StringComparison.OrdinalIgnoreCase);
         }
 
+        public void TraceInfo()
+        {
+            Trace.WriteLine("License checked");
+            Trace.WriteLine($"CustomerNotice: {CustomerNotice}");
+            Trace.WriteLine($"DomainLimitation: {DomainLimitation}");
+            Trace.WriteLine($"DomainNumberLimit: {DomainNumberLimit}");
+            Trace.WriteLine($"Edition: {Edition}");
+            Trace.WriteLine($"EndTime: {EndTime}");
+        }
     }
 }

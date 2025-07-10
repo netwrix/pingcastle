@@ -84,7 +84,7 @@ svg {
 }
 
 .indicators-border {
-    border: 2px solid #Fa9C1A;
-    margin: 2px;
-    padding: 2px;
+    border: 1px solid #E1E5EA;
+    margin: 10px;
+    padding: 20px;
 }

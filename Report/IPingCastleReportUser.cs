@@ -10,7 +10,7 @@ namespace PingCastle.Report
 
     public interface IPingCastleReportUser<T> where T : IPingCastleReport
     {
-        string GenerateReportFile(T report, ADHealthCheckingLicense license, string filename);
+        string GenerateReportFile(T report, string filename);
         string GenerateRawContent(T report);
         void SetUrlDisplayDelegate(GetUrlDelegateDomain uRLDelegate);
         void SetUrlDisplayDelegate(GetUrlDelegateAzureAD uRLDelegate);

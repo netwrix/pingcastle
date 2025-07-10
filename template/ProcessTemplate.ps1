@@ -76,3 +76,4 @@ ProcessTemplate -File ReportMapBuilder.js
 ProcessTemplate -File ReportNetworkMap.js
 ProcessTemplate -File ReportCompromiseGraph.js
 ProcessTemplate -File ReportCloudMain.js
+ProcessTemplate -File fontawesome.all.min.css

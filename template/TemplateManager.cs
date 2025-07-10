@@ -14,6 +14,7 @@ namespace PingCastle.template
 {
     public class TemplateManager
     {
+
         private static string LoadTemplate(string resourceName)
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -96,11 +97,17 @@ namespace PingCastle.template
         {
             return LoadTemplate(typeof(TemplateManager).Namespace + ".vis.min.css.gz");
         }
-       
+
         public static string LoadReportBaseCss()
         {
             return LoadTemplate(typeof(TemplateManager).Namespace + ".ReportBase.css.gz");
         }
+
+        public static string LoadFontAwesomeCss()
+        {
+            return LoadTemplate(typeof(TemplateManager).Namespace + ".fontawesome.all.min.css.gz");
+        }
+
 
         public static string LoadReportBaseJs()
         {

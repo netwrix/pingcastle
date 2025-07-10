@@ -112,10 +112,10 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="A_SMB2SignatureNotEnabled_Description" xml:space="preserve">
     <value>The purpose is to ensure that the SMB version 2 protocol has signing enabled when communicating with domain controllers</value>
@@ -185,7 +185,7 @@
     <value>The purpose is to verify if Domain Controller(s) are vulnerable to the MS17-010 vulnerability</value>
   </data>
   <data name="S_Vuln_MS17_010_Solution" xml:space="preserve">
-    <value>To fix the security breach, you should patch the DC as soon as it has been established it was vulnerable. Another good remediation is to disable SMB v1 (see "DC Vulnerability (SMB v1)). You can verify that using the program from github in the links: this program will check remotely the last startup time of the DC and evaluate the risk</value>  
+    <value>To fix the security breach, you should patch the DC as soon as it has been established it was vulnerable. Another good remediation is to disable SMB v1 (see "DC Vulnerability (SMB v1)). You can verify that using the program from github in the links: this program will check remotely the last startup time of the DC and evaluate the risk</value>
   </data>
   <data name="S_Vuln_MS17_010_Rationale" xml:space="preserve">
     <value>Number of DC(s) vulnerable to MS17-010 = {count} (&gt;0)</value>
@@ -2813,7 +2813,7 @@ We recommend to set "*" as the module list.
     <value />
   </data>
   <data name="A_AuditPowershell_TechnicalExplanation" xml:space="preserve">
-    <value>PowerShell is a powerful language, also used by hackers because of this quality. Hackers are able to run programs such as mimikatz in memory using obfuscated commands such as Invoke&#8211;Mimikatz.
+    <value>PowerShell is a powerful language, also used by hackers because of this quality. Hackers are able to run programs such as mimikatz in memory using obfuscated commands such as Invoke-Mimikatz.
     Because there is no artefact on the disk, the incident response task is difficult for the forensic analysts.
     For this reason, we recommend to enable PowerShell logging via a group policy, despite the fact that these security settings may be part of the workstation or server images.
     </value>
@@ -3971,7 +3971,7 @@ If the script is detected, Windows 7 is considered as supported and this rule is
     <value>The purpose of this rule is to ensure that there is no LAPS permission problems with computers that have been added manually to the domain by a user</value>
   </data>
   <data name="A_LAPS_Joined_Computers_Detail" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="A_LAPS_Joined_Computers_Documentation" xml:space="preserve">
     <value>https://azurecloudai.blog/2019/10/01/laps-security-concern-computers-joiners-are-able-to-see-laps-password/
@@ -4089,14 +4089,13 @@ https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-a
     <value>Check the permission of agent certificate templates</value>
   </data>
   <data name="A_CertTempCustomSubject_Description" xml:space="preserve">
-    <value>The purpose of this rule is to ensure that no certificate request templates allow users to control the subject</value>
+    <value>This check verifies if certificate templates in Active Directory Certificate Services (AD CS) allow user-controlled subject information and meet other common criteria associated with the ESC1 vulnerability.</value>
   </data>
   <data name="A_CertTempCustomSubject_Detail" xml:space="preserve">
-    <value>Name: {0}</value>
+    <value>&lt;{0}&gt;Name: {1} &lt;{2}&gt;CA: {3} EnrollmentPrincipals: {4} LastModified: {5}</value>
   </data>
   <data name="A_CertTempCustomSubject_Documentation" xml:space="preserve">
-    <value>https://posts.specterops.io/certified-pre-owned-d95910965cd2
-https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-directory-environment/</value>
+    <value>Certified-PreOwned https://specterops.io/wp-content/uploads/sites/3/2022/06/Certified_Pre-Owned.pdf</value>
   </data>
   <data name="A_CertTempCustomSubject_Rationale" xml:space="preserve">
     <value>At least one certificate template used for authentication can have its subject modified when being used [{count}]</value>
@@ -4105,17 +4104,28 @@ https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-a
     <value>The detail can be found in &lt;a href="#certificatetemplates"&gt;Certificate Templates&lt;/a&gt;</value>
   </data>
   <data name="A_CertTempCustomSubject_Solution" xml:space="preserve">
-    <value>On the certificate template properties, uncheck in the property sheet "Subject Name" the field "Supply in the request".
-     Alternatively, restrict this template to a specific group.
-    </value>
+    <value>To mitigate ESC1, use one or more of the options below:
+
+&lt;strong&gt;Option 1: Modify Certificate Template Settings in ADCS&lt;/strong&gt;
+&lt;ul&gt;&lt;li&gt;Open Certificate Authority (certsrv.msc) on the CA server.&lt;/li&gt;&lt;li&gt;Right-click on Certificate Templates and select Manage.&lt;/li&gt;&lt;li&gt;Navigate to and right-click the vulnerable template and select Properties.&lt;/li&gt;&lt;li&gt;Go to the Subject Name tab:&lt;ul&gt;&lt;li&gt;Ensure "Supply in the request" is unchecked.&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;li&gt;Click OK to save changes.&lt;/li&gt;&lt;/ul&gt;
+&lt;strong&gt;Option 2: Restrict Enrollment Permissions&lt;/strong&gt;
+&lt;strong&gt;Note:&lt;/strong&gt; Restricting enrollment permissions mitigates some of the risk but all users with enrollment permissions can still impersonate any account. As such, accounts with enrollment permissions for these certificates should be closely monitored and not be on non-privileged accounts.
+
+&lt;ul&gt;&lt;li&gt;Open Certificate Authority (certsrv.msc) on the CA server.&lt;/li&gt;&lt;li&gt;Right-click on Certificate Templates and select Manage.&lt;/li&gt;&lt;li&gt;Navigate to and right-click the vulnerable template and select Properties.&lt;/li&gt;&lt;li&gt;Go to the Security tab:&lt;ul&gt;&lt;li&gt;Remove well-known low-privileged groups such as Authenticated Users, Everyone from enrollment permissions.&lt;/li&gt;&lt;li&gt;Assign only the required accounts and groups permission to request these certificates.&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;li&gt;Click OK to save changes.&lt;/li&gt;&lt;/ul&gt;
+&lt;strong&gt;Option 3: Remove the CA Certificate from NTAuthCertificates&lt;/strong&gt;
+&lt;strong&gt;Note:&lt;/strong&gt; Only do this if you are sure you do not use and do not want to use certificate-based authentication.
+
+NTAuthCertificates CaCertificate attribute stores the certificate authority certificates that are authorized to be used for authentication. Removing the Certificate Authorities certificate from here stops all authentication-based attacks.
+If you're not using certificate-based authentication for this CA:
+&lt;ul&gt;&lt;li&gt;Open Active Directory Sites and Services (dssite.msc).&lt;/li&gt;&lt;li&gt;From the top menu, click View and select Show Services Node.&lt;/li&gt;&lt;li&gt;Navigate to Services &gt; Public Key Services &gt; NTAuthCertificates.&lt;/li&gt;&lt;li&gt;Right-click the CACertificate attribute and select Properties.&lt;ul&gt;&lt;li&gt;Review the listed certificates.&lt;/li&gt;&lt;li&gt;Remove the entry for the affected CA by selecting it and clicking Remove.&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;li&gt;Click OK to apply the changes.&lt;/li&gt;&lt;/ul&gt;</value>
   </data>
   <data name="A_CertTempCustomSubject_TechnicalExplanation" xml:space="preserve">
-    <value>Usually, the subject of a certificate is generated automatically by the certification authority.
-    By allowing editing before its issuance, a malicious user can set the subject to an administrator account, and thus get a certificate representing them.
-  This certificate can be abused later to impersonate them.</value>
+    <value>ESC1 is a vulnerability in Active Directory Certificate Services (AD CS) that occurs when certificate templates allow users to control the Subject Name as well as meet other criteria, such as:
+&lt;ul&gt;&lt;li&gt;&lt;strong&gt;User-Controlled Subject Name:&lt;/strong&gt; Requesters can define the subject, enabling impersonation of any account in the domain.&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Excessive Enrollment Permissions:&lt;/strong&gt; Large groups such as Domain Users and Authenticated Users have enrollment rights on vulnerable templates as well as the certificate authority.&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Authentication-based:&lt;/strong&gt; Templates support Extended Key Usage (EKU) that allows the template to be used for Kerberos authentication.&lt;/li&gt;&lt;li&gt;&lt;strong&gt;No Approval Requirements:&lt;/strong&gt; Certificates can be issued without requiring manager approval and no authorized signatures are required.&lt;/li&gt;&lt;/ul&gt;
+This misconfiguration can enable attackers to forge certificates, escalate privileges, and compromise the Active Directory environment.</value>
   </data>
   <data name="A_CertTempCustomSubject_Title" xml:space="preserve">
-    <value>Check if authentication certificate templates allow users to control the subject</value>
+    <value>Check for ESC1: Vulnerable Subject Control in Certificate Templates</value>
   </data>
   <data name="A_PreWin2000AuthenticatedUsers_Description" xml:space="preserve">
     <value>The purpose is checking if the "Pre-Windows 2000 Compatible Access" group contains "Authenticated Users"</value>
@@ -4181,7 +4191,7 @@ https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-34470</value>
     <value>Presence of vulnerable schema class = {count}</value>
   </data>
   <data name="S_ADRegistrationSchema_ReportLocation" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="S_ADRegistrationSchema_Solution" xml:space="preserve">
     <value>For PossSuperiorComputer:
@@ -4283,7 +4293,7 @@ If the attributes have been found in the schema, the program reports if one of t
     <value>Search for Java schema extension RFC 2713</value>
   </data>
   <data name="S_JavaSchema_Detail" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="S_WSUS_HTTP_Description" xml:space="preserve">
     <value>The purpose is to ensure that there is no access of WSUS server via HTTP</value>
@@ -4311,7 +4321,7 @@ This program is looking at the settings defined in "Set the intranet update serv
 (refers to registry key HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\WUServer and HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\UpdateServiceUrlAlternate)
 </value>
   </data>
-  <data name="S_WSUS_HTTP_TechnicalExplanation" xml:space="preserve">.
+  <data name="S_WSUS_HTTP_TechnicalExplanation" xml:space="preserve">
     <value>WSUS is the component used on the intranet to deliver Windows updates. The recommendation of Microsoft is to use HTTPS for transport but for convenience or tests, HTTP can be configured.
 The HTTP protocol can be intercepted on the network with tools such as wsuxploit or WSuspicious (see below for links) and malicious updates can be delivered.
 The attacker can then take control of many assets.</value>
@@ -4349,7 +4359,7 @@ See this guide for more information:
 https://docs.microsoft.com/en-us/windows-server/administration/windows-server-update-services/deploy/2-configure-wsus#23-secure-wsus-with-the-secure-sockets-layer-protocol
 </value>
   </data>
-  <data name="S_WSUS_UserProxy_TechnicalExplanation" xml:space="preserve">.
+  <data name="S_WSUS_UserProxy_TechnicalExplanation" xml:space="preserve">
     <value>Unprivileged domain users may set a user proxy that is used for Windows Update if it is being allowed by a GPO.
     Since the cumulative updates from September 2020 and January 2021, WSUS clients do not use the user proxy to connect to the server by default.
     However, it is possible to configure a GPO setting that allows the connection via user proxy as a fallback to the system proxy.
@@ -4388,7 +4398,7 @@ https://docs.microsoft.com/en-us/windows/client-management/mdm/policy-csp-update
   It refers to the registry key: HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\DoNotEnforceEnterpriseTLSCertPinningForUpdateDetection
 </value>
   </data>
-  <data name="S_WSUS_NoPinning_TechnicalExplanation" xml:space="preserve">.
+  <data name="S_WSUS_NoPinning_TechnicalExplanation" xml:space="preserve">
     <value>Even though HTTPS makes it harder for attackers to intercept WSUS responses, it it still possible with a specific configuration.
     HTTPS connections may be intercepted by a proxy that signs the response again with a self-signed certificate after receiving it from the WSUS server.
     The certificate can be installed in a user cert store so responses from the HTTPS proxy can still be validated.
@@ -4440,7 +4450,7 @@ https://adsecurity.org/?p=376</value>
     <value>Check if WSUS is used with weak SSL protocol.</value>
   </data>
   <data name="A_WSUS_SslProtocol_ReportLocation" xml:space="preserve">
-     <value>The detail can be found in the &lt;a href="#WSUSsettings"&gt;WSUS settings&lt;/a&gt; section.</value>
+    <value>The detail can be found in the &lt;a href="#WSUSsettings"&gt;WSUS settings&lt;/a&gt; section.</value>
   </data>
   <data name="A_DsHeuristicsDoNotVerifyUniqueness_Description" xml:space="preserve">
     <value>The purpose is to identify domains having the SPN and UPN uniqueness check disabled</value>
@@ -4506,7 +4516,7 @@ For the expected values:
     <value>The purpose is to ensure that there is no use of the obsolete and vulnerable OS Windows 8 for the workstations within the domain</value>
   </data>
   <data name="S_OS_Win8_Documentation" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="S_OS_Win8_Rationale" xml:space="preserve">
     <value>Presence of Windows 8 = {count}</value>
@@ -4529,13 +4539,13 @@ For the expected values:
     <value>The purpose is to ensure that the Guest account of the domain is not enabled</value>
   </data>
   <data name="A_Guest_Documentation" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="A_Guest_Rationale" xml:space="preserve">
     <value>The Guest account of the domain is enabled</value>
   </data>
   <data name="A_Guest_ReportLocation" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="A_Guest_Solution" xml:space="preserve">
     <value>You have to find the Guest account and disable it.</value>
@@ -4869,7 +4879,7 @@ An attacker can then change the DNS of a compromise host to the DC DNS and reque
     <value>The purpose is to ensure that DC supports Kerberos armoring when functional level is at least Windows Server 2012</value>
   </data>
   <data name="S_KerberosArmoringDC_Solution" xml:space="preserve">
-    <value>To enable Kerberos armoring for domain controllers, edit the GPO and go to Computer Configuration > Administrative Templates > System > KDC
+    <value>To enable Kerberos armoring for domain controllers, edit the GPO and go to Computer Configuration &gt; Administrative Templates &gt; System &gt; KDC
     then enable the policy "KDC support for claims, compound authentication and Kerberos armoring".
   The policy should be set to at least "Supported".
   
@@ -4885,7 +4895,7 @@ The safest settings is "Fail authentication requests when Kerberos armoring is n
     </value>
   </data>
   <data name="S_KerberosArmoringDC_Detail" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="S_KerberosArmoringDC_Documentation" xml:space="preserve">
     <value>https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/hh831747(v=ws.11)
@@ -4901,7 +4911,7 @@ The safest settings is "Fail authentication requests when Kerberos armoring is n
     <value>The purpose is to ensure that clients support Kerberos armoring when domain functional level is at least Windows Server 2012</value>
   </data>
   <data name="S_KerberosArmoring_Solution" xml:space="preserve">
-    <value>To enable Kerberos armoring for client, edit the GPO and go to Computer Configuration > Administrative Templates > System > Kerberos
+    <value>To enable Kerberos armoring for client, edit the GPO and go to Computer Configuration &gt; Administrative Templates &gt; System &gt; Kerberos
     then enable the policy "Kerberos client support for claims, compound authentication and Kerberos armoring".</value>
   </data>
   <data name="S_KerberosArmoring_Rationale" xml:space="preserve">
@@ -4914,7 +4924,7 @@ The safest settings is "Fail authentication requests when Kerberos armoring is n
     </value>
   </data>
   <data name="S_KerberosArmoring_Detail" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="S_KerberosArmoring_Documentation" xml:space="preserve">
     <value>https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/hh831747(v=ws.11)
@@ -4950,7 +4960,7 @@ The safest settings is "Fail authentication requests when Kerberos armoring is n
 https://learn.microsoft.com/en-us/windows/win32/ad/display-specifiers</value>
   </data>
   <data name="P_DisplaySpecifier_ReportLocation" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="S_FunctionalLevel1_Title" xml:space="preserve">
     <value>Ensure that the functional level of the domain and the forest are up to date to use the latest security features</value>
@@ -5177,7 +5187,7 @@ https://rickardnobel.se/verify-redirected-computers-container-in-active-director
     <value>Check if default OU location has been changed within the domain.</value>
   </data>
   <data name="S_DefaultOUChanged_ReportLocation" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="P_AdminEmailOn_Description" xml:space="preserve">
     <value>The purpose is to ensure proper isolation of administrative activities and to prevent any admin from having an email address configured in the domain.</value>
@@ -5209,10 +5219,8 @@ https://rickardnobel.se/verify-redirected-computers-container-in-active-director
     <value>Check if administrator accounts are email enabled.</value>
   </data>
   <data name="P_AdminEmailOn_ReportLocation" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
-
-
   <data name="P_UnprotectedOU_Description" xml:space="preserve">
     <value>The purpose is to ensure that Organizational Units (OUs) and Containers in Active Directory are protected to prevent accidental deletion, which could lead to data loss and disruptions in the network infrastructure.</value>
   </data>
@@ -5367,7 +5375,7 @@ Also to avoid EDR alerts or to not perform the scan, you can run PingCastle with
     <value>msDS-ExpirePasswordsOnSmartCardOnlyAccounts is not set</value>
   </data>
   <data name="A_SmartCardPwdRotation_ReportLocation" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="A_SmartCardPwdRotation_Solution" xml:space="preserve">
     <value>Ensure your domain's functional level is at least Windows Server 2016 or higher.
@@ -5472,7 +5480,7 @@ Also to avoid EDR alerts or to not perform the scan, you can run PingCastle with
     <value>Number of Cluster without password change: {count}</value>
   </data>
   <data name="S_PwdLastSet_Cluster_ReportLocation" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="S_PwdLastSet_Cluster_Solution" xml:space="preserve">
     <value>
@@ -5569,7 +5577,7 @@ https://blog.palantir.com/microsoft-defender-attack-surface-reduction-recommenda
     <value>The detail can be found in &lt;a href="#gpodefenderASR"&gt;Defender ASR&lt;/a&gt;</value>
   </data>
   <data name="S_DefenderASR_Solution" xml:space="preserve">
-    <value>To apply an ASR mitigation, navigate to the GPO setting "Configure Attack Surface Reduction rules" found under Computer Configuration > Policies > Administrative Templates > Windows Components > Windows Defender Antivirus > Windows Defender Exploit Guard > Attack Surface Reduction.
+    <value>To apply an ASR mitigation, navigate to the GPO setting "Configure Attack Surface Reduction rules" found under Computer Configuration &gt; Policies &gt; Administrative Templates &gt; Windows Components &gt; Windows Defender Antivirus &gt; Windows Defender Exploit Guard &gt; Attack Surface Reduction.
     Upon enabling this setting, select "Set the state for each ASR rule".
     Then, input the mitigation’s GUID as the Value name and assign 1 as the Value to enforce the rule in Block mode.
     Other configurable values include 2 for Audit mode and 6 for Warn mode.
@@ -5651,7 +5659,7 @@ Alternatively, you can choose to apply the rules to ALL IP addresses or add your
     <value>The GPO are not pushing recommended configuration for Terminal Services</value>
   </data>
   <data name="S_TerminalServicesGPO_ReportLocation" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="S_TerminalServicesGPO_Solution" xml:space="preserve">
     <value>The Terminal Services configuration can be found in Policies / Administrative Templates / Windows Components / Remote Desktop Services / Remote Desktop Session Host
@@ -5682,5 +5690,165 @@ This rule is active if nothing is set or if the time limit is set to NEVER.
   </data>
   <data name="S_TerminalServicesGPO_Detail" xml:space="preserve">
     <value>GPO: {0} Reason: {1}</value>
+  </data>
+      <data name="A_BadSuccessor_Title" xml:space="preserve">
+      <value>BadSuccessor Delegation Detected</value>
+    </data>
+    <data name="A_BadSuccessor_Description" xml:space="preserve">
+      <value>One or more Organizational Units (OUs) in your Active Directory domain have delegations granting non-privileged users or groups the ability to create or control msDS-DelegatedManagedServiceAccount objects</value>
+    </data>
+    <data name="A_BadSuccessor_Solution" xml:space="preserve">
+      <value>Review the affected OUs and restrict delegations that grant non-privileged users or groups permissions such as Create All Child Objects, WriteDACL, WriteOwner, or FullControl over msDS-DelegatedManagedServiceAccount objects. Only highly trusted administrators should have these rights.</value>
+    </data>
+    <data name="A_BadSuccessor_Rationale" xml:space="preserve">
+      <value>BadSuccessor Delegation Detected: {count}</value>
+    </data>
+    <data name="A_BadSuccessor_Detail" xml:space="preserve">
+      <value>Principal: {0} Permission: {1} OU: {2}</value>
+    </data>
+    <data name="A_BadSuccessor_TechnicalExplanation" xml:space="preserve">
+      <value>This rule detects when non-privileged users or groups are granted dangerous permissions over msDS-DelegatedManagedServiceAccount (dMSA) objects in OUs, specifically in environments with Windows Server 2025 Domain Controllers. Such delegations enable attackers to exploit the "BadSuccessor" vulnerability through two primary attack vectors: membership hijacking and cryptographic key extraction.
+
+In membership hijacking attacks, attackers can forge the msDS-ManagedAccountPrecededByLink attribute to migrate group memberships and permissions from any target account to an attacker-controlled dMSA. Additionally, attackers can extract password hashes from the dMSA Key Package's "Previous Key" field, which contains the superseded account's password hash and enables Kerberos ticket decryption.
+
+The detection triggers when specific high-risk permissions are assigned to OUs with inheritance set to "All Descendant Objects" or targeting the dMSA object type. These monitored permissions include Create All Child Objects, Write DACL (Permissions), Write Owner, and Full Control. Each of these permissions can facilitate different aspects of dMSA abuse, from creating malicious service accounts to modifying existing ones or taking over their ownership.</value>
+    </data>
+    <data name="A_BadSuccessor_Documentation" xml:space="preserve">
+      <value>https://www.akamai.com/blog/security-research/abusing-dmsa-for-privilege-escalation-in-active-directory#badsuccessor</value>
+    </data>
+  <data name="P_AdminEmailOn_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Directory Manager| helps automate account creation while enforcing policies to exclude specific attributes, such as email enablement, ensuring compliance and reducing the risk of misconfiguration. \r\nNetwrix Threat Manager| monitors and optionally blocks changes to admin account properties, to detect potential misconfigurations or abuse and ensure security and compliance.</value>
+  </data>
+  <data name="A_CertTempNoSecurity_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| monitors and optionally blocks certificate template changes to protect against unauthorized modifications and ensure security.</value>
+  </data>
+  <data name="A_Guest_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Auditor| monitors the usage of guest accounts and alerts on suspicious activity, enabling prompt detection and response.</value>
+  </data>
+  <data name="A_DsHeuristicsLDAPSecurity_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| monitors and optionally blocks changes to the DsHeuristics attribute, preventing security misconfigurations and mitigating risks such as CVE-2021-42282.</value>
+  </data>
+  <data name="A_DsHeuristicsDoNotVerifyUniqueness_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| monitors and optionally blocks changes to the DsHeuristics attribute, ensuring the UPN/SPN uniqueness check remains enforced to prevent security misconfigurations and mitigate risks.</value>
+  </data>
+  <data name="A_HardenedPaths_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| monitors and optionally  blocks unauthorized changes to Group Policy Objects (GPOs), helping protect against domain takeover attacks. </value>
+  </data>
+  <data name="A_CertTempAnyone_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| protects your environment by monitoring and optionally blocking unauthorized changes to certificate templates, ensuring security.</value>
+  </data>
+  <data name="A_CertTempAgent_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| monitors and optionally blocks certificate template changes to protect against unauthorized modifications and ensure security.</value>
+  </data>
+  <data name="A_CertTempAnyPurpose_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| protects your environment by monitoring and optionally blocking unauthorized changes to certificate templates, ensuring security.</value>
+  </data>
+  <data name="A_CertTempCustomSubject_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| monitors and optionally blocks certificate template changes to protect against unauthorized modifications and ensure security.</value>
+  </data>
+  <data name="P_AdminPwdTooOld_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Directory Manager| enables administrators to remove direct administrative permissions from Active Directory and enforce least privilege principles, ensuring secure and efficient AD management.\r\nNetwrix Password Policy Enforcer| prevents the use of known breached passwords and enforces strong password policies, enhancing security for Active Directory accounts.\r\nNetwrix Privilege Secure| helps organizations manage privileged access to admin accounts through password rotation, removal of standing privileges, and secure, controlled access. </value>
+  </data>
+  <data name="S_PwdLastSet_90_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Directory Manager| automates password expiry notifications and group management based on users' password expiration dates.</value>
+  </data>
+  <data name="S_PwdLastSet_45_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Privilege Secure| helps ensure endpoint passwords are automatically updated and privileges are eliminated when not in use, reducing the attack surface for lateral movement.</value>
+  </data>
+  <data name="P_RODCDeniedGroup_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| monitors and optionally blocks unauthorized changes to the Denied RODC Password Replication Group, ensuring critical objects remain protected from replication and reducing the risk of credential exposure. \r\nNetwrix Directory Manager| provides robust group management and attestation capabilities, helping maintain the integrity.</value>
+  </data>
+  <data name="P_RODCAllowedGroup_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| monitors and alerts on changes to the "Allowed RODC Password Replication Group" membership and can optionally prevent unauthorized modifications with policy-based protection.</value>
+  </data>
+  <data name="A_CertWeakDSA_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| monitors and optionally blocks certificate template changes to protect against unauthorized modifications and ensure security.</value>
+  </data>
+  <data name="A_CertROCA_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| monitors and optionally blocks certificate template changes to protect against unauthorized modifications and ensure security.</value>
+  </data>
+  <data name="P_ControlPathIndirectMany_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Directory Manager| shifts direct Active Directory permissions to fine-grained, controlled management within Netwrix Directory Manager, enforcing least privilege assignments for enhanced security, while also enabling self-service password resets to reduce reliance on tier 1 helpdesk associates.\r\nNetwrix Access Analyzer| helps prevent admin privilege overprovisioning and streamlines bulk removal of unnecessary write permissions on known control paths to minimize security risks.</value>
+  </data>
+  <data name="P_ControlPathIndirectEveryone_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Directory Manager| shifts direct Active Directory permissions to fine-grained, controlled management within Netwrix Directory Manager, ensuring least privilege assignments for enhanced security, while also enabling self-service password resets to reduce the need for tier 1 helpdesk involvement.\r\nNetwrix Access Analyzer| ensures admin privileges are not overprovisioned and removes unnecessary everyone-like groups along known control paths to minimize security risks.</value>
+  </data>
+  <data name="S_PwdNeverExpires_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Directory Manager| automatically enforces secure configurations during account creation or management to ensure the "Password Never Expires" setting is not misused. \r\nNetwrix Privilege Secure| helps mandate regular password updates for privileged accounts, regardless of expiration settings, with strong, complex passwords to mitigate long-term compromise risks.</value>
+  </data>
+  <data name="A_LDAPSigningDisabled_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| monitors and optionally blocks unauthorized changes to Group Policy Objects (GPOs), ensuring LDAP signing requirements remain enforced to protect against man-in-the-middle attacks.</value>
+  </data>
+  <data name="P_DsHeuristicsAdminSDExMask_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| helps enforce policies to block unauthorized changes to the AdminSDHolder object and ensure critical group protections remain intact, preventing privilege escalation. </value>
+  </data>
+  <data name="P_RecycleBin_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Recovery for Active Directory| ensures fast, complete restoration of deleted objects with all attributes intact—even if the Recycle Bin was never enabled—minimizing downtime and security risks.</value>
+  </data>
+  <data name="P_LoginDCEveryone_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Privilege Secure| dynamically grants logon rights to administrators only when needed and disables RDP access when not in use, minimizing the attack surface and reducing the risk of unauthorized access.</value>
+  </data>
+  <data name="P_PrivilegeEveryone_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Auditor| monitors and alerts on GPO changes, ensuring immediate visibility into security risks.\r\nNetwrix Threat Manager| detects and optionally blocks unauthorized GPO changes that assign dangerous privileges to broad groups like "Everyone", protecting your environment proactively. \r\nNetwrix Endpoint Privilege Manager| mitigates the risk of dangerous privileges via least privilege management, ensuring users have only necessary access. It creates granular policies for controlling administrative rights, preventing malware, and maintaining compliance. </value>
+  </data>
+  <data name="P_DelegationGPOData_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Auditor| monitors and alerts on GPO changes with detailed visibility into who made changes, what was modified, and when, enabling swift response.</value>
+  </data>
+  <data name="A_NotEnoughDC_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Recovery for Active Directory| helps ensure business continuity by quickly restoring domain controller in case of a failure, minimizing downtime.</value>
+  </data>
+  <data name="P_ExchangeAdminSDHolder_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| detects and optionally blocks unauthorized changes to AdminSDHolder permissions, helping to prevent privilege escalation and protect your Active Directory. </value>
+  </data>
+  <data name="P_DelegationLoginScript_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Endpoint Policy Manager| can help ensure that all login scripts cannot be modified by any user by utilizing its application control and security policies. Specifically, Netwrix Endpoint Policy Manager provides the capability to lock down application settings and restrict user permissions, which prevents unauthorized modifications to login scripts.</value>
+  </data>
+  <data name="A_BackupMetadata_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Recovery for Active Directory| enables scheduled backups to ensure compliance, and provides automated rapid recovery to minimize downtime.</value>
+  </data>
+  <data name="A_ProtectedUsers_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Directory Management| provides comprehensive control, management, and attestation for Active Directory groups, ensuring secure and accurate group configurations.\r\n Netwrix Threat Manager| monitors and optionally blocks changes to the Protected Users group, preventing unauthorized modifications and strengthening authentication security. </value>
+  </data>
+  <data name="A_MembershipEveryone_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| monitors and optionally blocks unauthorized GPO changes, ensuring a secure environment.</value>
+  </data>
+  <data name="S_ADRegistration_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| monitors and optionally blocks unauthorized changes to domain policies, ensuring the security of computer account registrations and preventing privilege misuse.\r\nNetwrix Privilege Secure| helps dynamically assign permissions for machine additions only when required, removing persistent rights and reducing risk.\r\nNetwrix Directory Manager| enables delegated management of computer accounts with least privilege controls, ensuring proper oversight of domain join operations.</value>
+  </data>
+  <data name="A_LimitBlankPasswordUse_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| detects and optionally blocks GPO changes, preventing unauthorized configuration drift and securing your Active Directory environment.</value>
+  </data>
+  <data name="A_PwdGPO_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| monitors and alerts on suspicious GPO modifications, helping detect unauthorized changes that could expose credentials or lead to domain compromise.</value>
+  </data>
+  <data name="A_Krbtgt_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| detects and responds to identity-based attacks, including Golden Ticket and others.</value>
+  </data>
+  <data name="P_DelegationEveryone_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Directory Manager| enables secure delegation of Active Directory administration with fine-grained permissions, ensuring precise control and accountability over delegated access.\r\nNetwrix Access Analyzer| detects shadow access and excessive permissions, enabling organizations to remediate improper delegation and enforce least privilege.\r\nNetwrix Threat Manager| enhances security by detecting threats related to privilege escalation, so you can investigate suspicicous activity promptly and take appropriate action.</value>
+  </data>
+  <data name="P_Inactive_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Directory Manager| enforces lifecycle management for identities and their associated accounts, eliminating standing admin accounts by requiring users to request permissions only when needed.\r\nNetwrix Auditor| monitors and alerts on activity from inactive admin accounts, enabling early detection of potential misuse or malicious activity. </value>
+  </data>
+  <data name="P_AdminNum_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| can alert on changes to privileged groups and optionally block unauthorized additions to prevent privilege escalation.</value>
+  </data>
+  <data name="S_Duplicate_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Directory Manager| prevents duplicate accounts by performing checks during provisioning or manual creation, ensuring a clean and efficient Active Directory environment. </value>
+  </data>
+  <data name="S_PwdNotRequired_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Directory Manager| simplifies account creation and management by automatically enforcing proper configurations, ensuring the "Password Not Required" setting is never enabled. \r\nNetwrix Privilege Secure| enforces strong, complex passwords and prevents unauthorized use of the "PASSWD_NOTREQD" flag, eliminating password-less account vulnerabilities.</value>
+  </data>
+  <data name="S_C_PrimaryGroup_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Auditor| monitors and alerts on changes to group memberships in Active Directory, with a complete audit trail for accountability. \r\nNetwrix Threat Manager| monitors and alerts on unauthorized changes to group memberships, with the option to block them, preventing privilege escalation.\r\nNetwrix Access Analyzer| detects hidden group memberships for user accounts and can remediate security risks by removing computer accounts from groups in bulk.</value>
+  </data>
+  <data name="S_PrimaryGroup_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Auditor| monitors and alerts on changes to group memberships in Active Directory, with a complete audit trail for accountability.\r\nNetwrix Threat Manager| monitors and alerts on unauthorized changes to group memberships, with the option to block them, preventing privilege escalation.\r\nNetwrix Access Analyzer| detects hidden group memberships for user accounts and can remediate security risks by removing users from groups in bulk.</value>
+  </data>
+  <data name="S_C_Inactive_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Access Analyzer| helps remediate inactive computers in bulk and at scale. It enables you to identify stale users and computers and automate their disablement, relocation, or deletion through integrated workflows—ensuring a streamlined and secure Active Directory cleanup process.</value>
+  </data>
+  <data name="S_Inactive_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Directory Manager| helps manage user and group lifecycles effectively, eliminating stale users and outdated group memberships.\r\n Netwrix Identity Manager| prevents stale users and memberships by automating identity lifecycle management and role-based provisioning or deprovisioning.\r\nNetwrix Privilege Secure| helps minimize stale secondary accounts with one-time ephemeral accounts, ensuring a clean and secure environment. </value>
   </data>
 </root>

@@ -81,8 +81,6 @@ namespace PingCastle.Healthcheck.Rules
                 auditToHavePerDC.Add(dc.DistinguishedName,
                     new Dictionary<string, RequiredSimple>(StringComparer.OrdinalIgnoreCase)
                     {
-//                        {"AuditPolicyChange", new RequiredSimple("Audit Policy Change", "Collect event 4908, to track special groups such as \"administrators\"", true)},
-//				        {"AuditObjectAccess", new RequiredSimple("Audit object access", "Collect event 4698, 4699, 4702 to track schedule tasks lifecycle", true)},
                         {"0CCE9230-69AE-11D9-BED3-505054503030", new RequiredSimple("Policy Change / Authentication Policy Change", "Collect events 4713, 4716, 4739, 4867, to track trust modifications", false)},
                         {"0CCE9236-69AE-11D9-BED3-505054503030", new RequiredSimple("Account Management / Computer Account Management", "Collect events 4741, 4742 to track computer changes", false)},
                         {"0CCE922D-69AE-11D9-BED3-505054503030", new RequiredSimple("Detailed Tracking / DPAPI Activity", "Collect event 4692 to track the export of DPAPI backup key", false)},
@@ -90,7 +88,6 @@ namespace PingCastle.Healthcheck.Rules
                         {"0CCE9240-69AE-11D9-BED3-505054503030", new RequiredSimple("Account Logon / Kerberos Service Ticket Operations", "Collect events 4769 for kerberos authentication", false)},
                         {"0CCE9216-69AE-11D9-BED3-505054503030", new RequiredSimple("Logon/Logoff / Logoff", "Collect events 4634 for account logoff", false)},
                         {"0CCE9215-69AE-11D9-BED3-505054503030", new RequiredSimple("Logon/Logoff / Logon", "Collect events 4624, 4625, 4648 for account logon", false)},
-//                        {"0CCE9241-69AE-11D9-BED3-505054503030", new RequiredSimple("Account Logon / Other Account Logon Events", "Collect event 4648 for explicit credential logon", false)},
                         {"0CCE922B-69AE-11D9-BED3-505054503030", new RequiredSimple("Detailed Tracking / Process Creation", "Collect event 4688 to get the history of executed programs", false)},
                         {"0CCE9237-69AE-11D9-BED3-505054503030", new RequiredSimple("Account Management / Security Group Management", "Collect events 4728, 4732, 4756 for group membership change", false)},
                         {"0CCE9211-69AE-11D9-BED3-505054503030", new RequiredSimple("System / Security System Extension", "Collect events 4610, 4697 to track lsass security packages and services", false)},

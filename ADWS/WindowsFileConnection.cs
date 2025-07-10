@@ -7,7 +7,6 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using System.Text;
 
 namespace PingCastle.ADWS
 {
@@ -47,8 +46,6 @@ namespace PingCastle.ADWS
 
         public FileSecurity GetFileSecurity(string path)
         {
-            /*var info = new FileInfo(path);
-            return ((FileInfo)info).GetAccessControl();*/
             return File.GetAccessControl(path);
         }
 

@@ -45,6 +45,8 @@ namespace PingCastle.Healthcheck
         [XmlAttribute]
         public int EnrolleeSupplies { get; set; }
 
+        public List<string> EnrollmentLowPrivilegePrincipals { get; set; }
+
         [XmlAttribute]
         public bool IssuanceRequirementsEmpty { get; set; }
 
@@ -66,6 +68,62 @@ namespace PingCastle.Healthcheck
 
         [XmlAttribute]
         public bool NoSecurityExtension { get; set; }
+
+        [XmlAttribute]
+        public bool IsAuthorisedSignaturesRequired { get; set; }
+
+        [XmlAttribute]
+        public bool AllowsToSupplySubjectInRequest { get; set; }
+
+        [XmlAttribute]
+        public DateTime WhenChanged { get; set; }
+
+        [XmlAttribute]
+        public int SchemaVersion { get; set; }
+
+        [XmlAttribute]
+        public List<string> EKUs { get; set; }
+
+        [XmlAttribute]
+        public string Owner { get; set; }
+
+        public List<HealthCheckCertificateTemplateRights> Rights { get; set; }
+    }
+
+    public class HealthCheckCertificateTemplateRights
+    {
+        [XmlAttribute]
+        public string Account { get; set; }
+        [XmlAttribute]
+        public List<string> Rights { get; set; }
+    }
+
+    public class HealthCheckCertificateAuthorityData
+    {
+        [XmlAttribute]
+        public string Name { get; set; }
+
+        [XmlAttribute]
+        public string DnsHostName { get; set; }
+
+        [XmlIgnore]
+        public string FullName => $"{DnsHostName}\\{Name}";
+                       
+        [DefaultValue(null)]
+        public bool? IsLowPrivilegedPrincipalOwner { get; set; }
+
+        public List<byte[]> CertificatesData { get; set; }
+
+        [XmlAttribute]
+        public List<string> LowPrivelegedEnrollPrincipals { get; set; }
+
+        [XmlAttribute]
+        public List<string> LowPrivelegedManagerPrincipals { get; set; }
+        [DefaultValue(null)]
+        public bool? IsLowPrivelegedPrincipalEnrollCertificates { get; set; }
+
+        [XmlAttribute]
+        public string EnrollmentRestrictions { get; set; }
     }
 
     [DebuggerDisplay("{Name}")]
@@ -204,6 +262,8 @@ namespace PingCastle.Healthcheck
         public string Email { get; set; }
 
         public string Class { get; set; }
+
+        public string Sid { get; set; }
     }
 
     [DebuggerDisplay("{GroupName}")]
@@ -247,6 +307,8 @@ namespace PingCastle.Healthcheck
         public int NumberOfServiceAccount { get; set; }
 
         public int NumberOfMemberInProtectedUsers { get; set; }
+
+        public string Sid { get; set; }
 
         public bool ShouldSerializeMembers() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthCheckGroupMemberData> Members { get; set; }
@@ -603,6 +665,7 @@ namespace PingCastle.Healthcheck
             NumberNotAesEnabled += x.NumberNotAesEnabled;
             NumberDisabled += x.NumberDisabled;
             NumberEnabled += x.NumberEnabled;
+            NumberAccessDenied += x.NumberAccessDenied;
             NumberInactive += x.NumberInactive;
             NumberLocked += x.NumberLocked;
             NumberPwdNeverExpires += x.NumberPwdNeverExpires;
@@ -623,6 +686,8 @@ namespace PingCastle.Healthcheck
         public bool DotNotRecordDetail { get; set; }
 
         public int Number { get; set; }
+
+        public int NumberAccessDenied { get; set; }
 
         public int NumberEnabled { get; set; }
 
@@ -855,6 +920,8 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeDetails() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<string> Details { get; set; }
+
+        public List<ExtraDetail> ExtraDetails { get; set; }
     }
 
     [DebuggerDisplay("{OperatingSystem}")]
@@ -1061,13 +1128,6 @@ namespace PingCastle.Healthcheck
         public int Action { get; set; }
     }
 
-    //public class HealthcheckSiteTopologyData
-    //{
-
-    //    public string SiteName { get; set; }
-    //    public List<string> Subnets { get; set; }
-    //}
-
     [DebuggerDisplay("{new System.Security.Cryptography.X509Certificates.X509Certificate2(Certificate)} Source: {Source}")]
     public class HealthcheckCertificateData
     {
@@ -1135,6 +1195,12 @@ namespace PingCastle.Healthcheck
         public string DCName { get; set; }
 
         public DateTime CreationDate { get; set; }
+
+        [DefaultValue(null)]
+        public bool? IsGlobalCatalog { get; set; }
+
+        [DefaultValue(null)]
+        public bool? IsReadOnly { get; set; }
 
         public DateTime StartupTime { get; set; }
 
@@ -1673,6 +1739,9 @@ namespace PingCastle.Healthcheck
         public List<HealthcheckCertificateData> TrustedCertificates { get; set; }
 
         public bool ShouldSerializeCertificateTemplates() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+
+        public List<HealthCheckCertificateAuthorityData> CertificateAuthorities { get; set; }   
+
         public List<HealthCheckCertificateTemplate> CertificateTemplates { get; set; }
 
         public bool ShouldSerializeCertificateEnrollments() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
@@ -1719,9 +1788,6 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeGPOLoginScript() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckGPOLoginScriptData> GPOLoginScript { get; set; }
-
-        //public bool ShouldSerializeSiteTopology() { return (int)Level <= (int)HealthcheckDataLevel.Normal; }
-        //public List<HealthcheckSiteTopologyData> SiteTopology { get; set; }
 
         public bool ShouldSerializeDomainControllerWithNullSessionCount() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public int DomainControllerWithNullSessionCount { get; set; }
@@ -1889,5 +1955,7 @@ namespace PingCastle.Healthcheck
         }
 
         public CompromiseGraphData ControlPaths { get; set; }
+
+        public bool HasKdsRootKey { get; set; }
     }
 }

@@ -208,6 +208,10 @@ namespace PingCastle.ADWS
         public string[] msDSEnabledFeature { get; set; }
         [ADAttributeAttribute("msDS-ExpirePasswordsOnSmartCardOnlyAccounts", ADAttributeValueKind.BoolValue)]
         public bool msDSExpirePasswordsOnSmartCardOnlyAccounts { get; set; }
+        [ADAttributeAttribute("msDS-isGC", ADAttributeValueKind.BoolValue)]
+        public bool? msDSIsGC { get; set; }
+        [ADAttributeAttribute("msDS-IsRODC", ADAttributeValueKind.BoolValue)]
+        public bool? msDSisRodc { get; set; }
         [ADAttributeAttribute("msDS-IntId", ADAttributeValueKind.IntValue)]
         public int msDSIntId { get; set; }
         [ADAttributeAttribute("msDS-SupportedEncryptionTypes", ADAttributeValueKind.IntValue)]
@@ -339,6 +343,9 @@ namespace PingCastle.ADWS
         public DateTime WhenCreated { get; set; }
         [ADAttributeAttribute("whenChanged", ADAttributeValueKind.DateValue2)]
         public DateTime WhenChanged { get; set; }
+
+        [ADAttributeAttribute("mspki-ra-signature", ADAttributeValueKind.IntValue)]
+        public int AuthorizedSignatures { get; set; }
 
         public List<string> GetApplicableGPO()
         {
@@ -498,27 +505,6 @@ namespace PingCastle.ADWS
                 }
                 else if (recordType == 4)
                 {
-                    /*Trace.WriteLine("RecordType 4");
-                    int tempPointer = pointer + recordSize;
-                    int binaryDataLen = BitConverter.ToInt32(data, tempPointer);
-                    tempPointer += 4;
-                    int subRecordType = BitConverter.ToInt32(data, tempPointer);
-                    tempPointer += 4;
-                    int sidLen = data[ tempPointer];
-                    tempPointer += 1;
-                    if (sidLen > 0)
-                    {
-                        SecurityIdentifier sid = new SecurityIdentifier(data, tempPointer);
-                        tempPointer += sidLen;
-                    }
-                    int DnsNameLen = BitConverter.ToInt32(data, tempPointer);
-                    tempPointer += 4;
-                    string DnsName = UnicodeEncoding.UTF8.GetString(data, tempPointer, DnsNameLen);
-                    tempPointer += DnsNameLen;
-                    int NetbiosNameLen = BitConverter.ToInt32(data, tempPointer);
-                    tempPointer += 4;
-                    string NetbiosName = UnicodeEncoding.UTF8.GetString(data, tempPointer, NetbiosNameLen);
-                    tempPointer += NetbiosNameLen;*/
                 }
                 else
                 {
@@ -981,13 +967,14 @@ namespace PingCastle.ADWS
             return aditem;
         }
 
-        static void NotImplemented(string name, ADAttributeValueKind kind, berval[] val)
+        private static void NotImplemented(string name, ADAttributeValueKind kind, berval[] val)
         {
-            Console.WriteLine("name:" + name);
-            Console.WriteLine("kind: " + kind.ToString());
+            var ui = UserInterfaceFactory.GetUserInterface();
+            ui.DisplayMessage("name:" + name);
+            ui.DisplayMessage("kind: " + kind.ToString());
             if (val == null)
                 return;
-            Console.WriteLine("val: " + val[0].ToString());
+            ui.DisplayMessage("val: " + val[0].ToString());
             throw new NotImplementedException();
         }
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -1131,7 +1118,7 @@ namespace PingCastle.ADWS
                                 }
                                 break;
                             case ADAttributeValueKind.ReplMetadataValue:
-                                translation.prop.SetValue(aditem, ConvertByteToMetaDataInfo(((berval)data[name2][0]).GetByteArray()), null);
+                                translation.prop.SetValue(aditem, ConvertByteToMetaDataInfo(data[name2][0].GetByteArray()), null);
                                 break;
                             case ADAttributeValueKind.ReplMetadataValue2:
                                 {

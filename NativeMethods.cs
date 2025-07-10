@@ -7,7 +7,6 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Security.Principal;

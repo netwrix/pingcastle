@@ -4,23 +4,19 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using PingCastle.misc;
+using PingCastle.UserInterface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.DirectoryServices.ActiveDirectory;
 using System.IO;
 using System.Net;
-using System.Runtime.Serialization;
 using System.Security.Permissions;
 using System.ServiceModel;
-using System.Text;
-using System.Threading;
 using System.Xml;
 
 namespace PingCastle.ADWS
 {
-	public class ADWSConnection : ADConnection
+    public class ADWSConnection : ADConnection
 	{
 		
 		public ADWSConnection(string server, int port, NetworkCredential credential)
@@ -34,9 +30,11 @@ namespace PingCastle.ADWS
 
 		private delegate void ReceiveItems(ItemListType items);
 
-		// when doing a simple enumeration, ws-transfert (for root dse) and ws-enumeration needs to be called.
-		// share the connection between the 2 webservices to save time
-		private NetTcpBinding _binding = null;
+        private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
+
+        // when doing a simple enumeration, ws-transfert (for root dse) and ws-enumeration needs to be called.
+        // share the connection between the 2 webservices to save time
+        private NetTcpBinding _binding = null;
 		private NetTcpBinding Binding
 		{
 			get
@@ -237,7 +235,7 @@ namespace PingCastle.ADWS
 							}
 							catch (Exception ex)
 							{
-								Console.WriteLine("Warning: unable to process element (" + ex.Message + ")\r\n" + item.OuterXml);
+                                _ui.DisplayWarning("Warning: unable to process element (" + ex.Message + ")\r\n" + item.OuterXml);
 								Trace.WriteLine("Warning: unable to process element\r\n" + item.OuterXml);
 								Trace.WriteLine("Exception: " + ex.ToString());
 							}

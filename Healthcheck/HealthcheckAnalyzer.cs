@@ -4,14 +4,6 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using PingCastle.ADWS;
-using PingCastle.Data;
-using PingCastle.Graph.Reporting;
-using PingCastle.misc;
-using PingCastle.PingCastleLicense;
-using PingCastle.RPC;
-using PingCastle.Rules;
-using PingCastle.Scanners;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -33,6 +25,15 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
+using PingCastle.ADWS;
+using PingCastle.Data;
+using PingCastle.Graph.Reporting;
+using PingCastle.misc;
+using PingCastle.PingCastleLicense;
+using PingCastle.RPC;
+using PingCastle.Rules;
+using PingCastle.Scanners;
+using PingCastle.UserInterface;
 
 namespace PingCastle.Healthcheck
 {
@@ -56,6 +57,7 @@ namespace PingCastle.Healthcheck
                                                                     };
 
         public bool LimitHoneyPot = true;
+        private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
 
         public HealthcheckAnalyzer()
         {
@@ -72,7 +74,7 @@ namespace PingCastle.Healthcheck
         private void DisplayAdvancement(string data)
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-            Console.WriteLine(value);
+            _ui.DisplayMessage(value);
             Trace.WriteLine(value);
         }
 
@@ -90,9 +92,7 @@ namespace PingCastle.Healthcheck
         private void DisplayAdvancementWarning(string data)
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(value);
-            Console.ResetColor();
+            _ui.DisplayWarning(value);
             Trace.WriteLine(value);
         }
 
@@ -121,20 +121,17 @@ namespace PingCastle.Healthcheck
             DisplayAdvancement("Getting domain information (" + parameters.Server + ")");
             if (RestrictedToken.IsUsingRestrictedToken)
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("Warning: the program is running under a restricted token.");
-                Console.WriteLine("That means that the software does not have the same rights than the current user to query the Active Directory. Some information will be missing such as creation date or DNS zones.");
-                Console.WriteLine("To solve this problem, run the program elevated, aka as administrator");
-                Console.ResetColor();
+                _ui.DisplayWarning(new List<string> {
+                    "Warning: the program is running under a restricted token.",
+                    "That means that the software does not have the same rights than the current user to query the Active Directory. Some information will be missing such as creation date or DNS zones.",
+                    "To solve this problem, run the program elevated, aka as administrator" });
             }
             using (ADWebService adws = new ADWebService(parameters.Server, parameters.Port, parameters.Credential))
             {
                 domainInfo = adws.DomainInfo;
                 if (adws.useLdap)
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("Performance warning: using LDAP instead of ADWS");
-                    Console.ResetColor();
+                    _ui.DisplayWarning("Performance warning: using LDAP instead of ADWS");
                 }
                 DisplayAdvancement("Gathering general data");
                 GenerateGeneralData(domainInfo, adws);
@@ -160,7 +157,7 @@ namespace PingCastle.Healthcheck
                 GenerateGPOData(domainInfo, adws);
                 GeneratePSOData(domainInfo, adws);
                 DisplayAdvancement("Gathering pki data");
-                GeneratePKIData(domainInfo, adws);
+                GeneratePKIData(domainInfo, adws, parameters);
                 DisplayAdvancement("Gathering sccm data");
                 GenerateSCCMData(domainInfo, adws);
                 DisplayAdvancement("Gathering exchange data");
@@ -196,6 +193,7 @@ namespace PingCastle.Healthcheck
                 risk.RiskId = rule.RiskId;
                 risk.Rationale = rule.Rationale;
                 risk.Details = rule.Details;
+                risk.ExtraDetails = rule.ExtraDetails;
                 healthcheckData.RiskRules.Add(risk);
             }
             DisplayAdvancement("Export completed");
@@ -324,9 +322,7 @@ namespace PingCastle.Healthcheck
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Unable to explore " + domainToExplore + " (" + ex.Message + ")");
-                Console.ResetColor();
+                _ui.DisplayError("Unable to explore " + domainToExplore + " (" + ex.Message + ")");
                 Trace.WriteLine("Unable to explore " + domainToExplore + " (" + ex.Message + ")");
                 Trace.WriteLine(ex.StackTrace);
             }
@@ -438,9 +434,18 @@ namespace PingCastle.Healthcheck
             healthcheckData.EngineVersion += " Beta";
 #endif
 
-            healthcheckData.WinTrustLevel = ConsoleMenu.CheckWinTrustFlags(typeof(Program).Assembly);
+            healthcheckData.WinTrustLevel = WindowsTrustChecker.CheckWinTrustFlags(Assembly.GetEntryAssembly());
             healthcheckData.Level = PingCastleReportDataExportLevel.Full;
 
+            // Get KDS Root Keys information
+            adws.Enumerate(
+                domainInfo.ConfigurationNamingContext,
+                "(objectClass=msKds-ProvRootKey)",
+                new string[] { "distinguishedName" },
+                (ADItem aditem) =>
+                {
+                    healthcheckData.HasKdsRootKey = true;
+                });
         }
 
         private void GetAzureInfo(ADDomainInfo domainInfo, ADWebService adws)
@@ -595,9 +600,7 @@ namespace PingCastle.Healthcheck
                         Trace.WriteLine("Exception while working on " + x.DistinguishedName);
                         DisplayAdvancementWarning("Exception while working on " + x.DistinguishedName + "(" + ex.Message + ")");
                         DisplayContactSupport();
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine(ex.StackTrace);
-                        Console.ResetColor();
+                        _ui.DisplayStackTrace(ex.StackTrace);
                         Trace.WriteLine(ex.ToString());
                     }
                 };
@@ -669,10 +672,9 @@ namespace PingCastle.Healthcheck
                         continue;
 
                     var sid = (SecurityIdentifier)rule.IdentityReference;
-                    var account = MatchesBadUsersToCheck(sid);
-                    if (!account.HasValue)
+                    if (!TryMatchBadUser(sid, out var userName))
                         continue;
-                    output.Add(new HealthcheckScriptDelegationData() { Account = account.Value.Value, Right = rule.FileSystemRights.ToString() });
+                    output.Add(new HealthcheckScriptDelegationData() { Account = userName, Right = rule.FileSystemRights.ToString() });
                 }
             }
             catch (Exception ex)
@@ -685,31 +687,34 @@ namespace PingCastle.Healthcheck
         public static bool ProcessAccountData(IAddAccountData data, ADItem x, bool computerCheck, DateTime DCWin2008Install, List<HealthcheckAccountDetailData> ListHoneyPot = null)
         {
             // see https://msdn.microsoft.com/fr-fr/library/windows/desktop/ms680832%28v=vs.85%29.aspx for the flag
-            if (ListHoneyPot != null && ListHoneyPot.Count > 0)
-            {
-                foreach (var h in ListHoneyPot)
-                {
-                    if (string.Equals(h.Name, x.SAMAccountName, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        // ignore the account
-                        h.Name = x.SAMAccountName;
-                        h.CreationDate = x.WhenCreated;
-                        h.DistinguishedName = x.DistinguishedName;
-                        h.LastLogonDate = x.LastLogonTimestamp;
-                        return false;
-                    }
-                    if (string.Equals(h.DistinguishedName, x.DistinguishedName, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        // ignore the account
-                        h.Name = x.SAMAccountName;
-                        h.CreationDate = x.WhenCreated;
-                        h.DistinguishedName = x.DistinguishedName;
-                        h.LastLogonDate = x.LastLogonTimestamp;
-                        return false;
-                    }
-                }
-            }
+
+            if (IsHoneyPotAccount(x, ListHoneyPot))
+                return false;
+
+            // TODO: place to refactoring
+            // Count of all accounts. 
             data.AddWithoutDetail(null);
+
+            ProcessAccountDuplicates(x, data);
+
+            var isAcsessDenied = x.UserAccountControl == 0;
+            if (isAcsessDenied)
+            {
+                data.AddWithoutDetail("AccessDenied");
+                Trace.TraceError($"Access denied to get user data: {x.DistinguishedName}");
+                return false;
+            }
+
+            ProcessAccountControlFlags(x, data);
+            ProcessSIDHistory(x, data);
+            ProcessPrimaryGroup(x, data, computerCheck);
+            ProcessNotAesEnabled(x, data, DCWin2008Install);
+
+            return true;
+        }
+
+        private static void ProcessAccountDuplicates(ADItem x, IAddAccountData data)
+        {
             if (x.DistinguishedName.Contains("cnf:"))
             {
                 data.AddDetail("Duplicate", GetAccountDetail(x));
@@ -718,6 +723,80 @@ namespace PingCastle.Healthcheck
             {
                 data.AddDetail("Duplicate", GetAccountDetail(x));
             }
+        }
+
+        private static bool IsHoneyPotAccount(ADItem x, List<HealthcheckAccountDetailData> ListHoneyPot)
+        {
+            if (ListHoneyPot == null)
+            {
+                return false;
+            }
+
+            foreach (var h in ListHoneyPot)
+            {
+                if (string.Equals(h.Name, x.SAMAccountName, StringComparison.InvariantCultureIgnoreCase)
+                    || string.Equals(h.DistinguishedName, x.DistinguishedName, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    // ignore the account
+                    h.Name = x.SAMAccountName;
+                    h.CreationDate = x.WhenCreated;
+                    h.DistinguishedName = x.DistinguishedName;
+                    h.LastLogonDate = x.LastLogonTimestamp;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static void ProcessNotAesEnabled(ADItem x, IAddAccountData data, DateTime DCWin2008Install)
+        {
+            if (DCWin2008Install != default(DateTime))
+            {
+                if ((x.PwdLastSet > new DateTime(1900, 1, 1) && DCWin2008Install > x.PwdLastSet) || (x.PwdLastSet <= new DateTime(1900, 1, 1) && x.WhenCreated.AddHours(1) < DCWin2008Install))
+                {
+                    data.AddDetail("NotAesEnabled", GetAccountDetail(x));
+                }
+                else if (x.ServicePrincipalName != null && x.ServicePrincipalName.Length > 0 && !string.IsNullOrEmpty(x.ServicePrincipalName[0]))
+                {
+                    // quote: "Users accounts, Group Managed Service accounts, and other accounts in Active Directory do not have the msds-SupportedEncryptionTypes value set automatically. "
+                    // https://support.microsoft.com/en-us/topic/kb5021131-how-to-manage-the-kerberos-protocol-changes-related-to-cve-2022-37966-fd837ac3-cdec-4e76-a6ec-86e67501407d#registrykey5021131
+                    {
+                        if ((x.msDSSupportedEncryptionTypes & (8 + 16)) == 0)
+                        {
+                            data.AddDetail("NotAesEnabled", GetAccountDetail(x));
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void ProcessPrimaryGroup(ADItem x, IAddAccountData data, bool computerCheck)
+        {
+            // check for bad primary group
+            if (!computerCheck)
+            {
+                // not domain users & guest or the guest account
+                if (x.PrimaryGroupID != 513 && x.PrimaryGroupID != 514 && x.ObjectSid != null && !x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountGuestSid)
+                    && !(x.PrimaryGroupID == 515 && (string.Equals(x.Class, "msDS-GroupManagedServiceAccount", StringComparison.OrdinalIgnoreCase) || string.Equals(x.Class, "msDS-ManagedServiceAccount", StringComparison.OrdinalIgnoreCase))))
+                {
+                    data.AddDetail("BadPrimaryGroup", GetAccountDetail(x));
+                }
+            }
+            else
+            {
+                var isDomainCompsAndGuests = x.PrimaryGroupID == 515 || x.PrimaryGroupID == 514;
+                var isDCGroup = (x.PrimaryGroupID == 516 || x.PrimaryGroupID == 521) && x.DistinguishedName.Contains("OU=Domain Controllers,DC="); // 516 = RW DC, 521 = RO DC
+
+                if (!isDomainCompsAndGuests && !isDCGroup)
+                {
+                    data.AddDetail("BadPrimaryGroup", GetAccountDetail(x));
+                }
+            }
+        }
+
+        private static void ProcessAccountControlFlags(ADItem x, IAddAccountData data)
+        {
             if ((x.UserAccountControl & 0x00000002) != 0)
                 data.AddWithoutDetail("Disabled");
             else
@@ -744,7 +823,7 @@ namespace PingCastle.Healthcheck
                 {
                     // see https://techcommunity.microsoft.com/t5/exchange-team-blog/exchange-2013-2016-monitoring-mailboxes/ba-p/611004?msclkid=bd3898eeb18f11ecb0ad418f45f9d755
                     // exception for exchange accounts whose password is changed regularly
-                    if (x.SAMAccountName.StartsWith("HealthMailbox", StringComparison.OrdinalIgnoreCase) && x.PwdLastSet.AddDays(40) > DateTime.Now)
+                    if (x.SAMAccountName != null && x.SAMAccountName.StartsWith("HealthMailbox", StringComparison.OrdinalIgnoreCase) && x.PwdLastSet.AddDays(40) > DateTime.Now)
                     {
 
                     }
@@ -759,33 +838,6 @@ namespace PingCastle.Healthcheck
                     if (!x.DistinguishedName.Contains(",CN=Monitoring Mailboxes,"))
                     {
                         data.AddDetail("PwdNotRequired", GetAccountDetail(x));
-                    }
-                }
-                ProcessSIDHistory(x, data);
-                // check for bad primary group
-                if (!computerCheck)
-                {
-                    // not domain users & guest or the guest account
-                    if (x.PrimaryGroupID != 513 && x.PrimaryGroupID != 514 && x.ObjectSid != null && !x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountGuestSid)
-                        && !(x.PrimaryGroupID == 515 && (string.Equals(x.Class, "msDS-GroupManagedServiceAccount", StringComparison.OrdinalIgnoreCase) || string.Equals(x.Class, "msDS-ManagedServiceAccount", StringComparison.OrdinalIgnoreCase))))
-                    {
-                        data.AddDetail("BadPrimaryGroup", GetAccountDetail(x));
-                    }
-                }
-                else
-                {
-                    // not domain computers & guests
-                    if (x.PrimaryGroupID != 515 && x.PrimaryGroupID != 514)
-                    {
-                        if ((x.PrimaryGroupID == 516 || x.PrimaryGroupID == 521) && x.DistinguishedName.Contains("OU=Domain Controllers,DC="))
-                        {
-                            // ignore domain controller group
-                            // 516 = RW DC, 521 = RO DC
-                        }
-                        else
-                        {
-                            data.AddDetail("BadPrimaryGroup", GetAccountDetail(x));
-                        }
                     }
                 }
                 // see [MS-KILE] && https://blogs.msdn.microsoft.com/openspecification/2011/05/30/windows-configurations-for-kerberos-supported-encryption-type/
@@ -803,28 +855,7 @@ namespace PingCastle.Healthcheck
                 {
                     data.AddDetail("ReversibleEncryption", GetAccountDetail(x));
                 }
-                if (DCWin2008Install != default(DateTime))
-                {
-                    if ((x.PwdLastSet > new DateTime(1900, 1, 1) && DCWin2008Install > x.PwdLastSet) || (x.PwdLastSet <= new DateTime(1900, 1, 1) && x.WhenCreated.AddHours(1) < DCWin2008Install))
-                    {
-                        data.AddDetail("NotAesEnabled", GetAccountDetail(x));
-                    }
-                    else if (x.ServicePrincipalName != null && x.ServicePrincipalName.Length > 0 && !string.IsNullOrEmpty(x.ServicePrincipalName[0]))
-                    {
-                        // quote: "Users accounts, Group Managed Service accounts, and other accounts in Active Directory do not have the msds-SupportedEncryptionTypes value set automatically. "
-                        // https://support.microsoft.com/en-us/topic/kb5021131-how-to-manage-the-kerberos-protocol-changes-related-to-cve-2022-37966-fd837ac3-cdec-4e76-a6ec-86e67501407d#registrykey5021131
-                        //if (x.Class != "msds-groupmanagedserviceaccount" && x.Class != "computer" && x.Class != "msds-managedserviceaccount")
-                        {
-                            if ((x.msDSSupportedEncryptionTypes & (8 + 16)) == 0)
-                            {
-                                data.AddDetail("NotAesEnabled", GetAccountDetail(x));
-                            }
-                        }
-                    }
-                }
-
             }
-            return true;
         }
 
         private static HealthcheckAccountDetailData GetAccountDetail(ADItem x)
@@ -855,6 +886,8 @@ namespace PingCastle.Healthcheck
                         "sIDHistory",
                         "userAccountControl",
                         "whenCreated",
+                        "msDS-IsRODC",
+                        "msDS-isGC"
             };
 
         private void GenerateComputerData(ADDomainInfo domainInfo, ADWebService adws)
@@ -976,6 +1009,10 @@ namespace PingCastle.Healthcheck
                                         dc.AzureADKerberos = true;
                                     }
                                 }
+
+                                dc.IsGlobalCatalog = x.msDSIsGC;
+                                dc.IsReadOnly = x.msDSisRodc;
+
                                 healthcheckData.DomainControllers.Add(dc);
                             }
                             else
@@ -1048,9 +1085,7 @@ namespace PingCastle.Healthcheck
                         Trace.WriteLine("Exception while working on " + x.DistinguishedName);
                         DisplayAdvancementWarning("Exception while working on " + x.DistinguishedName + "(" + ex.Message + ")");
                         DisplayContactSupport();
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine(ex.StackTrace);
-                        Console.ResetColor();
+                        _ui.DisplayStackTrace(ex.StackTrace);
                         Trace.WriteLine(ex.ToString());
                     }
                 };
@@ -1864,6 +1899,92 @@ namespace PingCastle.Healthcheck
                 {
                     gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "WriteOwner");
                 }
+
+                // ADS_RIGHT_DS_CREATE_CHILD (generic, not for a specific object type)
+                if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.CreateChild) == ActiveDirectoryRights.CreateChild
+                    && (accessrule.ObjectFlags & ObjectAceFlags.ObjectAceTypePresent) == 0)
+                {
+                    gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "CreateChild");
+                }
+
+                // Check for dMSA-specific delegations for BadSuccessor
+                // Generic ACEs
+                if (accessrule.ObjectType == new Guid("00000000-0000-0000-0000-000000000000")
+                    && accessrule.InheritedObjectType == new Guid("00000000-0000-0000-0000-000000000000")) // Generic All
+                {
+                    var message = accessrule.ActiveDirectoryRights switch
+                    {
+                        _ when accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.GenericAll) => "GenericAll (All Objects)",
+                        _ when accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.WriteDacl) => "WriteDacl (All Objects)",
+                        _ when accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.WriteOwner) => "WriteOwner (All Objects)",
+                        _ when accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.CreateChild) => "CreateChild (All Objects)",
+                        _ => null
+                    };
+
+                    if (message != null)
+                    {
+                        gotDelegation((SecurityIdentifier)accessrule.IdentityReference, message);
+                    }
+                }
+                // Object Specific ACEs on msDS-DelegatedManagedServiceAccount class
+                Guid DmsaSchemaGuid = new Guid("0feb936f-47b3-49f2-9386-1dedc2c23765");
+                if (accessrule.ObjectType == new Guid("00000000-0000-0000-0000-000000000000")
+                    && accessrule.InheritedObjectType == DmsaSchemaGuid)
+                {
+                     var message = accessrule.ActiveDirectoryRights switch
+                         {
+                             _ when accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.GenericAll) => "GenericAll (Descendant msDS-DelegatedManagedServiceAccount)",
+                             _ when accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.WriteDacl) => "WriteDacl (Descendant msDS-DelegatedManagedServiceAccount)",
+                             _ when accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.WriteOwner) => "WriteOwner (Descendant msDS-DelegatedManagedServiceAccount)",
+                             _ when accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.GenericWrite) => "GenericWrite (Descendant msDS-DelegatedManagedServiceAccount)",
+                             _ when accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.WriteProperty) => "WriteProperty (Descendant msDS-DelegatedManagedServiceAccount)",
+                             _ => null
+                         };
+
+                     if (message != null)
+                     {
+                         gotDelegation((SecurityIdentifier)accessrule.IdentityReference, message);
+                     }
+
+                }
+                // Specific handling of msds-delegatedManageServiceAccount creation
+                if ((accessrule.ObjectFlags & ObjectAceFlags.ObjectAceTypePresent) == ObjectAceFlags.ObjectAceTypePresent)
+                {
+                    if (accessrule.ObjectType == new Guid("0feb936f-47b3-49f2-9386-1dedc2c23765")) // msDS-DelegatedManagedServiceAccount
+                    {
+                        if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.CreateChild) == ActiveDirectoryRights.CreateChild)
+                        {
+                            gotDelegation((SecurityIdentifier)accessrule.IdentityReference, "CreateChild msDS-DelegatedManagedServiceAccount Objects");
+                        }
+                    }
+                }
+
+                // Specific handling for BadSuccessor with Descdent Organizational Units
+                // Define the GUID for Organizational Unit objects
+                Guid ouSchemaGuid = new Guid("bf967aa5-0de6-11d0-a285-00aa003049e2");
+                if (accessrule.ObjectType == new Guid("00000000-0000-0000-0000-000000000000")
+                    && accessrule.InheritedObjectType == ouSchemaGuid) // Permissions on OU objects
+                {
+                    // Check for access rule inheritance type - we want descendant objects
+                    if (accessrule.InheritanceType == ActiveDirectorySecurityInheritance.Descendents ||
+                        accessrule.InheritanceType == ActiveDirectorySecurityInheritance.All)
+                    {
+                        var message = accessrule.ActiveDirectoryRights switch
+                        {
+                            _ when accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.GenericAll) => "GenericAll (Descendant OUs)",
+                            _ when accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.WriteDacl) => "WriteDacl (Descendant OUs)",
+                            _ when accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.WriteOwner) => "WriteOwner (Descendant OUs)",
+                            _ when accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.CreateChild) => "CreateChild (Descendant OUs)",
+                            _ => null
+                        };
+
+                        if (message != null)
+                        {
+                            gotDelegation((SecurityIdentifier)accessrule.IdentityReference, message);
+                        }
+                    }
+                }
+
                 if (accessrule.ObjectFlags == ObjectAceFlags.None)
                 {
                     // ADS_RIGHT_DS_CONTROL_ACCESS
@@ -2128,9 +2249,7 @@ namespace PingCastle.Healthcheck
                 Trace.WriteLine(ex.StackTrace);
                 lock (this)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Exception while generating GPO Data: " + ex.Message);
-                    Console.ResetColor();
+                    _ui.DisplayError("Exception while generating GPO Data: " + ex.Message);
                 }
             }
             catch (System.IO.IOException ex)
@@ -2139,9 +2258,7 @@ namespace PingCastle.Healthcheck
                 Trace.WriteLine(ex.StackTrace);
                 lock (this)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Exception while generating GPO Data: " + ex.Message);
-                    Console.ResetColor();
+                    _ui.DisplayError("Exception while generating GPO Data: " + ex.Message);
                 }
             }
             catch (Exception ex)
@@ -2150,10 +2267,8 @@ namespace PingCastle.Healthcheck
                 Trace.WriteLine(ex.StackTrace);
                 lock (this)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Exception while generating GPO Data: " + ex.Message);
-                    Console.WriteLine(ex.StackTrace);
-                    Console.ResetColor();
+                    _ui.DisplayError("Exception while generating GPO Data: " + ex.Message);
+                    _ui.DisplayStackTrace(ex.StackTrace);
                 }
             }
             finally
@@ -2168,7 +2283,7 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private void GeneratePKIData(ADDomainInfo domainInfo, ADWebService adws)
+        private void GeneratePKIData(ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
         {
             // do it only on forest
             string test = domainInfo.ConfigurationNamingContext.Replace(domainInfo.DefaultNamingContext, "");
@@ -2187,16 +2302,17 @@ namespace PingCastle.Healthcheck
                 if (PKIInstalled)
                 {
                     GenerateNTLMStoreData(domainInfo, adws);
-                    GenerateCertificateTemplateData(domainInfo, adws);
+                    GenerateCertificateTemplateData(domainInfo, adws, parameters);
                     GenerateADCSEnrollmentServerData(domainInfo, adws);
                 }
             }
         }
 
-        private Dictionary<string, List<string>> GetTemplateList(ADDomainInfo domainInfo, ADWebService adws)
+        private IReadOnlyDictionary<string, List<string>> GetTemplateList(ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
         {
             string[] properties = new string[] {
                         "distinguishedName",
+                        "cACertificate",
                         "certificateTemplates",
                         "name",
                         "dNSHostName",
@@ -2205,24 +2321,102 @@ namespace PingCastle.Healthcheck
             WorkOnReturnedObjectByADWS callback =
                 (ADItem x) =>
                 {
-                    var caname = x.DNSHostName + "\\" + x.Name;
+                    var ca = CreateCertificateAuthority(x, parameters.IsPrivilegedMode);
+                    healthcheckData.CertificateAuthorities.Add(ca);
+
                     if (x.CertificateTemplates != null)
                     {
                         foreach (var ct in x.CertificateTemplates)
                         {
                             if (output.ContainsKey(ct))
-                                output[ct].Add(caname);
+                                output[ct].Add(ca.FullName);
                             else
-                                output[ct] = new List<string>() { caname };
+                                output[ct] = new List<string>() { ca.FullName };
                         }
                     }
                 };
 
             adws.Enumerate("CN=Public Key Services,CN=Services," + domainInfo.ConfigurationNamingContext, "(objectClass=pKIEnrollmentService)", properties, callback);
+
             return output;
         }
 
-        private void GenerateCertificateTemplateData(ADDomainInfo domainInfo, ADWebService adws)
+        private HealthCheckCertificateAuthorityData CreateCertificateAuthority(ADItem item, bool isPrivilegedMode)
+        {
+            var ca = new HealthCheckCertificateAuthorityData { Name = item.Name, DnsHostName = item.DNSHostName };
+
+            if (item.CACertificate != null)
+            {
+                ca.CertificatesData = new List<byte[]>();
+                foreach (var certificate in item.CACertificate)
+                    ca.CertificatesData.Add(certificate.RawData);
+            }
+
+            if (!isPrivilegedMode)
+                return ca;
+
+            var enrollmentRestrictions = "No restrictions";
+            if (ca.TryGetEnrollmentRights(out var enrollmentRights))
+            {
+                enrollmentRestrictions = "Configured (Default)";
+                foreach (var entry in  enrollmentRights.DiscretionaryAcl.Cast<CommonAce>())
+                {
+                    if (entry.SecurityIdentifier.Value != "S-1-1-0")
+                    {
+                        enrollmentRestrictions = "Configured (Custom)";
+                        break;
+                    }
+                }
+            }
+
+            ca.EnrollmentRestrictions = enrollmentRestrictions;
+           
+            if(!ca.TryGetServerSecurityFromRegistry(out var securityDescriptor))
+                return ca;
+
+            ca.IsLowPrivilegedPrincipalOwner = false;
+            ca.IsLowPrivelegedPrincipalEnrollCertificates = false;
+
+           var rules = securityDescriptor.GetAccessRules(true, true, typeof(SecurityIdentifier));
+            var ownerSid = securityDescriptor.GetOwner(typeof(SecurityIdentifier));
+
+            if (TryMatchBadUser((SecurityIdentifier)ownerSid, out _))
+            {
+                ca.IsLowPrivilegedPrincipalOwner = true;
+            }
+
+            var enrollPrincipals = new List<string>();
+            var managerPrincipals = new List<string>();
+
+            foreach (ActiveDirectoryAccessRule rule in rules)
+            {
+                var sid = (SecurityIdentifier)rule.IdentityReference;
+                var rights = (CertificationAuthorityRights)rule.ActiveDirectoryRights;
+
+                if (TryMatchBadUser(sid, out var userName))
+                {
+                    if (rights.HasFlag(CertificationAuthorityRights.ManageCA))
+                    {
+                        enrollPrincipals.Add(userName);
+                    }
+                    
+                    if (rights.HasFlag(CertificationAuthorityRights.Enroll))
+                    {
+                        managerPrincipals.Add(userName);
+                    }
+                }
+            }
+
+            if (enrollPrincipals.Any())
+                ca.LowPrivelegedEnrollPrincipals = enrollPrincipals;
+
+            if(managerPrincipals.Any())
+                ca.LowPrivelegedManagerPrincipals = managerPrincipals;
+
+            return ca;
+        }
+
+        private void GenerateCertificateTemplateData(ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
         {
             string[] properties = new string[] {
                         "distinguishedName",
@@ -2236,30 +2430,42 @@ namespace PingCastle.Healthcheck
                         "name",
                         "pKIExtendedKeyUsage",
                         "nTSecurityDescriptor",
+                        "whenChanged",
             };
 
+            healthcheckData.CertificateAuthorities = new List<HealthCheckCertificateAuthorityData>();
             healthcheckData.CertificateTemplates = new List<HealthCheckCertificateTemplate>();
             var sidCache = new Dictionary<string, string>();
-            var list = GetTemplateList(domainInfo, adws);
+            var dictionary = GetTemplateList(domainInfo, adws, parameters);
 
             // see CT_FLAG_ALLOW_ENROLL_ON_BEHALF_OF ?
             WorkOnReturnedObjectByADWS callback =
                 (ADItem x) =>
                 {
-                    if (!list.ContainsKey(x.Name))
+                    if (!dictionary.ContainsKey(x.Name))
                         return;
                     HealthCheckCertificateTemplate ct = new HealthCheckCertificateTemplate();
+                    ct.EnrollmentLowPrivilegePrincipals = new List<string>();
                     healthcheckData.CertificateTemplates.Add(ct);
 
                     ct.Name = x.Name;
-                    ct.CA = list[x.Name];
+                    ct.CA = dictionary[x.Name];
                     ct.Flags = x.Flags;
                     ct.OID = x.msPKICertTemplateOID;
                     ct.CAManagerApproval = (x.msPKIEnrollmentFlag & 2) != 0;
                     ct.NoSecurityExtension = (x.msPKIEnrollmentFlag & 0x80000) != 0;
+                    ct.IsAuthorisedSignaturesRequired = x.AuthorizedSignatures > 0;
+                    ct.WhenChanged = x.WhenChanged;
+                    ct.SchemaVersion = x.msPKITemplateSchemaVersion;
+
+
+                    // from https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-crtd/1192823c-d839-4bc3-9b6b-fa8c53507ae1
+
                     if ((x.msPKICertificateNameFlag & 1) != 0)
                     {
                         ct.EnrolleeSupplies += 1;
+
+                        ct.AllowsToSupplySubjectInRequest = true;
                     }
                     if ((x.msPKICertificateNameFlag & 0x00010000) != 0)
                         ct.EnrolleeSupplies += 2;
@@ -2295,47 +2501,86 @@ namespace PingCastle.Healthcheck
                         var delegations = BuildDelegationList(adws, sidCache, x);
                         ct.Delegations = delegations;
 
-                        var account = MatchesBadUsersToCheck((SecurityIdentifier)x.NTSecurityDescriptor.GetOwner(typeof(SecurityIdentifier)));
-                        if (account != null)
+                        var owner = (SecurityIdentifier)x.NTSecurityDescriptor.GetOwner(typeof(SecurityIdentifier));
+
+                        if (TryMatchBadUser(owner, out var userName))
                         {
                             ct.VulnerableTemplateACL = true;
+                            ct.Owner = userName;
                         }
                         else
                         {
+                            ct.Owner = owner.GetName();
+
                             // see https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-crtd/211ab1e3-bad6-416d-9d56-8480b42617a4
 
+                            var rights = new Dictionary<string, List<string>>();
+
                             // look for explicit autorization granted to the user who created the object
-                            foreach (ActiveDirectoryAccessRule accessrule in x.NTSecurityDescriptor.GetAccessRules(true, false, typeof(SecurityIdentifier)))
+                            foreach (ActiveDirectoryAccessRule accessrule in x.NTSecurityDescriptor.GetAccessRules(true, true, typeof(SecurityIdentifier)))
                             {
                                 if (accessrule.AccessControlType == AccessControlType.Deny)
                                     continue;
-                                account = MatchesBadUsersToCheck((SecurityIdentifier)accessrule.IdentityReference);
-                                if (account == null)
+                               
+                                if (!TryMatchBadUser((SecurityIdentifier)accessrule.IdentityReference, out var accountName))
                                 {
                                     continue;
                                 }
-                                if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteDacl) == ActiveDirectoryRights.WriteDacl ||
-                                    (accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteOwner) == ActiveDirectoryRights.WriteOwner ||
-                                    (accessrule.ActiveDirectoryRights & ActiveDirectoryRights.GenericWrite) == ActiveDirectoryRights.GenericWrite)
+
+                                if(!rights.TryGetValue(accountName, out var accRights))
+                                {
+                                    accRights = new List<string>();
+                                    rights[accountName] = accRights;
+                                }
+
+                                if(accessrule.ObjectType == Guid.Empty)
+                                {
+                                    if (accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.ReadProperty))
+                                    {
+                                        accRights.Add("READ");
+                                    }
+
+                                    if (accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.WriteProperty))
+                                    {
+                                        accRights.Add("WRITE");
+                                    }
+                                }
+
+                                if (accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.WriteDacl)
+                                    || accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.WriteOwner)
+                                    || accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.GenericWrite))
                                 {
                                     ct.VulnerableTemplateACL = true;
                                 }
                                 // all extended rights
-                                if (((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.ExtendedRight) != 0 || ((int)accessrule.ActiveDirectoryRights & 4096) != 0) && accessrule.ObjectType == EnrollPermission)
+                                if (accessrule.ObjectType == EnrollPermission
+                                    && (accessrule.ActiveDirectoryRights.HasFlag(ActiveDirectoryRights.ExtendedRight) || ((int)accessrule.ActiveDirectoryRights & 4096) != 0))
                                 {
                                     ct.LowPrivCanEnroll = true;
+                                    ct.EnrollmentLowPrivilegePrincipals.Add(accountName);
+
+                                    accRights.Add("ENROLL");
                                 }
                             }
-                        }
 
+                            ct.Rights = new List<HealthCheckCertificateTemplateRights>();
+                            ct.Rights.AddRange(rights.Select(r => new HealthCheckCertificateTemplateRights
+                            {
+                                Account = r.Key,
+                                Rights = r.Value,
+                            }));
+                        }
                     }
-                    var EKU = new List<string>();
+
+                    ct.EKUs = new List<string>();
                     if (x.pKIExtendedKeyUsage != null)
-                        EKU.AddRange(x.pKIExtendedKeyUsage);
+                    {
+                        ct.EKUs.AddRange(x.pKIExtendedKeyUsage);
+                    }
                     // client authentification then smart card logon then PKINIT Client Authentication then any purpose
-                    ct.HasAuthenticationEku = EKU.Count == 0 || EKU.Contains("1.3.6.1.5.5.7.3.2") || EKU.Contains("1.3.6.1.4.1.311.20.2.2") || EKU.Contains("1.3.6.1.5.2.3.4") || EKU.Contains("2.5.29.37.0");
-                    ct.HasAnyPurpose = EKU.Count == 0 || EKU.Contains("2.5.29.37.0");
-                    ct.EnrollmentAgentTemplate = EKU.Contains("1.3.6.1.4.1.311.20.2.1");
+                    ct.HasAuthenticationEku = ct.EKUs.Count == 0 || ct.EKUs.Contains("1.3.6.1.5.5.7.3.2") || ct.EKUs.Contains("1.3.6.1.4.1.311.20.2.2") || ct.EKUs.Contains("1.3.6.1.5.2.3.4") || ct.EKUs.Contains("2.5.29.37.0");
+                    ct.HasAnyPurpose = ct.EKUs.Count == 0 || ct.EKUs.Contains("2.5.29.37.0");
+                    ct.EnrollmentAgentTemplate = ct.EKUs.Contains("1.3.6.1.4.1.311.20.2.1");
                 };
 
             adws.Enumerate("CN=Public Key Services,CN=Services," + domainInfo.ConfigurationNamingContext, "(objectClass=pKICertificateTemplate)", properties, callback);
@@ -2740,22 +2985,18 @@ namespace PingCastle.Healthcheck
             {
                 lock (this)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Unable to analyze the GPO: " + shortName + "(" + ex.Message + ")");
+                    _ui.DisplayError("Unable to analyze the GPO: " + shortName + "(" + ex.Message + ")");
                     Trace.WriteLine("[" + ThreadId + "] Unable to analyze the GPO: " + shortName + "(" + ex.Message + ")");
-                    Console.ResetColor();
                 }
             }
             catch (Exception ex)
             {
                 lock (this)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Unable to analyze the GPO: " + shortName + "(" + ex.Message + ")");
+                    _ui.DisplayError("Unable to analyze the GPO: " + shortName + "(" + ex.Message + ")");
                     Trace.WriteLine("[" + ThreadId + "] Unable to analyze the GPO: " + shortName + "(" + ex.Message + ")");
-                    Console.WriteLine("More details are available in the trace log (step: " + step + ")");
+                    _ui.DisplayError("More details are available in the trace log (step: " + step + ")");
                     Trace.WriteLine(ex.StackTrace);
-                    Console.ResetColor();
                 }
             }
         }
@@ -3741,47 +3982,56 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private KeyValuePair<SecurityIdentifier, string>? MatchesBadUsersToCheck(SecurityIdentifier sid)
+        private bool TryMatchBadUser(SecurityIdentifier sid, out string userName)
         {
+            userName = null;
+
             if (sid.Value == "S-1-1-0")
             {
-                return new KeyValuePair<SecurityIdentifier, string>(sid, GraphObjectReference.Everyone);
+                userName = GraphObjectReference.Everyone;
+                return true;
             }
             else if (sid.Value == "S-1-5-7")
             {
-                return new KeyValuePair<SecurityIdentifier, string>(sid, GraphObjectReference.Anonymous);
+                userName = GraphObjectReference.Anonymous;
+                return true;
             }
             else if (sid.Value == "S-1-5-11")
             {
-                return new KeyValuePair<SecurityIdentifier, string>(sid, GraphObjectReference.AuthenticatedUsers);
+                userName = GraphObjectReference.AuthenticatedUsers;
+                return true;
             }
             else if (sid.Value == "S-1-5-32-545")
             {
-                return new KeyValuePair<SecurityIdentifier, string>(sid, GraphObjectReference.Users);
+                userName = GraphObjectReference.Users;
+                return true;
             }
             else if (sid.IsWellKnown(WellKnownSidType.AccountDomainGuestsSid) || sid.IsWellKnown(WellKnownSidType.AccountDomainUsersSid) || sid.IsWellKnown(WellKnownSidType.AuthenticatedUserSid))
             {
                 try
                 {
-                    return new KeyValuePair<SecurityIdentifier, string>(sid, ((NTAccount)sid.Translate(typeof(NTAccount))).Value);
+                    userName = sid.GetName();
+                    return true;
                 }
                 catch (Exception)
                 {
-                    return new KeyValuePair<SecurityIdentifier, string>(sid, sid.Value);
+                    return false;
                 }
             }
             else if (healthcheckData.MachineAccountQuota > 0 && sid.IsWellKnown(WellKnownSidType.AccountComputersSid))
             {
                 try
                 {
-                    return new KeyValuePair<SecurityIdentifier, string>(sid, ((NTAccount)sid.Translate(typeof(NTAccount))).Value);
+                    userName = sid.GetName();
+                    return true;
                 }
                 catch (Exception)
                 {
-                    return new KeyValuePair<SecurityIdentifier, string>(sid, sid.Value);
+                    return false;
                 }
             }
-            return null;
+
+            return false;
         }
 
         private void ExtractGPODelegation(IADConnection adws, string path, GPO GPO)
@@ -3832,10 +4082,9 @@ namespace PingCastle.Healthcheck
         {
             var output = new List<KeyValuePair<string, string>>();
             var Owner = (SecurityIdentifier)security.GetOwner(typeof(SecurityIdentifier));
-            var matchOwner = MatchesBadUsersToCheck(Owner);
-            if (matchOwner.HasValue)
+            if (TryMatchBadUser(Owner, out var ownerName))
             {
-                output.Add(new KeyValuePair<string, string>("Owner", matchOwner.Value.Value));
+                output.Add(new KeyValuePair<string, string>("Owner", ownerName));
             }
             var accessRules = security.GetAccessRules(true, includeInherited, typeof(SecurityIdentifier));
             if (accessRules == null)
@@ -3848,10 +4097,9 @@ namespace PingCastle.Healthcheck
                 if ((FileSystemRights.Write & accessrule.FileSystemRights) == 0)
                     continue;
 
-                var match = MatchesBadUsersToCheck((SecurityIdentifier)accessrule.IdentityReference);
-                if (!match.HasValue)
+                if (!TryMatchBadUser((SecurityIdentifier)accessrule.IdentityReference, out var userName))
                     continue;
-                output.Add(new KeyValuePair<string, string>(accessrule.FileSystemRights.ToString(), match.Value.Value));
+                output.Add(new KeyValuePair<string, string>(accessrule.FileSystemRights.ToString(), userName));
             }
             return output;
         }
@@ -4168,7 +4416,7 @@ namespace PingCastle.Healthcheck
             byte[] buffer = Convert.FromBase64String(encryptedPassword);
             try
             {
-                using (Rijndael aes = new RijndaelManaged())
+                using (var aes = Aes.Create())
                 {
                     aes.Key = aesKey;
                     aes.IV = new byte[aes.IV.Length];
@@ -4452,8 +4700,6 @@ namespace PingCastle.Healthcheck
                                     continue;
                                 if (lsasetting == "LimitBlankPasswordUse" && value == 1)
                                     continue;
-                                //if (lsasetting == "LmCompatibilityLevel" && (value == 3 || value == 5))
-                                //    continue;
                                 if (lsasetting == "NoLMHash" && value == 1)
                                     continue;
                                 if (lsasetting == "RestrictAnonymous" && value >= 1)
@@ -4659,33 +4905,6 @@ namespace PingCastle.Healthcheck
 
         private string ConvertGPOUserToUserFriendlyUser(ADWebService adws, string user)
         {
-            /*// ignore well known sid
-			// 
-			if (user.StartsWith("*S-1-5-32-", StringComparison.InvariantCultureIgnoreCase))
-			{
-				return null;
-			}
-			// Local system
-			if (user.StartsWith("*S-1-5-18", StringComparison.InvariantCultureIgnoreCase))
-			{
-				return null;
-			}
-			// SERVICE
-			if (user.StartsWith("*S-1-5-6", StringComparison.InvariantCultureIgnoreCase))
-			{
-				return null;
-			}
-			// LOCAL_SERVICE
-			if (user.StartsWith("*S-1-5-19", StringComparison.InvariantCultureIgnoreCase))
-			{
-				return null;
-			}
-			// NETWORK_SERVICE
-			if (user.StartsWith("*S-1-5-20", StringComparison.InvariantCultureIgnoreCase))
-			{
-				return null;
-			}
-			*/
             if (user == "*S-1-1-0")
             {
                 return GraphObjectReference.Everyone;
@@ -5557,10 +5776,8 @@ namespace PingCastle.Healthcheck
                 Trace.WriteLine(ex.StackTrace);
                 lock (this)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Exception while generating null session Data: " + ex.Message);
-                    Console.WriteLine(ex.StackTrace);
-                    Console.ResetColor();
+                    _ui.DisplayError("Exception while generating null session Data: " + ex.Message);
+                    _ui.DisplayStackTrace(ex.StackTrace);
                 }
             }
             finally
@@ -6007,7 +6224,7 @@ namespace PingCastle.Healthcheck
                    healthcheckData.RODCKrbtgtOrphans.Add(GetAccountDetail(x));
                };
 
-            var filter = "(&(objectclas=user)(!(msDS-KrbTgtLinkBl=*))(sAMAccountName=krbtgt_*)(msDS-SecondaryKrbTgtNumber=*))";
+            var filter = "(&(objectclass=user)(!(msDS-KrbTgtLinkBl=*))(sAMAccountName=krbtgt_*)(msDS-SecondaryKrbTgtNumber=*))";
             adws.Enumerate(domainInfo.DefaultNamingContext, filter, CommonAccountProperties.Where(p => p != "replPropertyMetaData").ToArray(), callback);
         }
 

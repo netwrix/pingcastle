@@ -5,6 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.Healthcheck;
+using PingCastle.UserInterface;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -16,6 +17,8 @@ namespace PingCastle.Data
     {
         public static PingCastleReportCollection<T> LoadXmls(string Xmls, DateTime maxfiltervalue)
         {
+            IUserInterface ui = UserInterfaceFactory.GetUserInterface();
+
             var output = new PingCastleReportCollection<T>();
             int files = 0;
             foreach (string filename in Directory.GetFiles(Xmls, PingCastleFactory.GetFilePatternForLoad<T>(), SearchOption.AllDirectories))
@@ -35,20 +38,20 @@ namespace PingCastle.Data
                 }
                 catch (Exception ex)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Unable to load the file " + filename + " (" + ex.Message + ")");
-                    Console.ResetColor();
+                    ui.DisplayError("Unable to load the file " + filename + " (" + ex.Message + ")");
                     Trace.WriteLine("Unable to load the file " + filename + " (" + ex.Message + ")");
                     Trace.WriteLine(ex.StackTrace);
                 }
             }
-            Console.WriteLine("Reports loaded: " + output.Count + " - on a total of " + files + " valid files");
+            ui.DisplayMessage("Reports loaded: " + output.Count + " - on a total of " + files + " valid files");
             output.EnrichInformation();
             return output;
         }
 
         public static PingCastleReportHistoryCollection<T> LoadHistory(string Xmls, DateTime maxfiltervalue)
         {
+            IUserInterface ui = UserInterfaceFactory.GetUserInterface();
+
             var output = new PingCastleReportHistoryCollection<T>();
             int files = 0;
             foreach (string filename in Directory.GetFiles(Xmls, "*ad_hc_*.xml", SearchOption.AllDirectories))
@@ -68,14 +71,12 @@ namespace PingCastle.Data
                 }
                 catch (Exception ex)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Unable to load the file " + filename + " (" + ex.Message + ")");
-                    Console.ResetColor();
+                    ui.DisplayError("Unable to load the file " + filename + " (" + ex.Message + ")");
                     Trace.WriteLine("Unable to load the file " + filename + " (" + ex.Message + ")");
                     Trace.WriteLine(ex.StackTrace);
                 }
             }
-            Console.WriteLine("Reports loaded: " + output.Count + " - on a total of " + files + " valid files");
+            ui.DisplayMessage("Reports loaded: " + output.Count + " - on a total of " + files + " valid files");
             return output;
         }
 

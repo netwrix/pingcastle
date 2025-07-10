@@ -8,6 +8,11 @@ using System.Security.Principal;
 
 namespace PingCastle.ADWS
 {
+    public static class LinuxSidResolverSettings
+    {
+        public static string LogLevel { get; set; }
+    }
+
     internal class LinuxSidResolver : IDisposable
     {
         const int SECURITY_MAX_SID_SIZE = 68;
@@ -91,8 +96,6 @@ namespace PingCastle.ADWS
         [DllImport(SmbLibrary, CharSet = CharSet.Ansi)]
         internal static extern void lp_set_cmdline(string i, string j);
 
-        public static string LogLevel { get; set; }
-
         IntPtr memoryContext;
         static object lockobject = new object();
         //in
@@ -139,9 +142,9 @@ namespace PingCastle.ADWS
         private void ConnectToLsa()
         {
             Trace.WriteLine(@"ConnectToLsa Init");
-            if (!string.IsNullOrEmpty(LogLevel))
+            if (!string.IsNullOrEmpty(LinuxSidResolverSettings.LogLevel))
             {
-                lp_set_cmdline("log level", LogLevel);
+                lp_set_cmdline("log level", LinuxSidResolverSettings.LogLevel);
             }
             lp_set_cmdline("client ipc signing", "required");
             var r = ConnectWithFull();

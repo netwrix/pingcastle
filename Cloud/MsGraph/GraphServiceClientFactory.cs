@@ -2,12 +2,14 @@
 using Microsoft.Graph.Beta;
 using Microsoft.Kiota.Abstractions.Authentication;
 using PingCastle.Cloud.Credentials;
+using PingCastle.Cloud.Logs;
 using PingCastle.Cloud.RESTServices.Azure;
 
 namespace PingCastle.Cloud.MsGraph
 {
     public static class GraphServiceClientFactory
     {
+        public static SazGenerator SazGenerator { get; set; }
         public static GraphServiceClient Create(string accessToken)
         {
             return Create(new SimpleAccessTokenProvider(accessToken));
@@ -21,7 +23,14 @@ namespace PingCastle.Cloud.MsGraph
         public static GraphServiceClient Create(IAccessTokenProvider tokenProvider)
         {
             var authProvider = new BaseBearerTokenAuthenticationProvider(tokenProvider);
-            var httpClient = GraphClientFactory.Create(authProvider, version: "beta");
+
+            var handlers = GraphClientFactory.CreateDefaultHandlers();
+            if (SazGenerator != null)
+            {
+                handlers.Insert(0, new LoggingHandler(SazGenerator));
+            }
+
+            var httpClient = GraphClientFactory.Create(authProvider, handlers, version: "beta");
 
             return new GraphServiceClient(httpClient);
         }

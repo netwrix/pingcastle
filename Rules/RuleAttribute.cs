@@ -313,36 +313,6 @@ namespace PingCastle.Rules
         public override string Label { get { return "ANSSI - Recommandations de sécurité relatives à Active Directory - " + ID + (!String.IsNullOrEmpty(Location) ? " [" + Location + "]" : null); } }
     }
 
-    /*[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-	public class RuleBSIAttribute : RuleFrameworkReference
-	{
-		public RuleBSIAttribute(string id)
-		{
-            Country = "de";
-            switch (id)
-			{
-				case "M 2.412":
-					ID = "M 2.412 Schutz der Authentisierung beim Einsatz von Active Directory";
-					URL = "https://www.bsi.bund.de/DE/Themen/ITGrundschutz/ITGrundschutzKataloge/Inhalt/_content/m/m02/m02412.html?nn=6604968";
-					break;
-				case "M 4.314":
-					ID = "M 4.314 Sichere Richtlinieneinstellungen für Domänen und Domänen-Controller";
-					URL = "https://www.bsi.bund.de/DE/Themen/ITGrundschutz/ITGrundschutzKataloge/Inhalt/_content/m/m04/m04314.html?nn=6604968";
-					break;
-				case "M 4.315":
-					ID = "M 4.315 Aufrechterhaltung der Betriebssicherheit von Active Directory ";
-					URL = "https://www.bsi.bund.de/DE/Themen/ITGrundschutz/ITGrundschutzKataloge/Inhalt/_content/m/m04/m04315.html";
-					break;
-				default:
-					throw new NotImplementedException();
-			}
-		}
-
-		public string ID { get; private set; }
-
-        public override string Label { get { return "BSI " + ID; } }
-	}*/
-
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     public class RuleCERTFRAttribute : RuleFrameworkReference
     {
@@ -395,8 +365,6 @@ namespace PingCastle.Rules
             }
         }
 
-        //public override string Label { get { return "[ANSSI] ID: " + ID; } }
-
         public override bool Equals(RuleFrameworkReference other)
         {
             if (other is RuleDurANSSIAttribute)
@@ -442,6 +410,8 @@ namespace PingCastle.Rules
         Discovery,
         [Description("Lateral Movement")]
         LateralMovement,
+        [Description("Persistence")]
+        Persistence,
     }
 
     public enum MitreAttackTechnique
@@ -498,6 +468,8 @@ namespace PingCastle.Rules
         ExploitationofRemoteServices,
         [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.Execution, "T1569", "System Services")]
         SystemServices,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.Persistence, "T1098", "Account Manipulation")]
+        AccountManipulation,
     }
 
     public class MitreAttackTechniqueAttribute : Attribute

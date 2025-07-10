@@ -5,7 +5,6 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.Rules;
-using System;
 
 namespace PingCastle.Healthcheck.Rules
 {
@@ -24,13 +23,6 @@ namespace PingCastle.Healthcheck.Rules
         {
             if (IPaidSupportWin8)
                 return 0;
-            /*foreach (var loginscript in healthcheckData.GPOLoginScript)
-            {
-                if (string.Equals(loginscript.CommandLine, "Activate-ProductOnline.ps1", StringComparison.OrdinalIgnoreCase))
-                {
-                    return 0;
-                }
-            }*/
             foreach (HealthcheckOSData os in healthcheckData.OperatingSystem)
             {
                 if (os.OperatingSystem == "Windows 8")

@@ -53,7 +53,7 @@ namespace PingCastle.Report
 #if DEBUG
             versionString += " Beta";
 #endif
-            GenerateNavigation("Network map", null, DateTime.Now);
+            GenerateNavigation("Network map", null);
             GenerateAbout();
             Add(@"
 <div id=""wrapper"" class=""container well"">
@@ -319,7 +319,7 @@ Each square represent a network. It can be used to detect non occupied space or 
 		<div class=""modal-content"">
 			<div class=""modal-header"">
 				<h4 class=""modal-title"">Legend</h4>
-				<button type=""button"" class=""btn-close"" data-bs-dismiss=""modal"" aria-label=""Close""></button>
+				<button type=""button"" class=""btn-close btn-close-white"" data-bs-dismiss=""modal"" aria-label=""Close""></button>
 			</div>
 			<div class=""modal-body"">
 				<div class=""row""><div class=""col-lg-1""><canvas id='dc_legend' width='20' height='20'></canvas>
@@ -343,7 +343,7 @@ Each square represent a network. It can be used to detect non occupied space or 
 		<div class=""modal-content"">
 			<div class=""modal-header"">
 				<h4 class=""modal-title"">Filter source</h4>
-				<button type=""button"" class=""btn-close"" data-bs-dismiss=""modal"" aria-label=""Close""></button>
+				<button type=""button"" class=""btn-close btn-close-white"" data-bs-dismiss=""modal"" aria-label=""Close""></button>
             </div>
 			<div class=""modal-body"">
 				<div class=""panel-group"" id=""accordionFilter"">

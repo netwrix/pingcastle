@@ -19,7 +19,7 @@ namespace PingCastle.Report
     public class ReportHealthCheckConsolidation : ReportRiskControls<HealthcheckData>
     {
         private PingCastleReportCollection<HealthcheckData> Report;
-        protected ADHealthCheckingLicense _license;
+        public ReportHealthCheckConsolidation(ADHealthCheckingLicense license) : base(license) { }
         public string GenerateReportFile(PingCastleReportCollection<HealthcheckData> report, ADHealthCheckingLicense license, string filename)
         {
             Report = report;
@@ -28,10 +28,9 @@ namespace PingCastle.Report
             return GenerateReportFile(filename);
         }
 
-        public string GenerateRawContent(PingCastleReportCollection<HealthcheckData> report, ADHealthCheckingLicense license, string selectedTab = null)
+        public string GenerateRawContent(PingCastleReportCollection<HealthcheckData> report, string selectedTab = null)
         {
             Report = report;
-            _license = license;
             sb.Length = 0;
             GenerateContent(selectedTab);
             return sb.ToString();
@@ -69,18 +68,22 @@ namespace PingCastle.Report
 #if DEBUG
             versionString += " Beta";
 #endif
-            GenerateNavigation("Consolidation", null, DateTime.Now);
+            GenerateNavigation("Consolidation", null);
             GenerateAbout();
-            Add(@"
+            Add($@"
 <div id=""wrapper"" class=""container-fluid well"">
 	<noscript>
 		<div class=""alert alert-warning"">
 			<p>PingCastle reports work best with Javascript enabled.</p>
 		</div>
 	</noscript>
-<div class=""row""><div class=""col-lg-12""><h1>Consolidation</h1>
-			<h3>Date: " + DateTime.Now.ToString("yyyy-MM-dd") + @" - Engine version: " + versionString + @"</h3>
-</div></div>
+    <div class=""row"">
+        <div class=""col-lg-12"">
+            <div class=""d-flex justify-content-between align-items-center report-header"">
+                <h1>Consolidation</h1>
+                <h3 class=""report-date"">Date: {DateTime.Now.ToString("yyyy-MM-dd")} - Engine version: {versionString} </h3></div>
+        </div>
+    </div>
 ");
             GenerateContent();
             Add(@"
@@ -93,7 +96,7 @@ namespace PingCastle.Report
             Add(@"
 <div class=""row"">
     <div class=""col-lg-12"">
-		<ul class=""nav nav-tabs nav-fill"" role=""tablist"">");
+		<ul class=""nav nav-tabs nav-fill fs-4"" role=""tablist"">");
             GenerateTabHeader("Active Directory Indicators", selectedTab, true);
             GenerateTabHeader("Rules Matched", selectedTab);
             GenerateTabHeader("Domain Information", selectedTab);
@@ -532,7 +535,7 @@ namespace PingCastle.Report
                         AddCellText(dc.DCName);
                         AddCellText(dc.OperatingSystem);
                         AddCellText((dc.CreationDate == DateTime.MinValue ? "Unknown" : dc.CreationDate.ToString("u")));
-                        AddCellText((dc.StartupTime == DateTime.MinValue ? (dc.LastComputerLogonDate.AddDays(60) < DateTime.Now ? "Inactive?" : "Unknown") : (dc.StartupTime.AddMonths(6) < DateTime.Now ? /*"<span class='unticked'>" +*/ dc.StartupTime.ToString("u")/* + "</span>" */: dc.StartupTime.ToString("u"))));
+                        AddCellText((dc.StartupTime == DateTime.MinValue ? (dc.LastComputerLogonDate.AddDays(60) < DateTime.Now ? "Inactive?" : "Unknown") : (dc.StartupTime.AddMonths(6) < DateTime.Now ? dc.StartupTime.ToString("u"): dc.StartupTime.ToString("u"))));
                         AddCellText((dc.StartupTime == DateTime.MinValue ? "" : (DateTime.Now.Subtract(dc.StartupTime)).Days.ToString("D3") + " days"));
                         AddCellText((String.IsNullOrEmpty(dc.OwnerName) ? dc.OwnerSID : dc.OwnerName));
                         AddCellText((dc.HasNullSession ? "YES" : "NO"), true, !dc.HasNullSession);

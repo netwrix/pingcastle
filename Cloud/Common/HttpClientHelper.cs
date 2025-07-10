@@ -8,7 +8,6 @@ using PingCastle.Cloud.Logs;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.ServiceModel.Channels;
 using System.Text;
@@ -50,7 +49,7 @@ namespace PingCastle.Cloud.Common
         }
         static SazGenerator _generator;
 
-        public static int LogNavigating(Uri url)
+        public static async Task<int> LogNavigatingAsync(Uri url)
         {
             if (_generator == null)
                 return 0;
@@ -58,10 +57,10 @@ namespace PingCastle.Cloud.Common
                 url = new Uri(url.ToString().Replace("res://", "http://"));
             if (url.Scheme != "http" && url.Scheme != "https")
                 return 0;
-            return _generator.RecordBeginQuery(new HttpRequestMessage(HttpMethod.Get, url));
+            return await _generator.RecordBeginQueryAsync(new HttpRequestMessage(HttpMethod.Get, url));
         }
 
-        public static void LogNavigated(int logSessionId, Uri url, string documentText)
+        public static async Task LogNavigatedAsync(int logSessionId, Uri url, string documentText)
         {
             if (_generator == null)
                 return;
@@ -78,12 +77,12 @@ namespace PingCastle.Cloud.Common
 
                 var result = new HttpResponseMessage();
                 result.Content = new StreamContent(ms);
-                _generator.RecordEndQuery(logSessionId, result);
+                await _generator.RecordEndQueryAsync(logSessionId, result);
             }
 
         }
 
-        public static int LogSoapBegin(Message request)
+        public static async Task<int> LogSoapBeginAsync(Message request)
         {
             if (_generator == null)
                 return 0;
@@ -105,11 +104,11 @@ namespace PingCastle.Cloud.Common
 
                 r.Content = new StreamContent(ms);
 
-                return _generator.RecordBeginQuery(r);
+                return await _generator.RecordBeginQueryAsync(r);
             }
         }
 
-        public static void LogSoapEnd(int logSessionId, Message request)
+        public static async Task LogSoapEndAsync(int logSessionId, Message request)
         {
             if (_generator == null)
                 return;
@@ -122,7 +121,7 @@ namespace PingCastle.Cloud.Common
 
                 var result = new HttpResponseMessage();
                 result.Content = new StreamContent(ms);
-                _generator.RecordEndQuery(logSessionId, result);
+                await _generator.RecordEndQueryAsync(logSessionId, result);
             }
 
         }

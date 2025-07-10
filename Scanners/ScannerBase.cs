@@ -6,6 +6,7 @@
 //
 using PingCastle.ADWS;
 using PingCastle.misc;
+using PingCastle.UserInterface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,6 +22,8 @@ namespace PingCastle.Scanners
         public abstract string Description { get; }
 
         protected RuntimeSettings Settings;
+
+        private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
 
         public static int ScanningMode { get; set; }
 
@@ -38,17 +41,18 @@ namespace PingCastle.Scanners
         {
             if (ScanningMode == 0)
             {
-                var choices = new List<ConsoleMenuItem>(){
-                new ConsoleMenuItem("all","This is a domain. Scan all computers."),
-                new ConsoleMenuItem("one","This is a computer. Scan only this computer."),
-                new ConsoleMenuItem("workstation","Scan all computers except servers."),
-                new ConsoleMenuItem("server","Scan all servers."),
-                new ConsoleMenuItem("domaincontrollers","Scan all domain controllers."),
-                new ConsoleMenuItem("file","Import items from a file (one computer per line)."),
-            };
-                ConsoleMenu.Title = "Select the scanning mode";
-                ConsoleMenu.Information = "This scanner can collect all the active computers from a domain and scan them one by one automatically. Or scan only one computer";
-                int choice = ConsoleMenu.SelectMenu(choices);
+                var choices = new List<MenuItem>(){
+                    new MenuItem("all","This is a domain. Scan all computers."),
+                    new MenuItem("one","This is a computer. Scan only this computer."),
+                    new MenuItem("workstation","Scan all computers except servers."),
+                    new MenuItem("server","Scan all servers."),
+                    new MenuItem("domaincontrollers","Scan all domain controllers."),
+                    new MenuItem("file","Import items from a file (one computer per line)."),
+                };
+
+                _ui.Title = "Select the scanning mode";
+                _ui.Information = "This scanner can collect all the active computers from a domain and scan them one by one automatically. Or scan only one computer";
+                int choice = _ui.SelectMenu(choices);
                 if (choice == 0)
                     return DisplayState.Exit;
                 ScanningMode = choice;
@@ -149,7 +153,9 @@ namespace PingCastle.Scanners
                         {
                             string ETCstring = null;
                             if (j > smallstep && (j - smallstep) % bigstep != 0)
-                                ClearCurrentConsoleLine();
+                            {
+                                _ui.ClearCurrentConsoleLine();
+                            }
                             if (j > bigstep)
                             {
                                 long totalTime = ((long)(watch.ElapsedMilliseconds * computers.Count) / j);
@@ -224,18 +230,8 @@ namespace PingCastle.Scanners
         private static void DisplayAdvancement(string data)
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-            Console.WriteLine(value);
+            UserInterfaceFactory.GetUserInterface().DisplayMessage(value);
             Trace.WriteLine(value);
         }
-
-        public static void ClearCurrentConsoleLine()
-        {
-            int currentLineCursor = Console.CursorTop;
-            Console.SetCursorPosition(0, Console.CursorTop - 1);
-            for (int i = 0; i < Console.WindowWidth; i++)
-                Console.Write(" ");
-            Console.SetCursorPosition(0, currentLineCursor - 1);
-        }
-
     }
 }

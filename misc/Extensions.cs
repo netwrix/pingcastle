@@ -17,5 +17,17 @@ namespace PingCastle.misc
 
             return dictionary;
         }
+
+        public static async Task<List<TValue>> ToListAsync<TValue>(this IAsyncEnumerable<TValue> collection)
+        {
+            var list = new List<TValue>();
+
+            await foreach (var item in collection)
+            {
+                list.Add(item);
+            }
+
+            return list;
+        }
     }
 }

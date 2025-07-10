@@ -334,6 +334,8 @@ namespace PingCastle.Healthcheck
             Trace.WriteLine("Gathering domain controller data");
             Trace.WriteLine("Gathering network data");
             GenerateNetworkData(model, healthcheckData);
+            Trace.WriteLine("Gathering remaining data");
+            GenerateRemainingData(model, healthcheckData);
             Trace.WriteLine("Computing risks");
             var rules = new RuleSet<HealthcheckData>();
             healthcheckData.RiskRules = new List<HealthcheckRiskRule>();
@@ -346,10 +348,19 @@ namespace PingCastle.Healthcheck
                 risk.RiskId = rule.RiskId;
                 risk.Rationale = rule.Rationale;
                 risk.Details = rule.Details;
+                risk.ExtraDetails = rule.ExtraDetails;
                 healthcheckData.RiskRules.Add(risk);
             }
             Trace.WriteLine("Done");
             return healthcheckData;
+        }
+
+        private void GenerateRemainingData(FakeHealthCheckDataGeneratorDomainModel model, HealthcheckData healthcheckData)
+        {
+            healthcheckData.AllowedRODCPasswordReplicationGroup = new List<string>();
+            healthcheckData.DeniedRODCPasswordReplicationGroup = new List<string>();
+            healthcheckData.PrivilegedDistributionLastLogon = new List<HealthcheckPwdDistributionData>();
+            healthcheckData.PrivilegedDistributionPwdLastSet = new List<HealthcheckPwdDistributionData>();
         }
 
         private void GenerateTrust(FakeHealthCheckDataGeneratorDomainModel model, HealthcheckData healthcheckData)
@@ -582,14 +593,7 @@ namespace PingCastle.Healthcheck
 
         private static string GenerateRandomSid()
         {
-            return "S-1-5-" + rnd.Next(2147483647) + "-" + rnd.Next(2147483647) + "-" + rnd.Next(2147483647);
+            return "S-1-5-21-" + rnd.Next(2147483647) + "-" + rnd.Next(2147483647) + "-" + rnd.Next(2147483647);
         }
-
-        /*public static string RandomString(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, length)
-              .Select(s => s[random.Next(s.Length)]).ToArray());
-        }*/
     }
 }

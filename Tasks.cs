@@ -11,7 +11,6 @@ using PingCastle.misc;
 using PingCastle.Report;
 using PingCastle.Rules;
 using PingCastle.Scanners;
-using PingCastle.Cloud.Credentials;
 using PingCastle.Cloud.Data;
 using System;
 using System.Collections.Generic;
@@ -27,6 +26,9 @@ using System.Threading;
 using TinyJson;
 using System.Xml.Serialization;
 using System.Xml;
+using PingCastle.UserInterface;
+using PingCastle.Cloud.MsGraph;
+using System.Security.Cryptography;
 
 namespace PingCastle
 {
@@ -39,6 +41,8 @@ namespace PingCastle
 
         public PingCastleReportDataExportLevel ExportLevel = PingCastleReportDataExportLevel.Normal;
 
+        private static readonly IUserInterface Ui = UserInterfaceFactory.GetUserInterface();
+
 
         Dictionary<string, string> xmlreports = new Dictionary<string, string>();
         Dictionary<string, string> htmlreports = new Dictionary<string, string>();
@@ -47,18 +51,11 @@ namespace PingCastle
         Dictionary<string, string> aadhtmlreport = new Dictionary<string, string>();
 
         private RuntimeSettings Settings;
+        private AgentSettings _apiAgentSettings;
 
         public Tasks(RuntimeSettings settings)
         {
             Settings = settings;
-        }
-
-        internal static void EnableLogFile()
-        {
-            Trace.AutoFlush = true;
-            TextWriterTraceListener listener = new TextWriterTraceListener("trace.log");
-            Trace.Listeners.Add(listener);
-            PingCastle.Cloud.Common.HttpClientHelper.EnableLoging(new PingCastle.Cloud.Logs.SazGenerator());
         }
 
         public bool GenerateKeyTask()
@@ -75,17 +72,18 @@ namespace PingCastle
             return StartTask("Generate AzureAD Key",
                     () =>
                     {
-                        Console.WriteLine("Go to portal.azure.com");
-                        Console.WriteLine("Open Azure Active Directory");
-                        Console.WriteLine("Go to App registrations");
-                        Console.WriteLine("Select new registration and create an app.");
-                        Console.WriteLine("Go to Certificates & secrets and select certificates");
-                        Console.WriteLine("upload the .cer file generated");
-                        Console.WriteLine("");
-                        Console.WriteLine("Go to Roles adn administrators");
-                        Console.WriteLine("Select the role Global Reader");
-                        Console.WriteLine("Click on Add assignments and add the previously created account");
-                        Console.WriteLine("Make sure the App registration is listed on Assignments before leaving");
+                    Ui.DisplayMessage(new List<string> { "Go to portal.azure.com",
+                        "Open Azure Active Directory",
+                        "Go to App registrations",
+                        "Select new registration and create an app.",
+                        "Go to Certificates & secrets and select certificates",
+                        "upload the .cer file generated",
+                        "",
+                        "Go to Roles adn administrators",
+                        "Select the role Global Reader",
+                        "Click on Add assignments and add the previously created account",
+                        "Make sure the App registration is listed on Assignments before leaving" });
+
                         var tenant = "pingcastle.com";
                         PingCastle.Cloud.Credentials.CertificateBuilder.GenerateAzureADCertificate(tenant, "vletoux", DateTime.Now.AddYears(2));
                         return;
@@ -127,12 +125,10 @@ namespace PingCastle
                     HealthcheckAnalyzer hcroot = new HealthcheckAnalyzer();
                     hcroot.LimitHoneyPot = License.IsBasic();
                     domains = hcroot.GetAllReachableDomains(Settings.Port, Settings.Credential);
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("List of domains that will be queried");
-                    Console.ResetColor();
+                   Ui.DisplayHighlight("List of domains that will be queried");
                     foreach (var domain in domains)
                     {
-                        Console.WriteLine(domain.domain);
+                        Ui.DisplayMessage(domain.domain);
                     }
                 });
             var consolidation = new PingCastleReportCollection<HealthcheckData>();
@@ -152,17 +148,17 @@ namespace PingCastle
                             if (!queue.Dequeue(out domain)) break;
                             try
                             {
-                                Console.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] " + "Starting the analysis of " + domain);
+                                Ui.DisplayMessage("[" + DateTime.Now.ToLongTimeString() + "] " + "Starting the analysis of " + domain);
                                 HealthcheckAnalyzer hc = new HealthcheckAnalyzer();
                                 hc.LimitHoneyPot = License.IsBasic();
 
                                 var data = hc.GenerateCartoReport(domain, Settings.Port, Settings.Credential, Settings.AnalyzeReachableDomains);
                                 consolidation.Add(data);
-                                Console.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] " + "Analysis of " + domain + " completed with success");
+                                Ui.DisplayMessage("[" + DateTime.Now.ToLongTimeString() + "] " + "Analysis of " + domain + " completed with success");
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] " + "Analysis of " + domain + " failed");
+                                Ui.DisplayMessage("[" + DateTime.Now.ToLongTimeString() + "] " + "Analysis of " + domain + " failed");
                                 Trace.WriteLine("Exception while analysing domain " + domain + " : " + ex.Message);
                                 Trace.WriteLine(ex.StackTrace);
                             }
@@ -204,7 +200,7 @@ namespace PingCastle
             });
             if (PerformHealthCheckGenerateDemoReports)
             {
-                Console.WriteLine("Performing demo report transformation");
+                Ui.DisplayMessage("Performing demo report transformation");
                 Trace.WriteLine("Performing demo report transformation");
                 consolidation = PingCastleReportHelper<HealthcheckData>.TransformReportsToDemo(consolidation);
             }
@@ -213,7 +209,7 @@ namespace PingCastle
                 {
                     consolidation.EnrichInformation();
                     ReportHealthCheckMapBuilder nodeAnalyzer = new ReportHealthCheckMapBuilder(consolidation, License);
-                    nodeAnalyzer.Log = Console.WriteLine;
+                    nodeAnalyzer.Log = Ui.DisplayMessage;
                     nodeAnalyzer.CenterDomainForSimpliedGraph = Settings.CenterDomainForSimpliedGraph;
                     nodeAnalyzer.GenerateReportFile("ad_carto_full_node_map.html");
                     nodeAnalyzer.FullNodeMap = false;
@@ -224,20 +220,128 @@ namespace PingCastle
             return true;
         }
 
-        public bool AnalysisTask<T>() where T : IPingCastleReport
+        public bool RetrieveAgentSettingsTask()
         {
             if (!string.IsNullOrEmpty(Settings.apiEndpoint) && !string.IsNullOrEmpty(Settings.apiKey))
             {
-                var ret = RetrieveSettingsViaAPI();
-                if (!ret)
-                    return false;
+                return RetrieveSettingsViaAPI();
             }
+            return false;
+        }
+
+        public bool GetAgentLicense()
+        {
+            if (_apiAgentSettings?.License != null)
+            {
+                try
+                {
+                    var license = new ADHealthCheckingLicense(_apiAgentSettings.License);
+                    license.TraceInfo();
+
+                    if (license.EndTime > DateTime.Now)
+                    {
+                        License = license;
+                        DisplayAdvancement("A new license has been retrieved from the API. Using it.");
+                        if (!string.IsNullOrEmpty(license.CustomerNotice))
+                        {
+                            DisplayAdvancement(license.CustomerNotice);
+                        }
+
+                        return true;
+                    }
+                    else
+                    {
+                        DisplayAdvancement("A new license has been retrieved from the API. But the license is out-dated.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex.Message);
+                }
+            }
+            return false;
+        }
+
+        public bool AnalysisTask<T>() where T : IPingCastleReport
+        {
+            LoadExportLevel();
+
+            LoadCustomRules();
+
             string[] servers = Settings.Server.Split(',');
             foreach (string server in servers)
             {
                 AnalysisTask<T>(server);
             }
             return true;
+        }
+
+        private void LoadExportLevel()
+        {
+            if (!string.IsNullOrEmpty(_apiAgentSettings?.ExportLevel))
+            {
+                try
+                {
+                    // enum parsed as string to avoid a problem is a newer version of the enum is sent over the wire
+                    ExportLevel = (PingCastleReportDataExportLevel)Enum.Parse(typeof(PingCastleReportDataExportLevel), _apiAgentSettings.ExportLevel);
+                }
+                catch (Exception)
+                {
+                    Trace.WriteLine("Unable to parse the level [" + _apiAgentSettings.ExportLevel + "] to one of the predefined value (" + String.Join(",", Enum.GetNames(typeof(PingCastleReportDataExportLevel))) + ")");
+                }
+            }
+        }
+
+        private void LoadCustomRules()
+        {
+            if (_apiAgentSettings?.CustomRules != null && _apiAgentSettings.CustomRules.Count != 0)
+            {
+                if (License.IsBasic() || License.Edition == "Auditor")
+                {
+                    Trace.WriteLine("Custom rules not allowed");
+                }
+                else
+                {
+                    foreach (var rule in _apiAgentSettings.CustomRules)
+                    {
+                        var hcrule = RuleSet<HealthcheckData>.GetRuleFromID(rule.RiskID);
+                        if (hcrule == null)
+                        {
+                            Trace.WriteLine("Rule " + rule.RiskID + " ignored because not found");
+                            continue;
+                        }
+                        if (rule.MaturityLevel != null)
+                        {
+                            hcrule.MaturityLevel = (int)rule.MaturityLevel;
+                        }
+                        if (rule.Computation != null && rule.Computation.Count > 0)
+                        {
+                            var computations = new List<RuleComputationAttribute>();
+                            foreach (var c in rule.Computation)
+                            {
+                                RuleComputationType type;
+                                try
+                                {
+                                    // enum parsed as string to avoid a problem is a newer version of the enum is sent over the wire
+                                    type = (RuleComputationType)Enum.Parse(typeof(RuleComputationType), c.ComputationType);
+                                }
+                                catch (Exception)
+                                {
+                                    Trace.WriteLine("Unable to parse the RuleComputationType [" + c.ComputationType + "] to one of the predefined value (" + String.Join(",", Enum.GetNames(typeof(RuleComputationType))) + ")");
+                                    computations.Clear();
+                                    break;
+                                }
+                                computations.Add(new RuleComputationAttribute(type, c.Score, c.Threshold, c.Order));
+                            }
+                            if (computations.Count > 0)
+                            {
+                                hcrule.RuleComputation.Clear();
+                                hcrule.RuleComputation.AddRange(computations);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public bool CompleteTasks()
@@ -271,8 +375,8 @@ namespace PingCastle
 
                         foreach (var pingCastleReport in hcconso)
                         {
-                            var enduserReportGenerator = new ReportHealthCheckSingle();
-                            enduserReportGenerator.GenerateReportFile(pingCastleReport, License, pingCastleReport.GetHumanReadableFileName());
+                            var enduserReportGenerator = new ReportHealthCheckSingle(License);
+                            enduserReportGenerator.GenerateReportFile(pingCastleReport, pingCastleReport.GetHumanReadableFileName());
                             DisplayAdvancement("Export level is " + ExportLevel);
                             if (ExportLevel != PingCastleReportDataExportLevel.Full)
                             {
@@ -283,10 +387,10 @@ namespace PingCastle
 
                         }
 
-                        var reportConso = new ReportHealthCheckConsolidation();
+                        var reportConso = new ReportHealthCheckConsolidation(License);
                         reportConso.GenerateReportFile(hcconso, License, "ad_hc_summary.html");
                         ReportHealthCheckMapBuilder nodeAnalyzer = new ReportHealthCheckMapBuilder(hcconso, License);
-                        nodeAnalyzer.Log = Console.WriteLine;
+                        nodeAnalyzer.Log = Ui.DisplayMessage;
                         nodeAnalyzer.GenerateReportFile("ad_hc_summary_full_node_map.html");
                         nodeAnalyzer.FullNodeMap = false;
                         nodeAnalyzer.CenterDomainForSimpliedGraph = Settings.CenterDomainForSimpliedGraph;
@@ -315,8 +419,6 @@ namespace PingCastle
             public string ReportLocation { get; set; }
 
             public string RiskId { get; set; }
-
-            //public List<RuleComputationAttribute> RuleComputation { get; set; }
 
             public string Solution { get; set; }
 
@@ -406,12 +508,14 @@ namespace PingCastle
 
                 foreach (var domain in domains)
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("");
+                    Ui.DisplayMessage("");
                     string display = "Starting the report for " + domain + " (" + i++ + "/" + domains.Count + ")";
-                    Console.WriteLine(display);
-                    Console.WriteLine(new String('=', display.Length));
-                    Console.ResetColor();
+                    Ui.DisplayHighlight(new List<string>
+                    {
+                        display,
+                        new String('=', display.Length)
+                    });
+
                     PerformTheAnalysis(domain);
                 }
 
@@ -469,13 +573,11 @@ namespace PingCastle
                                 }
                             }
                         }
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine("List of domains that will be queried");
+                        Ui.DisplayHighlight("List of domains that will be queried");
                         Trace.WriteLine("List of domains that will be queried");
-                        Console.ResetColor();
                         foreach (var domain in domainToExamine)
                         {
-                            Console.WriteLine(domain);
+                            Ui.DisplayWarning(domain);
                             Trace.WriteLine(domain);
                         }
                         Trace.WriteLine("End selection");
@@ -501,15 +603,13 @@ namespace PingCastle
                     hcroot.LimitHoneyPot = License.IsBasic();
                     var reachableDomains = hcroot.GetAllReachableDomains(Settings.Port, Settings.Credential);
                     List<HealthcheckAnalyzer.ReachableDomainInfo> domainsfiltered = new List<HealthcheckAnalyzer.ReachableDomainInfo>();
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("List of domains that will be queried");
-                    Console.ResetColor();
+                    Ui.DisplayMessage("List of domains that will be queried");
                     foreach (var reachableDomain in reachableDomains)
                     {
                         if (compareStringWithWildcard(server, reachableDomain.domain) && !ShouldTheDomainBeNotExplored(reachableDomain.domain))
                         {
                             domains.Add(reachableDomain.domain);
-                            Console.WriteLine(reachableDomain.domain);
+                            Ui.DisplayMessage(reachableDomain.domain);
                         }
                     }
                 });
@@ -550,6 +650,7 @@ namespace PingCastle
                     analyzer.LimitHoneyPot = License.IsBasic();
                     pingCastleReport = analyzer.PerformAnalyze(new PingCastleAnalyzerParameters()
                     {
+                        IsPrivilegedMode = Settings.IsPrivilegedMode,
                         Server = server,
                         Port = Settings.Port,
                         Credential = Settings.Credential,
@@ -558,8 +659,8 @@ namespace PingCastle
                     });
                     string domain = pingCastleReport.Domain.DomainName;
                     DisplayAdvancement("Generating html report");
-                    var enduserReportGenerator = new ReportHealthCheckSingle();
-                    htmlreports[domain] = enduserReportGenerator.GenerateReportFile(pingCastleReport, License, pingCastleReport.GetHumanReadableFileName());
+                    var enduserReportGenerator = new ReportHealthCheckSingle(License);
+                    htmlreports[domain] = enduserReportGenerator.GenerateReportFile(pingCastleReport, pingCastleReport.GetHumanReadableFileName());
                     DisplayAdvancement("Generating xml file for consolidation report" + (Settings.EncryptReport ? " (encrypted)" : ""));
                     DisplayAdvancement("Export level is " + ExportLevel);
                     if (ExportLevel != PingCastleReportDataExportLevel.Full)
@@ -588,10 +689,10 @@ namespace PingCastle
                         if (typeof(T) == typeof(HealthcheckData))
                         {
                             var hcconso = consolidation as PingCastleReportCollection<HealthcheckData>;
-                            var report = new ReportHealthCheckConsolidation();
+                            var report = new ReportHealthCheckConsolidation(License);
                             report.GenerateReportFile(hcconso, License, "ad_hc_summary.html");
                             ReportHealthCheckMapBuilder nodeAnalyzer = new ReportHealthCheckMapBuilder(hcconso, License);
-                            nodeAnalyzer.Log = Console.WriteLine;
+                            nodeAnalyzer.Log = Ui.DisplayMessage;
                             nodeAnalyzer.GenerateReportFile("ad_hc_summary_full_node_map.html");
                             nodeAnalyzer.FullNodeMap = false;
                             nodeAnalyzer.CenterDomainForSimpliedGraph = Settings.CenterDomainForSimpliedGraph;
@@ -650,8 +751,8 @@ namespace PingCastle
                             {
                                 DisplayAdvancement("The xml report does not contain personal data. Current reporting level is: " + healthcheckData.Level);
                             }
-                            var endUserReportGenerator = new ReportHealthCheckSingle();
-                            endUserReportGenerator.GenerateReportFile(healthcheckData, License, healthcheckData.GetHumanReadableFileName());
+                            var endUserReportGenerator = new ReportHealthCheckSingle(License);
+                            endUserReportGenerator.GenerateReportFile(healthcheckData, healthcheckData.GetHumanReadableFileName());
                         }
                     }
                 );
@@ -771,8 +872,8 @@ namespace PingCastle
                         foreach (HealthcheckData data in consolidation)
                         {
                             string domain = data.DomainFQDN;
-                            var endUserReportGenerator = new ReportHealthCheckSingle();
-                            string html = endUserReportGenerator.GenerateReportFile(data, License, Path.Combine(path, data.GetHumanReadableFileName()));
+                            var endUserReportGenerator = new ReportHealthCheckSingle(License);
+                            string html = endUserReportGenerator.GenerateReportFile(data, Path.Combine(path, data.GetHumanReadableFileName()));
                             data.SetExportLevel(ExportLevel);
                             string xml = DataHelper<HealthcheckData>.SaveAsXml(data, Path.Combine(path, data.GetMachineReadableFileName()), Settings.EncryptReport);
                         }
@@ -914,14 +1015,6 @@ namespace PingCastle
             try
             {
                 Trace.WriteLine("using filename:" + filename);
-                /*byte[] data;
-                using (var multipartcontent = new MultipartFormDataContent())
-                {
-                    multipartcontent.Headers.ContentType.MediaType = "multipart/form-data";
-                    multipartcontent.Add(new StreamContent(filecontent), "file", filename);
-                    data = multipartcontent.ReadAsByteArrayAsync().GetAwaiter().GetResult();
-                }
-                answer = client.UploadData(Settings.apiEndpoint + "api/Agent/SendAADReport", "POST", data);*/
                 answer = client.UploadFile(Settings.apiEndpoint + "api/Agent/SendAADReport", filename);
 
                 var o = Encoding.Default.GetString(answer);
@@ -975,7 +1068,7 @@ namespace PingCastle
             public List<CustomRule> CustomRules { get; set; }
         }
 
-        private void ProcessSettings(WebClient client)
+        private void PullSettings(WebClient client)
         {
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
             client.Headers.Add(HttpRequestHeader.ContentType, "application/json");
@@ -988,104 +1081,11 @@ namespace PingCastle
 
                 // TinyJson is extracted from https://github.com/zanders3/json
                 // MIT License
-                var deserializedResult = JSONParser.FromJson<AgentSettings>(answer);
+                _apiAgentSettings = JSONParser.FromJson<AgentSettings>(answer);
 
                 // could also use this serializer, but starting .Net 4 only (not .net 3)
                 //var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
                 //var deserializedResult = serializer.Deserialize<AgentSettings>(answer);
-
-                if (deserializedResult.License != null)
-                {
-                    try
-                    {
-                        var license = new ADHealthCheckingLicense(deserializedResult.License);
-
-                        Trace.WriteLine("License checked");
-                        Trace.WriteLine("CustomerNotice: " + license.CustomerNotice);
-                        Trace.WriteLine("DomainLimitation: " + license.DomainLimitation);
-                        Trace.WriteLine("DomainNumberLimit: " + license.DomainNumberLimit);
-                        Trace.WriteLine("Edition: " + license.Edition);
-                        Trace.WriteLine("EndTime: " + license.EndTime);
-
-                        if (license.EndTime > DateTime.Now)
-                        {
-                            License = license;
-                            DisplayAdvancement("A new license has been retrieved from the API. Using it.");
-                            if (!string.IsNullOrEmpty(license.CustomerNotice))
-                            {
-                                DisplayAdvancement(license.CustomerNotice);
-                            }
-                        }
-                        else
-                        {
-                            DisplayAdvancement("A new license has been retrieved from the API. But the license is out-dated.");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace.WriteLine(ex.Message);
-                    }
-                }
-                if (!string.IsNullOrEmpty(deserializedResult.ExportLevel))
-                {
-                    try
-                    {
-                        // enum parsed as string to avoid a problem is a newer version of the enum is sent over the wire
-                        ExportLevel = (PingCastleReportDataExportLevel)Enum.Parse(typeof(PingCastleReportDataExportLevel), deserializedResult.ExportLevel);
-                    }
-                    catch (Exception)
-                    {
-                        Trace.WriteLine("Unable to parse the level [" + deserializedResult.ExportLevel + "] to one of the predefined value (" + String.Join(",", Enum.GetNames(typeof(PingCastleReportDataExportLevel))) + ")");
-                    }
-                }
-                if (deserializedResult.CustomRules != null && deserializedResult.CustomRules.Count != 0)
-                {
-                    if (License.IsBasic() || License.Edition == "Auditor")
-                    {
-                        Trace.WriteLine("Custom rules not allowed");
-                    }
-                    else
-                    {
-                        foreach (var rule in deserializedResult.CustomRules)
-                        {
-                            var hcrule = RuleSet<HealthcheckData>.GetRuleFromID(rule.RiskID);
-                            if (hcrule == null)
-                            {
-                                Trace.WriteLine("Rule " + rule.RiskID + " ignored because not found");
-                                continue;
-                            }
-                            if (rule.MaturityLevel != null)
-                            {
-                                hcrule.MaturityLevel = (int)rule.MaturityLevel;
-                            }
-                            if (rule.Computation != null && rule.Computation.Count > 0)
-                            {
-                                var computations = new List<RuleComputationAttribute>();
-                                foreach (var c in rule.Computation)
-                                {
-                                    RuleComputationType type;
-                                    try
-                                    {
-                                        // enum parsed as string to avoid a problem is a newer version of the enum is sent over the wire
-                                        type = (RuleComputationType)Enum.Parse(typeof(RuleComputationType), c.ComputationType);
-                                    }
-                                    catch (Exception)
-                                    {
-                                        Trace.WriteLine("Unable to parse the RuleComputationType [" + c.ComputationType + "] to one of the predefined value (" + String.Join(",", Enum.GetNames(typeof(RuleComputationType))) + ")");
-                                        computations.Clear();
-                                        break;
-                                    }
-                                    computations.Add(new RuleComputationAttribute(type, c.Score, c.Threshold, c.Order));
-                                }
-                                if (computations.Count > 0)
-                                {
-                                    hcrule.RuleComputation.Clear();
-                                    hcrule.RuleComputation.AddRange(computations);
-                                }
-                            }
-                        }
-                    }
-                }
             }
             catch (WebException ex)
             {
@@ -1208,7 +1208,7 @@ namespace PingCastle
                             }
                             try
                             {
-                                ProcessSettings(client);
+                                PullSettings(client);
                             }
                             catch (Exception ex)
                             {
@@ -1359,9 +1359,7 @@ This is the PingCastle program sending reports for:
         delegate void TaskDelegate();
         private bool StartTask(string taskname, TaskDelegate taskdelegate)
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Starting the task: " + taskname);
-            Console.ResetColor();
+            Ui.DisplayHighlight("Starting the task: " + taskname);
             Trace.WriteLine("Starting " + taskname + " at:" + DateTime.Now);
             Stopwatch watch = new Stopwatch();
             watch.Start();
@@ -1413,6 +1411,20 @@ This is the PingCastle program sending reports for:
                 DisplayException(taskname, ex);
                 return false;
             }
+            catch(CryptographicException cex)
+            {
+                WriteInRed("[" + DateTime.Now.ToLongTimeString() + "] An cryptographic error occured when doing the task: " + taskname);
+
+                // The only discriminator we have to work with is the message
+                string errorMessage = cex.Message.Trim('\n', '\r') switch
+                {
+                    "Invalid algorithm specified." => "An Invalid algorithm was specified. This usually means that the certificate used to authenticate does not contain the providers \"Microsoft Enhanced RSA and AES Cryptographic Provider\"",
+                    _ => cex.Message
+                };
+
+                WriteInRed(errorMessage);
+                return false;
+            }
             // default exception message
             catch (Exception ex)
             {
@@ -1458,65 +1470,67 @@ This is the PingCastle program sending reports for:
             watch.Stop();
             Trace.WriteLine("Stoping " + taskname + " at: " + DateTime.Now);
             Trace.WriteLine("The task " + taskname + " took " + watch.Elapsed);
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Task " + taskname + " completed");
-            Console.ResetColor();
+            Ui.DisplayHighlight("Task " + taskname + " completed");
             return true;
         }
 
-        public static void DisplayException(string taskname, Exception ex)
+        public static void DisplayException(string taskName, Exception ex, bool showStackTrace = false)
         {
-            if (!String.IsNullOrEmpty(taskname))
+            try
             {
-                WriteInRed("[" + DateTime.Now.ToLongTimeString() + "] An exception occured when doing the task: " + taskname);
-                WriteInRed("Note: you can run the program with the switch --log to get more detail");
-                Trace.WriteLine("An exception occured when doing the task: " + taskname);
+                if (!String.IsNullOrEmpty(taskName))
+                {
+                    WriteInRed("[" + DateTime.Now.ToLongTimeString() + "] An exception occured when doing the task: " + taskName);
+                    WriteInRed("Note: you can run the program with the switch --log to get more detail");
+                    Trace.WriteLine("An exception occured when doing the task: " + taskName);
+                }
+                WriteInRed("Exception: " + ex.Message);
+                Trace.WriteLine("Type:" + ex.GetType());
+
+                if (ex is System.DirectoryServices.Protocols.LdapException ldapEx)
+                {
+                    HandleLdapException(ldapEx);
+                }
+
+                if (showStackTrace)
+                {
+                    WriteInDarkRed(ex.StackTrace);
+                }
+                if (ex.InnerException != null)
+                {
+                    Trace.WriteLine("innerexception: ");
+                    DisplayException(null, ex.InnerException);
+                }
             }
-            WriteInRed("Exception: " + ex.Message);
-            Trace.WriteLine("Type:" + ex.GetType().ToString());
-            var fnfe = ex as FileNotFoundException;
-            if (fnfe != null)
+            catch(Exception exc)
             {
-                WriteInRed("file:" + fnfe.FileName);
-            }
-            if (ex.GetType().ToString() == "Novell.Directory.Ldap.LdapException")
-            {
-                string novelMessage = null;
-                int novelResultCode;
-                novelResultCode = (int)ex.GetType().GetProperty("ResultCode").GetValue(ex, null);
-                novelMessage = ex.GetType().GetProperty("LdapErrorMessage").GetValue(ex, null) as string;
-                WriteInRed("message: " + novelMessage);
-                WriteInRed("ResultCode: " + novelResultCode);
-            }
-            WriteInDarkRed(ex.StackTrace);
-            if (ex.InnerException != null)
-            {
-                Trace.WriteLine("innerexception: ");
-                DisplayException(null, ex.InnerException);
+                // Basic handling in case we have an error in error handling.
+                WriteInRed("Exception: " + exc.Message);
             }
         }
 
+        private static void HandleLdapException(System.DirectoryServices.Protocols.LdapException ex)
+        {
+            WriteInRed("message: " + (ex.ServerErrorMessage ?? "Could not retrieve error message"));
+            WriteInRed("ResultCode: " + ex.ErrorCode);
+        }
 
         private static void WriteInRed(string data)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(data);
+            UserInterfaceFactory.GetUserInterface().DisplayError(data);
             Trace.WriteLine("[Red]" + data);
-            Console.ResetColor();
         }
 
         private static void WriteInDarkRed(string data)
         {
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine(data);
+            UserInterfaceFactory.GetUserInterface().DisplayStackTrace(data);
             Trace.WriteLine("[DarkRed]" + data);
-            Console.ResetColor();
         }
 
         private void DisplayAdvancement(string data)
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
-            Console.WriteLine(value);
+            Ui.DisplayMessage(value);
             Trace.WriteLine(value);
         }
     }

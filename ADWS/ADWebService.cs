@@ -311,8 +311,7 @@ namespace PingCastle.ADWS
 
         public string ConvertSIDToName(string sidstring)
         {
-            string referencedDomain;
-            return ConvertSIDToName(sidstring, out referencedDomain);
+            return ConvertSIDToName(sidstring, out _);
         }
 
         public string ConvertSIDToName(string sidstring, out string referencedDomain)

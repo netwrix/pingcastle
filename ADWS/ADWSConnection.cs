@@ -4,15 +4,17 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using PingCastle.UserInterface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Security.Permissions;
+using System.Security.Principal;
 using System.ServiceModel;
 using System.Xml;
+using PingCastle.UserInterface;
 
 namespace PingCastle.ADWS
 {
@@ -458,12 +460,7 @@ namespace PingCastle.ADWS
 				throw;
 			}
 		}
-
-        public override string ConvertSIDToName(string sidstring, out string referencedDomain)
-        {
-            return NativeMethods.ConvertSIDToNameWithWindowsAPI(sidstring, Server, out referencedDomain);
-        }
-
+		
         public override System.Security.Principal.SecurityIdentifier ConvertNameToSID(string nameToResolve)
         {
             return NativeMethods.GetSidFromDomainNameWithWindowsAPI(Server, nameToResolve);

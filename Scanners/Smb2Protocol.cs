@@ -350,8 +350,8 @@ namespace PingCastle.Scanners
             [FieldOffset(0)]
             public UInt16 StructureSize;
             [FieldOffset(2)]
-            public byte SecurityMode;
-            [FieldOffset(3)]
+            public UInt16 SecurityMode;
+            [FieldOffset(4)]
             public UInt16 Dialect;
         }
 
@@ -951,7 +951,7 @@ namespace PingCastle.Scanners
                     securityMode = SMBSecurityModeEnum.SmbSigningEnabled;
                     if ((negotiateresponse.SecurityMode & 2) != 0)
                     {
-                        securityMode = SMBSecurityModeEnum.SmbSigningRequired;
+                        securityMode |= SMBSecurityModeEnum.SmbSigningRequired;
                     }
                 }
                 else

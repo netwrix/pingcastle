@@ -644,7 +644,7 @@ namespace PingCastle.Healthcheck
             return t / 30;
         }
 
-        List<HealthcheckScriptDelegationData> CheckScriptPermission(IADConnection adws, ADDomainInfo domainInfo, string file)
+        List<HealthcheckScriptDelegationData> CheckScriptPermission(ADWebService adws, ADDomainInfo domainInfo, string file)
         {
             var output = new List<HealthcheckScriptDelegationData>();
             if (file == "None")
@@ -672,7 +672,7 @@ namespace PingCastle.Healthcheck
                         continue;
 
                     var sid = (SecurityIdentifier)rule.IdentityReference;
-                    if (!TryMatchBadUser(sid, out var userName))
+                    if (!TryMatchBadUser(sid, adws, out var userName))
                         continue;
                     output.Add(new HealthcheckScriptDelegationData() { Account = userName, Right = rule.FileSystemRights.ToString() });
                 }
@@ -2169,7 +2169,7 @@ namespace PingCastle.Healthcheck
             GetGPOList(domainInfo, adws, GPOList);
             SaveGPOListToHCData(GPOList);
 
-            ParseGPOFiles(adws, domainInfo, GPOList);
+            ParseGPOFiles(adws, domainInfo, GPOList, adws.Credential);
             GenerateMsiData(domainInfo, adws, GPOList);
         }
 
@@ -2189,15 +2189,24 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private void ParseGPOFiles(ADWebService adws, ADDomainInfo domainInfo, Dictionary<string, GPO> GPOList)
+        private void ParseGPOFiles(ADWebService adws, ADDomainInfo domainInfo, Dictionary<string, GPO> GPOList, NetworkCredential credential)
         {
             BlockingQueue<string> queue = new BlockingQueue<string>(200);
             int numberOfThread = 20;
             Thread[] threads = new Thread[numberOfThread];
             string uri = null;
+            WindowsIdentity identity = null;
+            WindowsImpersonationContext context = null;
             try
             {
                 uri = "\\\\" + domainInfo.DnsHostName + "\\sysvol\\" + domainInfo.DomainName + "\\Policies";
+                if (credential != null)
+                {
+                    MethodBase method = new StackTrace().GetFrame(0).GetMethod();
+                    Trace.WriteLine($"Called: {method.Name}  Is impersonating as {credential.UserName}");
+                    identity = WindowsFileConnection.GetWindowsIdentityForUser(credential, domainInfo.DomainName);
+                    context = identity.Impersonate();
+                }
 
                 ParameterizedThreadStart threadFunction = (object input) =>
                 {
@@ -2280,6 +2289,16 @@ namespace PingCastle.Healthcheck
                         if (threads[i].ThreadState == System.Threading.ThreadState.Running)
                             threads[i].Abort();
                 }
+
+                // Remove the context and Identity from impersonation
+                if (context != null)
+                {
+                    context.Undo();
+                }
+                if (identity != null)
+                {
+                    identity.Dispose();
+                }
             }
         }
 
@@ -2321,7 +2340,7 @@ namespace PingCastle.Healthcheck
             WorkOnReturnedObjectByADWS callback =
                 (ADItem x) =>
                 {
-                    var ca = CreateCertificateAuthority(x, parameters.IsPrivilegedMode);
+                    var ca = CreateCertificateAuthority(x, parameters.IsPrivilegedMode, adws);
                     healthcheckData.CertificateAuthorities.Add(ca);
 
                     if (x.CertificateTemplates != null)
@@ -2341,7 +2360,7 @@ namespace PingCastle.Healthcheck
             return output;
         }
 
-        private HealthCheckCertificateAuthorityData CreateCertificateAuthority(ADItem item, bool isPrivilegedMode)
+        private HealthCheckCertificateAuthorityData CreateCertificateAuthority(ADItem item, bool isPrivilegedMode, ADWebService adws)
         {
             var ca = new HealthCheckCertificateAuthorityData { Name = item.Name, DnsHostName = item.DNSHostName };
 
@@ -2380,7 +2399,7 @@ namespace PingCastle.Healthcheck
            var rules = securityDescriptor.GetAccessRules(true, true, typeof(SecurityIdentifier));
             var ownerSid = securityDescriptor.GetOwner(typeof(SecurityIdentifier));
 
-            if (TryMatchBadUser((SecurityIdentifier)ownerSid, out _))
+            if (TryMatchBadUser((SecurityIdentifier)ownerSid, adws, out _))
             {
                 ca.IsLowPrivilegedPrincipalOwner = true;
             }
@@ -2393,7 +2412,7 @@ namespace PingCastle.Healthcheck
                 var sid = (SecurityIdentifier)rule.IdentityReference;
                 var rights = (CertificationAuthorityRights)rule.ActiveDirectoryRights;
 
-                if (TryMatchBadUser(sid, out var userName))
+                if (TryMatchBadUser(sid, adws,out var userName))
                 {
                     if (rights.HasFlag(CertificationAuthorityRights.ManageCA))
                     {
@@ -2503,14 +2522,14 @@ namespace PingCastle.Healthcheck
 
                         var owner = (SecurityIdentifier)x.NTSecurityDescriptor.GetOwner(typeof(SecurityIdentifier));
 
-                        if (TryMatchBadUser(owner, out var userName))
+                        if (TryMatchBadUser(owner, adws, out var userName))
                         {
                             ct.VulnerableTemplateACL = true;
                             ct.Owner = userName;
                         }
                         else
                         {
-                            ct.Owner = owner.GetName();
+                            ct.Owner = adws.ConvertSIDToName(owner.Value);
 
                             // see https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-crtd/211ab1e3-bad6-416d-9d56-8480b42617a4
 
@@ -2522,7 +2541,7 @@ namespace PingCastle.Healthcheck
                                 if (accessrule.AccessControlType == AccessControlType.Deny)
                                     continue;
                                
-                                if (!TryMatchBadUser((SecurityIdentifier)accessrule.IdentityReference, out var accountName))
+                                if (!TryMatchBadUser((SecurityIdentifier)accessrule.IdentityReference, adws, out var accountName))
                                 {
                                     continue;
                                 }
@@ -2869,7 +2888,7 @@ namespace PingCastle.Healthcheck
                             try
                             {
                                 var ac = adws.FileConnection.GetFileSecurity(file.FileName);
-                                foreach (var value in AnalyzeFileSystemSecurity(ac, true))
+                                foreach (var value in AnalyzeFileSystemSecurity(ac, adws, true))
                                 {
                                     file.Delegation.Add(new HealthcheckScriptDelegationData()
                                     {
@@ -3205,7 +3224,7 @@ namespace PingCastle.Healthcheck
 
         }
 
-        private void ExtractRegistryPolInfo(IADConnection adws, ADDomainInfo domainInfo, string directoryFullName, GPO GPO)
+        private void ExtractRegistryPolInfo(ADWebService adws, ADDomainInfo domainInfo, string directoryFullName, GPO GPO)
         {
             GPPSecurityPolicy PSO = null;
             foreach (string gpotarget in new string[] { "Machine", "User" })
@@ -3290,7 +3309,7 @@ namespace PingCastle.Healthcheck
 
         }
 
-        private void ExtractLogonScripts(IADConnection adws, ADDomainInfo domainInfo, GPO GPO, string gpotarget, RegistryPolReader reader)
+        private void ExtractLogonScripts(ADWebService adws, ADDomainInfo domainInfo, GPO GPO, string gpotarget, RegistryPolReader reader)
         {
             foreach (RegistryPolRecord record in reader.SearchRecord(@"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run"))
             {
@@ -3982,7 +4001,7 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private bool TryMatchBadUser(SecurityIdentifier sid, out string userName)
+        private bool TryMatchBadUser(SecurityIdentifier sid, ADWebService adws, out string userName)
         {
             userName = null;
 
@@ -4006,23 +4025,16 @@ namespace PingCastle.Healthcheck
                 userName = GraphObjectReference.Users;
                 return true;
             }
-            else if (sid.IsWellKnown(WellKnownSidType.AccountDomainGuestsSid) || sid.IsWellKnown(WellKnownSidType.AccountDomainUsersSid) || sid.IsWellKnown(WellKnownSidType.AuthenticatedUserSid))
+            else if (   
+                        sid.IsWellKnown(WellKnownSidType.AccountDomainGuestsSid)
+                        || sid.IsWellKnown(WellKnownSidType.AccountDomainUsersSid)
+                        || sid.IsWellKnown(WellKnownSidType.AuthenticatedUserSid)
+                        || ( healthcheckData.MachineAccountQuota > 0 && sid.IsWellKnown(WellKnownSidType.AccountComputersSid))
+                    )
             {
                 try
                 {
-                    userName = sid.GetName();
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }
-            else if (healthcheckData.MachineAccountQuota > 0 && sid.IsWellKnown(WellKnownSidType.AccountComputersSid))
-            {
-                try
-                {
-                    userName = sid.GetName();
+                    userName = adws.ConvertSIDToName(sid.Value);
                     return true;
                 }
                 catch (Exception)
@@ -4034,7 +4046,7 @@ namespace PingCastle.Healthcheck
             return false;
         }
 
-        private void ExtractGPODelegation(IADConnection adws, string path, GPO GPO)
+        private void ExtractGPODelegation(ADWebService adws, string path, GPO GPO)
         {
             if (!adws.FileConnection.DirectoryExists(path))
                 return;
@@ -4044,7 +4056,7 @@ namespace PingCastle.Healthcheck
             {
                 try
                 {
-                    ExtractGPODelegationAnalyzeAccessControl(GPO, adws.FileConnection.GetDirectorySecurity(dirname), dirname, (path == dirname));
+                    ExtractGPODelegationAnalyzeAccessControl(GPO, adws.FileConnection.GetDirectorySecurity(dirname), dirname, (path == dirname), adws);
                 }
                 catch (Exception)
                 {
@@ -4054,7 +4066,7 @@ namespace PingCastle.Healthcheck
             {
                 try
                 {
-                    ExtractGPODelegationAnalyzeAccessControl(GPO, adws.FileConnection.GetFileSecurity(filename), filename, false);
+                    ExtractGPODelegationAnalyzeAccessControl(GPO, adws.FileConnection.GetFileSecurity(filename), filename, false, adws);
                 }
                 catch (Exception)
                 {
@@ -4062,9 +4074,9 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        void ExtractGPODelegationAnalyzeAccessControl(GPO GPO, FileSystemSecurity security, string name, bool includeInherited)
+        void ExtractGPODelegationAnalyzeAccessControl(GPO GPO, FileSystemSecurity security, string name, bool includeInherited, ADWebService adws)
         {
-            foreach (var value in AnalyzeFileSystemSecurity(security, includeInherited))
+            foreach (var value in AnalyzeFileSystemSecurity(security, adws, includeInherited))
             {
                 healthcheckData.GPODelegation.Add(new GPODelegationData()
                 {
@@ -4078,11 +4090,11 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        List<KeyValuePair<string, string>> AnalyzeFileSystemSecurity(FileSystemSecurity security, bool includeInherited)
+        private List<KeyValuePair<string, string>> AnalyzeFileSystemSecurity(FileSystemSecurity security, ADWebService adws, bool includeInherited)
         {
             var output = new List<KeyValuePair<string, string>>();
             var Owner = (SecurityIdentifier)security.GetOwner(typeof(SecurityIdentifier));
-            if (TryMatchBadUser(Owner, out var ownerName))
+            if (TryMatchBadUser(Owner, adws, out var ownerName))
             {
                 output.Add(new KeyValuePair<string, string>("Owner", ownerName));
             }
@@ -4097,7 +4109,7 @@ namespace PingCastle.Healthcheck
                 if ((FileSystemRights.Write & accessrule.FileSystemRights) == 0)
                     continue;
 
-                if (!TryMatchBadUser((SecurityIdentifier)accessrule.IdentityReference, out var userName))
+                if (!TryMatchBadUser((SecurityIdentifier)accessrule.IdentityReference, adws, out var userName))
                     continue;
                 output.Add(new KeyValuePair<string, string>(accessrule.FileSystemRights.ToString(), userName));
             }
@@ -4161,7 +4173,7 @@ namespace PingCastle.Healthcheck
             adws.Enumerate("CN=Sites," + domainInfo.ConfigurationNamingContext, "(gPLink=*)", GPproperties, callback2);
         }
 
-        private void ExtractGPOLoginScript(IADConnection adws, ADDomainInfo domainInfo, string directoryFullPath, GPO GPO)
+        private void ExtractGPOLoginScript(ADWebService adws, ADDomainInfo domainInfo, string directoryFullPath, GPO GPO)
         {
             foreach (string gpoType in new[] { "User", "Machine" })
             {
@@ -4185,7 +4197,7 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private void ParseGPOLoginScript(IADConnection adws, ADDomainInfo domainInfo, string path, GPO GPO, string gpoType, string filename)
+        private void ParseGPOLoginScript(ADWebService adws, ADDomainInfo domainInfo, string path, GPO GPO, string gpoType, string filename)
         {
             using (var file2 = adws.FileConnection.GetFileStream(path))
             using (var file = new StreamReader(file2))
@@ -4273,7 +4285,7 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private void ExtractGPPFile(IADConnection adws, string path, GPO GPO, ADDomainInfo domainInfo, string UserOrComputer)
+        private void ExtractGPPFile(ADWebService adws, string path, GPO GPO, ADDomainInfo domainInfo, string UserOrComputer)
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(path);
@@ -4300,7 +4312,7 @@ namespace PingCastle.Healthcheck
                 if (adws.FileConnection.FileExists(file.FileName))
                 {
                     var ac = adws.FileConnection.GetFileSecurity(file.FileName);
-                    foreach (var value in AnalyzeFileSystemSecurity(ac, true))
+                    foreach (var value in AnalyzeFileSystemSecurity(ac, adws, true))
                     {
                         file.Delegation.Add(new HealthcheckScriptDelegationData()
                         {

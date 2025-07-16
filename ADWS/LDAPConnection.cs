@@ -4,16 +4,18 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
-using PingCastle.UserInterface;
 using System;
 using System.Diagnostics;
 using System.DirectoryServices;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Permissions;
+using System.Security.Principal;
+using PingCastle.UserInterface;
 
 namespace PingCastle.ADWS
 {
@@ -298,12 +300,7 @@ namespace PingCastle.ADWS
                     Server = DomainLocator.GetDC(Server, false, true);
             }
         }
-
-        public override string ConvertSIDToName(string sidstring, out string referencedDomain)
-        {
-            return NativeMethods.ConvertSIDToNameWithWindowsAPI(sidstring, Server, out referencedDomain);
-        }
-
+     
         public override System.Security.Principal.SecurityIdentifier ConvertNameToSID(string nameToResolve)
         {
             return NativeMethods.GetSidFromDomainNameWithWindowsAPI(Server, nameToResolve);

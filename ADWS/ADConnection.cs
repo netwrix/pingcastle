@@ -7,6 +7,7 @@
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Reflection;
 using System.Security.Principal;
 using System.Threading;
 
@@ -75,7 +76,26 @@ namespace PingCastle.ADWS
             }
         }
 
-        public abstract string ConvertSIDToName(string sidstring, out string referencedDomain);
+        public virtual string ConvertSIDToName(string sidstring, out string referencedDomain)
+        {
+            WindowsIdentity identity = null;
+            WindowsImpersonationContext context = null;
+            try
+            {
+                if (this.Credential != null)
+                {
+                    identity = WindowsFileConnection.GetWindowsIdentityForUser(this.Credential, this.Server);
+                    context = identity.Impersonate();
+                }
+
+                return NativeMethods.ConvertSIDToNameWithWindowsAPI(sidstring, this.Server, out referencedDomain);
+            }
+            finally
+            {
+                context?.Undo();
+                identity?.Dispose();
+            }
+        }
 
         public abstract SecurityIdentifier ConvertNameToSID(string nameToResolve);
 

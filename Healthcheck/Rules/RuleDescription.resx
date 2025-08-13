@@ -1122,14 +1122,14 @@ For all users in a OU:
   </data>
   <data name="A_AnonymousAuthorizedGPO_TechnicalExplanation" xml:space="preserve">
     <value>It is possible that domains are set to authorize connection without any account, which represents a security breach. It allows potential attackers to enumerate all the users and computers belonging to a domain, in order to identify very efficiently future weak targets.
-It is possible to verify the results provided by the PingCastle solution by using a Kali Linux distribution. You should run [rpcclient -U " target_ip_address] and press enter at the password prompt to finally type [enumdomusers].</value>
+It is possible to verify the results provided by the PingCastle solution by using a Kali Linux distribution. You should run [rpcclient -U '' -N target_ip_address] to finally type [enumdomusers].</value>
   </data>
   <data name="A_BackupMetadata_TechnicalExplanation" xml:space="preserve">
     <value>A verification is done on the backups, ensuring that the backup is performed according to Microsoft standards. Indeed, at each backup the DIT Database Partition Backup Signature is updated. If for any reasons, backups are needed to perform a rollback (rebuild a domain) or to track past changes, the backups will actually be up to date. This check is equivalent to a &lt;i&gt;REPADMIN /showbackup *&lt;/i&gt;.</value>
   </data>
   <data name="A_DsHeuristicsAnonymous_TechnicalExplanation" xml:space="preserve">
     <value>The way an Active Directory behaves can be controlled via the attribute &lt;i&gt;DsHeuristics&lt;/i&gt; of &lt;i&gt;CN=Directory Service,CN=Windows NT,CN=Services,CN=Configuration&lt;/i&gt;. A parameter stored in its attribute and whose value is &lt;i&gt;fLDAPBlockAnonOps&lt;/i&gt; can be set to allow access without any account on the &lt;b&gt;whole forest level&lt;/b&gt;.
-It is possible to verify the results provided by the PingCastle solution by using a Kali Linux distribution. You should run &lt;i&gt;rpcclient -U " target_ip_address&lt;/i&gt; and press enter at the password prompt to finally type &lt;i&gt;enumdomusers&lt;/i&gt;.</value>
+It is possible to verify the results provided by the PingCastle solution by using a Kali Linux distribution. You should run &lt;i&gt;rpcclient -U '' -N target_ip_address&lt;/i&gt; to finally type &lt;i&gt;enumdomusers&lt;/i&gt;.</value>
   </data>
   <data name="A_Krbtgt_TechnicalExplanation" xml:space="preserve">
     <value>Kerberos is an authentication protocol. It is using a secret, stored as the password of the krbtgt account, to sign its tickets. If the hash of the password of the krbtgt account is retrieved, it can be used to generate authentication tickets at will.
@@ -1181,11 +1181,11 @@ Also this attack can be performed using the former password of the krbtgt accoun
   <data name="A_NullSession_TechnicalExplanation" xml:space="preserve">
     <value>Unlike other rules, which check for known cause of anonymous access, this rule tries to enumerate accounts from the domain without any account. The program uses two methods: MS-SAMR with a NULL connection and MS-LSAT, which forces SID resolution with a well known SID.
 NULL sessions are deactivated by default since Windows Server 2003 and Windows XP. For compatibility reasons a setting enabling them may be still active years after.
-It is possible to verify the results provided by the PingCastle solution by using a Kali distribution. You should run [rpcclient -U " target_ip_address] and press enter at the password prompt to finally type [enumdomusers].</value>
+It is possible to verify the results provided by the PingCastle solution by using a Kali distribution. You should run [rpcclient -U '' -N target_ip_address] to finally type [enumdomusers].</value>
   </data>
   <data name="A_PreWin2000Anonymous_TechnicalExplanation" xml:space="preserve">
     <value>When a Windows Server 2003 DC is promoted, a pre-Windows 2000 compatibility setting can be enabled through the wizard. If it is enabled, the wizard will add "Everyone" and "Anonymous" to the pre-Windows 2000 compatible access group, and by doing so, it will authorize the domain to be queried without an account (null session)
-It is possible to verify the results provided by the PingCastle solution by using a Kali distribution. You should run [rpcclient -U " target_ip_address] and press enter at the password prompt to finally type [enumdomusers].</value>
+It is possible to verify the results provided by the PingCastle solution by using a Kali distribution. You should run [rpcclient -U '' -N target_ip_address] to finally type [enumdomusers].</value>
   </data>
   <data name="A_ProtectedUsers_TechnicalExplanation" xml:space="preserve">
     <value>The Protected Users group is a special group, which is a very effective mitigation solution to counter attacks using credential theft starting with Windows 8.1. Older Operating System must be updated to use this protection, such as the &lt;b&gt;Windows 7 KB2871997&lt;/b&gt; patch.</value>

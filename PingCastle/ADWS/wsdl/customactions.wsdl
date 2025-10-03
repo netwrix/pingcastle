@@ -1,0 +1,962 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <wsdl:definitions
+       xmlns:ca="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions"
+       xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/"
+       xmlns:sera="http://schemas.microsoft.com/2003/10/Serialization/Arrays"
+       xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+       xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
+       xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+       xmlns:xs="http://www.w3.org/2001/XMLSchema"
+       name="ActiveDirectoryWebService"
+       targetNamespace="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions" >
+   <wsdl:types>
+  
+ <!--    <wsdl:documentation>
+       XSD Schema for the http://schemas.microsoft.com/2003/10/Serialization/
+       ("ser:") namespace. This contains the definitions for "ser:guid"
+       and "ser:duration", used by the ADCAP protocol.
+     </wsdl:documentation>
+     <xs:schema
+         elementFormDefault="qualified"
+         targetNamespace="http://schemas.microsoft.com/2003/10/Serialization/">
+       <xs:element name="duration" nillable="true" type="ser:duration" />
+       <xs:simpleType name="duration">
+         <xs:restriction base="xs:duration">
+           <xs:pattern value="\-?P(\d*D)?(T(\d*H)?(\d*M)?(\d*(\.\d*)?S)?)?" />
+           <xs:minInclusive value="-P10675199DT2H48M5.4775808S" />
+           <xs:maxInclusive value="P10675199DT2H48M5.4775807S" />
+         </xs:restriction>
+       </xs:simpleType>
+       <xs:element name="guid" nillable="true" type="ser:guid" />
+       <xs:simpleType name="guid">
+         <xs:restriction base="xs:string">
+           <xs:pattern value="[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}" />
+         </xs:restriction>
+       </xs:simpleType>
+     </xs:schema>
+  -->
+ <!--    <wsdl:documentation>
+       XSD Schema for the http://schemas.microsoft.com/2003/10/Serialization/Arrays
+       ("sera:") namespace. This contains the definition for "sera:ArrayOfString", used
+       throughout the ADCAP protocol.
+     </wsdl:documentation>
+     <xs:schema
+         elementFormDefault="qualified"
+         targetNamespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+       <xs:complexType name="ArrayOfstring">
+         <xs:sequence>
+           <xs:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="xs:string" />
+         </xs:sequence>
+       </xs:complexType>
+       <xs:element name="ArrayOfstring" nillable="true" type="sera:ArrayOfstring" />
+     </xs:schema>-->
+  
+     <wsdl:documentation>
+       XSD Schema for the http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions ("ca:") namespace. This is the core schema for ADCAP, and includes all the request and response messages, and the types and elements used in those messages. It also contains the ADCAP SOAP Fault detail types and elements.
+     </wsdl:documentation>
+     <xs:schema targetNamespace="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions"
+         elementFormDefault="qualified">
+       <xs:import namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+       <xs:import namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+       <xs:element name="GetADGroupMemberRequest">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="GroupDN" nillable="true" type="xs:string" />
+             <xs:element minOccurs="0" name="PartitionDN" nillable="true" type="xs:string" />
+             <xs:element minOccurs="0" name="Recursive" type="xs:boolean" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="Server" nillable="true" type="xs:string" />
+       <xs:element name="GetADGroupMemberResponse">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="Members" nillable="true" type="ca:ArrayOfActiveDirectoryPrincipal" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:complexType name="ArrayOfActiveDirectoryPrincipal">
+         <xs:sequence>
+           <xs:element minOccurs="0" maxOccurs="unbounded" name="ActiveDirectoryPrincipal" nillable="true" type="ca:ActiveDirectoryPrincipal" />
+         </xs:sequence>
+       </xs:complexType>
+       <xs:element name="ArrayOfActiveDirectoryPrincipal" nillable="true" type="ca:ArrayOfActiveDirectoryPrincipal" />
+       <xs:complexType name="ActiveDirectoryPrincipal">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:ActiveDirectoryObject">
+             <xs:sequence>
+               <xs:element name="SID" nillable="true" type="xs:base64Binary" />
+               <xs:element name="SamAccountName" nillable="true" type="xs:string" />
+             </xs:sequence>
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="ActiveDirectoryPrincipal" nillable="true" type="ca:ActiveDirectoryPrincipal" />
+       <xs:complexType name="ActiveDirectoryObject">
+         <xs:sequence>
+           <xs:element name="DistinguishedName" nillable="true" type="xs:string" />
+           <xs:element name="Name" nillable="true" type="xs:string" />
+           <xs:element name="ObjectClass" nillable="true" type="xs:string" />
+           <xs:element name="ObjectGuid" type="ser:guid" />
+           <xs:element name="ObjectTypes" nillable="true" type="sera:ArrayOfstring" />
+           <xs:element name="ReferenceServer" nillable="true" type="xs:string" />
+         </xs:sequence>
+       </xs:complexType>
+       <xs:element name="ActiveDirectoryObject" nillable="true" type="ca:ActiveDirectoryObject" />
+       <xs:complexType name="ActiveDirectoryGroup">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:ActiveDirectoryPrincipal">
+             <xs:sequence>
+               <xs:element name="GroupScope" type="ca:ActiveDirectoryGroupScope" />
+               <xs:element name="GroupType" type="ca:ActiveDirectoryGroupType" />
+             </xs:sequence>
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="ActiveDirectoryGroup" nillable="true" type="ca:ActiveDirectoryGroup" />
+       <xs:simpleType name="ActiveDirectoryGroupScope">
+         <xs:restriction base="xs:string">
+           <xs:enumeration value="Unknown" />
+           <xs:enumeration value="DomainLocal" />
+           <xs:enumeration value="Global" />
+           <xs:enumeration value="Universal" />
+         </xs:restriction>
+       </xs:simpleType>
+       <xs:element name="ActiveDirectoryGroupScope" nillable="true" type="ca:ActiveDirectoryGroupScope" />
+       <xs:simpleType name="ActiveDirectoryGroupType">
+         <xs:restriction base="xs:string">
+           <xs:enumeration value="Unknown" />
+           <xs:enumeration value="Distribution" />
+           <xs:enumeration value="Security" />
+         </xs:restriction>
+       </xs:simpleType>
+       <xs:element name="ActiveDirectoryGroupType" nillable="true" type="ca:ActiveDirectoryGroupType" />
+       <xs:complexType name="ActiveDirectoryPartition">
+         <xs:complexContent mixed="false">
+           <xs:extension  base="ca:ActiveDirectoryObject">
+             <xs:sequence>
+               <xs:element name="DNSRoot" nillable="true" type="xs:string" />
+               <xs:element name="DeletedObjectsContainer" nillable="true" type="xs:string" />
+               <xs:element name="LostAndFoundContainer" nillable="true" type="xs:string" />
+               <xs:element name="QuotasContainer" nillable="true" type="xs:string" />
+               <xs:element name="ReadOnlyReplicaDirectoryServer" nillable="true" type="sera:ArrayOfstring" />
+               <xs:element name="ReplicaDirectoryServer" nillable="true" type="sera:ArrayOfstring" />
+               <xs:element name="SubordinateReferences" nillable="true" type="sera:ArrayOfstring" />
+             </xs:sequence>
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="ActiveDirectoryPartition" nillable="true" type="ca:ActiveDirectoryPartition" />
+       <xs:complexType name="ActiveDirectoryDomain">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:ActiveDirectoryPartition">
+             <xs:sequence>
+               <xs:element name="AllowedDNSSuffixes" nillable="true" type="sera:ArrayOfstring" />
+               <xs:element name="AppliedGroupPolicies" nillable="true" type="sera:ArrayOfstring" />
+               <xs:element name="ChildDomains" nillable="true" type="sera:ArrayOfstring" />
+               <xs:element name="ComputersContainer" nillable="true" type="xs:string" />
+               <xs:element name="DomainControllersContainer" nillable="true" type="xs:string" />
+               <xs:element name="DomainMode" type="xs:int" />
+               <xs:element name="DomainSID" nillable="true" type="xs:base64Binary" />
+               <xs:element name="ForeignSecurityPrincipalsContainer" nillable="true" type="xs:string" />
+               <xs:element name="Forest" nillable="true" type="xs:string" />
+               <xs:element name="InfrastructureMaster" nillable="true" type="xs:string" />
+               <xs:element name="LastLogonReplicationInterval" nillable="true" type="ser:duration" />
+               <xs:element name="ManagedBy" nillable="true" type="xs:string" />
+               <xs:element name="NetBIOSName" nillable="true" type="xs:string" />
+               <xs:element name="PDCEmulator" nillable="true" type="xs:string" />
+               <xs:element name="ParentDomain" nillable="true" type="xs:string" />
+               <xs:element name="RIDMaster" nillable="true" type="xs:string" />
+               <xs:element name="SystemsContainer" nillable="true" type="xs:string" />
+               <xs:element name="UsersContainer" nillable="true" type="xs:string" />
+             </xs:sequence>
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="ActiveDirectoryDomain" nillable="true" type="ca:ActiveDirectoryDomain" />
+       <xs:complexType name="GetADGroupMemberFault">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:CustomActionFault">
+             <xs:sequence />
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="GetADGroupMemberFault" nillable="true" type="ca:GetADGroupMemberFault" />
+       <xs:complexType name="CustomActionFault">
+         <xs:sequence>
+           <xs:element minOccurs="0" name="ArgumentError" nillable="true" type="ca:ArgumentErrorDetailCA" />
+           <xs:element minOccurs="0" name="DirectoryError" nillable="true" type="ca:DirectoryErrorDetailCA" />
+           <xs:element minOccurs="0" name="Error" nillable="true" type="xs:string" />
+           <xs:element minOccurs="0" name="ShortError" nillable="true" type="xs:string" />
+         </xs:sequence>
+       </xs:complexType>
+       <xs:element name="CustomActionFault" nillable="true" type="ca:CustomActionFault" />
+       <xs:complexType name="ArgumentErrorDetailCA">
+         <xs:sequence>
+           <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
+           <xs:element minOccurs="0" name="ParameterName" nillable="true" type="xs:string" />
+           <xs:element minOccurs="0" name="ShortMessage" nillable="true" type="xs:string" />
+         </xs:sequence>
+       </xs:complexType>
+  
+  
+       <xs:complexType name="DirectoryErrorDetailCA">
+         <xs:sequence>
+           <xs:element minOccurs="0" name="ErrorCode" nillable="true" type="xs:string" />
+           <xs:element minOccurs="0" name="ExtendedErrorMessage" nillable="true" type="xs:string" />
+           <xs:element minOccurs="0" name="MatchedDN" nillable="true" type="xs:string" />
+           <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
+           <xs:element minOccurs="0" name="Referral" nillable="true" type="sera:ArrayOfstring" />
+           <xs:element minOccurs="0" name="ShortMessage" nillable="true" type="xs:string" />
+           <xs:element minOccurs="0" name="Win32ErrorCode" nillable="true" type="xs:string" />
+         </xs:sequence>
+       </xs:complexType>
+  
+  
+       <xs:complexType name="ChangeOptionalFeatureFault">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:CustomActionFault">
+             <xs:sequence />
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="ChangeOptionalFeatureFault" nillable="true" type="ca:ChangeOptionalFeatureFault" />
+       <xs:complexType name="GetADForestFault">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:CustomActionFault">
+             <xs:sequence />
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="GetADForestFault" nillable="true" type="ca:GetADForestFault" />
+       <xs:complexType name="MoveADOperationMasterRoleFault">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:CustomActionFault">
+             <xs:sequence />
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="MoveADOperationMasterRoleFault" nillable="true" type="ca:MoveADOperationMasterRoleFault" />
+       <xs:complexType name="GetADPrincipalGroupMembershipFault">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:CustomActionFault">
+             <xs:sequence />
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="GetADPrincipalGroupMembershipFault" nillable="true" type="ca:GetADPrincipalGroupMembershipFault" />
+       <xs:complexType name="SetPasswordFault">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:CustomActionFault">
+             <xs:sequence />
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="SetPasswordFault" nillable="true" type="ca:SetPasswordFault" />
+       <xs:complexType name="ChangePasswordFault">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:CustomActionFault">
+             <xs:sequence />
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="ChangePasswordFault" nillable="true" type="ca:ChangePasswordFault" />
+       <xs:complexType name="GetADPrincipalAuthorizationGroupFault">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:CustomActionFault">
+             <xs:sequence />
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="GetADPrincipalAuthorizationGroupFault" nillable="true" type="ca:GetADPrincipalAuthorizationGroupFault" />
+       <xs:complexType name="GetADDomainFault">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:CustomActionFault">
+             <xs:sequence />
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="GetADDomainFault" nillable="true" type="ca:GetADDomainFault" />
+       <xs:complexType name="GetADDomainControllerFault">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:CustomActionFault">
+             <xs:sequence />
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="GetADDomainControllerFault" nillable="true" type="ca:GetADDomainControllerFault" />
+       <xs:complexType name="TranslateNameFault">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:CustomActionFault">
+             <xs:sequence />
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="TranslateNameFault" nillable="true" type="ca:TranslateNameFault" />
+       <xs:element name="GetADPrincipalGroupMembershipRequest">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="PartitionDN" nillable="true" type="xs:string" />
+             <xs:element minOccurs="0" name="PrincipalDN" nillable="true" type="xs:string" />
+             <xs:element minOccurs="0" name="ResourceContextPartition" nillable="true" type="xs:string" />
+             <xs:element minOccurs="0" name="ResourceContextServer" nillable="true" type="xs:string" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="GetADPrincipalGroupMembershipResponse">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="MemberOf" nillable="true" type="ca:ArrayOfActiveDirectoryGroup" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:complexType name="ArrayOfActiveDirectoryGroup">
+         <xs:sequence>
+           <xs:element minOccurs="0" maxOccurs="unbounded" name="ActiveDirectoryGroup" nillable="true" type="ca:ActiveDirectoryGroup" />
+         </xs:sequence>
+       </xs:complexType>
+       <xs:element name="ArrayOfActiveDirectoryGroup" nillable="true" type="ca:ArrayOfActiveDirectoryGroup" />
+       <xs:element name="SetPasswordRequest">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="AccountDN" nillable="true" type="xs:string" />
+             <xs:element minOccurs="0" name="NewPassword" nillable="true" type="xs:string" />
+             <xs:element minOccurs="0" name="PartitionDN" nillable="true" type="xs:string" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="SetPasswordResponse">
+         <xs:complexType>
+           <xs:sequence />
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="ChangePasswordRequest">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="AccountDN" nillable="true" type="xs:string" />
+             <xs:element minOccurs="0" name="NewPassword" nillable="true" type="xs:string" />
+             <xs:element minOccurs="0" name="OldPassword" nillable="true" type="xs:string" />
+             <xs:element minOccurs="0" name="PartitionDN" nillable="true" type="xs:string" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="ChangePasswordResponse">
+         <xs:complexType>
+           <xs:sequence />
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="GetADPrincipalAuthorizationGroupRequest">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="PartitionDN" nillable="true" type="xs:string" />
+             <xs:element minOccurs="0" name="PrincipalDN" nillable="true" type="xs:string" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="GetADPrincipalAuthorizationGroupResponse">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="MemberOf" nillable="true" type="ca:ArrayOfActiveDirectoryGroup" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="TranslateNameRequest">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="FormatDesired" type="ca:ActiveDirectoryNameFormat" />
+             <xs:element minOccurs="0" name="FormatOffered" type="ca:ActiveDirectoryNameFormat" />
+             <xs:element minOccurs="0" name="Names" nillable="true" type="sera:ArrayOfstring" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:simpleType name="ActiveDirectoryNameFormat">
+         <xs:restriction base="xs:string">
+           <xs:enumeration value="DistinguishedName">
+             <xs:annotation>
+               <xs:appinfo>
+                 <ser:EnumerationValue>1</ser:EnumerationValue>
+               </xs:appinfo>
+             </xs:annotation>
+           </xs:enumeration>
+           <xs:enumeration value="CanonicalName">
+             <xs:annotation>
+               <xs:appinfo>
+                 <ser:EnumerationValue>2</ser:EnumerationValue>
+               </xs:appinfo>
+             </xs:annotation>
+           </xs:enumeration>
+         </xs:restriction>
+       </xs:simpleType>
+       <xs:element name="ActiveDirectoryNameFormat" nillable="true" type="ca:ActiveDirectoryNameFormat" />
+       <xs:element name="TranslateNameResponse">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="NameTranslateResult" nillable="true" type="ca:ArrayOfActiveDirectoryNameTranslateResult" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:complexType name="ArrayOfActiveDirectoryNameTranslateResult">
+         <xs:sequence>
+           <xs:element minOccurs="0" maxOccurs="unbounded" name="ActiveDirectoryNameTranslateResult" nillable="true" type="ca:ActiveDirectoryNameTranslateResult" />
+         </xs:sequence>
+       </xs:complexType>
+       <xs:element name="ArrayOfActiveDirectoryNameTranslateResult" nillable="true" type="ca:ArrayOfActiveDirectoryNameTranslateResult" />
+       <xs:complexType name="ActiveDirectoryNameTranslateResult">
+         <xs:sequence>
+           <xs:element name="Name" nillable="true" type="xs:string" />
+           <xs:element name="Result" type="xs:unsignedInt" />
+         </xs:sequence>
+       </xs:complexType>
+       <xs:element name="ActiveDirectoryNameTranslateResult" nillable="true" type="ca:ActiveDirectoryNameTranslateResult" />
+       <xs:element name="GetADDomainControllerRequest">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="NtdsSettingsDN" nillable="true" type="sera:ArrayOfstring" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="GetADDomainControllerResponse">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="DomainControllers" nillable="true" type="ca:ArrayOfActiveDirectoryDomainController" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:complexType name="ArrayOfActiveDirectoryDomainController">
+         <xs:sequence>
+           <xs:element minOccurs="0" maxOccurs="unbounded" name="ActiveDirectoryDomainController" nillable="true" type="ca:ActiveDirectoryDomainController" />
+         </xs:sequence>
+       </xs:complexType>
+       <xs:element name="ArrayOfActiveDirectoryDomainController" nillable="true" type="ca:ArrayOfActiveDirectoryDomainController" />
+       <xs:complexType name="ActiveDirectoryDomainController">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:ActiveDirectoryDirectoryServer">
+             <xs:sequence>
+               <xs:element name="ComputerDN" nillable="true" type="xs:string" />
+               <xs:element name="Domain" nillable="true" type="xs:string" />
+               <xs:element name="Enabled" type="xs:boolean" />
+               <xs:element name="Forest" nillable="true" type="xs:string" />
+               <xs:element name="IsGlobalCatalog" type="xs:boolean" />
+               <xs:element name="IsReadOnly" type="xs:boolean" />
+               <xs:element name="OSHotFix" nillable="true" type="xs:string" />
+               <xs:element name="OSName" nillable="true" type="xs:string" />
+               <xs:element name="OSServicepack" nillable="true" type="xs:string" />
+               <xs:element name="OSVersion" nillable="true" type="xs:string" />
+             </xs:sequence>
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="ActiveDirectoryDomainController" nillable="true" type="ca:ActiveDirectoryDomainController" />
+       <xs:complexType name="ActiveDirectoryDirectoryServer">
+         <xs:sequence>
+           <xs:element name="DefaultPartition" nillable="true" type="xs:string" />
+           <xs:element name="HostName" nillable="true" type="xs:string" />
+           <xs:element name="InvocationId" type="ser:guid" />
+           <xs:element name="LdapPort" type="xs:int" />
+           <xs:element name="NTDSSettingsObjectDN" nillable="true" type="xs:string" />
+           <xs:element name="Name" nillable="true" type="xs:string" />
+           <xs:element name="OperationMasterRole" nillable="true" type="ca:ArrayOfActiveDirectoryOperationMasterRole" />
+           <xs:element name="Partitions" nillable="true" type="sera:ArrayOfstring" />
+           <xs:element name="ServerObjectDN" nillable="true" type="xs:string" />
+           <xs:element name="ServerObjectGuid" type="ser:guid" />
+           <xs:element name="Site" nillable="true" type="xs:string" />
+           <xs:element name="SslPort" type="xs:int" />
+         </xs:sequence>
+       </xs:complexType>
+       <xs:element name="ActiveDirectoryDirectoryServer" nillable="true" type="ca:ActiveDirectoryDirectoryServer" />
+       <xs:complexType name="ArrayOfActiveDirectoryOperationMasterRole">
+         <xs:sequence>
+           <xs:element minOccurs="0" maxOccurs="unbounded" name="ActiveDirectoryOperationMasterRole" type="ca:ActiveDirectoryOperationMasterRole" />
+         </xs:sequence>
+       </xs:complexType>
+       <xs:element name="ArrayOfActiveDirectoryOperationMasterRole" nillable="true" type="ca:ArrayOfActiveDirectoryOperationMasterRole" />
+       <xs:simpleType name="ActiveDirectoryOperationMasterRole">
+         <xs:restriction base="xs:string">
+           <xs:enumeration value="PDCEmulator" />
+           <xs:enumeration value="RIDMaster" />
+           <xs:enumeration value="InfrastructureMaster" />
+           <xs:enumeration value="SchemaMaster" />
+           <xs:enumeration value="DomainNamingMaster" />
+         </xs:restriction>
+       </xs:simpleType>
+       <xs:element name="ActiveDirectoryOperationMasterRole" nillable="true" type="ca:ActiveDirectoryOperationMasterRole" />
+       <xs:element name="GetADDomainRequest">
+         <xs:complexType>
+           <xs:sequence />
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="GetADDomainResponse">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="Domain" nillable="true" type="ca:ActiveDirectoryDomain" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="MoveADOperationMasterRoleRequest">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="OperationMasterRole" type="ca:ActiveDirectoryOperationMasterRole" />
+             <xs:element minOccurs="0" name="Seize" type="xs:boolean" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="MoveADOperationMasterRoleResponse">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="WasSeized" type="xs:boolean" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="GetADForestRequest">
+         <xs:complexType>
+           <xs:sequence />
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="GetADForestResponse">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="Forest" nillable="true" type="ca:ActiveDirectoryForest" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:complexType name="ActiveDirectoryForest">
+         <xs:sequence>
+           <xs:element name="ApplicationPartitions" nillable="true" type="sera:ArrayOfstring" />
+           <xs:element name="CrossForestReferences" nillable="true" type="sera:ArrayOfstring" />
+           <xs:element name="DomainNamingMaster" nillable="true" type="xs:string" />
+           <xs:element name="Domains" nillable="true" type="sera:ArrayOfstring" />
+           <xs:element name="ForestMode" type="xs:int" />
+           <xs:element name="GlobalCatalogs" nillable="true" type="sera:ArrayOfstring" />
+           <xs:element name="Name" nillable="true" type="xs:string" />
+           <xs:element name="RootDomain" nillable="true" type="xs:string" />
+           <xs:element name="SPNSuffixes" nillable="true" type="sera:ArrayOfstring" />
+           <xs:element name="SchemaMaster" nillable="true" type="xs:string" />
+           <xs:element name="Sites" nillable="true" type="sera:ArrayOfstring" />
+           <xs:element name="UPNSuffixes" nillable="true" type="sera:ArrayOfstring" />
+         </xs:sequence>
+       </xs:complexType>
+       <xs:element name="ActiveDirectoryForest" nillable="true" type="ca:ActiveDirectoryForest" />
+       <xs:element name="ChangeOptionalFeatureRequest">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="DistinguishedName" nillable="true" type="xs:string" />
+             <xs:element minOccurs="0" name="Enable" type="xs:boolean" />
+             <xs:element minOccurs="0" name="FeatureId" type="ser:guid" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="ChangeOptionalFeatureResponse">
+         <xs:complexType>
+           <xs:sequence />
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="GetVersionRequest">
+         <xs:complexType>
+           <xs:sequence />
+         </xs:complexType>
+       </xs:element>
+       <xs:element name="GetVersionResponse">
+         <xs:complexType>
+           <xs:sequence>
+             <xs:element minOccurs="0" name="VersionMajor" type="xs:int" />
+             <xs:element minOccurs="0" name="VersionMinor" type="xs:int" />
+             <xs:element minOccurs="0" name="VersionString" nillable="true" type="xs:string" />
+           </xs:sequence>
+         </xs:complexType>
+       </xs:element>
+       <xs:complexType name="GetVersionFault">
+         <xs:complexContent mixed="false">
+           <xs:extension base="ca:CustomActionFault">
+             <xs:sequence />
+           </xs:extension>
+         </xs:complexContent>
+       </xs:complexType>
+       <xs:element name="GetVersionFault" nillable="true" type="ca:GetVersionFault" />
+     </xs:schema>
+   </wsdl:types>
+  
+   <wsdl:documentation>
+     WSDL Messages for the ADCAP protocol.
+   </wsdl:documentation>
+   <wsdl:message name="GetADGroupMemberRequest">
+     <wsdl:part name="parameters" element="ca:GetADGroupMemberRequest" />
+   </wsdl:message>
+   <wsdl:message name="GetADGroupMemberRequest_Headers">
+     <wsdl:part name="Server" element="ca:Server" />
+   </wsdl:message>
+   <wsdl:message name="GetADGroupMemberResponse">
+     <wsdl:part name="parameters" element="ca:GetADGroupMemberResponse" />
+   </wsdl:message>
+   <wsdl:message name="AccountManagement_GetADGroupMember_GetADGroupMemberFault_FaultMessage">
+     <wsdl:part name="detail" element="ca:GetADGroupMemberFault" />
+   </wsdl:message>
+   <wsdl:message name="GetADPrincipalGroupMembershipRequest">
+     <wsdl:part name="parameters" element="ca:GetADPrincipalGroupMembershipRequest" />
+   </wsdl:message>
+   <wsdl:message name="GetADPrincipalGroupMembershipRequest_Headers">
+     <wsdl:part name="Server" element="ca:Server" />
+   </wsdl:message>
+   <wsdl:message name="GetADPrincipalGroupMembershipResponse">
+     <wsdl:part name="parameters" element="ca:GetADPrincipalGroupMembershipResponse" />
+   </wsdl:message>
+   <wsdl:message name="AccountManagement_GetADPrincipalGroupMembership_GetADPrincipalGroupMembershipFault_FaultMessage">
+     <wsdl:part name="detail" element="ca:GetADPrincipalGroupMembershipFault" />
+   </wsdl:message>
+   <wsdl:message name="SetPasswordRequest">
+     <wsdl:part name="parameters" element="ca:SetPasswordRequest" />
+   </wsdl:message>
+   <wsdl:message name="SetPasswordRequest_Headers">
+     <wsdl:part name="Server" element="ca:Server" />
+   </wsdl:message>
+   <wsdl:message name="SetPasswordResponse">
+     <wsdl:part name="parameters" element="ca:SetPasswordResponse" />
+   </wsdl:message>
+   <wsdl:message name="AccountManagement_SetPassword_SetPasswordFault_FaultMessage">
+     <wsdl:part name="detail" element="ca:SetPasswordFault" />
+   </wsdl:message>
+   <wsdl:message name="ChangePasswordRequest">
+     <wsdl:part name="parameters" element="ca:ChangePasswordRequest" />
+   </wsdl:message>
+   <wsdl:message name="ChangePasswordRequest_Headers">
+     <wsdl:part name="Server" element="ca:Server" />
+   </wsdl:message>
+   <wsdl:message name="ChangePasswordResponse">
+     <wsdl:part name="parameters" element="ca:ChangePasswordResponse" />
+   </wsdl:message>
+   <wsdl:message name="AccountManagement_ChangePassword_ChangePasswordFault_FaultMessage">
+     <wsdl:part name="detail" element="ca:ChangePasswordFault" />
+   </wsdl:message>
+   <wsdl:message name="GetADPrincipalAuthorizationGroupRequest">
+     <wsdl:part name="parameters" element="ca:GetADPrincipalAuthorizationGroupRequest" />
+   </wsdl:message>
+   <wsdl:message name="GetADPrincipalAuthorizationGroupRequest_Headers">
+     <wsdl:part name="Server" element="ca:Server" />
+   </wsdl:message>
+   <wsdl:message name="GetADPrincipalAuthorizationGroupResponse">
+     <wsdl:part name="parameters" element="ca:GetADPrincipalAuthorizationGroupResponse" />
+   </wsdl:message>
+   <wsdl:message name="AccountManagement_GetADPrincipalAuthorizationGroup_GetADPrincipalAuthorizationGroupFault_FaultMessage">
+     <wsdl:part name="detail" element="ca:GetADPrincipalAuthorizationGroupFault" />
+   </wsdl:message>
+   <wsdl:message name="TranslateNameRequest">
+     <wsdl:part name="parameters" element="ca:TranslateNameRequest" />
+   </wsdl:message>
+   <wsdl:message name="TranslateNameRequest_Headers">
+     <wsdl:part name="Server" element="ca:Server" />
+   </wsdl:message>
+   <wsdl:message name="TranslateNameResponse">
+     <wsdl:part name="parameters" element="ca:TranslateNameResponse" />
+   </wsdl:message>
+   <wsdl:message name="AccountManagement_TranslateName_TranslateNameFault_FaultMessage">
+     <wsdl:part name="detail" element="ca:TranslateNameFault" />
+   </wsdl:message>
+   <wsdl:message name="GetADDomainControllerRequest">
+     <wsdl:part name="parameters" element="ca:GetADDomainControllerRequest" />
+   </wsdl:message>
+   <wsdl:message name="GetADDomainControllerRequest_Headers">
+     <wsdl:part name="Server" element="ca:Server" />
+   </wsdl:message>
+   <wsdl:message name="GetADDomainControllerResponse">
+     <wsdl:part name="parameters" element="ca:GetADDomainControllerResponse" />
+   </wsdl:message>
+   <wsdl:message name="TopologyManagement_GetADDomainController_GetADDomainControllerFault_FaultMessage">
+     <wsdl:part name="detail" element="ca:GetADDomainControllerFault" />
+   </wsdl:message>
+   <wsdl:message name="GetADDomainRequest">
+     <wsdl:part name="parameters" element="ca:GetADDomainRequest" />
+   </wsdl:message>
+   <wsdl:message name="GetADDomainRequest_Headers">
+     <wsdl:part name="Server" element="ca:Server" />
+   </wsdl:message>
+   <wsdl:message name="GetADDomainResponse">
+     <wsdl:part name="parameters" element="ca:GetADDomainResponse" />
+   </wsdl:message>
+   <wsdl:message name="TopologyManagement_GetADDomain_GetADDomainFault_FaultMessage">
+     <wsdl:part name="detail" element="ca:GetADDomainFault" />
+   </wsdl:message>
+   <wsdl:message name="MoveADOperationMasterRoleRequest">
+     <wsdl:part name="parameters" element="ca:MoveADOperationMasterRoleRequest" />
+   </wsdl:message>
+   <wsdl:message name="MoveADOperationMasterRoleRequest_Headers">
+     <wsdl:part name="Server" element="ca:Server" />
+   </wsdl:message>
+   <wsdl:message name="MoveADOperationMasterRoleResponse">
+     <wsdl:part name="parameters" element="ca:MoveADOperationMasterRoleResponse" />
+   </wsdl:message>
+   <wsdl:message name="TopologyManagement_MoveADOperationMasterRole_MoveADOperationMasterRoleFault_FaultMessage">
+     <wsdl:part name="detail" element="ca:MoveADOperationMasterRoleFault" />
+   </wsdl:message>
+   <wsdl:message name="GetADForestRequest">
+     <wsdl:part name="parameters" element="ca:GetADForestRequest" />
+   </wsdl:message>
+   <wsdl:message name="GetADForestRequest_Headers">
+     <wsdl:part name="Server" element="ca:Server" />
+   </wsdl:message>
+   <wsdl:message name="GetADForestResponse">
+     <wsdl:part name="parameters" element="ca:GetADForestResponse" />
+   </wsdl:message>
+   <wsdl:message name="TopologyManagement_GetADForest_GetADForestFault_FaultMessage">
+     <wsdl:part name="detail" element="ca:GetADForestFault" />
+   </wsdl:message>
+   <wsdl:message name="ChangeOptionalFeatureRequest">
+     <wsdl:part name="parameters" element="ca:ChangeOptionalFeatureRequest" />
+   </wsdl:message>
+   <wsdl:message name="ChangeOptionalFeatureRequest_Headers">
+     <wsdl:part name="Server" element="ca:Server" />
+   </wsdl:message>
+   <wsdl:message name="ChangeOptionalFeatureResponse">
+     <wsdl:part name="parameters" element="ca:ChangeOptionalFeatureResponse" />
+   </wsdl:message>
+   <wsdl:message name="TopologyManagement_ChangeOptionalFeature_ChangeOptionalFeatureFault_FaultMessage">
+     <wsdl:part name="detail" element="ca:ChangeOptionalFeatureFault" />
+   </wsdl:message>
+   <wsdl:message name="GetVersionRequest">
+     <wsdl:part name="parameters" element="ca:GetVersionRequest" />
+   </wsdl:message>
+   <wsdl:message name="GetVersionResponse">
+     <wsdl:part name="parameters" element="ca:GetVersionResponse" />
+   </wsdl:message>
+  
+   <wsdl:documentation>
+     AccountManagement port type for the ADCAP protocol.
+   </wsdl:documentation>
+   <wsdl:message name="TopologyManagement_GetVersion_GetVersionFault_FaultMessage">
+     <wsdl:part name="detail" element="ca:GetVersionFault" />
+   </wsdl:message>
+   <wsdl:portType name="AccountManagement">
+     <wsdl:operation name="GetADGroupMember">
+       <wsdl:input wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/GetADGroupMember" name="GetADGroupMemberRequest" message="ca:GetADGroupMemberRequest" />
+       <wsdl:output wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/GetADGroupMemberResponse" name="GetADGroupMemberResponse" message="ca:GetADGroupMemberResponse" />
+       <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="GetADGroupMemberFault" message="ca:AccountManagement_GetADGroupMember_GetADGroupMemberFault_FaultMessage" />
+     </wsdl:operation>
+     <wsdl:operation name="GetADPrincipalGroupMembership">
+       <wsdl:input wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/GetADPrincipalGroupMembership" name="GetADPrincipalGroupMembershipRequest" message="ca:GetADPrincipalGroupMembershipRequest" />
+       <wsdl:output wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/GetADPrincipalGroupMembershipResponse" name="GetADPrincipalGroupMembershipResponse" message="ca:GetADPrincipalGroupMembershipResponse" />
+       <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="GetADPrincipalGroupMembershipFault" message="ca:AccountManagement_GetADPrincipalGroupMembership_GetADPrincipalGroupMembershipFault_FaultMessage" />
+     </wsdl:operation>
+     <wsdl:operation name="SetPassword">
+       <wsdl:input wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/SetPassword" name="SetPasswordRequest" message="ca:SetPasswordRequest" />
+       <wsdl:output wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/SetPasswordResponse" name="SetPasswordResponse" message="ca:SetPasswordResponse" />
+       <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="SetPasswordFault" message="ca:AccountManagement_SetPassword_SetPasswordFault_FaultMessage" />
+     </wsdl:operation>
+     <wsdl:operation name="ChangePassword">
+       <wsdl:input wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/ChangePassword" name="ChangePasswordRequest" message="ca:ChangePasswordRequest" />
+       <wsdl:output wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/ChangePasswordResponse" name="ChangePasswordResponse" message="ca:ChangePasswordResponse" />
+       <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="ChangePasswordFault" message="ca:AccountManagement_ChangePassword_ChangePasswordFault_FaultMessage" />
+     </wsdl:operation>
+     <wsdl:operation name="GetADPrincipalAuthorizationGroup">
+       <wsdl:input wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/GetADPrincipalAuthorizationGroup" name="GetADPrincipalAuthorizationGroupRequest" message="ca:GetADPrincipalAuthorizationGroupRequest" />
+       <wsdl:output wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/GetADPrincipalAuthorizationGroupResponse" name="GetADPrincipalAuthorizationGroupResponse" message="ca:GetADPrincipalAuthorizationGroupResponse" />
+       <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="GetADPrincipalAuthorizationGroupFault" message="ca:AccountManagement_GetADPrincipalAuthorizationGroup_GetADPrincipalAuthorizationGroupFault_FaultMessage" />
+     </wsdl:operation>
+     <wsdl:operation name="TranslateName">
+       <wsdl:input wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/TranslateName" name="TranslateNameRequest" message="ca:TranslateNameRequest" />
+       <wsdl:output wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/TranslateNameResponse" name="TranslateNameResponse" message="ca:TranslateNameResponse" />
+       <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="TranslateNameFault" message="ca:AccountManagement_TranslateName_TranslateNameFault_FaultMessage" />
+     </wsdl:operation>
+   </wsdl:portType>
+   <wsdl:documentation>
+     TopologyManagement port type for the ADCAP protocol.
+   </wsdl:documentation>
+   <wsdl:portType name="TopologyManagement">
+     <wsdl:operation name="GetADDomainController">
+       <wsdl:input wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/GetADDomainController" name="GetADDomainControllerRequest" message="ca:GetADDomainControllerRequest" />
+       <wsdl:output wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/GetADDomainControllerResponse" name="GetADDomainControllerResponse" message="ca:GetADDomainControllerResponse" />
+       <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="GetADDomainControllerFault" message="ca:TopologyManagement_GetADDomainController_GetADDomainControllerFault_FaultMessage" />
+     </wsdl:operation>
+     <wsdl:operation name="GetADDomain">
+       <wsdl:input wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/GetADDomain" name="GetADDomainRequest" message="ca:GetADDomainRequest" />
+       <wsdl:output wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/GetADDomainResponse" name="GetADDomainResponse" message="ca:GetADDomainResponse" />
+       <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="GetADDomainFault" message="ca:TopologyManagement_GetADDomain_GetADDomainFault_FaultMessage" />
+     </wsdl:operation>
+     <wsdl:operation name="MoveADOperationMasterRole">
+       <wsdl:input wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/MoveADOperationMasterRole" name="MoveADOperationMasterRoleRequest" message="ca:MoveADOperationMasterRoleRequest" />
+       <wsdl:output wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/MoveADOperationMasterRoleResponse" name="MoveADOperationMasterRoleResponse" message="ca:MoveADOperationMasterRoleResponse" />
+       <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="MoveADOperationMasterRoleFault" message="ca:TopologyManagement_MoveADOperationMasterRole_MoveADOperationMasterRoleFault_FaultMessage" />
+     </wsdl:operation>
+     <wsdl:operation name="GetADForest">
+       <wsdl:input wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/GetADForest" name="GetADForestRequest" message="ca:GetADForestRequest" />
+       <wsdl:output wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/GetADForestResponse" name="GetADForestResponse" message="ca:GetADForestResponse" />
+       <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="GetADForestFault" message="ca:TopologyManagement_GetADForest_GetADForestFault_FaultMessage" />
+     </wsdl:operation>
+     <wsdl:operation name="ChangeOptionalFeature">
+       <wsdl:input wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/ChangeOptionalFeature" name="ChangeOptionalFeatureRequest" message="ca:ChangeOptionalFeatureRequest" />
+       <wsdl:output wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/ChangeOptionalFeatureResponse" name="ChangeOptionalFeatureResponse" message="ca:ChangeOptionalFeatureResponse" />
+       <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="ChangeOptionalFeatureFault" message="ca:TopologyManagement_ChangeOptionalFeature_ChangeOptionalFeatureFault_FaultMessage" />
+     </wsdl:operation>
+     <wsdl:operation name="GetVersion">
+       <wsdl:input wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/GetVersion" name="GetVersionRequest" message="ca:GetVersionRequest" />
+       <wsdl:output wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/GetVersionResponse" name="GetVersionResponse" message="ca:GetVersionResponse" />
+       <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="GetVersionFault" message="ca:TopologyManagement_GetVersion_GetVersionFault_FaultMessage" />
+     </wsdl:operation>
+   </wsdl:portType>
+  
+   <wsdl:documentation>
+     WSDL Binding for the AccountManagement port type over the net.tcp transport using SOAP1.2.
+   </wsdl:documentation>
+   <wsdl:binding name="NetTcpBinding_AccountManagement" type="ca:AccountManagement">
+     <soap12:binding transport="http://schemas.microsoft.com/soap/tcp" />
+     <wsdl:operation name="GetADGroupMember">
+       <soap12:operation soapAction="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/GetADGroupMember" style="document" />
+       <wsdl:input name="GetADGroupMemberRequest">
+         <soap12:header message="ca:GetADGroupMemberRequest_Headers" part="Server" use="literal" />
+         <soap12:body use="literal" />
+       </wsdl:input>
+       <wsdl:output name="GetADGroupMemberResponse">
+         <soap12:body use="literal" />
+       </wsdl:output>
+       <wsdl:fault name="GetADGroupMemberFault">
+         <soap12:fault use="literal" name="GetADGroupMemberFault" namespace="" />
+       </wsdl:fault>
+     </wsdl:operation>
+     <wsdl:operation name="GetADPrincipalGroupMembership">
+       <soap12:operation soapAction="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/GetADPrincipalGroupMembership" style="document" />
+       <wsdl:input name="GetADPrincipalGroupMembershipRequest">
+         <soap12:header message="ca:GetADPrincipalGroupMembershipRequest_Headers" part="Server" use="literal" />
+         <soap12:body use="literal" />
+       </wsdl:input>
+       <wsdl:output name="GetADPrincipalGroupMembershipResponse">
+         <soap12:body use="literal" />
+       </wsdl:output>
+       <wsdl:fault name="GetADPrincipalGroupMembershipFault">
+         <soap12:fault use="literal" name="GetADPrincipalGroupMembershipFault" namespace="" />
+       </wsdl:fault>
+     </wsdl:operation>
+     <wsdl:operation name="SetPassword">
+       <soap12:operation soapAction="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/SetPassword" style="document" />
+       <wsdl:input name="SetPasswordRequest">
+         <soap12:header message="ca:SetPasswordRequest_Headers" part="Server" use="literal" />
+         <soap12:body use="literal" />
+       </wsdl:input>
+       <wsdl:output name="SetPasswordResponse">
+         <soap12:body use="literal" />
+       </wsdl:output>
+       <wsdl:fault name="SetPasswordFault">
+         <soap12:fault use="literal" name="SetPasswordFault" namespace="" />
+       </wsdl:fault>
+     </wsdl:operation>
+     <wsdl:operation name="ChangePassword">
+       <soap12:operation soapAction="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/ChangePassword" style="document" />
+       <wsdl:input name="ChangePasswordRequest">
+         <soap12:header message="ca:ChangePasswordRequest_Headers" part="Server" use="literal" />
+         <soap12:body use="literal" />
+       </wsdl:input>
+       <wsdl:output name="ChangePasswordResponse">
+         <soap12:body use="literal" />
+       </wsdl:output>
+       <wsdl:fault name="ChangePasswordFault">
+         <soap12:fault use="literal" name="ChangePasswordFault" namespace="" />
+       </wsdl:fault>
+     </wsdl:operation>
+     <wsdl:operation name="GetADPrincipalAuthorizationGroup">
+       <soap12:operation soapAction="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/GetADPrincipalAuthorizationGroup" style="document" />
+       <wsdl:input name="GetADPrincipalAuthorizationGroupRequest">
+         <soap12:header message="ca:GetADPrincipalAuthorizationGroupRequest_Headers" part="Server" use="literal" />
+         <soap12:body use="literal" />
+       </wsdl:input>
+       <wsdl:output name="GetADPrincipalAuthorizationGroupResponse">
+         <soap12:body use="literal" />
+       </wsdl:output>
+       <wsdl:fault name="GetADPrincipalAuthorizationGroupFault">
+         <soap12:fault use="literal" name="GetADPrincipalAuthorizationGroupFault" namespace="" />
+       </wsdl:fault>
+     </wsdl:operation>
+     <wsdl:operation name="TranslateName">
+       <soap12:operation soapAction="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/AccountManagement/TranslateName" style="document" />
+       <wsdl:input name="TranslateNameRequest">
+         <soap12:header message="ca:TranslateNameRequest_Headers" part="Server" use="literal" />
+         <soap12:body use="literal" />
+       </wsdl:input>
+       <wsdl:output name="TranslateNameResponse">
+         <soap12:body use="literal" />
+       </wsdl:output>
+       <wsdl:fault name="TranslateNameFault">
+         <soap12:fault use="literal" name="TranslateNameFault" namespace="" />
+       </wsdl:fault>
+     </wsdl:operation>
+   </wsdl:binding>
+  
+   <wsdl:documentation>
+     WSDL Binding for the TopologyManagement port type over the net.tcp transport using SOAP 1.2.
+   </wsdl:documentation>
+   <wsdl:binding name="NetTcpBinding_TopologyManagement" type="ca:TopologyManagement">
+     <soap12:binding transport="http://schemas.microsoft.com/soap/tcp" />
+     <wsdl:operation name="GetADDomainController">
+       <soap12:operation soapAction="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/GetADDomainController" style="document" />
+       <wsdl:input name="GetADDomainControllerRequest">
+         <soap12:header message="ca:GetADDomainControllerRequest_Headers" part="Server" use="literal" />
+         <soap12:body use="literal" />
+       </wsdl:input>
+       <wsdl:output name="GetADDomainControllerResponse">
+         <soap12:body use="literal" />
+       </wsdl:output>
+       <wsdl:fault name="GetADDomainControllerFault">
+         <soap12:fault use="literal" name="GetADDomainControllerFault" namespace="" />
+       </wsdl:fault>
+     </wsdl:operation>
+     <wsdl:operation name="GetADDomain">
+       <soap12:operation soapAction="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/GetADDomain" style="document" />
+       <wsdl:input name="GetADDomainRequest">
+         <soap12:header message="ca:GetADDomainRequest_Headers" part="Server" use="literal" />
+         <soap12:body use="literal" />
+       </wsdl:input>
+       <wsdl:output name="GetADDomainResponse">
+         <soap12:body use="literal" />
+       </wsdl:output>
+       <wsdl:fault name="GetADDomainFault">
+         <soap12:fault use="literal" name="GetADDomainFault" namespace="" />
+       </wsdl:fault>
+     </wsdl:operation>
+     <wsdl:operation name="MoveADOperationMasterRole">
+       <soap12:operation soapAction="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/MoveADOperationMasterRole" style="document" />
+       <wsdl:input name="MoveADOperationMasterRoleRequest">
+         <soap12:header message="ca:MoveADOperationMasterRoleRequest_Headers" part="Server" use="literal" />
+         <soap12:body use="literal" />
+       </wsdl:input>
+       <wsdl:output name="MoveADOperationMasterRoleResponse">
+         <soap12:body use="literal" />
+       </wsdl:output>
+       <wsdl:fault name="MoveADOperationMasterRoleFault">
+         <soap12:fault use="literal" name="MoveADOperationMasterRoleFault" namespace="" />
+       </wsdl:fault>
+     </wsdl:operation>
+     <wsdl:operation name="GetADForest">
+       <soap12:operation soapAction="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/GetADForest" style="document" />
+       <wsdl:input name="GetADForestRequest">
+         <soap12:header message="ca:GetADForestRequest_Headers" part="Server" use="literal" />
+         <soap12:body use="literal" />
+       </wsdl:input>
+       <wsdl:output name="GetADForestResponse">
+         <soap12:body use="literal" />
+       </wsdl:output>
+       <wsdl:fault name="GetADForestFault">
+         <soap12:fault use="literal" name="GetADForestFault" namespace="" />
+       </wsdl:fault>
+     </wsdl:operation>
+     <wsdl:operation name="ChangeOptionalFeature">
+       <soap12:operation soapAction="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/ChangeOptionalFeature" style="document" />
+       <wsdl:input name="ChangeOptionalFeatureRequest">
+         <soap12:header message="ca:ChangeOptionalFeatureRequest_Headers" part="Server" use="literal" />
+         <soap12:body use="literal" />
+       </wsdl:input>
+       <wsdl:output name="ChangeOptionalFeatureResponse">
+         <soap12:body use="literal" />
+       </wsdl:output>
+       <wsdl:fault name="ChangeOptionalFeatureFault">
+         <soap12:fault use="literal" name="ChangeOptionalFeatureFault" namespace="" />
+       </wsdl:fault>
+     </wsdl:operation>
+     <wsdl:operation name="GetVersion">
+       <soap12:operation soapAction="http://schemas.microsoft.com/2008/1/ActiveDirectory/CustomActions/TopologyManagement/GetVersion" style="document" />
+       <wsdl:input name="GetVersionRequest">
+         <soap12:body use="literal" />
+       </wsdl:input>
+       <wsdl:output name="GetVersionResponse">
+         <soap12:body use="literal" />
+       </wsdl:output>
+       <wsdl:fault name="GetVersionFault">
+         <soap12:fault use="literal" name="GetVersionFault" namespace="" />
+       </wsdl:fault>
+     </wsdl:operation>
+   </wsdl:binding>
+ </wsdl:definitions>

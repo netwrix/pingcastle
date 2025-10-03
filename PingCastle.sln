@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34723.18
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingCastle", "PingCastle.csproj", "{52BBA3C2-A74E-4096-B65F-B88C38F92120}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingCastle", "PingCastle\PingCastle.csproj", "{52BBA3C2-A74E-4096-B65F-B88C38F92120}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingCastleAutoUpdater", "PingCastleAutoUpdater\PingCastleAutoUpdater.csproj", "{0E5D043A-CAA1-40C7-A616-773F347FA43F}"
 EndProject

@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.microsoft.com/2008/1/ActiveDirectory" elementFormDefault="qualified" 
+           targetNamespace="http://schemas.microsoft.com/2008/1/ActiveDirectory" 
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <xs:import namespace="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess" />
+  <xs:complexType name="FaultDetail">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="ArgumentError" type="tns:ArgumentErrorDetail" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Error" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="DirectoryError" type="tns:DirectoryErrorDetail" />
+      <xs:element minOccurs="0" maxOccurs="1" name="InvalidAttributeType" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="InvalidOperation" type="xs:string" />
+      <xs:element xmlns:q1="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess" minOccurs="0" maxOccurs="1" name="InvalidChange" type="q1:ChangeType" />
+      <xs:element xmlns:q2="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess" minOccurs="0" maxOccurs="1" name="InvalidAttributeTypeOrValue" type="q2:AttributeTypeAndValue" />
+      <xs:element minOccurs="0" maxOccurs="1" name="ShortError" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="UnknownAttribute" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArgumentErrorDetail">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Message" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="ParameterName" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="ShortMessage" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="DirectoryErrorDetail">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Message" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="ErrorCode" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="ExtendedErrorMessage" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="MatchedDN" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Referral" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Win32ErrorCode" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="ShortMessage" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="InvalidPropertyFault" type="tns:EnumerateFault" />
+  <xs:complexType name="EnumerateFault">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:FaultDetail">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="InvalidProperty" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="EnumerationContextLimitExceeded" type="tns:EnumerateFault" />
+  <xs:element name="UnsupportedSelectOrSortDialectFault" type="tns:SupportedSelectOrSortDialect" />
+  <xs:complexType name="SupportedSelectOrSortDialect">
+    <xs:simpleContent>
+      <xs:extension base="xs:anyURI" />
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:element name="InvalidSortKey" type="tns:EnumerateFault" />
+  <xs:complexType name="PullFault">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:FaultDetail" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="MaxTimeExceedsLimit" type="tns:PullFault" />
+  <xs:element name="MaxCharsNotSupported" type="tns:PullFault" />
+  <xs:complexType name="RenewFault">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:FaultDetail" />
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <xs:element name ="Selection">
+     <xs:complexType>
+       <xs:sequence>
+         <xs:element name="SelectionProperty" type="xs:QName" minOccurs="1"
+                      maxOccurs ="unbounded"  />
+       </xs:sequence>
+       <xs:attribute name="Dialect"
+                      fixed="http://schemas.microsoft.com/2008/1/ActiveDirectory/Dialect/XPath-Level-1" use="required"/>
+     </xs:complexType>
+   </xs:element>
+  
+   <xs:element name ="Sorting">
+     <xs:complexType>
+       <xs:sequence>
+         <xs:element name="SortingProperty" minOccurs="1"
+                      maxOccurs ="1">
+           <xs:complexType>
+             <xs:simpleContent>
+               <xs:extension base="xs:string">
+                 <xs:attribute name="Ascending" use="optional"
+                                type="xs:boolean" default="true"/>
+               </xs:extension>
+             </xs:simpleContent>
+           </xs:complexType>
+         </xs:element>
+       </xs:sequence>
+       <xs:attribute name="Dialect"
+                      fixed="http://schemas.microsoft.com/2008/1/ActiveDirectory/Dialect/XPath-Level-1" use="required"/>
+     </xs:complexType>
+   </xs:element>
+
+  <xs:element name ="controls">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="control" minOccurs="1"
+                     maxOccurs ="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="controlValue" type="xs:string">
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="type" type="xs:string"/>
+            <xs:attribute name="criticality" type="xs:boolean"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+
+  <xs:element name="objectReferenceProperty">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="value" type="xs:string">
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  </xs:element>
+      <xs:element name="distinguishedName">
+        <xs:complexType>
+      <xs:sequence>
+        <xs:element name="value" type="xs:string">
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+      </xs:element>
+
+
+  <xs:element name="value" type="xs:string"/>
+
+</xs:schema>

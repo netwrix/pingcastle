@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema targetNamespace="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data"
+            xmlns:ad="http://schemas.microsoft.com/2008/1/ActiveDirectory"
+            xmlns:addata="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data"
+            attributeFormDefault="unqualified"
+            elementFormDefault="qualified"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  <xsd:import namespace="http://schemas.microsoft.com/2008/1/ActiveDirectory"/>
+
+  <xsd:complexType name="nTSecurityDescriptor">
+    <xsd:sequence>
+      <xsd:element ref="ad:value"/>
+    </xsd:sequence>
+    <xsd:attribute name="LdapSyntax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="name">
+    <xsd:sequence>
+      <xsd:element ref="ad:value"/>
+    </xsd:sequence>
+    <xsd:attribute name="LdapSyntax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="objectSid">
+
+    <xsd:sequence>
+      <xsd:element ref="ad:value"/>
+    </xsd:sequence>
+    <xsd:attribute name="LdapSyntax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name ="adminCount">
+    <xsd:sequence>
+      <xsd:element ref="ad:value"/>
+    </xsd:sequence>
+    <xsd:attribute name="LdapSyntax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="OID">
+    <xsd:all>
+      <xsd:element ref="ad:objectReferenceProperty" minOccurs="0"/>
+      <xsd:element ref="ad:distinguishedName" minOccurs="0"/>
+      <xsd:element name="nTSecurityDescriptor" type="addata:nTSecurityDescriptor" minOccurs="0"/>
+      <xsd:element name="name" type="addata:name" minOccurs="0"/>
+    </xsd:all>
+  </xsd:complexType>
+
+  <xsd:element name ="user">
+    <xsd:complexType>
+      <xsd:all>
+        <xsd:element ref="ad:objectReferenceProperty" minOccurs="0"/>
+        <xsd:element name="adminCount" type="addata:adminCount" minOccurs="0"/>
+        <xsd:element name="nTSecurityDescriptor" type="addata:nTSecurityDescriptor" minOccurs="0"/>
+        <xsd:element name="objectSid" type="addata:objectSid" minOccurs="0"/>
+        <xsd:element ref="ad:distinguishedName" minOccurs="0"/>
+      </xsd:all>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name ="container" type="addata:OID"/>
+  <xsd:element name ="domain" type="addata:OID"/>
+  <xsd:element name ="domaindns" type="addata:OID"/>
+  <xsd:element name ="organizationalUnit" type="addata:OID"/>
+  <xsd:element name ="builtinDomain" type="addata:OID"/>
+  <xsd:element name ="groupPolicyContainer" type="addata:OID"/>
+  <xsd:element name ="group">
+    <xsd:complexType>
+      <xsd:all>
+        <xsd:element ref="ad:objectReferenceProperty" minOccurs="0"/>
+        <xsd:element ref="ad:distinguishedName" minOccurs="0"/>
+        <xsd:element name="adminCount" type="addata:adminCount" minOccurs="0"/>
+        <xsd:element name="nTSecurityDescriptor" type="addata:nTSecurityDescriptor" minOccurs="0"/>
+        <xsd:element name="objectSid" type="addata:objectSid" minOccurs="0"/>
+      </xsd:all>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name ="top">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+</xsd:schema>

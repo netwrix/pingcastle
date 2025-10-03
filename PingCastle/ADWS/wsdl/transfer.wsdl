@@ -1,0 +1,209 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy"
+                  xmlns:wsa10="http://www.w3.org/2005/08/addressing" 
+                  xmlns:tns="http://schemas.xmlsoap.org/ws/2004/09/transfer" 
+                  xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" 
+                  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:wsp="http://www.w3.org/ns/ws-policy"
+                  xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
+                  xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" 
+                  xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" 
+                  xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" 
+                  xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  targetNamespace="http://schemas.xmlsoap.org/ws/2004/09/transfer"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:addata="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data"
+                  >
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://schemas.xmlsoap.org/ws/2004/09/transfer/Imports">
+      <xsd:import namespace="http://schemas.microsoft.com/Message" />
+      <xsd:import namespace="http://schemas.xmlsoap.org/ws/2004/08/addressing" />
+      <xsd:import namespace="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" />
+      <xsd:import namespace="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess" />
+      <xsd:import namespace="http://schemas.microsoft.com/2008/1/ActiveDirectory" />
+      <xsd:import namespace="http://schemas.xmlsoap.org/ws/2004/09/transfer" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="Resource_Get_InputMessage">
+    <!--<wsdl:part xmlns:q1="http://schemas.microsoft.com/Message" name="request" type="q1:MessageBody" />-->
+  </wsdl:message>
+  <wsdl:message name="Resource_Get_OutputMessage">
+    <wsdl:part name="Body" element="addata:top" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Get_EndpointUnavailable_FaultMessage">
+    <wsdl:part name="detail" element="wsa:EndpointUnavailable" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Get_FragmentDialectNotSupported_FaultMessage">
+    <wsdl:part xmlns:q3="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q3:FragmentDialectNotSupported" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Get_AccessDenied_FaultMessage">
+    <wsdl:part xmlns:q4="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q4:AccessDenied" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Get_SchemaValidationError_FaultMessage">
+    <wsdl:part xmlns:q5="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q5:SchemaValidationError" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Get_UnwillingToPerform_FaultMessage">
+    <wsdl:part xmlns:q6="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess" name="detail" element="q6:UnwillingToPerform" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Get_CannotProcessFilter_FaultMessage">
+    <wsdl:part xmlns:q7="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q7:CannotProcessFilter" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Get_DestinationUnreachable_FaultMessage">
+    <wsdl:part name="detail" element="wsa:DestinationUnreachable" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Get_EncodingLimit_FaultMessage">
+    <wsdl:part xmlns:q8="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q8:EncodingLimit" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Put_InputMessage">
+    <wsdl:part xmlns:q9="http://schemas.microsoft.com/Message" name="request" type="q9:MessageBody" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Put_OutputMessage">
+    <wsdl:part xmlns:q10="http://schemas.microsoft.com/Message" name="PutResult" type="q10:MessageBody" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Put_DestinationUnreachable_FaultMessage">
+    <wsdl:part name="detail" element="wsa:DestinationUnreachable" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Put_FragmentDialectNotSupported_FaultMessage">
+    <wsdl:part xmlns:q11="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q11:FragmentDialectNotSupported" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Put_CannotProcessFilter_FaultMessage">
+    <wsdl:part xmlns:q12="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q12:CannotProcessFilter" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Put_UnwillingToPerform_FaultMessage">
+    <wsdl:part xmlns:q13="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess" name="detail" element="q13:UnwillingToPerform" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Put_EncodingLimit_FaultMessage">
+    <wsdl:part xmlns:q14="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q14:EncodingLimit" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Put_EndpointUnavailable_FaultMessage">
+    <wsdl:part name="detail" element="wsa:EndpointUnavailable" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Put_InvalidRepresentation_FaultMessage">
+    <wsdl:part name="detail" element="tns:InvalidRepresentation" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Put_SchemaValidationError_FaultMessage">
+    <wsdl:part xmlns:q15="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q15:SchemaValidationError" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Put_ActionNotSupportedFault_FaultMessage">
+    <wsdl:part name="detail" element="wsa:ActionNotSupportedFault" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Put_AccessDenied_FaultMessage">
+    <wsdl:part xmlns:q16="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q16:AccessDenied" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Delete_InputMessage">
+    <wsdl:part xmlns:q17="http://schemas.microsoft.com/Message" name="request" type="q17:MessageBody" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Delete_OutputMessage">
+    <wsdl:part xmlns:q18="http://schemas.microsoft.com/Message" name="DeleteResult" type="q18:MessageBody" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Delete_DestinationUnreachable_FaultMessage">
+    <wsdl:part name="detail" element="wsa:DestinationUnreachable" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Delete_UnwillingToPerform_FaultMessage">
+    <wsdl:part xmlns:q19="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess" name="detail" element="q19:UnwillingToPerform" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Delete_SchemaValidationError_FaultMessage">
+    <wsdl:part xmlns:q20="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q20:SchemaValidationError" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Delete_AccessDenied_FaultMessage">
+    <wsdl:part xmlns:q21="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q21:AccessDenied" />
+  </wsdl:message>
+  <wsdl:message name="Resource_Delete_EndpointUnavailable_FaultMessage">
+    <wsdl:part name="detail" element="wsa:EndpointUnavailable" />
+  </wsdl:message>
+  <wsdl:message name="ResourceFactory_Create_InputMessage">
+    <wsdl:part xmlns:q22="http://schemas.microsoft.com/Message" name="request" type="q22:MessageBody" />
+  </wsdl:message>
+  <wsdl:message name="ResourceFactory_Create_OutputMessage">
+    <wsdl:part xmlns:q23="http://schemas.microsoft.com/Message" name="CreateResult" type="q23:MessageBody" />
+  </wsdl:message>
+  <wsdl:message name="ResourceFactory_Create_AccessDenied_FaultMessage">
+    <wsdl:part xmlns:q24="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q24:AccessDenied" />
+  </wsdl:message>
+  <wsdl:message name="ResourceFactory_Create_UnwillingToPerform_FaultMessage">
+    <wsdl:part xmlns:q25="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess" name="detail" element="q25:UnwillingToPerform" />
+  </wsdl:message>
+  <wsdl:message name="ResourceFactory_Create_DestinationUnreachable_FaultMessage">
+    <wsdl:part name="detail" element="wsa:DestinationUnreachable" />
+  </wsdl:message>
+  <wsdl:message name="ResourceFactory_Create_EncodingLimit_FaultMessage">
+    <wsdl:part xmlns:q26="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q26:EncodingLimit" />
+  </wsdl:message>
+  <wsdl:message name="ResourceFactory_Create_FragmentDialectNotSupported_FaultMessage">
+    <wsdl:part xmlns:q27="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q27:FragmentDialectNotSupported" />
+  </wsdl:message>
+  <wsdl:message name="ResourceFactory_Create_InvalidRepresentation_FaultMessage">
+    <wsdl:part name="detail" element="tns:InvalidRepresentation" />
+  </wsdl:message>
+  <wsdl:message name="ResourceFactory_Create_CannotProcessFilter_FaultMessage">
+    <wsdl:part xmlns:q28="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q28:CannotProcessFilter" />
+  </wsdl:message>
+  <wsdl:message name="ResourceFactory_Create_EndpointUnavailable_FaultMessage">
+    <wsdl:part name="detail" element="wsa:EndpointUnavailable" />
+  </wsdl:message>
+  <wsdl:message name="ResourceFactory_Create_ActionNotSupportedFault_FaultMessage">
+    <wsdl:part name="detail" element="wsa:ActionNotSupportedFault" />
+  </wsdl:message>
+  <wsdl:message name="ResourceFactory_Create_SchemaValidationError_FaultMessage">
+    <wsdl:part xmlns:q29="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q29:SchemaValidationError" />
+  </wsdl:message>
+  <wsdl:message name="ResourceFactory_Create_AlreadyExists_FaultMessage">
+    <wsdl:part xmlns:q30="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" name="detail" element="q30:AlreadyExists" />
+  </wsdl:message>
+  <wsdl:portType msc:usingSession="true" name="Resource">
+    <wsdl:operation msc:isInitiating="true" msc:isTerminating="false" name="Get">
+      <wsdl:input wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/Get" message="tns:Resource_Get_InputMessage" />
+      <wsdl:output wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/GetResponse" message="tns:Resource_Get_OutputMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="EndpointUnavailable" message="tns:Resource_Get_EndpointUnavailable_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="FragmentDialectNotSupported" message="tns:Resource_Get_FragmentDialectNotSupported_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="AccessDenied" message="tns:Resource_Get_AccessDenied_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="SchemaValidationError" message="tns:Resource_Get_SchemaValidationError_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess/fault" name="UnwillingToPerform" message="tns:Resource_Get_UnwillingToPerform_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="CannotProcessFilter" message="tns:Resource_Get_CannotProcessFilter_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="DestinationUnreachable" message="tns:Resource_Get_DestinationUnreachable_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="EncodingLimit" message="tns:Resource_Get_EncodingLimit_FaultMessage" />
+    </wsdl:operation>
+    <wsdl:operation msc:isInitiating="true" msc:isTerminating="false" name="Put">
+      <wsdl:input wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/Put" message="tns:Resource_Put_InputMessage" />
+      <wsdl:output wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/PutResponse" message="tns:Resource_Put_OutputMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="DestinationUnreachable" message="tns:Resource_Put_DestinationUnreachable_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="FragmentDialectNotSupported" message="tns:Resource_Put_FragmentDialectNotSupported_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="CannotProcessFilter" message="tns:Resource_Put_CannotProcessFilter_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess/fault" name="UnwillingToPerform" message="tns:Resource_Put_UnwillingToPerform_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="EncodingLimit" message="tns:Resource_Put_EncodingLimit_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="EndpointUnavailable" message="tns:Resource_Put_EndpointUnavailable_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/fault" name="InvalidRepresentation" message="tns:Resource_Put_InvalidRepresentation_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="SchemaValidationError" message="tns:Resource_Put_SchemaValidationError_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="ActionNotSupportedFault" message="tns:Resource_Put_ActionNotSupportedFault_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="AccessDenied" message="tns:Resource_Put_AccessDenied_FaultMessage" />
+    </wsdl:operation>
+    <wsdl:operation msc:isInitiating="true" msc:isTerminating="false" name="Delete">
+      <wsdl:input wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/Delete" message="tns:Resource_Delete_InputMessage" />
+      <wsdl:output wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/DeleteResponse" message="tns:Resource_Delete_OutputMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="DestinationUnreachable" message="tns:Resource_Delete_DestinationUnreachable_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess/fault" name="UnwillingToPerform" message="tns:Resource_Delete_UnwillingToPerform_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="SchemaValidationError" message="tns:Resource_Delete_SchemaValidationError_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="AccessDenied" message="tns:Resource_Delete_AccessDenied_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="EndpointUnavailable" message="tns:Resource_Delete_EndpointUnavailable_FaultMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType msc:usingSession="true" name="ResourceFactory">
+    <wsdl:operation msc:isInitiating="true" msc:isTerminating="false" name="Create">
+      <wsdl:input wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/Create" message="tns:ResourceFactory_Create_InputMessage" />
+      <wsdl:output wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/CreateResponse" message="tns:ResourceFactory_Create_OutputMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="AccessDenied" message="tns:ResourceFactory_Create_AccessDenied_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess/fault" name="UnwillingToPerform" message="tns:ResourceFactory_Create_UnwillingToPerform_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="DestinationUnreachable" message="tns:ResourceFactory_Create_DestinationUnreachable_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="EncodingLimit" message="tns:ResourceFactory_Create_EncodingLimit_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="FragmentDialectNotSupported" message="tns:ResourceFactory_Create_FragmentDialectNotSupported_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/fault" name="InvalidRepresentation" message="tns:ResourceFactory_Create_InvalidRepresentation_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="CannotProcessFilter" message="tns:ResourceFactory_Create_CannotProcessFilter_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="EndpointUnavailable" message="tns:ResourceFactory_Create_EndpointUnavailable_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="ActionNotSupportedFault" message="tns:ResourceFactory_Create_ActionNotSupportedFault_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="SchemaValidationError" message="tns:ResourceFactory_Create_SchemaValidationError_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.dmtf.org/wbem/wsman/1/wsman/fault" name="AlreadyExists" message="tns:ResourceFactory_Create_AlreadyExists_FaultMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+</wsdl:definitions>

@@ -1,0 +1,221 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" 
+xmlns:wsa10="http://www.w3.org/2005/08/addressing"
+ xmlns:tns="http://schemas.xmlsoap.org/ws/2004/09/enumeration"
+ xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract"
+ xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
+xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+xmlns:wsp="http://www.w3.org/ns/ws-policy"
+ xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" 
+xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" 
+xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" 
+xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" 
+xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+ targetNamespace="http://schemas.xmlsoap.org/ws/2004/09/enumeration" 
+xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+xmlns:wsen="http://schemas.xmlsoap.org/ws/2004/09/enumeration">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://schemas.xmlsoap.org/ws/2004/09/enumeration/Imports">
+      <xsd:import namespace="http://schemas.microsoft.com/Message" />
+      <xsd:import namespace="http://schemas.microsoft.com/2008/1/ActiveDirectory" />
+      <xsd:import namespace="http://schemas.xmlsoap.org/ws/2004/09/enumeration" />
+      <xsd:import namespace="http://schemas.xmlsoap.org/ws/2004/08/addressing" />
+      <xsd:import namespace="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess" />
+      <xsd:import namespace="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" />
+      <xsd:import namespace="http://schemas.xmlsoap.org/ws/2004/09/transfer" />
+    </xsd:schema>
+  </wsdl:types>
+
+<wsdl:message name="EnumerateMessage">
+    <wsdl:part name="Body" element="wsen:Enumerate" />
+  </wsdl:message>
+  <wsdl:message name="EnumerateResponseMessage">
+    <wsdl:part name="Body" element="wsen:EnumerateResponse" />
+  </wsdl:message>
+  <wsdl:message name="PullMessage">
+    <wsdl:part name="Body" element="wsen:Pull" />
+  </wsdl:message>
+  <wsdl:message name="PullResponseMessage">
+    <wsdl:part name="Body" element="wsen:PullResponse" />
+  </wsdl:message>
+  <wsdl:message name="RenewMessage" >
+    <wsdl:part name="Body" element="wsen:Renew" />
+  </wsdl:message>
+  <wsdl:message name="RenewResponseMessage" >
+    <wsdl:part name="Body" element="wsen:RenewResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetStatusMessage" >
+    <wsdl:part name="Body" element="wsen:GetStatus" />
+  </wsdl:message>
+  <wsdl:message name="GetStatusResponseMessage" >
+    <wsdl:part name="Body" element="wsen:GetStatusResponse" />
+  </wsdl:message>
+  <wsdl:message name="ReleaseMessage">
+    <wsdl:part name="Body" element="wsen:Release" />
+  </wsdl:message>
+  <wsdl:message name="ReleaseResponseMessage" />
+  <wsdl:message name="EnumerationEndMessage" >
+    <wsdl:part name="Body" element="wsen:EnumerationEnd" />
+  </wsdl:message>
+
+  <wsdl:message name="Search_Enumerate_InvalidPropertyFault_FaultMessage">
+    <wsdl:part xmlns:q3="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="detail" element="q3:InvalidPropertyFault" />
+  </wsdl:message>
+  <wsdl:message name="Search_Enumerate_CannotProcessFilter_FaultMessage">
+    <wsdl:part name="detail" element="tns:CannotProcessFilter" />
+  </wsdl:message>
+  <wsdl:message name="Search_Enumerate_InvalidExpirationTime_FaultMessage">
+    <wsdl:part name="detail" element="tns:InvalidExpirationTime" />
+  </wsdl:message>
+  <wsdl:message name="Search_Enumerate_EndpointUnavailable_FaultMessage">
+    <wsdl:part name="detail" element="wsa:EndpointUnavailable" />
+  </wsdl:message>
+  <wsdl:message name="Search_Enumerate_FilterDialectRequestedUnavailable_FaultMessage">
+    <wsdl:part name="detail" element="tns:FilterDialectRequestedUnavailable" />
+  </wsdl:message>
+  <wsdl:message name="Search_Enumerate_EnumerationContextLimitExceeded_FaultMessage">
+    <wsdl:part xmlns:q4="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="detail" element="q4:EnumerationContextLimitExceeded" />
+  </wsdl:message>
+  <wsdl:message name="Search_Enumerate_UnsupportedSelectOrSortDialectFault_FaultMessage">
+    <wsdl:part xmlns:q5="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="detail" element="q5:UnsupportedSelectOrSortDialectFault" />
+  </wsdl:message>
+  <wsdl:message name="Search_Enumerate_InvalidSortKey_FaultMessage">
+    <wsdl:part xmlns:q6="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="detail" element="q6:InvalidSortKey" />
+  </wsdl:message>
+  <wsdl:message name="Search_Enumerate_DestinationUnreachable_FaultMessage">
+    <wsdl:part name="detail" element="wsa:DestinationUnreachable" />
+  </wsdl:message>
+  <wsdl:message name="Search_Pull_InputMessage">
+    <wsdl:part xmlns:q7="http://schemas.microsoft.com/Message" name="request" type="q7:MessageBody" />
+  </wsdl:message>
+  <wsdl:message name="Search_Pull_OutputMessage">
+    <wsdl:part xmlns:q8="http://schemas.microsoft.com/Message" name="PullResult" type="q8:MessageBody" />
+  </wsdl:message>
+  <wsdl:message name="Search_Pull_EndpointUnavailable_FaultMessage">
+    <wsdl:part name="detail" element="wsa:EndpointUnavailable" />
+  </wsdl:message>
+  <wsdl:message name="Search_Pull_DestinationUnreachable_FaultMessage">
+    <wsdl:part name="detail" element="wsa:DestinationUnreachable" />
+  </wsdl:message>
+  <wsdl:message name="Search_Pull_InvalidEnumerationContext_FaultMessage">
+    <wsdl:part name="detail" element="tns:InvalidEnumerationContext" />
+  </wsdl:message>
+  <wsdl:message name="Search_Pull_TimedOut_FaultMessage">
+    <wsdl:part name="detail" element="tns:TimedOut" />
+  </wsdl:message>
+  <wsdl:message name="Search_Pull_MaxTimeExceedsLimit_FaultMessage">
+    <wsdl:part xmlns:q9="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="detail" element="q9:MaxTimeExceedsLimit" />
+  </wsdl:message>
+  <wsdl:message name="Search_Pull_MaxCharsNotSupported_FaultMessage">
+    <wsdl:part xmlns:q10="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="detail" element="q10:MaxCharsNotSupported" />
+  </wsdl:message>
+  <wsdl:message name="Search_Renew_InputMessage">
+    <wsdl:part xmlns:q11="http://schemas.microsoft.com/Message" name="request" type="q11:MessageBody" />
+  </wsdl:message>
+  <wsdl:message name="Search_Renew_OutputMessage">
+    <wsdl:part xmlns:q12="http://schemas.microsoft.com/Message" name="RenewResult" type="q12:MessageBody" />
+  </wsdl:message>
+  <wsdl:message name="Search_Renew_UnableToRenew_FaultMessage">
+    <wsdl:part name="detail" element="tns:UnableToRenew" />
+  </wsdl:message>
+  <wsdl:message name="Search_Renew_InvalidEnumerationContext_FaultMessage">
+    <wsdl:part name="detail" element="tns:InvalidEnumerationContext" />
+  </wsdl:message>
+  <wsdl:message name="Search_Renew_EndpointUnavailable_FaultMessage">
+    <wsdl:part name="detail" element="wsa:EndpointUnavailable" />
+  </wsdl:message>
+  <wsdl:message name="Search_GetStatus_InputMessage">
+    <wsdl:part xmlns:q13="http://schemas.microsoft.com/Message" name="request" type="q13:MessageBody" />
+  </wsdl:message>
+  <wsdl:message name="Search_GetStatus_OutputMessage">
+    <wsdl:part xmlns:q14="http://schemas.microsoft.com/Message" name="GetStatusResult" type="q14:MessageBody" />
+  </wsdl:message>
+  <wsdl:message name="Search_GetStatus_EndpointUnavailable_FaultMessage">
+    <wsdl:part name="detail" element="wsa:EndpointUnavailable" />
+  </wsdl:message>
+  <wsdl:message name="Search_GetStatus_InvalidEnumerationContext_FaultMessage">
+    <wsdl:part name="detail" element="tns:InvalidEnumerationContext" />
+  </wsdl:message>
+  <wsdl:message name="Search_Release_InputMessage">
+    <wsdl:part xmlns:q15="http://schemas.microsoft.com/Message" name="request" type="q15:MessageBody" />
+  </wsdl:message>
+  <wsdl:message name="Search_Release_OutputMessage">
+    <wsdl:part xmlns:q16="http://schemas.microsoft.com/Message" name="ReleaseResult" type="q16:MessageBody" />
+  </wsdl:message>
+  <wsdl:message name="Search_Release_EndpointUnavailable_FaultMessage">
+    <wsdl:part name="detail" element="wsa:EndpointUnavailable" />
+  </wsdl:message>
+  <wsdl:portType msc:usingSession="true" name="Search">
+    <wsdl:operation msc:isInitiating="true" msc:isTerminating="false" name="Enumerate">
+      <wsdl:input 
+        message="wsen:EnumerateMessage" 
+        wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/Enumerate"/>
+      <wsdl:output 
+        message="wsen:EnumerateResponseMessage" 
+        wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse"
+       />
+      <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="InvalidPropertyFault" message="tns:Search_Enumerate_InvalidPropertyFault_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/fault" name="CannotProcessFilter" message="tns:Search_Enumerate_CannotProcessFilter_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/fault" name="InvalidExpirationTime" message="tns:Search_Enumerate_InvalidExpirationTime_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="EndpointUnavailable" message="tns:Search_Enumerate_EndpointUnavailable_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/fault" name="FilterDialectRequestedUnavailable" message="tns:Search_Enumerate_FilterDialectRequestedUnavailable_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="EnumerationContextLimitExceeded" message="tns:Search_Enumerate_EnumerationContextLimitExceeded_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="UnsupportedSelectOrSortDialectFault" message="tns:Search_Enumerate_UnsupportedSelectOrSortDialectFault_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="InvalidSortKey" message="tns:Search_Enumerate_InvalidSortKey_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="DestinationUnreachable" message="tns:Search_Enumerate_DestinationUnreachable_FaultMessage" />
+    </wsdl:operation>
+    <wsdl:operation msc:isInitiating="true" msc:isTerminating="false" name="Pull">
+      <wsdl:input 
+        message="wsen:PullMessage"
+        wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/Pull"
+        />
+      <wsdl:output 
+        message="wsen:PullResponseMessage" 
+        wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/PullResponse"
+        />
+<wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="EndpointUnavailable" message="tns:Search_Pull_EndpointUnavailable_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="DestinationUnreachable" message="tns:Search_Pull_DestinationUnreachable_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/fault" name="InvalidEnumerationContext" message="tns:Search_Pull_InvalidEnumerationContext_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/fault" name="TimedOut" message="tns:Search_Pull_TimedOut_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="MaxTimeExceedsLimit" message="tns:Search_Pull_MaxTimeExceedsLimit_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data/fault" name="MaxCharsNotSupported" message="tns:Search_Pull_MaxCharsNotSupported_FaultMessage" />
+    </wsdl:operation>
+    <wsdl:operation msc:isInitiating="true" msc:isTerminating="false" name="Renew">
+      <wsdl:input 
+        message="wsen:RenewMessage" 
+        wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/Renew"
+        />
+      <wsdl:output 
+        message="wsen:RenewResponseMessage" 
+        wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/RenewResponse"
+        />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/fault" name="UnableToRenew" message="tns:Search_Renew_UnableToRenew_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/fault" name="InvalidEnumerationContext" message="tns:Search_Renew_InvalidEnumerationContext_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="EndpointUnavailable" message="tns:Search_Renew_EndpointUnavailable_FaultMessage" />
+    </wsdl:operation>
+    <wsdl:operation msc:isInitiating="true" msc:isTerminating="false" name="GetStatus">
+      <wsdl:input 
+        message="wsen:GetStatusMessage" 
+        wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/GetStatus"
+        />
+      <wsdl:output 
+        message="wsen:GetStatusResponseMessage" 
+        wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/GetStatusResponse"
+        />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="EndpointUnavailable" message="tns:Search_GetStatus_EndpointUnavailable_FaultMessage" />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/fault" name="InvalidEnumerationContext" message="tns:Search_GetStatus_InvalidEnumerationContext_FaultMessage" />
+    </wsdl:operation>
+    <wsdl:operation msc:isInitiating="true" msc:isTerminating="false" name="Release">
+      <wsdl:input 
+        message="wsen:ReleaseMessage"
+        wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/Release"
+        />
+      <wsdl:output 
+        message="wsen:ReleaseResponseMessage" 
+        wsam:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/ReleaseResponse"
+        />
+      <wsdl:fault wsam:Action="http://schemas.xmlsoap.org/ws/2004/08/addressing/fault" name="EndpointUnavailable" message="tns:Search_Release_EndpointUnavailable_FaultMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+</wsdl:definitions>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--[MS-WSDS] filter extension elements schema]-->
+ 
+ <xsd:schema  xmlns:adlq="http://schemas.microsoft.com/2008/1/ActiveDirectory/Dialect/LdapQuery"
+              attributeFormDefault="unqualified"
+              elementFormDefault="qualified"
+              targetNamespace="http://schemas.microsoft.com/2008/1/ActiveDirectory/Dialect/LdapQuery"
+              xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  
+   <xsd:element name = "LdapQuery">
+     <xsd:complexType>
+       <xsd:sequence>
+         <xsd:element name="Filter" type="xsd:string"
+                      minOccurs="1" maxOccurs ="1"  />
+         <xsd:element name="BaseObject" type="xsd:string"
+                  minOccurs="1"  maxOccurs="1" />
+         <xsd:element name="Scope" type="xsd:string"
+                      minOccurs="1" maxOccurs="1"   />
+       </xsd:sequence>
+     </xsd:complexType>
+   </xsd:element>
+ </xsd:schema>

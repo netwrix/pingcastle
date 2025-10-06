@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" elementFormDefault="qualified" targetNamespace="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://schemas.microsoft.com/2008/1/ActiveDirectory" />
+  <xs:import namespace="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess" />
+  <xs:element name="FragmentDialectNotSupported" type="tns:FragmentDialect" />
+  <xs:complexType name="FragmentDialect">
+    <xs:simpleContent>
+      <xs:extension base="xs:anyURI" />
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:element xmlns:q1="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="AccessDenied" type="q1:FaultDetail" />
+  <xs:element xmlns:q2="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="SchemaValidationError" type="q2:FaultDetail" />
+  <xs:element xmlns:q3="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess" name="CannotProcessFilter" type="q3:AttributeTypeNotValid" />
+  <xs:element name="EncodingLimit" type="tns:FaultDetail" />
+  <xs:complexType name="FaultDetail">
+    <xs:annotation>
+      <xs:appinfo>
+        <keepNamespaceDeclarations>xmlns</keepNamespaceDeclarations>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute xmlns:q4="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess" ref="q4:SizeLimit" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:element xmlns:q5="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="AlreadyExists" type="q5:FaultDetail" />
+</xs:schema>

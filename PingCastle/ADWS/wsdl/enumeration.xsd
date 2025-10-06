@@ -1,0 +1,238 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.xmlsoap.org/ws/2004/09/enumeration" 
+elementFormDefault="qualified" 
+targetNamespace="http://schemas.xmlsoap.org/ws/2004/09/enumeration"
+      xmlns:adlq="http://schemas.microsoft.com/2008/1/ActiveDirectory/Dialect/LdapQuery"
+      xmlns:ad="http://schemas.microsoft.com/2008/1/ActiveDirectory"
+    xmlns:addata="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data"
+    xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing"
+    xmlns:wsen="http://schemas.xmlsoap.org/ws/2004/09/enumeration"
+ xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+
+
+
+
+  <xs:import namespace="http://schemas.microsoft.com/2008/1/ActiveDirectory" />
+  <xs:element xmlns:q1="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="CannotProcessFilter" type="q1:EnumerateFault" />
+  <xs:element xmlns:q2="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="InvalidExpirationTime" type="q2:EnumerateFault" />
+  <xs:element name="FilterDialectRequestedUnavailable" type="tns:SupportedDialect" />
+  <xs:complexType name="SupportedDialect">
+    <xs:simpleContent>
+      <xs:extension base="xs:anyURI" />
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:element xmlns:q3="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="InvalidEnumerationContext" type="q3:FaultDetail" />
+  <xs:element xmlns:q4="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="TimedOut" type="q4:PullFault" />
+  <xs:element xmlns:q5="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="UnableToRenew" type="q5:RenewFault" />
+
+
+
+   <!--Extended filter type for Enumerate [WSENUM] request-->
+   
+   <xs:complexType name="FilterType">
+     <xs:sequence>
+       <xs:element minOccurs="0" maxOccurs="1"
+                      ref="adlq:LdapQuery" />
+     </xs:sequence>
+     <xs:attribute name="Dialect"
+                      fixed="http://schemas.microsoft.com/2008/1/ActiveDirectory/Dialect/LdapQuery"/>
+   </xs:complexType>
+	
+	<xs:simpleType name="PositiveDurationType">
+		<xs:restriction base="xs:duration">
+			<xs:minExclusive value="P0Y0M0DT0H0M0S" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="NonNegativeDurationType">
+		<xs:restriction base="xs:duration">
+			<xs:minInclusive value="P0Y0M0DT0H0M0S" />
+		</xs:restriction>
+	</xs:simpleType>
+
+  <xs:simpleType name="ExpirationType">
+    <xs:union memberTypes="xs:dateTime tns:NonNegativeDurationType" />
+  </xs:simpleType>
+
+	<xs:complexType name="EnumerationContextType">
+		<xs:complexContent mixed="true">
+			<xs:restriction base="xs:anyType">
+				<xs:sequence>
+					<xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
+				</xs:sequence>
+				<xs:anyAttribute namespace="##other" processContents="lax" />
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="ItemListType">
+      <!--<xs:choice maxOccurs="unbounded">
+        <xs:element ref="addata:user"/>
+        <xs:element ref="addata:container"/>
+        <xs:element ref="addata:domain"/>
+        <xs:element ref="addata:domaindns"/>
+        <xs:element ref="addata:organizationalUnit"/>
+        <xs:element ref="addata:builtinDomain"/>
+        <xs:element ref="addata:groupPolicyContainer"/>
+        <xs:element ref="addata:group"/>
+      </xs:choice>-->
+    <xs:sequence>
+      <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="LanguageSpecificStringType">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+			<!--	<xs:attribute ref="xml:lang" /> -->
+				<xs:anyAttribute namespace="##other" processContents="lax" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+
+	<!--Extended Enumerate [WSENUM] request-->
+   <xs:element name="Enumerate">
+     <xs:complexType>
+       <xs:sequence>
+         <xs:element name="EndTo" type="wsa:EndpointReferenceType" minOccurs="0" />
+	 <xs:element name="Expires" type="wsen:ExpirationType" minOccurs="0" />
+         <xs:element name="Filter" type="wsen:FilterType" minOccurs="0" maxOccurs="1" />
+         <xs:element ref="ad:Selection"
+                      minOccurs="0" maxOccurs="1" />
+         <xs:element ref="ad:Sorting"
+                      minOccurs="0" maxOccurs="1" />
+       </xs:sequence>
+     </xs:complexType>
+   </xs:element>
+	
+	<!-- Used for a fault response -->
+	<xs:element name="SupportedDialect" type="xs:anyURI" />
+	
+	<!-- Enumerate response -->
+	<xs:element name="EnumerateResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Expires" type="tns:ExpirationType" minOccurs="0" />
+				<xs:element name="EnumerationContext" type="tns:EnumerationContextType" />
+				<xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
+			</xs:sequence>
+			<xs:anyAttribute namespace="##other" processContents="lax" />
+		</xs:complexType>
+	</xs:element>
+	
+	<!-- Pull request -->
+	<xs:element name="Pull">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="EnumerationContext" type="tns:EnumerationContextType" />
+				<xs:element name="MaxTime" type="tns:PositiveDurationType" minOccurs="0" />
+				<xs:element name="MaxElements" type="xs:positiveInteger" minOccurs="0" />
+				<xs:element name="MaxCharacters" type="xs:positiveInteger" minOccurs="0" />
+        <xs:element ref="ad:controls"
+                      minOccurs="0" maxOccurs="1" />
+			</xs:sequence>
+			<xs:anyAttribute namespace="##other" processContents="lax" />
+		</xs:complexType>
+	</xs:element>
+	
+	<!-- Pull response -->
+	<xs:element name="PullResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="EnumerationContext" type="tns:EnumerationContextType" minOccurs="0" />
+				<xs:element name="Items" type="tns:ItemListType" minOccurs="0" />
+				<xs:element name="EndOfSequence" minOccurs="0" />
+			</xs:sequence>
+			<xs:anyAttribute namespace="##other" processContents="lax" />
+		</xs:complexType>
+	</xs:element>
+	
+	<!-- Renew request -->
+	<xs:element name="Renew">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="EnumerationContext" type="tns:EnumerationContextType" />
+				<xs:element name="Expires" type="tns:ExpirationType" minOccurs="0" />
+				<xs:any namespace="##other" processContents="lax" 
+					minOccurs="0" maxOccurs="unbounded" />
+			</xs:sequence>
+			<xs:anyAttribute namespace="##other" processContents="lax" />
+		</xs:complexType>
+	</xs:element>
+
+	<!-- Renew response -->
+	<xs:element name="RenewResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Expires" type="tns:ExpirationType" minOccurs="0" />
+				<xs:element name="EnumerationContext" type="tns:EnumerationContextType" minOccurs="0" />
+				<xs:any namespace="##other" processContents="lax" 
+					minOccurs="0" maxOccurs="unbounded" />
+			</xs:sequence>
+			<xs:anyAttribute namespace="##other" processContents="lax" />
+		</xs:complexType>
+	</xs:element>
+
+	<!-- GetStatus request -->
+	<xs:element name="GetStatus">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="EnumerationContext" type="tns:EnumerationContextType" />
+				<xs:any namespace="##other" processContents="lax" 
+					minOccurs="0" maxOccurs="unbounded" />
+			</xs:sequence>
+			<xs:anyAttribute namespace="##other" processContents="lax" />
+		</xs:complexType>
+	</xs:element>
+
+	<!-- GetStatus response -->
+	<xs:element name="GetStatusResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Expires" type="tns:ExpirationType" minOccurs="0" />
+				<xs:any namespace="##other" processContents="lax" 
+					minOccurs="0" maxOccurs="unbounded" />
+			</xs:sequence>
+			<xs:anyAttribute namespace="##other" processContents="lax" />
+		</xs:complexType>
+	</xs:element>
+
+	<!-- Release request -->
+	<xs:element name="Release">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="EnumerationContext" type="tns:EnumerationContextType" />
+			</xs:sequence>
+			<xs:anyAttribute namespace="##other" processContents="lax" />
+		</xs:complexType>
+	</xs:element>
+	
+	<!-- Release response has an empty body -->
+	
+	<!-- EnumerationEnd message -->
+	<xs:element name="EnumerationEnd">
+		<xs:complexType>
+		<xs:sequence>
+			<xs:element name="EnumerationContext" type="tns:EnumerationContextType" />
+			<xs:element name="Code" type="tns:OpenEnumerationEndCodeType" />
+			<xs:element name="Reason" type="tns:LanguageSpecificStringType" minOccurs="0" maxOccurs="unbounded" />
+			<xs:any namespace="##other" processContents="lax" 
+			minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:anyAttribute namespace="##other" processContents="lax" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:simpleType name="EnumerationEndCodeType">
+		<xs:restriction base="xs:anyURI">
+		<xs:enumeration value="http://schemas.xmlsoap.org/ws/2004/09/enumeration/SourceShuttingDown" />
+		<xs:enumeration value="http://schemas.xmlsoap.org/ws/2004/09/enumeration/SourceCancelling" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="OpenEnumerationEndCodeType">
+		<xs:union memberTypes="tns:EnumerationEndCodeType xs:anyURI" />
+	</xs:simpleType>
+
+</xs:schema>

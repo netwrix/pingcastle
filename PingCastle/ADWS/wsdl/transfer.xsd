@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.xmlsoap.org/ws/2004/09/transfer" elementFormDefault="qualified" 
+           targetNamespace="http://schemas.xmlsoap.org/ws/2004/09/transfer"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:addata="http://schemas.microsoft.com/2008/1/ActiveDirectory/Data"
+           >
+  <xs:import namespace="http://schemas.microsoft.com/2008/1/ActiveDirectory" />
+  
+  <xs:element xmlns:q1="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="InvalidRepresentation" type="q1:FaultDetail" />
+
+
+  <xs:complexType name="ItemListType">
+    <!--<xs:choice maxOccurs="unbounded">
+        <xs:element ref="addata:user"/>
+        <xs:element ref="addata:container"/>
+        <xs:element ref="addata:domain"/>
+        <xs:element ref="addata:domaindns"/>
+        <xs:element ref="addata:organizationalUnit"/>
+        <xs:element ref="addata:builtinDomain"/>
+        <xs:element ref="addata:groupPolicyContainer"/>
+        <xs:element ref="addata:group"/>
+      </xs:choice>-->
+    <xs:sequence>
+      <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Get response -->
+  <xs:element name="GetResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:any namespace="##other" processContents="lax" minOccurs="0" />
+      </xs:sequence>
+      <xs:anyAttribute namespace="##other" processContents="lax" />
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess" elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/2006/11/IdentityManagement/DirectoryAccess" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://www.w3.org/2001/XMLSchema" />
+  <xs:import namespace="http://schemas.microsoft.com/2008/1/ActiveDirectory" />
+  <xs:complexType name="ChangeType">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:AttributeTypeAndValue">
+        <xs:attribute name="Operation" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="AttributeTypeAndValue">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="AttributeType">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="xs:schema" />
+            <xs:any />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="AttributeValue">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="xs:schema" />
+            <xs:any />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q1="http://schemas.microsoft.com/2008/1/ActiveDirectory" name="UnwillingToPerform" type="q1:FaultDetail" />
+  <xs:complexType name="AttributeTypeNotValid">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="AttributeTypeNotValidForDialect" type="tns:AttributeTypeNotValidForDialect" />
+      <xs:element minOccurs="0" maxOccurs="1" name="AttributeTypeNotValidForEntry" type="tns:AttributeTypeNotValidForEntry" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="AttributeTypeNotValidForDialect">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="AttributeType" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="AttributeTypeNotValidForEntry">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="AttributeType" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:attribute name="SizeLimit" type="xs:int" />
+</xs:schema>

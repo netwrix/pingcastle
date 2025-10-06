@@ -34,6 +34,16 @@ namespace PingCastleCommon
             return fullFilePath;
         }
 
+        public static string CheckPathTraversalAbsolute(string fileName)
+        {
+            if (fileName.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
+            {
+                throw new InvalidOperationException("The file path contains invalid characters.");
+            }
+
+            return Path.GetFullPath(fileName);
+        }
+
         public static void CheckAbsolutePath(string path)
         {
             if (!IsAbsolutePath(path))

@@ -55,7 +55,15 @@ namespace PingCastleAutoUpdater
 							WriteInRed("argument for --api-url is mandatory");
 							return;
 						}
-						releaseInfoUrl = args[++i];
+
+                        var customUrl = args[++i];
+                        if (!IsValidReleaseUrl(customUrl))
+                        {
+                            WriteInRed("Invalid API URL. Only HTTP and HTTPS URLs are allowed.");
+                            return;
+                        }
+
+                        releaseInfoUrl = customUrl;
 						break;
 					case "--force-download":
 						forceDownload = true;
@@ -293,6 +301,14 @@ namespace PingCastleAutoUpdater
                     fileStream.Close();
                 }
             }
+        }
+
+        private static bool IsValidReleaseUrl(string url)
+        {
+            if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+                return false;
+
+            return uri.Scheme == "http" || uri.Scheme == "https";
         }
 
         private static void DisplayHelp()

@@ -3359,7 +3359,7 @@ https://access.redhat.com/discussions/1283873</value>
   </data>
   <data name="S_PwdNeverExpires_Solution" xml:space="preserve">
     <value>In order to make Active Directory enforce periodic password change, accounts must not have the "Password never expires" flag set in the "Account" tab of the user properties. Their passwords should then be rolled immediately.
-For services accounts, Windows provide the "managed service accounts" and "group managed service accounts" features to facilite the automatic change of passwords.
+For service accounts, Windows provides the "managed service accounts" and "group managed service accounts" features to facilitate the automatic change of passwords.
 Please note that there is a document in the section below which references solutions for service accounts of well known products.
 Also Linux servers should be configured with automatic machine account change.</value>
   </data>

@@ -32,6 +32,11 @@ namespace PingCastle.Healthcheck.Rules
             {
                 foreach (var domainController in healthcheckData.DomainControllers)
                 {
+                    if(domainController.DCName.Equals("AzureADKerberos", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Trace.WriteLine("S-Vuln-MS14-068: Skipping Azure AD Kerberos.");
+                        continue;
+                    }
                     if (healthcheckData.IsPrivilegedMode)
                     {
                         Trace.WriteLine("S-Vuln-MS14-068: In Privileged mode, running scanner.");

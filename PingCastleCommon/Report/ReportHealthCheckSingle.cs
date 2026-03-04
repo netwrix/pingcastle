@@ -2048,7 +2048,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             AddHeaderText("Priority to remediate", "Indicates a set of objects considered as a priority when establishing a remediation plan.");
             AddHeaderText("Critical Object Found", "Indicates if critical objects such as everyone, authenticated users or domain users can take control, directly or not, of one of the objects.");
             AddHeaderText("Number of objects with Indirect", "Indicates the count of objects per category having at least one indirect user detected.");
-            AddHeaderText("Max number of indirect numbers", "Indicates the maximum on all objects of the number of users having indirect access to the object.");
+            AddHeaderText("Max number of indirect users", "Indicates the maximum on all objects of the number of users having indirect access to the object.");
             AddHeaderText("Max ratio", "Indicates in percentage the value of (number of indirect users / number of direct users) if at least one direct users exists. Else the value is zero.");
             AddBeginTableData();
             foreach (var objectRisk in (CompromiseGraphDataObjectRisk[])Enum.GetValues(typeof(CompromiseGraphDataObjectRisk)))

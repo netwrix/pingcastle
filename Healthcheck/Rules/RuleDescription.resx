@@ -3974,8 +3974,8 @@ If the script is detected, Windows 7 is considered as supported and this rule is
     <value />
   </data>
   <data name="A_LAPS_Joined_Computers_Documentation" xml:space="preserve">
-    <value>https://azurecloudai.blog/2019/10/01/laps-security-concern-computers-joiners-are-able-to-see-laps-password/
-https://www.securityinsider-wavestone.com/2020/01/taking-over-windows-workstations-pxe-laps.html</value>
+    <value>https://mymeasi.wordpress.com/2019/10/01/laps-security-concern-computers-joiners-are-able-to-see-laps-password
+https://www.riskinsight-wavestone.com/en/2020/01/taking-over-windows-workstations-pxe-laps</value>
   </data>
   <data name="A_LAPS_Joined_Computers_Rationale" xml:space="preserve">
     <value>The local admin password of at least one computer can be retrieved by the user who joined the computer to the domain</value>

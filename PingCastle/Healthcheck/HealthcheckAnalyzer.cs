@@ -2086,7 +2086,6 @@ namespace PingCastle.Healthcheck
                     threads[i].Start(i);
                 }
 
-                adws.FileConnection.GetSubDirectories(uri);
                 foreach (string fullDirectoryName in adws.FileConnection.GetSubDirectories(uri))
                 {
                     queue.Enqueue(fullDirectoryName);
@@ -2134,8 +2133,7 @@ namespace PingCastle.Healthcheck
                 for (int i = 0; i < numberOfThread; i++)
                 {
                     if (threads[i] != null)
-                        if (threads[i].ThreadState == System.Threading.ThreadState.Running)
-                            threads[i].Abort();
+                        threads[i].Join();
                 }
             }
         }
@@ -2827,7 +2825,7 @@ namespace PingCastle.Healthcheck
                 path = directoryFullName + @"\Machine\Preferences\Registry\Registry.xml";
                 if (adws.FileConnection.FileExists(path))
                 {
-                    ExtractNetSessionHardeningFromRegistryXml(path, GPO);
+                    ExtractNetSessionHardeningFromRegistryXml(adws, path, GPO);
                 }
                 step = "check Folder option";
                 path = directoryFullName + @"\MACHINE\Preferences\FolderOptions\FolderOptions.xml";
@@ -2860,7 +2858,10 @@ namespace PingCastle.Healthcheck
         private void ExtractLocalGroupAssignment(ADWebService adws, string path, GPO GPO)
         {
             XmlDocument doc = new XmlDocument();
-            doc.Load(path);
+            using (var stream = adws.FileConnection.GetFileStream(path))
+            {
+                doc.Load(stream);
+            }
             XmlNodeList nodeList = doc.SelectNodes(@"//Group");
             foreach (XmlNode node in nodeList)
             {
@@ -2938,7 +2939,10 @@ namespace PingCastle.Healthcheck
         private void ExtractLoginPassword(IADConnection adws, string path, GPO GPO, string alternateNameIfGPODoesNotExists)
         {
             XmlDocument doc = new XmlDocument();
-            doc.Load(path);
+            using (var stream = adws.FileConnection.GetFileStream(path))
+            {
+                doc.Load(stream);
+            }
             XmlNodeList nodeList = doc.SelectNodes(@"//Registry[@name=""DefaultPassword""]");
             foreach (XmlNode node in nodeList)
             {
@@ -2975,7 +2979,7 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private void ExtractNetSessionHardeningFromRegistryXml(string path, GPO gpo)
+        private void ExtractNetSessionHardeningFromRegistryXml(IADConnection adws, string path, GPO gpo)
         {
             const string valueName = "SrvsvcSessionInfo";
             const string valuePath = @"SYSTEM\CurrentControlSet\Services\LanmanServer\DefaultSecurity";
@@ -2987,7 +2991,10 @@ namespace PingCastle.Healthcheck
                                       valuePath.ToLowerInvariant());
 
             var doc = new XmlDocument();
-            doc.Load(path);
+            using (var stream = adws.FileConnection.GetFileStream(path))
+            {
+                doc.Load(stream);
+            }
 
             var nodeList = doc.SelectNodes(xPath);
             if (nodeList.Count == 0)
@@ -3027,7 +3034,10 @@ namespace PingCastle.Healthcheck
         private void ExtractFolderOptions(ADWebService adws, string path, GPO gpo)
         {
             var doc = new XmlDocument();
-            doc.Load(path);
+            using (var stream = adws.FileConnection.GetFileStream(path))
+            {
+                doc.Load(stream);
+            }
 
             var nodeList = doc.SelectNodes("//FolderOptions/FileType");
             if (nodeList.Count == 0)
@@ -4140,7 +4150,10 @@ namespace PingCastle.Healthcheck
         private void ExtractGPPFile(ADWebService adws, string path, GPO GPO, ADDomainInfo domainInfo, string UserOrComputer)
         {
             XmlDocument doc = new XmlDocument();
-            doc.Load(path);
+            using (var stream = adws.FileConnection.GetFileStream(path))
+            {
+                doc.Load(stream);
+            }
             XmlNodeList nodeList = doc.SelectNodes("/Files/File");
             foreach (XmlNode node in nodeList)
             {
@@ -4210,7 +4223,10 @@ namespace PingCastle.Healthcheck
             }
 
             XmlDocument doc = new XmlDocument();
-            doc.Load(fullname);
+            using (var stream = adws.FileConnection.GetFileStream(fullname))
+            {
+                doc.Load(stream);
+            }
             foreach (string xpath in xpaths)
             {
                 XmlNodeList nodeList = doc.SelectNodes(xpath);
@@ -5723,13 +5739,13 @@ namespace PingCastle.Healthcheck
                                     impersonationIdentity.AccessToken,
                                     () =>
                                     {
-                                        TestFirewallRPCDC(DC, threadId);
+                                        TestFirewallRPCDC(DC, threadId, adws.Credential);
                                         return (object)null;
                                     });
                             }
                             else
                             {
-                                TestFirewallRPCDC(DC, threadId);
+                                TestFirewallRPCDC(DC, threadId, adws.Credential);
                             }
                         }
                         Trace.WriteLine("[" + threadId + "] Done for " + dns);
@@ -5778,8 +5794,7 @@ namespace PingCastle.Healthcheck
                 for (int i = 0; i < numberOfThread; i++)
                 {
                     if (threads[i] != null)
-                        if (threads[i].ThreadState == System.Threading.ThreadState.Running)
-                            threads[i].Abort();
+                        threads[i].Join();
                 }
             }
             foreach (var DC in healthcheckData.DomainControllers)
@@ -5798,7 +5813,7 @@ namespace PingCastle.Healthcheck
             public Dictionary<string, int> functions;
         }
 
-        void TestFirewallRPCDC(HealthcheckDomainController DC, int threadId)
+        void TestFirewallRPCDC(HealthcheckDomainController DC, int threadId, NetworkCredential credential = null)
         {
             var toTest = new List<RPCTest>
             {
@@ -5853,7 +5868,7 @@ namespace PingCastle.Healthcheck
                 foreach (var test in toTest)
                 {
                     Trace.WriteLine("[" + threadId + "] testing RPC interface " + test.guid);
-                    foreach (var r in RpcFirewallChecker.TestFunctions(ip, test.guid, test.pipe, test.major, test.minor, test.functions))
+                    foreach (var r in RpcFirewallChecker.TestFunctions(ip, test.guid, test.pipe, test.major, test.minor, test.functions, credential))
                     {
                         Trace.WriteLine("[" + threadId + "] found " + r + " available");
 

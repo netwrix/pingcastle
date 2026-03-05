@@ -6,6 +6,7 @@
 //
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 
@@ -242,9 +243,9 @@ namespace PingCastle.RPC
             return binding;
         }
 
-        protected Int32 BindUsingPipe(string server, out IntPtr binding)
+        protected Int32 BindUsingPipe(string server, out IntPtr binding, NetworkCredential credential = null)
         {
-            
+
             IntPtr bindingstring = IntPtr.Zero;
             binding = IntPtr.Zero;
             Int32 status;
@@ -285,6 +286,30 @@ namespace PingCastle.RPC
                 if (status != 0)
                 {
                     Trace.WriteLine("RpcBindingSetAuthInfoEx failed with status 0x" + status.ToString("x"));
+                    return status;
+                }
+            }
+            else if (credential != null)
+            {
+                NativeMethods.SEC_WINNT_AUTH_IDENTITY identity = new NativeMethods.SEC_WINNT_AUTH_IDENTITY();
+                identity.User = credential.UserName;
+                identity.UserLength = credential.UserName?.Length ?? 0;
+                identity.Domain = credential.Domain;
+                identity.DomainLength = credential.Domain?.Length ?? 0;
+                identity.Password = credential.Password;
+                identity.PasswordLength = credential.Password?.Length ?? 0;
+                identity.Flags = 2; // SEC_WINNT_AUTH_IDENTITY_UNICODE
+
+                NativeMethods.RPC_SECURITY_QOS qos = new NativeMethods.RPC_SECURITY_QOS();
+                qos.Version = 1;
+                qos.ImpersonationType = 3;
+                GCHandle qoshandle = GCHandle.Alloc(qos, GCHandleType.Pinned);
+
+                status = NativeMethods.RpcBindingSetAuthInfoEx(binding, server, 0, 9, ref identity, 0, ref qos);
+                qoshandle.Free();
+                if (status != 0)
+                {
+                    Trace.WriteLine("RpcBindingSetAuthInfoEx (credential) failed with status 0x" + status.ToString("x"));
                     return status;
                 }
             }
@@ -337,7 +362,7 @@ namespace PingCastle.RPC
                 return status;
 
             status = NativeMethods.RpcEpResolveBinding(binding, rpcClientInterface);
-            
+
             return status;
         }
 

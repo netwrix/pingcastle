@@ -1628,7 +1628,7 @@ namespace PingCastle.Healthcheck
                     healthcheckData.Delegations.Clear();
                     healthcheckData.UnprotectedOU.Clear();
                 },
-                domainInfo.DefaultNamingContext, "(|(objectCategory=organizationalUnit)(objectCategory=container)(objectCategory=domain)(objectCategory=buitinDomain))", properties, callback, "SubTree");
+                domainInfo.DefaultNamingContext, "(|(objectCategory=organizationalUnit)(objectCategory=container)(objectCategory=domain)(objectCategory=builtinDomain))", properties, callback, "SubTree");
 
             adws.Enumerate(domainInfo.ConfigurationNamingContext, "(objectCategory=configuration)", properties, callback, "Base");
         }

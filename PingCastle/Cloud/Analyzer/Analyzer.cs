@@ -4,27 +4,26 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+using Microsoft.Graph.Beta.Models;
+using PingCastle.Cloud.Common;
 using PingCastle.Cloud.Credentials;
 using PingCastle.Cloud.Data;
+using PingCastle.Cloud.MsGraph;
 using PingCastle.Cloud.PublicServices;
-using PingCastle.Cloud.RESTServices;
 using PingCastle.Cloud.RESTServices.Azure;
 using PingCastle.Cloud.RESTServices.O365;
+using PingCastle.Cloud.Tokens;
+using PingCastle.misc;
+using PingCastle.Rules;
+using PingCastle.UserInterface;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Mail;
 using System.Reflection;
-using PingCastle.Cloud.Tokens;
 using System.Threading.Tasks;
-using PingCastle.Cloud.Common;
-using PingCastle.Rules;
-using Microsoft.Graph.Beta.Models;
-using PingCastle.Cloud.MsGraph;
-using System.Collections.Concurrent;
-using PingCastle.misc;
-using PingCastle.UserInterface;
 
 namespace PingCastle.Cloud.Analyzer
 {
@@ -93,7 +92,7 @@ namespace PingCastle.Cloud.Analyzer
                 {
                     var openId = await PublicService.GetOpenIDConfiguration(data.TenantName);
 
-                    data.Region = openId.tenant_region_scope;
+                    data.Region = openId?.tenant_region_scope;
                 }
                 await RunTaskAsync("Company Info", AnalyzeCompanyInfo);
                 if (!data.UsersPermissionToReadOtherUsersEnabled)
@@ -878,8 +877,10 @@ namespace PingCastle.Cloud.Analyzer
                 try
                 {
                     var openId = PublicService.GetOpenIDConfiguration(domain.Domain).GetAwaiter().GetResult();
-                    domain.Region = openId.tenant_region_scope;
-                    domain.TenantID = openId.issuer.Replace("https://sts.windows.net/", "").Replace("/", "");
+                    domain.Region = openId?.tenant_region_scope;
+                    // Extract tenant ID from issuer URL
+                    var guidMatch = System.Text.RegularExpressions.Regex.Match(openId?.issuer ?? string.Empty, @"([0-9a-fA-F\-]{36})");
+                    domain.TenantID = guidMatch.Success ? guidMatch.Groups[1].Value : openId?.issuer ?? string.Empty;
                 }
                 catch (Exception ex)
                 {

@@ -1713,16 +1713,39 @@ https://www.slideshare.net/harmj0y/derbycon-the-unintended-risks-of-trusting-act
     <value>Ensure that no accounts are subject to unconstrained delegation</value>
   </data>
   <data name="P_UnconstrainedDelegation_Description" xml:space="preserve">
-    <value>The purpose is to ensure that no account can impersonate any account.</value>
+    <value>This rule identifies accounts configured with Kerberos unconstrained delegation, a high-risk setting that allows a compromised service to impersonate any domain user and potentially lead to full domain compromise.</value>
   </data>
   <data name="P_UnconstrainedDelegation_Solution" xml:space="preserve">
-    <value>Replace unconstrained delegation by constrained delegation. In practice, on the account object, tab "delegation", replace "trust this computer for delegation to any service" by "trust this computer for delegation to specified services only".</value>
+    <value>Kerberos unconstrained delegation should be removed wherever it is configured. If delegation is required, it must be replaced with &lt;b&gt;Kerberos constrained delegation&lt;/b&gt;.
+
+    &lt;b&gt;Step 1: Remove Unconstrained Delegation&lt;/b&gt;
+    Remove the ability for the account to delegate credentials to any service.
+
+    &lt;b&gt;Computer accounts&lt;/b&gt;
+    &lt;i&gt;Set-ADComputer -Identity &lt;ComputerName&gt; -TrustedForDelegation $false&lt;/i&gt;
+
+    &lt;b&gt;User accounts&lt;/b&gt;
+    &lt;i&gt;Set-ADUser -Identity &lt;UserName&gt; -TrustedForDelegation $false&lt;/i&gt;
+
+    &lt;b&gt;Step 2: Configure Constrained Delegation (Only If Required)&lt;/b&gt;
+
+    If an application requires delegation:
+    1.  Open &lt;b&gt;Active Directory Users and Computers&lt;/b&gt;
+    2.  Open the account properties  
+    3.  Go to the &lt;b&gt;Delegation&lt;/b&gt; tab
+    4.  Select &lt;b&gt;“Trust this computer for delegation to specified services only”&lt;/b&gt; 
+    5.  Select &lt;b&gt;“Use Kerberos only”&lt;/b&gt;
+    6.  Add &lt;b&gt;only the specific services&lt;/b&gt; that are required for the application
+
+    Do not enable delegation if it is not strictly necessary.
+    </value>
   </data>
   <data name="P_UnconstrainedDelegation_Rationale" xml:space="preserve">
     <value>Unconstrained delegations are configured on the domain: {count} account(s)</value>
   </data>
   <data name="P_UnconstrainedDelegation_TechnicalExplanation" xml:space="preserve">
-    <value>When an unconstrained delegation is configured, the Kerberos ticket TGT can be captured. This TGT grant then access to any service the user has access. If the user is an administrator or a domain controller (a connection can be forced using the spooler service), the domain can be compromised.</value>
+    <value>Kerberos unconstrained delegation allows a service to reuse a user’s Ticket Granting Ticket (TGT) to authenticate to any service in the domain. If the delegated account is compromised, cached TGTs can be extracted and used to impersonate any authenticating user.
+        If a privileged account or a Domain Controller authenticates to such a service, potentially via forced authentication techniques, the attacker can escalate privileges and compromise the entire domain. Disabling the account does not remove this risk, as delegation settings persist and become active again if the account is re-enabled.</value>
   </data>
   <data name="P_UnconstrainedDelegation_Documentation" xml:space="preserve">
     <value>https://learn.microsoft.com/en-us/archive/blogs/389thoughts/get-rid-of-accounts-that-use-kerberos-unconstrained-delegation

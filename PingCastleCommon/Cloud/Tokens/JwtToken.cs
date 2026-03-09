@@ -6,24 +6,28 @@
 //
 using PingCastle.Cloud.Common;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace PingCastle.Cloud.Tokens
 {
     public class JwtToken : JsonSerialization<JwtToken>
     {
-        
+
         public string request_nonce { get; set; }
-        
+
         public string refresh_token { get; set; }
-        
+
         public string aud { get; set; }
-        
+
         public string iss { get; set; }
-        
+
+        [JsonConverter(typeof(FlexibleLongJsonConverter))]
         public long iat { get; set; }
-        
+
+        [JsonConverter(typeof(FlexibleLongJsonConverter))]
         public long nbf { get; set; }
-        
+
+        [JsonConverter(typeof(FlexibleLongJsonConverter))]
         public long exp { get; set; }
         
         public string act { get; set; }

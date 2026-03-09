@@ -126,6 +126,9 @@ public class RealConfigurationStrategy : ConfigurationStrategyBase
             var merger = new JsonConfigMerger();
             merger.MergeJsonConfigFiles(PathContext.JsonConfigPath, tempConvertedJsonPath);
 
+            // Copy license from converted XML to JSON if JSON license is empty
+            CopyLicenseIfEmpty(tempConvertedJsonPath);
+
             Console.WriteLine("Configuration migration completed successfully!");
 
             // Generate migration report
@@ -634,4 +637,66 @@ public class RealConfigurationStrategy : ConfigurationStrategyBase
             }
         }
     }
-}
+
+    /// <summary>
+    /// Copy license value from converted XML to JSON if JSON license is empty or missing.
+    /// Simple post-merge step to ensure license is preserved during initial state migration.
+    /// </summary>
+        private void CopyLicenseIfEmpty(string convertedXmlJsonPath)
+        {
+            try
+            {
+                // Read both files
+                var targetJson = System.Text.Json.Nodes.JsonNode.Parse(System.IO.File.ReadAllText(PathContext.JsonConfigPath)) as System.Text.Json.Nodes.JsonObject;
+                var sourceJson = System.Text.Json.Nodes.JsonNode.Parse(System.IO.File.ReadAllText(convertedXmlJsonPath)) as System.Text.Json.Nodes.JsonObject;
+
+                if (targetJson == null || sourceJson == null)
+                {
+                    return;
+                }
+
+                // Get license values
+                var targetLicense = GetNestedString(targetJson, "License", "License");
+                var sourceLicense = GetNestedString(sourceJson, "License", "License");
+
+                // If target license is empty and source has a license, copy it
+                if (string.IsNullOrEmpty(targetLicense) && !string.IsNullOrEmpty(sourceLicense))
+                {
+                    // Ensure License structure exists in target
+                    if (targetJson["License"] == null)
+                    {
+                        targetJson["License"] = new System.Text.Json.Nodes.JsonObject();
+                    }
+
+                    if (targetJson["License"] is System.Text.Json.Nodes.JsonObject licenseObj)
+                    {
+                        licenseObj["License"] = sourceLicense;
+                        System.IO.File.WriteAllText(PathContext.JsonConfigPath, targetJson.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Non-fatal: if we can't copy the license, just log and continue
+                Console.WriteLine($"[INFO] Could not copy license value during migration: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Helper to safely get a nested string value from JSON object.
+        /// </summary>
+        private static string GetNestedString(System.Text.Json.Nodes.JsonObject obj, string level1, string level2)
+        {
+            if (obj == null || obj[level1] == null)
+            {
+                return null;
+            }
+
+            if (obj[level1] is System.Text.Json.Nodes.JsonObject nested && nested[level2] != null)
+            {
+                return nested[level2].GetValue<string>();
+            }
+
+            return null;
+        }
+    }

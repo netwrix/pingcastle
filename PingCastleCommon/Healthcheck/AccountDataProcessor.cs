@@ -110,6 +110,10 @@ namespace PingCastleCommon.Healthcheck
             // check for bad primary group
             if (!computerCheck)
             {
+                // Skip disabled accounts - they pose no active security risk
+                if (x.IsAccountDisabled())
+                    return;
+
                 // not domain users & guest or the guest account
                 if (x.PrimaryGroupID != 513 && x.PrimaryGroupID != 514 && x.ObjectSid != null && !x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountGuestSid)
                     && !(x.PrimaryGroupID == 515 && (string.Equals(x.Class, "msDS-GroupManagedServiceAccount", StringComparison.OrdinalIgnoreCase) || string.Equals(x.Class, "msDS-ManagedServiceAccount", StringComparison.OrdinalIgnoreCase))))
@@ -119,6 +123,10 @@ namespace PingCastleCommon.Healthcheck
             }
             else
             {
+                // Skip disabled computers - they pose no active security risk
+                if (x.IsAccountDisabled())
+                    return;
+
                 var isDomainCompsAndGuests = x.PrimaryGroupID == 515 || x.PrimaryGroupID == 514;
                 var isDCGroup = (x.PrimaryGroupID == 516 || x.PrimaryGroupID == 521) && x.DistinguishedName.Contains("OU=Domain Controllers,DC="); // 516 = RW DC, 521 = RO DC
 
@@ -139,7 +147,16 @@ namespace PingCastleCommon.Healthcheck
         private void ProcessAccountControlFlags(ADItem x, IAddAccountData data)
         {
             if (x.IsAccountDisabled())
+            {
                 data.AddWithoutDetail("Disabled");
+
+                if (x.IsTrustedForDelegation())
+                {
+                    // The detail name is "DisabledTrustedToAuthenticateForDelegation", but it checks for the correct flag "TRUSTED_FOR_DELEGATION".
+                    // Used in risk "P-UnconstrainedDelegation"
+                    data.AddDetail("DisabledTrustedToAuthenticateForDelegation", GetAccountDetail(x));
+                }
+            }
             else
             {
                 data.AddWithoutDetail("Enabled");
@@ -190,11 +207,11 @@ namespace PingCastleCommon.Healthcheck
                 }
                 if (x.IsTrustedForDelegation())
                 {
-                    // The detail name is "TrustedToAuthenticateForDelegation", but it checks for the correct flag "TRUSTED_FOR_DELEGATION".
+                    // The detail name is "EnabledTrustedToAuthenticateForDelegation", but it checks for the correct flag "TRUSTED_FOR_DELEGATION".
                     // If TRUSTED_TO_AUTH_FOR_DELEGATION (0x1000000) is needed for the constrained delegation -
                     // it should probably be added with a different name to preserve backwards compatibility.
                     // Used in risk "P-UnconstrainedDelegation"
-                    data.AddDetail("TrustedToAuthenticateForDelegation", GetAccountDetail(x));
+                    data.AddDetail("EnabledTrustedToAuthenticateForDelegation", GetAccountDetail(x));
                 }
                 if (x.IsNormalAccount())
                 {

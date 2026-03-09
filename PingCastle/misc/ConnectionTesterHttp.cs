@@ -77,7 +77,7 @@ namespace PingCastle.misc
                         {
                             Trace.WriteLine("Reinit to NTLM");
                             package = "NTLM";
-                            ReinitializeNTAuthentication();
+                            ReinitializeAuthentication();
                         }
                         else
                         {

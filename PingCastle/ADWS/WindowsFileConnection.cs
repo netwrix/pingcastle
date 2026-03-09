@@ -33,8 +33,10 @@ namespace PingCastle.ADWS
             {
                 WindowsIdentity.RunImpersonated(_identity.AccessToken, action);
             }
-
-            action();
+            else
+            {
+                action();
+            }
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 
@@ -8,7 +9,7 @@ namespace PingCastle.RPC
 {
     public class RpcFirewallChecker : rpcapi
     {
-        
+
         int maxOpNum;
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -48,7 +49,7 @@ namespace PingCastle.RPC
             freeStub();
         }
 
-        private int CheckOpNum(int opnum, string server)
+        private int CheckOpNum(int opnum, string server, NetworkCredential credential = null)
         {
             IntPtr result = IntPtr.Zero;
             IntPtr binding = IntPtr.Zero;
@@ -56,7 +57,7 @@ namespace PingCastle.RPC
                 throw new ApplicationException("opnum above limit");
             try
             {
-                var res = BindUsingPipe(server, out binding);
+                var res = BindUsingPipe(server, out binding, credential);
                 if (res != 0)
                     return res;
 
@@ -84,18 +85,18 @@ namespace PingCastle.RPC
             return result.ToInt32();
         }
 
-        public static int CheckRPCOpnum(Guid interfaceId, string pipe, ushort majorVersion, ushort minorVersion, int opnum, string server)
+        public static int CheckRPCOpnum(Guid interfaceId, string pipe, ushort majorVersion, ushort minorVersion, int opnum, string server, NetworkCredential credential = null)
         {
             var checker = new RpcFirewallChecker(interfaceId, pipe, majorVersion, minorVersion, opnum + 1);
-            return checker.CheckOpNum(opnum, server);
+            return checker.CheckOpNum(opnum, server, credential);
         }
 
-        public static List<string> TestFunctions(string server, Guid interfaceId, string pipe, ushort majorVersion, ushort minorVersion, Dictionary<string, int> functionsToTest)
+        public static List<string> TestFunctions(string server, Guid interfaceId, string pipe, ushort majorVersion, ushort minorVersion, Dictionary<string, int> functionsToTest, NetworkCredential credential = null)
         {
             List<string> output = new List<string>();
             foreach (var function in functionsToTest)
             {
-                var expectedError = CheckRPCOpnum(interfaceId, pipe, majorVersion, minorVersion, function.Value, server);
+                var expectedError = CheckRPCOpnum(interfaceId, pipe, majorVersion, minorVersion, function.Value, server, credential);
                 if (expectedError == 1783)
                     output.Add(function.Key);
             }

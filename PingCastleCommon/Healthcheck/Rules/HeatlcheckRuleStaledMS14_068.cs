@@ -6,11 +6,9 @@
 //
 namespace PingCastle.Healthcheck.Rules
 {
-    using System;
-    using System.Diagnostics;
     using PingCastle.Rules;
     using PingCastle.Scanners;
-    using PingCastleCommon.Utility;
+    using System.Diagnostics;
 
     [RuleModel("S-Vuln-MS14-068", RiskRuleCategory.StaleObjects, RiskModelCategory.VulnerabilityManagement)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 100)]
@@ -39,6 +37,12 @@ namespace PingCastle.Healthcheck.Rules
                     }
                     if (healthcheckData.IsPrivilegedMode)
                     {
+                        if (domainController.AzureADKerberos)
+                        {
+                            Trace.WriteLine("S-Vuln-MS14-068: Skipping Azure AD Kerberos.");
+                            continue;
+                        }
+
                         Trace.WriteLine("S-Vuln-MS14-068: In Privileged mode, running scanner.");
                         var scanResult = Scanner.Scan(
                             domainController.DCName,

@@ -234,10 +234,10 @@ namespace PingCastleAutoUpdater.ConfigurationMerge
                         {
                             MergeOnlyNewFields(targetObj, sourceObj);
                         }
-                        // Both are arrays - keep target array unchanged (preserve user customization)
-                        else if (targetValue is JsonArray && sourceValue is JsonArray)
+                        // Both are arrays - merge arrays (add missing items from source)
+                        else if (targetValue is JsonArray targetArray && sourceValue is JsonArray sourceArray)
                         {
-                            // No action - preserve target array
+                            MergeArrays(targetArray, sourceArray);
                         }
                         // Target is null - take source value (add missing default)
                         else if (targetValue is null)
@@ -291,10 +291,10 @@ namespace PingCastleAutoUpdater.ConfigurationMerge
                         {
                             MergeObjects(targetObj, sourceObj);
                         }
-                        // Both are arrays - preserve target array (user customization)
-                        else if (targetValue is JsonArray && sourceValue is JsonArray)
+                        // Both are arrays - merge arrays (add missing items from source)
+                        else if (targetValue is JsonArray targetArray && sourceValue is JsonArray sourceArray)
                         {
-                            // Keep target array unchanged
+                            MergeArrays(targetArray, sourceArray);
                             _mergedProperties.Add(propertyName);
                         }
                         // Target is null - take source value (add new default)
@@ -325,6 +325,86 @@ namespace PingCastleAutoUpdater.ConfigurationMerge
                     _recursionDepth = 0;
                 }
             }
+        }
+
+        /// <summary>
+        /// Merges source array items into target array, avoiding duplicates.
+        /// For objects with unique identifiers (RiskId, Name, Id, Key), uses those to detect duplicates.
+        /// For other items, appends new items to the target array.
+        /// </summary>
+        private void MergeArrays(JsonArray targetArray, JsonArray sourceArray)
+        {
+            if (sourceArray == null || sourceArray.Count == 0)
+                return;
+
+            // Iterate through source items
+            foreach (var sourceItem in sourceArray)
+            {
+                if (sourceItem is JsonObject sourceObj)
+                {
+                    // Try to find a unique identifier property
+                    string uniqueId = GetUniqueIdentifier(sourceObj);
+
+                    if (uniqueId != null)
+                    {
+                        // Check if target already has an item with the same unique identifier
+                        bool exists = false;
+                        foreach (var targetItem in targetArray)
+                        {
+                            if (targetItem is JsonObject targetObj)
+                            {
+                                string targetId = GetUniqueIdentifier(targetObj);
+                                if (targetId == uniqueId)
+                                {
+                                    exists = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // If not found, add it to target
+                        if (!exists)
+                        {
+                            targetArray.Add(CloneJsonNode(sourceItem));
+                        }
+                    }
+                    else
+                    {
+                        // No unique identifier found - add the item as new
+                        // This is conservative to avoid duplicate objects without identifiers
+                        targetArray.Add(CloneJsonNode(sourceItem));
+                    }
+                }
+                else
+                {
+                    // For non-object items (primitives), just append them
+                    targetArray.Add(CloneJsonNode(sourceItem));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Attempts to extract a unique identifier from a JSON object.
+        /// Checks for common identifier properties: RiskId, Name, Id, Key, samAccountName, etc.
+        /// </summary>
+        private static string GetUniqueIdentifier(JsonObject obj)
+        {
+            // List of properties commonly used as unique identifiers, in priority order
+            string[] identifierCandidates = { "RiskId", "Id", "Name", "Key", "samAccountName", "SamAccountName" };
+
+            foreach (var propertyName in identifierCandidates)
+            {
+                if (obj.ContainsKey(propertyName) && obj[propertyName] is not null)
+                {
+                    var value = obj[propertyName].GetValue<string>();
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        return value;
+                    }
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

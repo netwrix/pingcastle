@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -26,9 +25,16 @@ namespace PingCastle.misc
         LocalCall
     }
 
+    // Performs LDAP/HTTP authentication tests to detect LDAP signing enforcement
+    // and channel binding (extended protection) status on domain controllers.
+    //
+    // Uses direct SSPI P/Invoke (secur32.dll) rather than .NET's NegotiateAuthentication
+    // because NegotiateAuthentication does not expose the ISC_REQ_NO_INTEGRITY flag
+    // needed to test whether a server rejects unsigned LDAP binds.
+    //
+    // See SspiContext.cs for the SSPI flag details.
     abstract class ConnectionTester : IDisposable
     {
-
         public static ConnectionTesterStatus TestExtendedAuthentication(Uri uri, NetworkCredential credential, string logPrefix)
         {
             try
@@ -100,7 +106,6 @@ namespace PingCastle.misc
 
         private class LocalCallException : Exception
         {
-
         }
 
         static bool AcceptEveryServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
@@ -108,74 +113,95 @@ namespace PingCastle.misc
             return true;
         }
 
-
         static ConnectionTester CreateTester(Uri uri)
         {
             if (uri.Scheme == "ldaps" || uri.Scheme == "ldap")
             {
                 return new ConnectionTesterLdap();
             }
+
             if (uri.Scheme == "https" || uri.Scheme == "http")
             {
                 return new ConnectionTesterHttp();
             }
+
             Trace.WriteLine("CreateTester: Invalid scheme " + uri.Scheme);
             throw new ArgumentOutOfRangeException("uri", uri, "Scheme not supported");
         }
 
+        // Tests whether channel binding (extended protection) is enforced.
+        // Authenticates twice: once with channel binding, once without.
+        // If both succeed, channel binding is not enforced (ESC8 / A-CertEnrollHttp).
+        // If the second fails, channel binding is enforced.
         protected ConnectionTesterStatus TestExtendedAuthentication(Uri uri)
         {
-            Trace.WriteLine(LogPrefix + "Testing " + uri);
+            Trace.WriteLine(LogPrefix + "Testing channel binding for " + uri);
 
-            Trace.WriteLine(LogPrefix + "testing WITH Extended Protection: ");
-            var WithExtended = Test(uri, false, true);
-            Trace.WriteLine(WithExtended.ToString());
+            Trace.WriteLine(LogPrefix + "Authenticating WITH channel binding token");
+            var withExtended = Test(uri, false, true);
+            Trace.WriteLine(LogPrefix + "WITH channel binding result: " + withExtended);
 
-            if (WithExtended != ConnectionTesterStatus.AuthenticationSuccessfull)
+            if (withExtended != ConnectionTesterStatus.AuthenticationSuccessfull)
             {
-                return WithExtended;
+                return withExtended;
             }
 
-            Trace.WriteLine(LogPrefix + "testing WITHOUT Extended Protection: ");
-            var WithoutExtended = Test(uri, false, false);
-            Trace.WriteLine(WithoutExtended.ToString());
+            Trace.WriteLine(LogPrefix + "Authenticating WITHOUT channel binding token");
+            var withoutExtended = Test(uri, false, false);
+            Trace.WriteLine(LogPrefix + "WITHOUT channel binding result: " + withoutExtended);
 
-            if (WithoutExtended != ConnectionTesterStatus.AuthenticationSuccessfull && WithoutExtended != ConnectionTesterStatus.AuthenticationFailure)
+            if (withoutExtended != ConnectionTesterStatus.AuthenticationSuccessfull && withoutExtended != ConnectionTesterStatus.AuthenticationFailure)
             {
-                return WithExtended;
+                return withExtended;
             }
-            if (WithoutExtended == ConnectionTesterStatus.AuthenticationSuccessfull)
+
+            if (withoutExtended == ConnectionTesterStatus.AuthenticationSuccessfull)
             {
                 return ConnectionTesterStatus.ChannelBindingDisabled;
             }
+
             return ConnectionTesterStatus.ChannelBindingEnabled;
         }
 
+        // Tests whether LDAP signing is required by the server (A-DCLdapSign).
+        // Performs two LDAP SASL binds using SSPI:
+        //   1. With ISC_REQ_INTEGRITY (requests signing) - should always succeed
+        //   2. With ISC_REQ_NO_INTEGRITY (explicitly no signing) - fails if server requires signing
+        //
+        // If both succeed, the server does not require signing (vulnerable).
+        // If the second fails, the server requires signing (secure).
+        //
+        // Called via ldap:// (plain LDAP, port 389) from HealthcheckAnalyzer.
         protected ConnectionTesterStatus TestSignatureRequiredEnabled(Uri uri)
         {
-            Trace.WriteLine(LogPrefix + "Testing " + uri);
+            Trace.WriteLine(LogPrefix + "Testing LDAP signing requirement for " + uri);
 
-            Trace.WriteLine(LogPrefix + "testing WITH signature required: ");
-            var WithSignature = Test(uri, false);
-            Trace.WriteLine(WithSignature.ToString());
+            Trace.WriteLine(LogPrefix + "SASL bind WITH signing (ISC_REQ_INTEGRITY)");
+            var withSignature = Test(uri, false);
+            Trace.WriteLine(LogPrefix + "WITH signing result: " + withSignature);
 
-            if (WithSignature != ConnectionTesterStatus.AuthenticationSuccessfull)
+            if (withSignature != ConnectionTesterStatus.AuthenticationSuccessfull)
             {
-                return WithSignature;
+                Trace.WriteLine(LogPrefix + "Auth with signing failed, cannot determine signing requirement");
+                return withSignature;
             }
 
-            Trace.WriteLine(LogPrefix + "testing WITHOUT signature required: ");
-            var WithoutSignature = Test(uri, true);
-            Trace.WriteLine(WithoutSignature.ToString());
+            Trace.WriteLine(LogPrefix + "SASL bind WITHOUT signing (ISC_REQ_NO_INTEGRITY)");
+            var withoutSignature = Test(uri, true);
+            Trace.WriteLine(LogPrefix + "WITHOUT signing result: " + withoutSignature);
 
-            if (WithoutSignature != ConnectionTesterStatus.AuthenticationSuccessfull && WithoutSignature != ConnectionTesterStatus.AuthenticationFailure)
+            if (withoutSignature != ConnectionTesterStatus.AuthenticationSuccessfull && withoutSignature != ConnectionTesterStatus.AuthenticationFailure)
             {
-                return WithSignature;
+                return withSignature;
             }
-            if (WithoutSignature == ConnectionTesterStatus.AuthenticationSuccessfull)
+
+            if (withoutSignature == ConnectionTesterStatus.AuthenticationSuccessfull)
             {
+                Trace.WriteLine(LogPrefix + "Server accepted unsigned bind - signing NOT required");
                 return ConnectionTesterStatus.SignatureNotRequired;
             }
+
+            Trace.WriteLine(LogPrefix + "Server rejected unsigned bind - signing IS required");
             return ConnectionTesterStatus.SignatureRequired;
         }
 
@@ -188,30 +214,32 @@ namespace PingCastle.misc
                 {
                     port = (uri.Scheme == "ldaps" ? 636 : 389);
                 }
-                // default LDAPS port is 636
-                using (TcpClient tcpclient = new TcpClient(uri.Host, port))
+
+                using (var tcpclient = new TcpClient(uri.Host, port))
                 {
                     tcpclient.SendTimeout = 1000;
                     tcpclient.ReceiveTimeout = 1000;
 
                     if (uri.Scheme.EndsWith("s"))
                     {
-                        using (SslStream sslStream = new SslStream(tcpclient.GetStream(), false, AcceptEveryServerCertificate, null))
+                        using (var sslStream = new SslStream(tcpclient.GetStream(), false, AcceptEveryServerCertificate, null))
                         {
-                            // force all auth protocol.
-                            // if SslProtocols.None used (default is not specified), if Tls12 is added in Default and if the only supported protocol on server side, exception will occure:
-                            // The client and server cannot communicate, because they do not possess a common algorithm
-                            sslStream.AuthenticateAsClient(uri.Host, null, SslProtocols.Ssl2 | SslProtocols.Ssl3 | SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12, false);
+                            sslStream.AuthenticateAsClient(uri.Host, null, SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12, false);
 
+                            // For TLS connections (ldaps/https), always disable SSPI signing.
+                            // TLS provides integrity at the transport layer, so SSPI signing is
+                            // redundant. This path is used by channel binding tests (ESC8) and
+                            // LDAPS connection tests — not by the LDAP signing test which uses
+                            // plain ldap:// on port 389.
                             if (enableChannelBinding)
                             {
                                 var tc = sslStream.TransportContext;
                                 var cb = tc.GetChannelBinding(ChannelBindingKind.Endpoint);
-                                InitializeNTAuthentication(true, cb);
+                                InitializeAuthentication(true, cb);
                             }
                             else
                             {
-                                InitializeNTAuthentication(true);
+                                InitializeAuthentication(true);
                             }
 
                             return SendPackets(sslStream, uri);
@@ -219,7 +247,10 @@ namespace PingCastle.misc
                     }
                     else
                     {
-                        InitializeNTAuthentication(disableSigning);
+                        // Plain LDAP/HTTP: pass disableSigning to control SSPI flags.
+                        // The signing test calls this twice: once with false (ISC_REQ_INTEGRITY)
+                        // and once with true (ISC_REQ_NO_INTEGRITY).
+                        InitializeAuthentication(disableSigning);
                         return SendPackets(tcpclient.GetStream(), uri);
                     }
                 }
@@ -231,7 +262,6 @@ namespace PingCastle.misc
                 Trace.WriteLine(LogPrefix + "StackTrace: " + ex.StackTrace);
                 return ConnectionTesterStatus.InternalError;
             }
-
         }
 
         protected abstract ConnectionTesterStatus SendPackets(Stream stream, Uri uri);
@@ -246,11 +276,12 @@ namespace PingCastle.misc
                     return i;
                 }
             }
+
             return -1;
         }
 
         protected string package = "Negotiate";
-        private NegotiateAuthentication _negotiateAuth;
+        private SspiContext _sspiContext;
         private bool _currentDisableSigning;
         private ChannelBinding _currentChannelBinding;
 
@@ -258,11 +289,17 @@ namespace PingCastle.misc
 
         private NetworkCredential Credential;
 
+        // Exchanges SSPI authentication tokens. Detects local loopback calls via
+        // the NTLMSSP NEGOTIATE_LOCAL_CALL flag (0x4000) to avoid false results
+        // when PingCastle runs directly on the DC being tested.
         protected byte[] GetOutgoingBlob(byte[] incomingBlob)
         {
-            ReadOnlySpan<byte> incomingSpan = incomingBlob ?? new byte[0];
-            var status = _negotiateAuth.GetOutgoingBlob(incomingSpan, out NegotiateAuthenticationStatusCode statusCode);
-            byte[] response = status?.ToArray() ?? new byte[0];
+            byte[] response = _sspiContext.GetToken(incomingBlob);
+            if (response == null)
+            {
+                Trace.WriteLine(LogPrefix + "SSPI GetToken returned null (auth failed)");
+                return Array.Empty<byte>();
+            }
 
             int offset = GetNTLMSSPOffset(response);
             if (offset > 0)
@@ -273,58 +310,40 @@ namespace PingCastle.misc
                     var flag = BitConverter.ToInt32(response, offset + 20);
                     if ((flag & 0x00004000) != 0)
                     {
-                        Trace.WriteLine(LogPrefix + "Local CALL");
+                        Trace.WriteLine(LogPrefix + "Local CALL detected - skipping this DC");
                         throw new LocalCallException();
                     }
                 }
             }
+
             return response;
         }
 
-        protected void InitializeNTAuthentication(bool disableSigning = false, ChannelBinding channelBinding = null)
+        protected void InitializeAuthentication(bool disableSigning = false, ChannelBinding channelBinding = null)
         {
             _currentDisableSigning = disableSigning;
             _currentChannelBinding = channelBinding;
 
-            _negotiateAuth?.Dispose();
+            _sspiContext?.Dispose();
+            _sspiContext = new SspiContext();
 
-            var options = new NegotiateAuthenticationClientOptions
-            {
-                Package = package,
-                Binding = channelBinding,
-                RequiredProtectionLevel = disableSigning ? ProtectionLevel.None : ProtectionLevel.Sign
-            };
+            Trace.WriteLine(LogPrefix + "SSPI init: package=" + package
+                + " disableSigning=" + disableSigning
+                + " channelBinding=" + (channelBinding != null));
 
-            if (Credential != null)
-            {
-                options.Credential = Credential;
-            }
-
-            _negotiateAuth = new NegotiateAuthentication(options);
+            _sspiContext.Initialize(package, disableSigning, Credential, channelBinding);
         }
 
-        protected void ReinitializeNTAuthentication()
+        protected void ReinitializeAuthentication()
         {
-            _negotiateAuth?.Dispose();
-
-            var options = new NegotiateAuthenticationClientOptions
-            {
-                Package = package,
-                Binding = _currentChannelBinding,
-                RequiredProtectionLevel = _currentDisableSigning ? ProtectionLevel.None : ProtectionLevel.Sign
-            };
-
-            if (Credential != null)
-            {
-                options.Credential = Credential;
-            }
-
-            _negotiateAuth = new NegotiateAuthentication(options);
+            _sspiContext?.Dispose();
+            _sspiContext = new SspiContext();
+            _sspiContext.Initialize(package, _currentDisableSigning, Credential, _currentChannelBinding);
         }
 
         public void Dispose()
         {
-            _negotiateAuth?.Dispose();
+            _sspiContext?.Dispose();
         }
     }
 }

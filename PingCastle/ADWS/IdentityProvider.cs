@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using PingCastleCommon.Utility;
 
 internal class IdentityProvider : IIdentityProvider
 {
@@ -26,25 +27,10 @@ internal class IdentityProvider : IIdentityProvider
         _nativeMethods = nativeMethods;
     }
 
-    private static bool IsMachineDomainJoined()
-    {
-        try
-        {
-            using (var domain = System.DirectoryServices.ActiveDirectory.Domain.GetComputerDomain())
-            {
-                return true;
-            }
-        }
-        catch (System.DirectoryServices.ActiveDirectory.ActiveDirectoryObjectNotFoundException)
-        {
-            return false;
-        }
-    }
 
     public WindowsIdentity GetWindowsIdentityForUser(NetworkCredential credential, string remoteserver)
     {
         IntPtr token = IntPtr.Zero;
-        Trace.WriteLine("Preparing to login with login = " + credential.UserName + " remoteserver = " + remoteserver);
         var szDomain = credential.Domain;
         if (string.IsNullOrEmpty(szDomain))
         {
@@ -53,20 +39,24 @@ internal class IdentityProvider : IIdentityProvider
                 szDomain = remoteserver;
             }
         }
+        Trace.WriteLine("Preparing to login with login = " + credential.UserName.SanitizeForLog() + " domain = " + szDomain.SanitizeForLog() + " remoteserver = " + remoteserver.SanitizeForLog());
 
-        // Use INTERACTIVE logon for Kerberos support on domain-joined machines
-        // Fall back to NEW_CREDENTIALS for non-domain machines (NTLM only, but works)
-        int logonType = IsMachineDomainJoined()
-            ? LOGON32_LOGON_INTERACTIVE
-            : LOGON32_LOGON_NEW_CREDENTIALS;
-
-        Trace.WriteLine($"Using logon type: {(logonType == LOGON32_LOGON_INTERACTIVE ? "INTERACTIVE (Kerberos)" : "NEW_CREDENTIALS (NTLM)")}");
-
-        bool isSuccess = LogonUser(credential.UserName, szDomain, credential.Password, logonType, LOGON32_PROVIDER_DEFAULT, ref token);
+        // Try INTERACTIVE logon first for Kerberos support (same-domain scenarios)
+        // Fall back to NEW_CREDENTIALS for cross-domain/standalone scenarios
+        bool isSuccess = LogonUser(credential.UserName, szDomain, credential.Password,
+            LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, ref token);
         if (!isSuccess)
         {
-            throw new Win32Exception();
+            var interactiveError = Marshal.GetLastWin32Error();
+            Trace.WriteLine("Interactive logon failed (Win32 error " + interactiveError + "), falling back to NewCredentials");
+            isSuccess = LogonUser(credential.UserName, szDomain, credential.Password,
+                LOGON32_LOGON_NEW_CREDENTIALS, LOGON32_PROVIDER_DEFAULT, ref token);
+            if (!isSuccess)
+            {
+                throw new Win32Exception();
+            }
         }
+
         var output = new WindowsIdentity(token);
         CloseHandle(token);
         return output;

@@ -6,6 +6,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Packaging;
 using System.Net.Http;
@@ -106,6 +107,11 @@ namespace PingCastle.Cloud.Logs
             try
             {
                 entries.TryGetValue(sessionId, out var entry);
+                if (entry is null)
+                {
+                    Trace.WriteLine($"SAZ Error: session id {sessionId} not found in entries");
+                    return;
+                }
 
                 TimeSpan duration = DateTimeOffset.UtcNow.Subtract(entry.StartTime);
 

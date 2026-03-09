@@ -231,8 +231,28 @@ namespace PingCastle.Factories
                     {
                         try
                         {
-                            PropertyInfo pi = type.GetProperty("Name");
-                            IExport export = (IExport)Activator.CreateInstance(type);
+                            IExport export = null;
+
+                            // Try 1: Use DI if available
+                            if (ServiceProviderAccessor.IsInitialized)
+                            {
+                                try
+                                {
+                                    export = ServiceProviderAccessor.Current.GetService(type) as IExport;
+                                }
+                                catch (Exception diEx)
+                                {
+                                    Trace.WriteLine($"DI resolution failed for export {type.Name}: {diEx.Message}");
+                                    export = null;
+                                }
+                            }
+
+                            // Try 2: Fall back to parameterless constructor
+                            if (export == null)
+                            {
+                                export = (IExport)Activator.CreateInstance(type);
+                            }
+
                             output.Add(export.Name, type);
                         }
                         catch (Exception ex)

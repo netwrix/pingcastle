@@ -5,6 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.Rules;
+using System.Collections.Generic;
 
 namespace PingCastle.Healthcheck.Rules
 {
@@ -19,30 +20,35 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            if (healthcheckData.UserAccountData.ListTrustedToAuthenticateForDelegation != null)
+            var dcDistinguishedNames = new HashSet<string>();
+            if (healthcheckData.DomainControllers != null)
             {
-                foreach (var delegation in healthcheckData.UserAccountData.ListTrustedToAuthenticateForDelegation)
+                foreach (var dc in healthcheckData.DomainControllers)
                 {
+                    dcDistinguishedNames.Add(dc.DistinguishedName);
+                }
+            }
+
+            void AddDelegations(IEnumerable<dynamic> delegations, bool skipDomainControllers)
+            {
+                if (delegations == null)
+                {
+                    return;
+                }
+
+                foreach (var delegation in delegations)
+                {
+                    if (skipDomainControllers && dcDistinguishedNames.Contains(delegation.DistinguishedName))
+                        continue;
                     AddRawDetail(delegation.DistinguishedName, delegation.Name);
                 }
             }
-            if (healthcheckData.ComputerAccountData.ListTrustedToAuthenticateForDelegation != null)
-            {
-                foreach (var delegation in healthcheckData.ComputerAccountData.ListTrustedToAuthenticateForDelegation)
-                {
-                    bool found = false;
-                    foreach (var dc in healthcheckData.DomainControllers)
-                    {
-                        if (dc.DistinguishedName == delegation.DistinguishedName)
-                        {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found)
-                        AddRawDetail(delegation.DistinguishedName, delegation.Name);
-                }
-            }
+
+            AddDelegations(healthcheckData.UserAccountData.ListEnabledTrustedToAuthenticateForDelegation, false);
+            AddDelegations(healthcheckData.ComputerAccountData.ListEnabledTrustedToAuthenticateForDelegation, true);
+            AddDelegations(healthcheckData.UserAccountData.ListDisabledTrustedToAuthenticateForDelegation, false);
+            AddDelegations(healthcheckData.ComputerAccountData.ListDisabledTrustedToAuthenticateForDelegation, true);
+
             return null;
         }
     }

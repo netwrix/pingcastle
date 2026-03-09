@@ -674,7 +674,8 @@ namespace PingCastle.Healthcheck
             NumberPwdNotRequired += x.NumberPwdNotRequired;
             NumberReversibleEncryption += x.NumberReversibleEncryption;
             NumberSidHistory += x.NumberSidHistory;
-            NumberTrustedToAuthenticateForDelegation += x.NumberTrustedToAuthenticateForDelegation;
+            NumberEnabledTrustedToAuthenticateForDelegation += x.NumberEnabledTrustedToAuthenticateForDelegation;
+            NumberDisabledTrustedToAuthenticateForDelegation += x.NumberDisabledTrustedToAuthenticateForDelegation;
             NumberDuplicate += x.NumberDuplicate;
             NumberNoPreAuth += x.NumberNoPreAuth;
         }
@@ -740,10 +741,17 @@ namespace PingCastle.Healthcheck
         public bool ShouldSerializeListNotAesEnabled() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
         public List<HealthcheckAccountDetailData> ListNotAesEnabled { get; set; }
 
-        public int NumberTrustedToAuthenticateForDelegation { get; set; }
+        public int NumberEnabledTrustedToAuthenticateForDelegation { get; set; }
 
-        public bool ShouldSerializeListTrustedToAuthenticateForDelegation() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
-        public List<HealthcheckAccountDetailData> ListTrustedToAuthenticateForDelegation { get; set; }
+        public bool ShouldSerializeListEnabledTrustedToAuthenticateForDelegation() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
+
+        public List<HealthcheckAccountDetailData> ListEnabledTrustedToAuthenticateForDelegation { get; set; }
+
+        public int NumberDisabledTrustedToAuthenticateForDelegation { get; set; }
+
+        public bool ShouldSerializeListDisabledTrustedToAuthenticateForDelegation() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
+
+        public List<HealthcheckAccountDetailData> ListDisabledTrustedToAuthenticateForDelegation { get; set; }
 
         public int NumberReversibleEncryption { get; set; }
 

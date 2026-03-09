@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace PingCastle.Cloud.PublicServices
 {
+    using System;
+    using System.Diagnostics;
+
     public class PublicService
     {
         public  static async Task<UserRealmV1> GetUserRealmv1(string domain)
@@ -61,14 +64,28 @@ namespace PingCastle.Cloud.PublicServices
             return UserRealmCT.LoadFromString(t);
         }
 
-        public static async Task<OpenIDConfiguration> GetOpenIDConfiguration(string domain)
+        public static async Task<OpenIDConfiguration?> GetOpenIDConfiguration(string domain)
         {
-            var httpClient = HttpClientHelper.GetHttpClient();
+            try
+            {
+                var httpClient = HttpClientHelper.GetHttpClient();
 
-            var response = await httpClient.GetStringAsync(Constants.OpenIdConfigurationEndpoint.Replace("xxxxx", domain));
-
-            return OpenIDConfiguration.LoadFromString(response);
+                var response = await httpClient.GetStringAsync(Constants.OpenIdConfigurationEndpoint.Replace("xxxxx", domain));
+                try
+                {
+                    return OpenIDConfiguration.LoadFromString(response);
+                }
+                catch(Exception exInner)
+                {
+                    Trace.WriteLine($"Error while parsing OpenID configuration for domain {domain}: response was [{response}]");
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Error while retrieving OpenID configuration for domain {domain}: {ex.Message}");
+                return null;
+            }
         }
-
     }
 }

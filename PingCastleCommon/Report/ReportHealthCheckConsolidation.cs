@@ -427,7 +427,8 @@ namespace PingCastle.Report
                     AddCellNum(data.UserAccountData.NumberBadPrimaryGroup);
                     AddCellNum(data.UserAccountData.NumberPwdNotRequired);
                     AddCellNum(data.UserAccountData.NumberDesEnabled);
-                    AddCellNum(data.UserAccountData.NumberTrustedToAuthenticateForDelegation);
+                    AddCellNum(data.UserAccountData.NumberEnabledTrustedToAuthenticateForDelegation);
+                    AddCellNum(data.UserAccountData.NumberDisabledTrustedToAuthenticateForDelegation);
                     AddCellNum(data.UserAccountData.NumberReversibleEncryption);
                     AddEndRow();
                 }
@@ -445,7 +446,8 @@ namespace PingCastle.Report
                     AddCellNum(total.NumberBadPrimaryGroup);
                     AddCellNum(total.NumberPwdNotRequired);
                     AddCellNum(total.NumberDesEnabled);
-                    AddCellNum(total.NumberTrustedToAuthenticateForDelegation);
+                    AddCellNum(total.NumberEnabledTrustedToAuthenticateForDelegation);
+                    AddCellNum(total.NumberDisabledTrustedToAuthenticateForDelegation);
                     AddCellNum(total.NumberReversibleEncryption);
                 });
             });
@@ -484,7 +486,8 @@ namespace PingCastle.Report
                     AddCellNum(data.ComputerAccountData.NumberInactive);
                     AddCellNum(data.ComputerAccountData.NumberSidHistory);
                     AddCellNum(data.ComputerAccountData.NumberBadPrimaryGroup);
-                    AddCellNum(data.ComputerAccountData.NumberTrustedToAuthenticateForDelegation);
+                    AddCellNum(data.ComputerAccountData.NumberEnabledTrustedToAuthenticateForDelegation);
+                    AddCellNum(data.ComputerAccountData.NumberDisabledTrustedToAuthenticateForDelegation);
                     AddCellNum(data.ComputerAccountData.NumberReversibleEncryption);
                     AddEndRow();
                 }
@@ -498,7 +501,8 @@ namespace PingCastle.Report
                     AddCellNum(total.NumberInactive);
                     AddCellNum(total.NumberSidHistory);
                     AddCellNum(total.NumberBadPrimaryGroup);
-                    AddCellNum(total.NumberTrustedToAuthenticateForDelegation);
+                    AddCellNum(total.NumberEnabledTrustedToAuthenticateForDelegation);
+                    AddCellNum(total.NumberDisabledTrustedToAuthenticateForDelegation);
                     AddCellNum(total.NumberReversibleEncryption);
                 });
             });

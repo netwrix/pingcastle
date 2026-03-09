@@ -1,5 +1,6 @@
 ﻿using PingCastle.ADWS;
 using PingCastle.Healthcheck;
+using PingCastleCommon;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,14 +9,8 @@ namespace PingCastle.Exports
 {
     public class ExportUsers : ExportBase
     {
-        private readonly IIdentityProvider _identityProvider;
-        private readonly IWindowsNativeMethods _nativeMethods;
-
-        public ExportUsers(IIdentityProvider identityProvider, IWindowsNativeMethods nativeMethods)
-        {
-            _identityProvider = identityProvider;
-            _nativeMethods = nativeMethods;
-        }
+        private IIdentityProvider _identityProvider;
+        private IWindowsNativeMethods _nativeMethods;
 
         public override string Name
         {
@@ -30,6 +25,9 @@ namespace PingCastle.Exports
 
         public override void Export(string filename)
         {
+            _identityProvider = _identityProvider ?? ServiceProviderAccessor.GetServiceSafe<IIdentityProvider>();
+            _nativeMethods = _nativeMethods ?? ServiceProviderAccessor.GetServiceSafe<IWindowsNativeMethods>();
+
             ADDomainInfo domainInfo = null;
             using (ADWebService adws = new ADWebService(Settings.Server, Settings.Port, Settings.Credential, _identityProvider, _nativeMethods))
             {
@@ -40,6 +38,12 @@ namespace PingCastle.Exports
                 {
                     var header = new List<string>();
                     var hcprop = AddData.GetProperties();
+                    // LAPS properties are computer-specific, exclude from user export
+                    var lapsProperties = new HashSet<string>
+                    {
+                        "LAPS", "LAPSNew", "LAPSBoth",
+                        "LAPSActive", "LAPSNewActive", "LAPSBothActive"
+                    };
                     header.Add("DistinguishedName");
                     header.Add("sAMAccountName");
                     header.Add("scriptPath");
@@ -50,8 +54,22 @@ namespace PingCastle.Exports
                     header.Add("whenChanged");
                     header.Add("objectClass");
                     header.Add("userAccountControl");
-                    header.AddRange(hcprop);
-                    
+                    foreach (var prop in hcprop)
+                    {
+                        // Skip LAPS properties (computer-only)
+                        if (lapsProperties.Contains(prop))
+                            continue;
+
+                        if (prop == "BadPrimaryGroup")
+                        {
+                            header.Add("BadPrimaryGroup (Active Users Only)");
+                        }
+                        else
+                        {
+                            header.Add(prop);
+                        }
+                    }
+
                     sw.WriteLine(string.Join("\t", header.ToArray()));
                     
                     
@@ -79,6 +97,12 @@ namespace PingCastle.Exports
                             data.Add(x.UserAccountControl.ToString());
                             foreach (var p in hcprop)
                             {
+                                // Skip LAPS properties (computer-only)
+                                if (lapsProperties.Contains(p))
+                                {
+                                    continue;
+                                }
+
                                 data.Add(d.PropertiesSet.Contains(p).ToString());
 
                             }

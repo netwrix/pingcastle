@@ -915,7 +915,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddHeaderText("Nb Password not Req.", "Indicates the number of enabled accounts which have a flag set in useraccountcontrol allowing empty passwords.");
                 AddHeaderText("Nb Des enabled.", "Indicates the number of enabled accounts allowing the unsafe DES algorithm for authentication.");
             }
-            AddHeaderText("Nb unconstrained delegations", "Indicates the number of enabled accounts having been granted the right to impersonate any users without any restrictions. PingCastle checks if the flag TRUSTED_FOR_DELEGATION is present in the useraccountcontrol attribute.");
+            AddHeaderText("Nb unconstrained delegations (enabled)", "Indicates the number of enabled accounts having been granted the right to impersonate any users without any restrictions. PingCastle checks if the flag TRUSTED_FOR_DELEGATION is present in the useraccountcontrol attribute.");
+            AddHeaderText("Nb unconstrained delegations (disabled)", "Indicates the number of disabled accounts having been granted the right to impersonate any users without any restrictions. PingCastle checks if the flag TRUSTED_FOR_DELEGATION is present in the useraccountcontrol attribute.");
             AddHeaderText("Nb Reversible password", "Indicates the number of enabled accounts whose password can be retrieved in clear text using hacking tools.");
         }
 
@@ -946,7 +947,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             SectionList("usersaccordion", "sectionbadprimarygroupuser", Report.UserAccountData.NumberBadPrimaryGroup, Report.UserAccountData.ListBadPrimaryGroup);
             SectionList("usersaccordion", "sectionpwdnotrequireduser", Report.UserAccountData.NumberPwdNotRequired, Report.UserAccountData.ListPwdNotRequired);
             SectionList("usersaccordion", "sectiondesenableduser", Report.UserAccountData.NumberDesEnabled, Report.UserAccountData.ListDesEnabled);
-            SectionList("usersaccordion", "sectiontrusteddelegationuser", Report.UserAccountData.NumberTrustedToAuthenticateForDelegation, Report.UserAccountData.ListTrustedToAuthenticateForDelegation);
+            SectionList("usersaccordion", "sectionenabledtrusteddelegationuser", Report.UserAccountData.NumberEnabledTrustedToAuthenticateForDelegation, Report.UserAccountData.ListEnabledTrustedToAuthenticateForDelegation);
+            SectionList("usersaccordion", "sectiondisabledtrusteddelegationuser", Report.UserAccountData.NumberDisabledTrustedToAuthenticateForDelegation, Report.UserAccountData.ListDisabledTrustedToAuthenticateForDelegation);
             SectionList("usersaccordion", "sectionreversiblenuser", Report.UserAccountData.NumberReversibleEncryption, Report.UserAccountData.ListReversibleEncryption);
             AddEndRow();
             AddEndTable();
@@ -1006,9 +1008,13 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         GenerateListAccountDetail(accordion, "sectionnotaesenabled" + root, "Objects where AES usage with kerberos may be cause issues", data.ListNotAesEnabled,
                             tooltip: "Accounts are listed if 1) no password changed occured after the first DC Win 2008 install to initate AES secrets or 2) they have a SPN and the account is not flaged to use AES for encryption with msDS-SupportedEncryptionTypes");
                     }
-                    if (data.ListTrustedToAuthenticateForDelegation != null && data.ListTrustedToAuthenticateForDelegation.Count > 0)
+                    if (data.ListEnabledTrustedToAuthenticateForDelegation != null && data.ListEnabledTrustedToAuthenticateForDelegation.Count > 0)
                     {
-                        GenerateListAccountDetail(accordion, "sectiontrusteddelegation" + root, "Objects trusted to authenticate for delegation ", data.ListTrustedToAuthenticateForDelegation);
+                        GenerateListAccountDetail(accordion, "sectionenabledtrusteddelegation" + root, "Objects trusted to authenticate for delegation for enabled accounts", data.ListEnabledTrustedToAuthenticateForDelegation);
+                    }
+                    if (data.ListDisabledTrustedToAuthenticateForDelegation != null && data.ListDisabledTrustedToAuthenticateForDelegation.Count > 0)
+                    {
+                        GenerateListAccountDetail(accordion, "sectiondisabledtrusteddelegation" + root, "Objects trusted to authenticate for delegation for disabled accounts", data.ListDisabledTrustedToAuthenticateForDelegation);
                     }
                     if (data.ListReversibleEncryption != null && data.ListReversibleEncryption.Count > 0)
                     {
@@ -1177,7 +1183,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             SectionList("computersaccordion", "sectioninactivecomputer", Report.ComputerAccountData.NumberInactive, Report.ComputerAccountData.ListInactive);
             SectionList("computersaccordion", "sectionsidhistorycomputer", Report.ComputerAccountData.NumberSidHistory, Report.ComputerAccountData.ListSidHistory);
             SectionList("computersaccordion", "sectionbadprimarygroupcomputer", Report.ComputerAccountData.NumberBadPrimaryGroup, Report.ComputerAccountData.ListBadPrimaryGroup);
-            SectionList("computersaccordion", "sectiontrusteddelegationcomputer", Report.ComputerAccountData.NumberTrustedToAuthenticateForDelegation, Report.ComputerAccountData.ListTrustedToAuthenticateForDelegation);
+            SectionList("computersaccordion", "sectionenabledtrusteddelegationcomputer", Report.ComputerAccountData.NumberEnabledTrustedToAuthenticateForDelegation, Report.ComputerAccountData.ListEnabledTrustedToAuthenticateForDelegation);
+            SectionList("computersaccordion", "sectiondisabledtrusteddelegationcomputer", Report.ComputerAccountData.NumberDisabledTrustedToAuthenticateForDelegation, Report.ComputerAccountData.ListDisabledTrustedToAuthenticateForDelegation);
             SectionList("computersaccordion", "sectionreversiblencomputer", Report.ComputerAccountData.NumberReversibleEncryption, Report.ComputerAccountData.ListReversibleEncryption);
             AddEndRow();
             AddEndTable();
@@ -1414,7 +1421,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         AddCellNum(os.data.NumberInactive);
                         AddCellNum(os.data.NumberSidHistory);
                         AddCellNum(os.data.NumberBadPrimaryGroup);
-                        AddCellNum(os.data.NumberTrustedToAuthenticateForDelegation);
+                        AddCellNum(os.data.NumberEnabledTrustedToAuthenticateForDelegation);
+                        AddCellNum(os.data.NumberDisabledTrustedToAuthenticateForDelegation);
                         AddCellNum(os.data.NumberReversibleEncryption);
                         AddEndRow();
                     }
@@ -1442,7 +1450,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellNum(os.data.NumberInactive);
                     AddCellNum(os.data.NumberSidHistory);
                     AddCellNum(os.data.NumberBadPrimaryGroup);
-                    AddCellNum(os.data.NumberTrustedToAuthenticateForDelegation);
+                    AddCellNum(os.data.NumberEnabledTrustedToAuthenticateForDelegation);
+                    AddCellNum(os.data.NumberDisabledTrustedToAuthenticateForDelegation);
                     AddCellNum(os.data.NumberReversibleEncryption);
                     AddEndRow();
                 }
@@ -1457,7 +1466,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellNum(os.data.NumberInactive);
                     AddCellNum(os.data.NumberSidHistory);
                     AddCellNum(os.data.NumberBadPrimaryGroup);
-                    AddCellNum(os.data.NumberTrustedToAuthenticateForDelegation);
+                    AddCellNum(os.data.NumberEnabledTrustedToAuthenticateForDelegation);
+                    AddCellNum(os.data.NumberDisabledTrustedToAuthenticateForDelegation);
                     AddCellNum(os.data.NumberReversibleEncryption);
                     AddEndRow();
                 }

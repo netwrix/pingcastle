@@ -109,6 +109,21 @@ namespace PingCastleAutoUpdater
 
             string currentVersion = GetCurrentVersionFromExecutable();
 
+			// Initialize configuration orchestrator for pre-update migration
+			string exePath = Environment.ProcessPath ?? AppContext.BaseDirectory;
+			string exeDirectory = Path.GetDirectoryName(exePath);
+			var pathContext = new ConfigurationPathContext(exeDirectory);
+			var configOrchestrator = new ConfigurationOrchestrationService(pathContext, dryRun);
+
+			// Perform initial state migration if both XML and JSON configs exist
+			// This should happen regardless of whether an update is needed
+			bool migrationPerformed = configOrchestrator.PerformInitialStateMigration();
+			if (migrationPerformed)
+			{
+				Console.WriteLine("Initial configuration state migration completed.");
+				Console.WriteLine();
+			}
+
             if (!IsUpdateRequired(currentVersion, release.name))
 			{
 				Console.WriteLine("Update is not required. Program is stopping.");
@@ -117,20 +132,6 @@ namespace PingCastleAutoUpdater
 			string downloadUrl = release.assets.First().browser_download_url;
 			Console.WriteLine("Downloading " + downloadUrl);
 			Console.WriteLine();
-
-			// Initialize configuration orchestrator for pre-update migration
-			string exePath = Environment.ProcessPath ?? AppContext.BaseDirectory;
-			string exeDirectory = Path.GetDirectoryName(exePath);
-			var pathContext = new ConfigurationPathContext(exeDirectory);
-			var configOrchestrator = new ConfigurationOrchestrationService(pathContext, dryRun);
-
-			// Perform pre-update migration if both XML and JSON configs exist
-			bool migrationPerformed = configOrchestrator.PerformInitialStateMigration();
-			if (migrationPerformed)
-			{
-				Console.WriteLine("Initial configuration state migration completed.");
-				Console.WriteLine();
-			}
 
 			ProceedReleaseInstall(downloadUrl, dryRun);
 		}

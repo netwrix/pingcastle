@@ -893,8 +893,9 @@ namespace PingCastle.Healthcheck
                                         }
                                     }
                                 }
-                                // Collect active non-DC computers for SMB signing scan
-                                if (_accountProcessor.IsComputerActive(x))
+                                // Collect active non-DC server computers for SMB signing scan
+                                if (!string.IsNullOrEmpty(x.OperatingSystem) && x.OperatingSystem.Contains("Server")
+                                    && _accountProcessor.IsComputerActive(x))
                                 {
                                     healthcheckData.AllComputerSmbData.Add(new HealthcheckComputerSmbData
                                     {

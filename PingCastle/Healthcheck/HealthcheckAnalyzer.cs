@@ -158,7 +158,7 @@ namespace PingCastle.Healthcheck
                 GenerateUserData(domainInfo, adws);
                 GenerateGroupSidHistoryData(domainInfo, adws);
                 DisplayAdvancement("Gathering computer data");
-                GenerateComputerData(domainInfo, adws);
+                GenerateComputerData(domainInfo, adws, parameters);
                 DisplayAdvancement("Gathering trust data");
                 GenerateTrustData(domainInfo, adws);
                 if (parameters.PerformExtendedTrustDiscovery)
@@ -189,8 +189,11 @@ namespace PingCastle.Healthcheck
                 GenerateMSOLData(domainInfo, adws);
                 DisplayAdvancement("Gathering domain controller data" + (SkipNullSession ? null : " (including null session)" + (SkipRPC ? null : " (including RPC tests)")));
                 GenerateDomainControllerData(domainInfo, adws, parameters);
-                DisplayAdvancement("Gathering SMB signing data for all computers");
-                GenerateComputerSmbData(domainInfo);
+                if (parameters.ExportLevel == PingCastleReportDataExportLevel.Full)
+                {
+                    DisplayAdvancement("Gathering SMB signing data for all computers");
+                    GenerateComputerSmbData(domainInfo);
+                }
                 GenerateRODCData(domainInfo, adws);
                 GenerateRODCKrbtgtOrphans(domainInfo, adws);
                 GenerateFSMOData(domainInfo, adws);
@@ -751,7 +754,7 @@ namespace PingCastle.Healthcheck
                         "msDS-isGC"
             };
 
-        private void GenerateComputerData(ADDomainInfo domainInfo, ADWebService adws)
+        private void GenerateComputerData(ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
         {
 
             var LAPSAnalyzer = CheckLAPSInstalled(domainInfo, adws);
@@ -893,8 +896,9 @@ namespace PingCastle.Healthcheck
                                         }
                                     }
                                 }
-                                // Collect active non-DC server computers for SMB signing scan
-                                if (!string.IsNullOrEmpty(x.OperatingSystem) && x.OperatingSystem.Contains("Server")
+                                // Collect active non-DC server computers for SMB signing scan (only with --level Full)
+                                if (parameters.ExportLevel == PingCastleReportDataExportLevel.Full
+                                    && !string.IsNullOrEmpty(x.OperatingSystem) && x.OperatingSystem.Contains("Server")
                                     && _accountProcessor.IsComputerActive(x))
                                 {
                                     healthcheckData.AllComputerSmbData.Add(new HealthcheckComputerSmbData
@@ -977,7 +981,8 @@ namespace PingCastle.Healthcheck
                 {
                     healthcheckData.ComputerAccountData = new HealthcheckAccountData();
                     healthcheckData.DomainControllers = new List<HealthcheckDomainController>();
-                    healthcheckData.AllComputerSmbData = new List<HealthcheckComputerSmbData>();
+                    if (parameters.ExportLevel == PingCastleReportDataExportLevel.Full)
+                        healthcheckData.AllComputerSmbData = new List<HealthcheckComputerSmbData>();
                     healthcheckData.OperatingSystem = new List<HealthcheckOSData>();
                     healthcheckData.OperatingSystemVersion = new List<HealthcheckOSVersionData>();
                     operatingSystems.Clear();

@@ -12,6 +12,7 @@ namespace PingCastle.Data
         public NetworkCredential Credential { get; set; }
         public bool PerformExtendedTrustDiscovery { get; set; }
         public List<string> AdditionalNamesForDelegationAnalysis { get; set; }
+        public PingCastleReportDataExportLevel ExportLevel { get; set; } = PingCastleReportDataExportLevel.Normal;
     }
 
     public interface IPingCastleAnalyzer<T> where T : IPingCastleReport

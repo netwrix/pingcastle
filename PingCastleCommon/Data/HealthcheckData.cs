@@ -1331,6 +1331,18 @@ namespace PingCastle.Healthcheck
         public string DelegationType { get; set; }
     }
 
+    public class HealthcheckComputerSmbData
+    {
+        [XmlAttribute]
+        public string ComputerName { get; set; }
+
+        [XmlAttribute]
+        public bool SupportSMB2OrSMB3 { get; set; }
+
+        [XmlAttribute]
+        public SMBSecurityModeEnum SMB2SecurityMode { get; set; }
+    }
+
     [DebuggerDisplay("{DCName}")]
     public class HealthcheckExchangeServer
     {
@@ -1634,6 +1646,9 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeDomainControllers() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthcheckDomainController> DomainControllers { get; set; }
+
+        public bool ShouldSerializeAllComputerSmbData() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
+        public List<HealthcheckComputerSmbData> AllComputerSmbData { get; set; }
 
         public List<HealthcheckExchangeServer> ExchangeServers { get; set; }
 
@@ -2027,6 +2042,11 @@ namespace PingCastle.Healthcheck
             if (AllowedRODCPasswordReplicationGroup != null)
             {
                 clone.AllowedRODCPasswordReplicationGroup = new List<string>(AllowedRODCPasswordReplicationGroup);
+            }
+
+            if (AllComputerSmbData != null)
+            {
+                clone.AllComputerSmbData = new List<HealthcheckComputerSmbData>(AllComputerSmbData);
             }
 
             if (AllPrivilegedMembers != null)

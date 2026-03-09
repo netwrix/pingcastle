@@ -189,6 +189,8 @@ namespace PingCastle.Healthcheck
                 GenerateMSOLData(domainInfo, adws);
                 DisplayAdvancement("Gathering domain controller data" + (SkipNullSession ? null : " (including null session)" + (SkipRPC ? null : " (including RPC tests)")));
                 GenerateDomainControllerData(domainInfo, adws, parameters);
+                DisplayAdvancement("Gathering SMB signing data for all computers");
+                GenerateComputerSmbData(domainInfo);
                 GenerateRODCData(domainInfo, adws);
                 GenerateRODCKrbtgtOrphans(domainInfo, adws);
                 GenerateFSMOData(domainInfo, adws);
@@ -891,6 +893,15 @@ namespace PingCastle.Healthcheck
                                         }
                                     }
                                 }
+                                // Collect active non-DC server computers for SMB signing scan
+                                if (!string.IsNullOrEmpty(x.OperatingSystem) && x.OperatingSystem.Contains("Server")
+                                    && _accountProcessor.IsComputerActive(x))
+                                {
+                                    healthcheckData.AllComputerSmbData.Add(new HealthcheckComputerSmbData
+                                    {
+                                        ComputerName = x.SAMAccountName.Replace("$", ""),
+                                    });
+                                }
                             }
                             if (x.ReplPropertyMetaData != null)
                             {
@@ -966,6 +977,7 @@ namespace PingCastle.Healthcheck
                 {
                     healthcheckData.ComputerAccountData = new HealthcheckAccountData();
                     healthcheckData.DomainControllers = new List<HealthcheckDomainController>();
+                    healthcheckData.AllComputerSmbData = new List<HealthcheckComputerSmbData>();
                     healthcheckData.OperatingSystem = new List<HealthcheckOSData>();
                     healthcheckData.OperatingSystemVersion = new List<HealthcheckOSVersionData>();
                     operatingSystems.Clear();
@@ -5802,6 +5814,80 @@ namespace PingCastle.Healthcheck
                 if (DC.HasNullSession)
                     healthcheckData.DomainControllerWithNullSessionCount++;
             }
+        }
+
+        private void GenerateComputerSmbData(ADDomainInfo domainInfo)
+        {
+            if (healthcheckData.AllComputerSmbData == null || healthcheckData.AllComputerSmbData.Count == 0)
+                return;
+
+            Trace.WriteLine("GenerateComputerSmbData");
+            BlockingQueue<HealthcheckComputerSmbData> queue = new BlockingQueue<HealthcheckComputerSmbData>(200);
+            int numberOfThread = 50;
+            Thread[] threads = new Thread[numberOfThread];
+            try
+            {
+                ParameterizedThreadStart threadFunction = (object index) =>
+                {
+                    int threadId = (int)index;
+                    for (;;)
+                    {
+                        HealthcheckComputerSmbData computer = null;
+                        if (!queue.Dequeue(out computer))
+                        {
+                            Trace.WriteLine("[" + threadId + "] Thread Stop (SMB computer scan)");
+                            break;
+                        }
+                        string dns = computer.ComputerName + "." + domainInfo.DomainName;
+                        Trace.WriteLine("[" + threadId + "] Working on SMB for " + dns);
+                        SMBSecurityModeEnum securityMode;
+                        if (SmbScanner.SupportSMB2And3(dns, out securityMode, "[" + threadId + "] ", _smb2Test))
+                        {
+                            computer.SupportSMB2OrSMB3 = true;
+                        }
+                        computer.SMB2SecurityMode = securityMode;
+                        Trace.WriteLine("[" + threadId + "] Done SMB for " + dns);
+                    }
+                };
+
+                for (int i = 0; i < numberOfThread; i++)
+                {
+                    threads[i] = new Thread(threadFunction);
+                    threads[i].Start(i);
+                }
+
+                foreach (var computer in healthcheckData.AllComputerSmbData)
+                {
+                    queue.Enqueue(computer);
+                }
+                queue.Quit();
+                Trace.WriteLine("Examining computers SMB completed. Waiting for worker threads to complete");
+                for (int i = 0; i < numberOfThread; i++)
+                {
+                    threads[i].Join();
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("Exception while generating computer SMB data: " + ex.Message);
+                Trace.WriteLine(ex.StackTrace);
+                lock (this)
+                {
+                    _ui.DisplayError("Exception while generating computer SMB data: " + ex.Message);
+                    _ui.DisplayStackTrace(ex.StackTrace);
+                }
+            }
+            finally
+            {
+                queue.Quit();
+                for (int i = 0; i < numberOfThread; i++)
+                {
+                    if (threads[i] != null)
+                        threads[i].Join();
+                }
+            }
+            // Keep only computers where SMB2 was actually tested (reachable via SMB)
+            healthcheckData.AllComputerSmbData.RemoveAll(c => !c.SupportSMB2OrSMB3 && c.SMB2SecurityMode == SMBSecurityModeEnum.NotTested);
         }
 
         class RPCTest

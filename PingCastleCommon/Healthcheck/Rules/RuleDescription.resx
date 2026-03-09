@@ -141,6 +141,30 @@
   <data name="A_SMB2SignatureNotRequired_Detail" xml:space="preserve">
     <value>Domain controller: {0}</value>
   </data>
+  <data name="A_SMB2SignatureNotEnabledOnComputer_Description" xml:space="preserve">
+    <value>The purpose is to ensure that the SMB version 2 protocol has signing enabled on all active computers in the domain</value>
+  </data>
+  <data name="A_SMB2SignatureNotEnabledOnComputer_Solution" xml:space="preserve">
+    <value>Enable the group policy "Digitally sign communications (if client agrees)" via a GPO that applies to all computers. See the &lt;a href="https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/smbv1-microsoft-network-server-digitally-sign-communications-if-client-agrees"&gt;official documentation&lt;/a&gt; for more information.</value>
+  </data>
+  <data name="A_SMB2SignatureNotEnabledOnComputer_Rationale" xml:space="preserve">
+    <value>{count} computer(s) have been found where SMB signing is not enabled</value>
+  </data>
+  <data name="A_SMB2SignatureNotEnabledOnComputer_Detail" xml:space="preserve">
+    <value>Computer: {0}</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequiredOnComputer_Description" xml:space="preserve">
+    <value>The purpose is to ensure that the SMB version 2 protocol has signing enforced on all active computers in the domain</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequiredOnComputer_Solution" xml:space="preserve">
+    <value>Enable the group policy "Digitally sign communications (always)" via a GPO that applies to all computers. See the &lt;a href="https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/microsoft-network-server-digitally-sign-communications-always"&gt;official documentation&lt;/a&gt; for more information.</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequiredOnComputer_Rationale" xml:space="preserve">
+    <value>{count} computer(s) have been found where SMB signing is not enforced</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequiredOnComputer_Detail" xml:space="preserve">
+    <value>Computer: {0}</value>
+  </data>
   <data name="S_DC_SubnetMissing_Description" xml:space="preserve">
     <value>The purpose is to ensure that the minimum set of subnet(s) has been configured in the domain</value>
   </data>
@@ -1576,6 +1600,12 @@ https://github.com/misterch0c/shadowbroker/tree/master/windows/exploits </value>
   <data name="A_SMB2SignatureNotRequired_Title" xml:space="preserve">
     <value>Check if the file share protocol requires its client to sign its network dialog</value>
   </data>
+  <data name="A_SMB2SignatureNotEnabledOnComputer_Title" xml:space="preserve">
+    <value>Check if the file share protocol can sign its network dialog on all domain computers</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequiredOnComputer_Title" xml:space="preserve">
+    <value>Check if the file share protocol requires its client to sign its network dialog on all domain computers</value>
+  </data>
   <data name="P_DangerousExtendedRight_Title" xml:space="preserve">
     <value>Check for Dangerous rights found in OU delegation</value>
   </data>
@@ -1626,6 +1656,22 @@ https://trustedsec.com/blog/a-comprehensive-guide-on-relaying-anno-2022
 https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/36172e53-ac81-48fb-b2e3-caa3761b9157</value>
   </data>
   <data name="A_SMB2SignatureNotRequired_Documentation" xml:space="preserve">
+    <value>https://www.sentinelone.com/labs/relaying-potatoes-another-unexpected-privilege-escalation-vulnerability-in-windows-rpc-protocol/
+https://trustedsec.com/blog/a-comprehensive-guide-on-relaying-anno-2022
+https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/36172e53-ac81-48fb-b2e3-caa3761b9157</value>
+  </data>
+  <data name="A_SMB2SignatureNotEnabledOnComputer_TechnicalExplanation" xml:space="preserve">
+    <value>If SMB signing is not enabled on domain computers (non-DCs), it can lead to Man-in-the-Middle (MitM) or relaying attacks. An attacker can intercept SMB traffic between computers and relay credentials or data to compromise other systems. SMB v2 (and v3) provides integrity protection via per-packet signing. By establishing a SMB v2 dialog with domain computers, PingCastle checks the signature capability by looking at the SMB options provided by the server.</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequiredOnComputer_TechnicalExplanation" xml:space="preserve">
+    <value>If SMB signing is not required on domain computers (non-DCs), it can lead to Man-in-the-Middle (MitM) or relaying attacks. Even if signing is supported, not enforcing it allows an attacker to negotiate an unsigned connection. SMB v2 (and v3) provides integrity protection via per-packet signing. By establishing a SMB v2 dialog with domain computers, PingCastle checks the signature requirement by looking at the SMB options provided by the server.</value>
+  </data>
+  <data name="A_SMB2SignatureNotEnabledOnComputer_Documentation" xml:space="preserve">
+    <value>https://www.sentinelone.com/labs/relaying-potatoes-another-unexpected-privilege-escalation-vulnerability-in-windows-rpc-protocol/
+https://trustedsec.com/blog/a-comprehensive-guide-on-relaying-anno-2022
+https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/36172e53-ac81-48fb-b2e3-caa3761b9157</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequiredOnComputer_Documentation" xml:space="preserve">
     <value>https://www.sentinelone.com/labs/relaying-potatoes-another-unexpected-privilege-escalation-vulnerability-in-windows-rpc-protocol/
 https://trustedsec.com/blog/a-comprehensive-guide-on-relaying-anno-2022
 https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/36172e53-ac81-48fb-b2e3-caa3761b9157</value>
@@ -1965,6 +2011,12 @@ SeManageVolumePrivilege can be used to reset the security descriptor on the C vo
   </data>
   <data name="A_SMB2SignatureNotRequired_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href="#domaincontrollersection"&gt;Domain controllers&lt;/a&gt;</value>
+  </data>
+  <data name="A_SMB2SignatureNotEnabledOnComputer_ReportLocation" xml:space="preserve">
+    <value>The detail is listed in the anomalies section</value>
+  </data>
+  <data name="A_SMB2SignatureNotRequiredOnComputer_ReportLocation" xml:space="preserve">
+    <value>The detail is listed in the anomalies section</value>
   </data>
   <data name="P_AdminNum_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href="#admingroups"&gt;Admin Groups&lt;/a&gt;</value>

@@ -704,6 +704,7 @@ namespace PingCastle
                         Credential = Settings.Credential,
                         PerformExtendedTrustDiscovery = Settings.AnalyzeReachableDomains,
                         AdditionalNamesForDelegationAnalysis = NodesToInvestigate,
+                        ExportLevel = ExportLevel,
                     });
                     string domain = pingCastleReport.Domain.DomainName;
                     DisplayAdvancement("Generating html report");

@@ -1204,7 +1204,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 if ((Report.LapsDistribution != null && Report.LapsDistribution.Count > 0) || (Report.LapsNewDistribution != null && Report.LapsNewDistribution.Count > 0))
                 {
-                    AddParagraph("Here is the distribution of the LAPS password fresshness (legacy vs the new Microsoft extension).");
+                    AddParagraph("Here is the distribution of the LAPS password freshness (legacy vs the new Microsoft extension).");
                     if (Report.NewLAPSInstalled == DateTime.MinValue)
                     {
                         // if chart if for legacy values

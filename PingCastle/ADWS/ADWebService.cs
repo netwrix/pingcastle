@@ -218,7 +218,7 @@ namespace PingCastle.ADWS
                 foreach (string ou in OUToExplore)
                 {
                     output.Add(new OUExploration(ou, "OneLevel", i));
-                    Enumerate(ou, "(|(objectCategory=organizationalUnit)(objectCategory=container)(objectCategory=buitinDomain))", properties,
+                    Enumerate(ou, "(|(objectCategory=organizationalUnit)(objectCategory=container)(objectCategory=builtinDomain))", properties,
                         (ADItem x)
                         =>
                         {

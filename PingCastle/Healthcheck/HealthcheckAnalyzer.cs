@@ -1488,8 +1488,8 @@ namespace PingCastle.Healthcheck
         {
             healthcheckData.Delegations = new List<HealthcheckDelegationData>();
             healthcheckData.UnprotectedOU = new List<string>();
-            InspectAdminSDHolder(domainInfo, adws);
             InspectDelegation(domainInfo, adws);
+            InspectAdminSDHolder(domainInfo, adws);
         }
 
         // SDDL reference from MSDN based on schema version 35 and next

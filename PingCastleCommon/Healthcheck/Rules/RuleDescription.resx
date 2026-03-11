@@ -3390,7 +3390,7 @@ Also Linux servers should be configured with automatic machine account change.</
     <value>Some accounts have passwords which never expire. Should an attacker compromise one of these accounts, he would be able to maintain long-term access to the Active Directory domain.
     
 We have noted that some Linux servers, domain joined, are configured with a password which never expires.
-This is a misconfiguration because a password change can be configured. It was however not the default on some plateform.
+This is a misconfiguration because a password change can be configured. It was however not the default on some platform.
 See one of the link below for more information.</value>
   </data>
   <data name="S_PwdNeverExpires_Title" xml:space="preserve">

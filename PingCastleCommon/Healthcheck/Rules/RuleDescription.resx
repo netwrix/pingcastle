@@ -6003,4 +6003,143 @@ The detection triggers when specific high-risk permissions are assigned to OUs w
   <data name="S_Inactive_RelevantProducts" xml:space="preserve">
     <value>Netwrix Directory Manager| helps manage user and group lifecycles effectively, eliminating stale users and outdated group memberships.\r\n Netwrix Identity Manager| prevents stale users and memberships by automating identity lifecycle management and role-based provisioning or deprovisioning.\r\nNetwrix Privilege Secure| helps minimize stale secondary accounts with one-time ephemeral accounts, ensuring a clean and secure environment. </value>
   </data>
+
+  <!-- A-CertCANoAudit: CA Audit Logging disabled -->
+  <data name="A_CertCANoAudit_Title" xml:space="preserve">
+    <value>CA Audit Logging Disabled</value>
+  </data>
+  <data name="A_CertCANoAudit_Description" xml:space="preserve">
+    <value>The purpose is to ensure that Certificate Authority (CA) servers log all relevant certificate lifecycle events to the Windows Security event log.</value>
+  </data>
+  <data name="A_CertCANoAudit_TechnicalExplanation" xml:space="preserve">
+    <value>The AuditFilter registry DWORD under HKLM\SYSTEM\CurrentControlSet\Services\CertSvc\Configuration\{CA Name} controls which CA events are written to the Security event log. A value of 0 means no events are audited — certificate issuance, revocation, start/stop of the CA service, and key archival requests go completely unlogged. Without this logging, attacks that abuse the CA (e.g. issuing rogue authentication certificates) cannot be detected via SIEM or forensic analysis.</value>
+  </data>
+  <data name="A_CertCANoAudit_Solution" xml:space="preserve">
+    <value>Enable CA auditing by setting AuditFilter to 127 (0x7F) to log all event categories, or at minimum enable categories 1 (Start/Stop), 2 (Backup/Restore), 4 (Issue Certificate), 8 (Revoke Certificate). Use certutil -setreg CA\AuditFilter 127 and restart the CertSvc service.</value>
+  </data>
+  <data name="A_CertCANoAudit_Rationale" xml:space="preserve">
+    <value>{count} CA(s) have audit logging completely disabled (AuditFilter = 0)</value>
+  </data>
+  <data name="A_CertCANoAudit_Detail" xml:space="preserve">
+    <value>CA: {0} on host: {1}</value>
+  </data>
+  <data name="A_CertCANoAudit_ReportLocation" xml:space="preserve">
+    <value>See the Certificate Authorities table in the PKI section of the report</value>
+  </data>
+
+  <!-- A-CertTemplateExportableKey: Exportable private key on enrollable template -->
+  <data name="A_CertTemplateExportableKey_Title" xml:space="preserve">
+    <value>Certificate Template Allows Exportable Private Key</value>
+  </data>
+  <data name="A_CertTemplateExportableKey_Description" xml:space="preserve">
+    <value>The purpose is to ensure that certificate templates do not allow the enrolled private key to be exported from the Windows certificate store when the template is accessible to low-privileged users.</value>
+  </data>
+  <data name="A_CertTemplateExportableKey_TechnicalExplanation" xml:space="preserve">
+    <value>When bit 0x10 (CT_FLAG_EXPORTABLE_KEY) of msPKI-Private-Key-Flag is set on a certificate template, the CA generates a key pair whose private key can be exported via the certificate store API or tools like Mimikatz. A low-privileged user who can enroll can therefore exfiltrate both the certificate and its private key, enabling long-term impersonation even after the certificate is revoked and surviving account password resets. The risk is greatest when the template also includes authentication EKUs (client auth, PKINIT, smart card logon).</value>
+  </data>
+  <data name="A_CertTemplateExportableKey_Solution" xml:space="preserve">
+    <value>Remove CT_FLAG_EXPORTABLE_KEY (0x10) from msPKI-Private-Key-Flag on certificate templates accessible to low-privileged users, unless there is a documented business requirement. If key export is required, restrict enrollment to specific service accounts and monitor for exports via Windows event ID 70 (Key export) and 4886/4887 (Certificate issued).</value>
+  </data>
+  <data name="A_CertTemplateExportableKey_Rationale" xml:space="preserve">
+    <value>{count} certificate template(s) allow exportable private keys and permit low-privilege enrollment</value>
+  </data>
+  <data name="A_CertTemplateExportableKey_Detail" xml:space="preserve">
+    <value>Template: {0}</value>
+  </data>
+  <data name="A_CertTemplateExportableKey_ReportLocation" xml:space="preserve">
+    <value>See the Certificate Templates table in the PKI section of the report</value>
+  </data>
+
+  <!-- A-CertTemplateKeyArchival: KRA key archival on enrollable template -->
+  <data name="A_CertTemplateKeyArchival_Title" xml:space="preserve">
+    <value>Certificate Template Requires Key Archival (KRA)</value>
+  </data>
+  <data name="A_CertTemplateKeyArchival_Description" xml:space="preserve">
+    <value>The purpose is to identify certificate templates that require private key archival via a Key Recovery Agent (KRA) and are accessible to low-privileged users, making the KRA a high-value compromise target.</value>
+  </data>
+  <data name="A_CertTemplateKeyArchival_TechnicalExplanation" xml:space="preserve">
+    <value>When bit 0x4000 (CT_FLAG_REQUIRE_PRIVATE_KEY_ARCHIVAL) of msPKI-Private-Key-Flag is set, the CA encrypts the enrollee's private key to the configured KRA certificate and archives it in its database. Any principal who controls the KRA's private key can retroactively decrypt ALL archived keys from this CA — past and present. A compromised KRA gives an attacker access to historical encrypted communications, stored credentials, and EFS-encrypted files for every user who enrolled under this template.</value>
+  </data>
+  <data name="A_CertTemplateKeyArchival_Solution" xml:space="preserve">
+    <value>Evaluate whether key archival is necessary for each template. If required, restrict enrollment to specific accounts, protect the KRA certificate with hardware security modules (HSM), limit KRA certificate holders to dedicated, monitored accounts, and regularly audit KRA usage. Remove CT_FLAG_REQUIRE_PRIVATE_KEY_ARCHIVAL if not needed.</value>
+  </data>
+  <data name="A_CertTemplateKeyArchival_Rationale" xml:space="preserve">
+    <value>{count} certificate template(s) require KRA key archival and permit low-privilege enrollment</value>
+  </data>
+  <data name="A_CertTemplateKeyArchival_Detail" xml:space="preserve">
+    <value>Template: {0}</value>
+  </data>
+  <data name="A_CertTemplateKeyArchival_ReportLocation" xml:space="preserve">
+    <value>See the Certificate Templates table in the PKI section of the report</value>
+  </data>
+
+  <!-- A-CertTemplateLongValidity: Excessive validity period -->
+  <data name="A_CertTemplateLongValidity_Title" xml:space="preserve">
+    <value>Certificate Template Has Excessive Validity Period</value>
+  </data>
+  <data name="A_CertTemplateLongValidity_Description" xml:space="preserve">
+    <value>The purpose is to ensure that certificate templates enrollable by low-privileged users do not issue certificates with validity periods exceeding 5 years.</value>
+  </data>
+  <data name="A_CertTemplateLongValidity_TechnicalExplanation" xml:space="preserve">
+    <value>A long certificate validity period extends the window during which a stolen or abused certificate remains valid. Certificates outlive account disablement or password resets, may not be covered by CRL checks in all implementations, and extend the effective lifetime of any authentication credential issued. Best practice (NIST SP 800-57, CIS AD CS Benchmark) recommends 1 year for user/computer authentication templates and at most 2 years for most use cases. Templates with validity exceeding 5 years that are enrollable by low-privileged users significantly increase risk.</value>
+  </data>
+  <data name="A_CertTemplateLongValidity_Solution" xml:space="preserve">
+    <value>Reduce the pKIMaximumValidity attribute on certificate templates to match their intended use: 1 year for authentication, 2 years for most other uses. For templates already issued, consider implementing shorter renewal periods and enabling OCSP stapling or short CRL lifetimes to limit exposure from stolen certificates.</value>
+  </data>
+  <data name="A_CertTemplateLongValidity_Rationale" xml:space="preserve">
+    <value>{count} certificate template(s) have validity periods exceeding 5 years and permit low-privilege enrollment</value>
+  </data>
+  <data name="A_CertTemplateLongValidity_Detail" xml:space="preserve">
+    <value>Template: {0} - Validity: {1} days</value>
+  </data>
+  <data name="A_CertTemplateLongValidity_ReportLocation" xml:space="preserve">
+    <value>See the Certificate Templates table in the PKI section of the report</value>
+  </data>
+
+  <!-- A-ShadowCredentials: msDS-KeyCredentialLink -->
+  <data name="A_ShadowCredentials_Title" xml:space="preserve">
+    <value>Shadow Credentials Detected (msDS-KeyCredentialLink)</value>
+  </data>
+  <data name="A_ShadowCredentials_Description" xml:space="preserve">
+    <value>The purpose is to detect accounts with entries in the msDS-KeyCredentialLink attribute, which can be abused to perform passwordless PKINIT authentication (Shadow Credentials attack).</value>
+  </data>
+  <data name="A_ShadowCredentials_TechnicalExplanation" xml:space="preserve">
+    <value>The msDS-KeyCredentialLink attribute stores Windows Hello for Business (WHfB) and FIDO2 device credentials linked to an AD account. An attacker who can write to this attribute (via GenericWrite, WriteProperty, or WriteDacl on the account object) can add a forged key credential and then authenticate as the target using PKINIT — without knowing the account's password and surviving password resets. Domain Controller and privileged account targets allow full domain compromise. The presence of unexpected entries may indicate a prior compromise or ongoing attack.</value>
+  </data>
+  <data name="A_ShadowCredentials_Solution" xml:space="preserve">
+    <value>Review msDS-KeyCredentialLink entries on all flagged accounts and remove any unauthorized entries. Restrict write access to this attribute via ACL auditing. Monitor for changes using Windows event ID 4662 (attribute access) filtered on msDS-KeyCredentialLink (attribute GUID: 5b47d60f-6090-40b2-9f37-2a4de88f3063). Consider using Microsoft Defender for Identity or equivalent tooling to alert on unexpected WHfB credential additions.</value>
+  </data>
+  <data name="A_ShadowCredentials_Rationale" xml:space="preserve">
+    <value>{count} account(s) have msDS-KeyCredentialLink entries set</value>
+  </data>
+  <data name="A_ShadowCredentials_Detail" xml:space="preserve">
+    <value>Account: {0} - Credentials: {1} - Type: {2}</value>
+  </data>
+  <data name="A_ShadowCredentials_ReportLocation" xml:space="preserve">
+    <value>See the Shadow Credentials section in the PKI section of the report</value>
+  </data>
+
+  <!-- A-CertCAExpiry: CA certificate expiry warning -->
+  <data name="A_CertCAExpiry_Title" xml:space="preserve">
+    <value>CA Certificate Expiring Soon or Already Expired</value>
+  </data>
+  <data name="A_CertCAExpiry_Description" xml:space="preserve">
+    <value>The purpose is to warn when a Certificate Authority's own certificate is expiring within 90 days or has already expired, which would halt certificate issuance and break authentication.</value>
+  </data>
+  <data name="A_CertCAExpiry_TechnicalExplanation" xml:space="preserve">
+    <value>When a CA's own certificate expires, the CA service can no longer issue new certificates and all certificates signed by the CA chain may be treated as invalid by relying parties. This causes: Kerberos PKINIT and smart card logon failures, LDAPS connection failures for LDAP clients that verify the DC certificate chain, TLS/SSL certificate validation failures for any services using CA-issued certificates, and complete PKI infrastructure outage. Recovery requires re-issuing the CA certificate (which may require parent CA involvement for subordinate CAs) and re-enrolling all leaf certificates, which is operationally disruptive.</value>
+  </data>
+  <data name="A_CertCAExpiry_Solution" xml:space="preserve">
+    <value>Renew the CA certificate before expiry. For an Enterprise CA, run certutil -renewCert on the CA server. For a Root CA, follow the Microsoft CA renewal procedure. Implement monitoring for CA certificate expiry using Windows event log, SCOM, or equivalent. CA certificates should typically be renewed at 50% of their lifetime. Plan renewal at least 6 months before expiry for root CAs and 3 months for subordinate CAs.</value>
+  </data>
+  <data name="A_CertCAExpiry_Rationale" xml:space="preserve">
+    <value>{count} CA certificate(s) are expiring within 90 days or are already expired</value>
+  </data>
+  <data name="A_CertCAExpiry_Detail" xml:space="preserve">
+    <value>CA: {0} on host: {1} - Expiry: {2} ({3})</value>
+  </data>
+  <data name="A_CertCAExpiry_ReportLocation" xml:space="preserve">
+    <value>See the Certificate Authorities table in the PKI section of the report</value>
+  </data>
+
 </root>

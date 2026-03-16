@@ -633,7 +633,10 @@ namespace PingCastle.Healthcheck
                             // ex: guest, krbtgt for rodc, ...
                             if (x.WhenCreated != DateTime.MinValue)
                             {
-                                var i = ConvertPwdLastSetToKey(x);
+                                var dateTime = (x.PwdLastSet == DateTime.MinValue || x.PwdLastSet <= DateTime.FromFileTime(0))
+                                    ? x.WhenCreated
+                                    : x.PwdLastSet;
+                                var i = HealthcheckHelper.ConvertDateToKey(dateTime);
                                 if (pwdDistribution.ContainsKey(i))
                                     pwdDistribution[i]++;
                                 else
@@ -679,7 +682,7 @@ namespace PingCastle.Healthcheck
         private int ConvertPwdLastSetToKey(ADItem x)
         {
             var dateTime = x.PwdLastSet;
-            if (x.PwdLastSet == DateTime.MinValue)
+            if (x.PwdLastSet == DateTime.MinValue || x.PwdLastSet <= DateTime.FromFileTime(0))
                 dateTime = x.WhenCreated;
             return HealthcheckHelper.ConvertDateToKey(dateTime);
 
@@ -1470,8 +1473,8 @@ namespace PingCastle.Healthcheck
                 if (user.IsEnabled)
                 {
                     {
-                        var i = HealthcheckHelper.ConvertDateToKey(user.PwdLastSet == DateTime.MinValue ? user.Created : user.PwdLastSet);
-
+                        var dateTime = (user.PwdLastSet == DateTime.MinValue || user.PwdLastSet <= DateTime.FromFileTime(0)) ? user.Created : user.PwdLastSet;
+                        var i = HealthcheckHelper.ConvertDateToKey(dateTime);
                         if (pwdDistribution.ContainsKey(i))
                             pwdDistribution[i]++;
                         else
@@ -1502,8 +1505,8 @@ namespace PingCastle.Healthcheck
         {
             healthcheckData.Delegations = new List<HealthcheckDelegationData>();
             healthcheckData.UnprotectedOU = new List<string>();
-            InspectAdminSDHolder(domainInfo, adws);
             InspectDelegation(domainInfo, adws);
+            InspectAdminSDHolder(domainInfo, adws);
         }
 
         // SDDL reference from MSDN based on schema version 35 and next
@@ -1645,7 +1648,7 @@ namespace PingCastle.Healthcheck
                     healthcheckData.Delegations.Clear();
                     healthcheckData.UnprotectedOU.Clear();
                 },
-                domainInfo.DefaultNamingContext, "(|(objectCategory=organizationalUnit)(objectCategory=container)(objectCategory=domain)(objectCategory=buitinDomain))", properties, callback, "SubTree");
+                domainInfo.DefaultNamingContext, "(|(objectCategory=organizationalUnit)(objectCategory=container)(objectCategory=domain)(objectCategory=builtinDomain))", properties, callback, "SubTree");
 
             adws.Enumerate(domainInfo.ConfigurationNamingContext, "(objectCategory=configuration)", properties, callback, "Base");
         }

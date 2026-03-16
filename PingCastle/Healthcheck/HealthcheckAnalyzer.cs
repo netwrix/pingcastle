@@ -2180,6 +2180,7 @@ namespace PingCastle.Healthcheck
                     GenerateCertificateTemplateData(domainInfo, adws);
                     EnrichTemplatesWithOIDGroupLinks(domainInfo, adws);
                     GenerateADCSEnrollmentServerData(domainInfo, adws);
+                    GenerateAltSecIdentityData(domainInfo, adws);
                 }
             }
         }
@@ -2292,6 +2293,10 @@ namespace PingCastle.Healthcheck
             // ESC6: check if EDITF_ATTRIBUTESUBJECTALTNAME2 is set on the CA policy module
             if (ca.TryGetEditFlags(out var editFlags))
                 ca.HasSubjectAltNameFlag = (editFlags & 0x40) != 0;
+
+            // ESC11: check if IF_ENFORCEENCRYPTICERTREQUEST (0x200) is set in InterfaceFlags
+            if (ca.TryGetInterfaceFlags(out var interfaceFlags))
+                ca.HasEnforceEncryptICertRequest = (interfaceFlags & 0x200) != 0;
 
             // ESC5: check if low-privileged users can write to the pKIEnrollmentService AD object
             if (item.NTSecurityDescriptor != null)
@@ -2501,6 +2506,74 @@ namespace PingCastle.Healthcheck
                 };
 
             adws.Enumerate("CN=Public Key Services,CN=Services," + domainInfo.ConfigurationNamingContext, "(objectClass=pKICertificateTemplate)", properties, callback);
+        }
+
+        /// <summary>
+        /// ESC14: Finds accounts whose altSecurityIdentities attribute uses weak explicit
+        /// certificate-to-account mapping formats (RFC822, UPN, SubjectOnly).
+        /// Weak mappings can be spoofed by an attacker who can write the corresponding
+        /// attribute (mail, userPrincipalName, or the subject DN) on another account.
+        /// </summary>
+        private void GenerateAltSecIdentityData(ADDomainInfo domainInfo, ADWebService adws)
+        {
+            healthcheckData.WeakAltSecurityIdentities = new List<HealthcheckWeakAltSecurityIdentityData>();
+
+            // Build a set of privileged account DNs for quick lookup
+            var privilegedDNs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (healthcheckData.AllPrivilegedMembers != null)
+            {
+                foreach (var m in healthcheckData.AllPrivilegedMembers)
+                    if (!string.IsNullOrEmpty(m.DistinguishedName))
+                        privilegedDNs.Add(m.DistinguishedName);
+            }
+
+            string[] properties = new string[] {
+                "distinguishedname",
+                "SamAccountName",
+                "altSecurityIdentities",
+            };
+
+            WorkOnReturnedObjectByADWS callback = (ADItem x) =>
+            {
+                if (x.AltSecurityIdentities == null) return;
+
+                foreach (var mapping in x.AltSecurityIdentities)
+                {
+                    string mappingType = null;
+
+                    // Weak: email-based — attacker can set victim's mail attribute
+                    if (mapping.StartsWith("X509:<RFC822>", StringComparison.OrdinalIgnoreCase))
+                        mappingType = "RFC822";
+                    // Weak: UPN-based — attacker can set victim's userPrincipalName
+                    else if (mapping.StartsWith("X509:<UPN>", StringComparison.OrdinalIgnoreCase))
+                        mappingType = "UPN";
+                    // Weak: Subject-only (no issuer) — predictable, not uniquely bound to one cert
+                    else if (mapping.StartsWith("X509:<S>", StringComparison.OrdinalIgnoreCase)
+                             && !mapping.StartsWith("X509:<S><I>", StringComparison.OrdinalIgnoreCase))
+                        mappingType = "SubjectOnly";
+
+                    if (mappingType == null) continue;
+
+                    healthcheckData.WeakAltSecurityIdentities.Add(new HealthcheckWeakAltSecurityIdentityData
+                    {
+                        AccountName    = x.SAMAccountName,
+                        DistinguishedName = x.DistinguishedName,
+                        MappingType    = mappingType,
+                        MappingValue   = mapping,
+                        IsPrivileged   = privilegedDNs.Contains(x.DistinguishedName),
+                    });
+                }
+            };
+
+            // Only query accounts that actually have altSecurityIdentities set
+            adws.Enumerate(domainInfo.DefaultNamingContext,
+                "(&(objectCategory=person)(altSecurityIdentities=*))",
+                properties, callback);
+
+            // Also check computer accounts (less common but possible)
+            adws.Enumerate(domainInfo.DefaultNamingContext,
+                "(&(objectCategory=computer)(altSecurityIdentities=*))",
+                properties, callback);
         }
 
         /// <summary>

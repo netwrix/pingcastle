@@ -254,6 +254,8 @@ namespace PingCastle.ADWS
         public string[] msExchComponentStates { get; set; }
         [ADAttributeAttribute("msExchInternetWebProxy", ADAttributeValueKind.StringValue)]
         public string msExchInternetWebProxy { get; set; }
+        [ADAttributeAttribute("altSecurityIdentities", ADAttributeValueKind.StringArrayValue)]
+        public string[] AltSecurityIdentities { get; set; }
         [ADAttributeAttribute("msPKI-Certificate-Name-Flag", ADAttributeValueKind.IntValue)]
         public int msPKICertificateNameFlag { get; set; }
         [ADAttributeAttribute("msPKI-Certificate-Policy", ADAttributeValueKind.StringArrayValue)]

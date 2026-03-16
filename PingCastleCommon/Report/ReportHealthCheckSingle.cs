@@ -3879,6 +3879,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         AddHeaderText("Low-priv Enroll", "A low-privileged user can directly request certificates from this CA");
                         AddHeaderText("Low-priv ManageCA (ESC7)", "A low-privileged user holds the ManageCA right, allowing CA configuration changes");
                         AddHeaderText("EDITF_ATTRIBUTESUBJECTALTNAME2 (ESC6)", "CA flag that allows any user to include an arbitrary Subject Alternative Name in certificate requests");
+                        AddHeaderText("RPC Encrypt Enforced (ESC11)", "IF_ENFORCEENCRYPTICERTREQUEST: when NO the ICertRequest DCOM interface allows NTLM relay attacks");
                         AddHeaderText("Vulnerable Enrollment Service ACL (ESC5)", "A low-privileged user has write permissions on this CA's enrollment service AD object");
                         AddHeaderText("Low-priv Owner", "A low-privileged user is the owner of the CA object");
                         AddHeaderText("Enrollment Restrictions");
@@ -3898,6 +3899,13 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                             AddCellText(hasEnrollPrincipals ? "YES" : "NO", hasEnrollPrincipals);
                             AddCellText(hasManagerPrincipals ? "YES" : "NO", hasManagerPrincipals);
                             AddCellText(hasEditFlag ? "YES" : (ca.HasSubjectAltNameFlag == null ? "N/A" : "NO"), hasEditFlag);
+                            // ESC11: flag absent = vulnerable (highlight), flag present = secure
+                            if (ca.HasEnforceEncryptICertRequest == null)
+                                AddCellText("N/A");
+                            else if (ca.HasEnforceEncryptICertRequest == true)
+                                AddCellText("YES", false, true);
+                            else
+                                AddCellText("NO", true);
                             AddCellText(vulnEnrollServiceACL ? "YES" : (ca.VulnerableEnrollmentServiceACL == null ? "N/A" : "NO"), vulnEnrollServiceACL);
                             AddCellText(isLowPrivOwner ? "YES" : (ca.IsLowPrivilegedPrincipalOwner == null ? "N/A" : "NO"), isLowPrivOwner);
                             AddCellText(ca.EnrollmentRestrictions ?? "N/A");
@@ -4176,6 +4184,10 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             // ESC13: Template issuance policy is linked to a security group via msDS-OIDToGroupLink
             if (!string.IsNullOrEmpty(ct.LinkedOIDGroup))
                 labels.Add("ESC13");
+
+            // ESC15: Schema V1 template allows enrollee-supplied Application Policies (EKUwu)
+            if (ct.SchemaVersion == 1 && ct.LowPrivCanEnroll && !ct.CAManagerApproval && ct.IssuanceRequirementsEmpty)
+                labels.Add("ESC15");
 
             return string.Join(", ", labels);
         }

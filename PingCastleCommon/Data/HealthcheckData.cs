@@ -113,6 +113,34 @@ namespace PingCastle.Healthcheck
         public List<string> Rights { get; set; }
     }
 
+    /// <summary>
+    /// ESC14: An account uses a weak explicit certificate-to-account mapping
+    /// via the altSecurityIdentities attribute. Weak mapping types (RFC822, UPN,
+    /// SubjectOnly) can be spoofed by an attacker who controls the respective
+    /// attribute on another account.
+    /// </summary>
+    [DebuggerDisplay("{AccountName} ({MappingType})")]
+    public class HealthcheckWeakAltSecurityIdentityData
+    {
+        [XmlAttribute]
+        public string AccountName { get; set; }
+
+        [XmlAttribute]
+        public string DistinguishedName { get; set; }
+
+        /// <summary>Weak mapping type, e.g. "RFC822", "UPN", "SubjectOnly".</summary>
+        [XmlAttribute]
+        public string MappingType { get; set; }
+
+        /// <summary>The raw altSecurityIdentities value that triggered this finding.</summary>
+        [XmlAttribute]
+        public string MappingValue { get; set; }
+
+        /// <summary>True if the account is a member of a privileged group.</summary>
+        [XmlAttribute]
+        public bool IsPrivileged { get; set; }
+    }
+
     public class HealthCheckCertificateAuthorityData
     {
         [XmlAttribute]
@@ -144,6 +172,15 @@ namespace PingCastle.Healthcheck
         /// </summary>
         [DefaultValue(null)]
         public bool? HasSubjectAltNameFlag { get; set; }
+
+        /// <summary>
+        /// ESC11: Whether the IF_ENFORCEENCRYPTICERTREQUEST flag (0x200) is set in InterfaceFlags.
+        /// When false the ICertRequest DCOM interface accepts cleartext/unauthenticated requests,
+        /// enabling NTLM relay attacks to the CA's RPC endpoint.
+        /// Null = flag could not be read (non-privileged scan).
+        /// </summary>
+        [DefaultValue(null)]
+        public bool? HasEnforceEncryptICertRequest { get; set; }
 
         /// <summary>
         /// ESC5: A low-privileged principal has write permissions on the CA's
@@ -1853,6 +1890,12 @@ namespace PingCastle.Healthcheck
         public List<HealthCheckCertificateAuthorityData> CertificateAuthorities { get; set; }
 
         public List<HealthCheckCertificateTemplate> CertificateTemplates { get; set; }
+
+        /// <summary>
+        /// ESC14: Accounts with weak explicit certificate-to-account mappings
+        /// in their altSecurityIdentities attribute.
+        /// </summary>
+        public List<HealthcheckWeakAltSecurityIdentityData> WeakAltSecurityIdentities { get; set; }
 
         /// <summary>
         /// ESC5: A low-privileged principal has write permissions on the

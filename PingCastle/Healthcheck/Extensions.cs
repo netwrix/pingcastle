@@ -61,6 +61,23 @@ namespace PingCastle.Healthcheck
         }
 
         /// <summary>
+        /// Reads AuditFilter DWORD from the CA configuration registry key.
+        /// A value of 0 means no certificate lifecycle events are audited on this CA —
+        /// issuance, revocation, and key archival operations are not logged.
+        /// Recommended value: 127 (all events, MS baseline) or at minimum 0x7F.
+        /// </summary>
+        internal static bool TryGetAuditFilter(this HealthCheckCertificateAuthorityData ca, out int auditFilter)
+        {
+            auditFilter = 0;
+
+            if (ca.DnsHostName == null) throw new ArgumentException("DnsHostname is null");
+            if (ca.Name == null) throw new ArgumentException("Name is null");
+
+            var keyPath = $"SYSTEM\\CurrentControlSet\\Services\\CertSvc\\Configuration\\{ca.Name}";
+            return RegistryHelper.TryGetHKLMKeyDWordValue(keyPath, "AuditFilter", ca.DnsHostName, out auditFilter);
+        }
+
+        /// <summary>
         /// Reads the EditFlags DWORD from the CA policy module registry key.
         /// Bit 0x40 = EDITF_ATTRIBUTESUBJECTALTNAME2 (ESC6).
         /// </summary>

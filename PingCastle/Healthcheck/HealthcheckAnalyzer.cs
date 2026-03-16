@@ -2181,6 +2181,7 @@ namespace PingCastle.Healthcheck
                     EnrichTemplatesWithOIDGroupLinks(domainInfo, adws);
                     GenerateADCSEnrollmentServerData(domainInfo, adws);
                     GenerateAltSecIdentityData(domainInfo, adws);
+                    GenerateShadowCredentialData(domainInfo, adws);
                 }
             }
         }
@@ -2298,6 +2299,25 @@ namespace PingCastle.Healthcheck
             if (ca.TryGetInterfaceFlags(out var interfaceFlags))
                 ca.HasEnforceEncryptICertRequest = (interfaceFlags & 0x200) != 0;
 
+            // CA Audit Logging: AuditFilter = 0 means no events are logged
+            if (ca.TryGetAuditFilter(out var auditFilter))
+                ca.AuditFilter = auditFilter;
+
+            // CA Certificate Expiry: parse the earliest expiry from the CA's own certificate(s)
+            if (ca.CertificatesData != null)
+            {
+                foreach (var rawCert in ca.CertificatesData)
+                {
+                    try
+                    {
+                        var cert = new System.Security.Cryptography.X509Certificates.X509Certificate2(rawCert);
+                        if (ca.CertificateExpiryDate == null || cert.NotAfter < ca.CertificateExpiryDate.Value)
+                            ca.CertificateExpiryDate = cert.NotAfter;
+                    }
+                    catch { /* ignore unparseable certs */ }
+                }
+            }
+
             // ESC5: check if low-privileged users can write to the pKIEnrollmentService AD object
             if (item.NTSecurityDescriptor != null)
             {
@@ -2345,6 +2365,7 @@ namespace PingCastle.Healthcheck
                         "msPKI-Template-Schema-Version",
                         "name",
                         "pKIExtendedKeyUsage",
+                        "pKIMaximumValidity",
                         "nTSecurityDescriptor",
                         "whenChanged",
             };
@@ -2499,6 +2520,19 @@ namespace PingCastle.Healthcheck
                     {
                         ct.IssuancePolicies = new List<string>(x.msPKICertificatePolicy);
                     }
+
+                    // Private key flags: exportable key and key archival
+                    ct.ExportableKey = (x.msPKIPrivateKeyFlag & 0x10) != 0;
+                    ct.RequiresKeyArchival = (x.msPKIPrivateKeyFlag & 0x4000) != 0;
+
+                    // Validity period: pKIMaximumValidity is an 8-byte little-endian negative FILETIME interval
+                    if (x.pKIMaximumValidity != null && x.pKIMaximumValidity.Length == 8)
+                    {
+                        var ticks = -BitConverter.ToInt64(x.pKIMaximumValidity, 0);
+                        if (ticks > 0)
+                            ct.ValidityPeriodDays = (int)(ticks / 10_000_000L / 86400L);
+                    }
+
                     // client authentification then smart card logon then PKINIT Client Authentication then any purpose
                     ct.HasAuthenticationEku = ct.EKUs.Count == 0 || ct.EKUs.Contains("1.3.6.1.5.5.7.3.2") || ct.EKUs.Contains("1.3.6.1.4.1.311.20.2.2") || ct.EKUs.Contains("1.3.6.1.5.2.3.4") || ct.EKUs.Contains("2.5.29.37.0");
                     ct.HasAnyPurpose = ct.EKUs.Count == 0 || ct.EKUs.Contains("2.5.29.37.0");
@@ -2573,6 +2607,52 @@ namespace PingCastle.Healthcheck
             // Also check computer accounts (less common but possible)
             adws.Enumerate(domainInfo.DefaultNamingContext,
                 "(&(objectCategory=computer)(altSecurityIdentities=*))",
+                properties, callback);
+        }
+
+        /// <summary>
+        /// Shadow Credentials: enumerates accounts that have msDS-KeyCredentialLink set.
+        /// An attacker with write access to this attribute can impersonate the account via PKINIT.
+        /// Reference: "Shadow Credentials" (Elad Shamir / SpecterOps).
+        /// </summary>
+        private void GenerateShadowCredentialData(ADDomainInfo domainInfo, ADWebService adws)
+        {
+            healthcheckData.ShadowCredentials = new List<HealthcheckShadowCredentialData>();
+
+            var privilegedDNs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (healthcheckData.AllPrivilegedMembers != null)
+            {
+                foreach (var m in healthcheckData.AllPrivilegedMembers)
+                    if (!string.IsNullOrEmpty(m.DistinguishedName))
+                        privilegedDNs.Add(m.DistinguishedName);
+            }
+
+            string[] properties = new string[] {
+                "distinguishedname",
+                "sAMAccountName",
+                "msDS-KeyCredentialLink",
+            };
+
+            WorkOnReturnedObjectByADWS callback = (ADItem x) =>
+            {
+                if (x.msDSKeyCredentialLink == null || x.msDSKeyCredentialLink.Length == 0)
+                    return;
+
+                healthcheckData.ShadowCredentials.Add(new HealthcheckShadowCredentialData
+                {
+                    AccountName = x.SAMAccountName,
+                    DistinguishedName = x.DistinguishedName,
+                    IsPrivileged = privilegedDNs.Contains(x.DistinguishedName),
+                    CredentialCount = x.msDSKeyCredentialLink.Length,
+                });
+            };
+
+            adws.Enumerate(domainInfo.DefaultNamingContext,
+                "(&(objectCategory=person)(msDS-KeyCredentialLink=*))",
+                properties, callback);
+
+            adws.Enumerate(domainInfo.DefaultNamingContext,
+                "(&(objectCategory=computer)(msDS-KeyCredentialLink=*))",
                 properties, callback);
         }
 

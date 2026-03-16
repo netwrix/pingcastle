@@ -3842,6 +3842,60 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 		</div>
 ");
 
+            if (Report.CertificateAuthorities != null && Report.CertificateAuthorities.Count > 0)
+            {
+                GenerateSubSection("Certificate Authorities", "certificateauthorities");
+                Add(@"
+		<div class=""row"">
+			<div class=""col-lg-12"">
+				<p>This section lists the Certificate Authorities (CAs) discovered in the domain.
+				CA-level misconfigurations can allow an attacker to issue fraudulent certificates or escalate privileges.</p>
+				<p><strong>Number of CAs:</strong> " + Report.CertificateAuthorities.Count + @"
+			</div>
+		</div>
+		<div class=""row"">
+			<div class=""col-lg-12"">
+");
+                GenerateAccordion("certificateAuthorities", () =>
+                {
+                    GenerateAccordionDetailForDetail("certificateAuthoritiesPanel", "certificateAuthorities", "Certificate Authorities", Report.CertificateAuthorities.Count, () =>
+                    {
+                        AddBeginTable("Certificate Authorities list");
+                        AddHeaderText("CA Name");
+                        AddHeaderText("Host");
+                        AddHeaderText("Low-priv Enroll", "A low-privileged user can directly request certificates from this CA");
+                        AddHeaderText("Low-priv ManageCA (ESC7)", "A low-privileged user holds the ManageCA right, allowing CA configuration changes");
+                        AddHeaderText("EDITF_ATTRIBUTESUBJECTALTNAME2 (ESC6)", "CA flag that allows any user to include an arbitrary Subject Alternative Name in certificate requests");
+                        AddHeaderText("Low-priv Owner", "A low-privileged user is the owner of the CA object");
+                        AddHeaderText("Enrollment Restrictions");
+                        AddBeginTableData();
+
+                        foreach (var ca in Report.CertificateAuthorities)
+                        {
+                            bool hasManagerPrincipals = ca.LowPrivelegedManagerPrincipals != null && ca.LowPrivelegedManagerPrincipals.Count > 0;
+                            bool hasEnrollPrincipals = ca.LowPrivelegedEnrollPrincipals != null && ca.LowPrivelegedEnrollPrincipals.Count > 0;
+                            bool hasEditFlag = ca.HasSubjectAltNameFlag == true;
+                            bool isLowPrivOwner = ca.IsLowPrivilegedPrincipalOwner == true;
+
+                            AddBeginRow();
+                            AddCellText(ca.Name);
+                            AddCellText(ca.DnsHostName);
+                            AddCellText(hasEnrollPrincipals ? "YES" : "NO", hasEnrollPrincipals);
+                            AddCellText(hasManagerPrincipals ? "YES" : "NO", hasManagerPrincipals);
+                            AddCellText(hasEditFlag ? "YES" : (ca.HasSubjectAltNameFlag == null ? "N/A" : "NO"), hasEditFlag);
+                            AddCellText(isLowPrivOwner ? "YES" : (ca.IsLowPrivilegedPrincipalOwner == null ? "N/A" : "NO"), isLowPrivOwner);
+                            AddCellText(ca.EnrollmentRestrictions ?? "N/A");
+                            AddEndRow();
+                        }
+                        AddEndTable();
+                    });
+                });
+                Add(@"
+			</div>
+		</div>
+");
+            }
+
             if (Report.CertificateTemplates != null && Report.CertificateTemplates.Count > 0)
             {
                 // certificate template
@@ -3872,6 +3926,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         AddHeaderText("Any purpose", "Indicates if no restrictions are in place for the certificate use such as authentication or agent use");
                         AddHeaderText("For Authentication", "Indicates certificates issued will be used for authentication purpose");
                         AddHeaderText("Flag No Security", "Indicates if the object szOID_NTDS_CA_SECURITY_EXT will not be included");
+                        AddHeaderText("ESC (Certified Pre-Owned)", "Applicable ESC vulnerability numbers from the Certified Pre-Owned research (SpecterOps)");
                         AddBeginTableData();
 
                         foreach (var data in Report.CertificateTemplates)
@@ -3888,6 +3943,8 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                             AddCellText(data.HasAnyPurpose ? "YES" : "NO", data.HasAnyPurpose, false);
                             AddCellText(data.HasAuthenticationEku ? "YES" : "NO");
                             AddCellText(data.NoSecurityExtension ? "YES" : "NO", data.NoSecurityExtension);
+                            var escLabels = GetCertTemplateEscLabels(data);
+                            AddCellText(escLabels, !string.IsNullOrEmpty(escLabels));
                             AddEndRow();
                         }
                         AddEndTable();
@@ -4067,6 +4124,40 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                 AddEndRow();
             }
             AddEndTable();
+        }
+
+        /// <summary>
+        /// Returns a comma-separated list of applicable ESC vulnerability labels
+        /// (from the Certified Pre-Owned research) for the given certificate template.
+        /// </summary>
+        private static string GetCertTemplateEscLabels(HealthCheckCertificateTemplate ct)
+        {
+            var labels = new System.Collections.Generic.List<string>();
+
+            // ESC1: Low-privileged user can request a cert with arbitrary SAN via an auth template
+            if (!ct.CAManagerApproval && ct.IssuanceRequirementsEmpty && ct.LowPrivCanEnroll
+                && ct.HasAuthenticationEku && ct.EnrolleeSupplies > 0)
+                labels.Add("ESC1");
+
+            // ESC2: Template with Any Purpose EKU (or no EKU) enrollable by low-priv users
+            if (!ct.CAManagerApproval && !ct.IsAuthorisedSignaturesRequired
+                && ct.IssuanceRequirementsEmpty && ct.LowPrivCanEnroll && ct.HasAnyPurpose)
+                labels.Add("ESC2");
+
+            // ESC3: Enrollment Agent template enrollable by low-priv users
+            if (!ct.CAManagerApproval && ct.IssuanceRequirementsEmpty
+                && ct.LowPrivCanEnroll && ct.EnrollmentAgentTemplate)
+                labels.Add("ESC3");
+
+            // ESC4: Low-privileged user has write permissions on the template object
+            if (ct.VulnerableTemplateACL)
+                labels.Add("ESC4");
+
+            // ESC9: Template sets CT_FLAG_NO_SECURITY_EXTENSION – prevents SID binding
+            if (ct.NoSecurityExtension)
+                labels.Add("ESC9");
+
+            return string.Join(", ", labels);
         }
 
         void AddNameWithCA(string Name, IReadOnlyCollection<string> CA)

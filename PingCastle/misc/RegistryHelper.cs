@@ -8,6 +8,52 @@ namespace PingCastle.misc
 {
     internal class RegistryHelper
     {
+        internal static bool TryGetHKLMKeyDWordValue(string keyPath, string keyValueName, string hostName, out int value)
+        {
+            IUserInterface ui = UserInterfaceFactory.GetUserInterface();
+            value = 0;
+
+            RegistryKey baseKey;
+            try
+            {
+                baseKey = RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, hostName);
+            }
+            catch (Exception e)
+            {
+                var msg = $"Could not connect to the HKLM hive - {e.Message}";
+                Trace.WriteLine(msg);
+                ui.DisplayMessage(msg);
+                return false;
+            }
+
+            try
+            {
+                var key = baseKey.OpenSubKey(keyPath);
+                if (key == null)
+                {
+                    var msg = $"Registry key not found: Path='{keyPath}' on Host='{hostName}'. Value '{keyValueName}' is null.";
+                    Trace.WriteLine(msg);
+                    ui.DisplayMessage(msg);
+                    return false;
+                }
+
+                var raw = key.GetValue(keyValueName);
+                if (raw == null)
+                    return false;
+
+                value = (int)raw;
+            }
+            catch (SecurityException e)
+            {
+                var msg = $"Could not access the '{keyValueName}' registry value: {e.Message}";
+                Trace.WriteLine(msg);
+                ui.DisplayMessage(msg);
+                return false;
+            }
+
+            return true;
+        }
+
         internal static bool TryGetHKLMKeyBinaryValue(string keyPath, string keyValueName, string hostName, out byte[] value)
         {
             IUserInterface ui = UserInterfaceFactory.GetUserInterface();

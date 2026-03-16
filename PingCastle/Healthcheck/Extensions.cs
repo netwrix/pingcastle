@@ -42,6 +42,21 @@ namespace PingCastle.Healthcheck
 
             return true;
         }
+
+        /// <summary>
+        /// Reads the EditFlags DWORD from the CA policy module registry key.
+        /// Bit 0x40 = EDITF_ATTRIBUTESUBJECTALTNAME2 (ESC6).
+        /// </summary>
+        internal static bool TryGetEditFlags(this HealthCheckCertificateAuthorityData ca, out int editFlags)
+        {
+            editFlags = 0;
+
+            if (ca.DnsHostName == null) throw new ArgumentException("DnsHostname is null");
+            if (ca.Name == null) throw new ArgumentException("Name is null");
+
+            var keyPath = $"SYSTEM\\CurrentControlSet\\Services\\CertSvc\\Configuration\\{ca.Name}\\PolicyModules\\CertificateAuthority_MicrosoftDefault.Policy";
+            return RegistryHelper.TryGetHKLMKeyDWordValue(keyPath, "EditFlags", ca.DnsHostName, out editFlags);
+        }
     }
 
     internal static class PrincipalExtensions

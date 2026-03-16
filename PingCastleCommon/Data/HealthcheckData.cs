@@ -124,6 +124,13 @@ namespace PingCastle.Healthcheck
        
         [XmlAttribute]
         public string EnrollmentRestrictions { get; set; }
+
+        /// <summary>
+        /// ESC6: CA has EDITF_ATTRIBUTESUBJECTALTNAME2 flag set, allowing any user to include
+        /// a Subject Alternative Name (SAN) in certificate requests on any template.
+        /// </summary>
+        [DefaultValue(null)]
+        public bool? HasSubjectAltNameFlag { get; set; }
     }
 
     [DebuggerDisplay("{Name}")]

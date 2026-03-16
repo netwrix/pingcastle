@@ -2287,6 +2287,10 @@ namespace PingCastle.Healthcheck
             if (managerPrincipals.Any())
                 ca.LowPrivelegedManagerPrincipals = managerPrincipals;
 
+            // ESC6: check if EDITF_ATTRIBUTESUBJECTALTNAME2 is set on the CA policy module
+            if (ca.TryGetEditFlags(out var editFlags))
+                ca.HasSubjectAltNameFlag = (editFlags & 0x40) != 0;
+
             return ca;
         }
 

@@ -256,6 +256,10 @@ namespace PingCastle.ADWS
         public string msExchInternetWebProxy { get; set; }
         [ADAttributeAttribute("msPKI-Certificate-Name-Flag", ADAttributeValueKind.IntValue)]
         public int msPKICertificateNameFlag { get; set; }
+        [ADAttributeAttribute("msPKI-Certificate-Policy", ADAttributeValueKind.StringArrayValue)]
+        public string[] msPKICertificatePolicy { get; set; }
+        [ADAttributeAttribute("msDS-OIDToGroupLink", ADAttributeValueKind.StringValue)]
+        public string msDSOIDToGroupLink { get; set; }
         [ADAttributeAttribute("msPKI-Cert-Template-OID", ADAttributeValueKind.StringValue)]
         public string msPKICertTemplateOID { get; set; }
         [ADAttributeAttribute("msPKI-Enrollment-Flag", ADAttributeValueKind.IntValue)]

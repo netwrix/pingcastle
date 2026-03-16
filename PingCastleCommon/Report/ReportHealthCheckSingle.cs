@@ -1511,6 +1511,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             {
                                 AddHeaderText("WebDAV", "Detect if the WebClient service is running, which provide the ability to call http server from native command line.");
                             }
+                            AddHeaderText("Cert Binding (ESC10)", "StrongCertificateBindingEnforcement: 0=Disabled (vulnerable), 1=Compatibility mode, 2=Full enforcement (secure), N/A=not read");
                             AddBeginTableData();
 
                             int count = 0;
@@ -1546,6 +1547,12 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                                 {
                                     AddCellText((dc.WebClientEnabled ? "YES" : "NO"), true, !dc.WebClientEnabled);
                                 }
+                                if (dc.StrongCertificateBindingEnforcement == null)
+                                    AddCellText("N/A");
+                                else if (dc.StrongCertificateBindingEnforcement == 2)
+                                    AddCellText("2 - Full enforcement", false, true);
+                                else
+                                    AddCellText(dc.StrongCertificateBindingEnforcement == 0 ? "0 - Disabled" : "1 - Compatibility", true);
                                 AddEndRow();
                             }
                             AddEndTable();
@@ -3750,7 +3757,13 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
 		<div class=""row"">
 			<div class=""col-lg-12"">
 				<p>This detects trusted certificates which can be used in man in the middle attacks, or which can issue smart card logon certificates</p>
-				<p><strong>Number of trusted certificates:</strong> " + Report.TrustedCertificates.Count + @" 
+				<p><strong>Number of trusted certificates:</strong> " + Report.TrustedCertificates.Count + @"
+			</div>
+		</div>
+		<div class=""row"">
+			<div class=""col-lg-12"">
+" + (Report.NTAuthCertificatesVulnerableACL == true ? @"
+			<div class=""alert alert-danger""><strong>ESC5 – NTAuthCertificates ACL:</strong> A low-privileged user has write access to the NTAuthCertificates object. They can add a rogue CA to the enterprise trusted store.<br>Affected principals: " + string.Join(", ", Report.NTAuthCertificatesLowPrivWritePrincipals ?? new System.Collections.Generic.List<string>()) + @"</div>" : "") + @"
 			</div>
 		</div>
 		<div class=""row"">
@@ -3866,6 +3879,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         AddHeaderText("Low-priv Enroll", "A low-privileged user can directly request certificates from this CA");
                         AddHeaderText("Low-priv ManageCA (ESC7)", "A low-privileged user holds the ManageCA right, allowing CA configuration changes");
                         AddHeaderText("EDITF_ATTRIBUTESUBJECTALTNAME2 (ESC6)", "CA flag that allows any user to include an arbitrary Subject Alternative Name in certificate requests");
+                        AddHeaderText("Vulnerable Enrollment Service ACL (ESC5)", "A low-privileged user has write permissions on this CA's enrollment service AD object");
                         AddHeaderText("Low-priv Owner", "A low-privileged user is the owner of the CA object");
                         AddHeaderText("Enrollment Restrictions");
                         AddBeginTableData();
@@ -3876,6 +3890,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                             bool hasEnrollPrincipals = ca.LowPrivelegedEnrollPrincipals != null && ca.LowPrivelegedEnrollPrincipals.Count > 0;
                             bool hasEditFlag = ca.HasSubjectAltNameFlag == true;
                             bool isLowPrivOwner = ca.IsLowPrivilegedPrincipalOwner == true;
+                            bool vulnEnrollServiceACL = ca.VulnerableEnrollmentServiceACL == true;
 
                             AddBeginRow();
                             AddCellText(ca.Name);
@@ -3883,6 +3898,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                             AddCellText(hasEnrollPrincipals ? "YES" : "NO", hasEnrollPrincipals);
                             AddCellText(hasManagerPrincipals ? "YES" : "NO", hasManagerPrincipals);
                             AddCellText(hasEditFlag ? "YES" : (ca.HasSubjectAltNameFlag == null ? "N/A" : "NO"), hasEditFlag);
+                            AddCellText(vulnEnrollServiceACL ? "YES" : (ca.VulnerableEnrollmentServiceACL == null ? "N/A" : "NO"), vulnEnrollServiceACL);
                             AddCellText(isLowPrivOwner ? "YES" : (ca.IsLowPrivilegedPrincipalOwner == null ? "N/A" : "NO"), isLowPrivOwner);
                             AddCellText(ca.EnrollmentRestrictions ?? "N/A");
                             AddEndRow();
@@ -4156,6 +4172,10 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             // ESC9: Template sets CT_FLAG_NO_SECURITY_EXTENSION – prevents SID binding
             if (ct.NoSecurityExtension)
                 labels.Add("ESC9");
+
+            // ESC13: Template issuance policy is linked to a security group via msDS-OIDToGroupLink
+            if (!string.IsNullOrEmpty(ct.LinkedOIDGroup))
+                labels.Add("ESC13");
 
             return string.Join(", ", labels);
         }

@@ -90,6 +90,19 @@ namespace PingCastle.Healthcheck
         public string Owner { get; set; }
 
         public List<HealthCheckCertificateTemplateRights> Rights { get; set; }
+
+        /// <summary>
+        /// ESC13: OID values from msPKI-Certificate-Policy that are linked to a security group
+        /// via msDS-OIDToGroupLink. A non-null value means at least one OID in this template
+        /// is mapped to a group, potentially granting membership implicitly.
+        /// </summary>
+        [DefaultValue(null)]
+        public string LinkedOIDGroup { get; set; }
+
+        /// <summary>
+        /// List of issuance policy OIDs (msPKI-Certificate-Policy) on this template.
+        /// </summary>
+        public List<string> IssuancePolicies { get; set; }
     }
 
     public class HealthCheckCertificateTemplateRights
@@ -131,6 +144,18 @@ namespace PingCastle.Healthcheck
         /// </summary>
         [DefaultValue(null)]
         public bool? HasSubjectAltNameFlag { get; set; }
+
+        /// <summary>
+        /// ESC5: A low-privileged principal has write permissions on the CA's
+        /// pKIEnrollmentService AD object, allowing template list manipulation or object takeover.
+        /// </summary>
+        [DefaultValue(null)]
+        public bool? VulnerableEnrollmentServiceACL { get; set; }
+
+        /// <summary>
+        /// ESC5: Names of low-privileged principals with write rights on the enrollment service object.
+        /// </summary>
+        public List<string> LowPrivilegedEnrollmentServiceWritePrincipals { get; set; }
     }
 
     [DebuggerDisplay("{Name}")]
@@ -1263,6 +1288,14 @@ namespace PingCastle.Healthcheck
 
         public bool LdapServerSigningRequirementDisabled { get; set; }
 
+        /// <summary>
+        /// ESC10: Value of HKLM\SYSTEM\CurrentControlSet\Services\Kdc\StrongCertificateBindingEnforcement.
+        /// 0 = disabled (vulnerable), 1 = compatibility mode, 2 = full enforcement.
+        /// Null means the value could not be read (non-privileged scan or registry inaccessible).
+        /// </summary>
+        [DefaultValue(null)]
+        public int? StrongCertificateBindingEnforcement { get; set; }
+
         public DateTime PwdLastSet { get; set; }
 
         public string RegistrationProblem { get; set; }
@@ -1817,9 +1850,21 @@ namespace PingCastle.Healthcheck
 
         public bool ShouldSerializeCertificateTemplates() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
 
-        public List<HealthCheckCertificateAuthorityData> CertificateAuthorities { get; set; }   
+        public List<HealthCheckCertificateAuthorityData> CertificateAuthorities { get; set; }
 
         public List<HealthCheckCertificateTemplate> CertificateTemplates { get; set; }
+
+        /// <summary>
+        /// ESC5: A low-privileged principal has write permissions on the
+        /// CN=NTAuthCertificates object, allowing a rogue CA to be added to the trusted store.
+        /// </summary>
+        [DefaultValue(null)]
+        public bool? NTAuthCertificatesVulnerableACL { get; set; }
+
+        /// <summary>
+        /// ESC5: Names of low-privileged principals with write rights on NTAuthCertificates.
+        /// </summary>
+        public List<string> NTAuthCertificatesLowPrivWritePrincipals { get; set; }
 
         public bool ShouldSerializeCertificateEnrollments() { return (int)Level <= (int)PingCastleReportDataExportLevel.Normal; }
         public List<HealthCheckCertificateEnrollment> CertificateEnrollments { get; set; }

@@ -515,6 +515,9 @@ namespace PingCastle
                         case "--export-rules":
                             requestedActions.Add(PossibleTasks.ExportRulesXml);
                             break;
+                        case "--json":
+                            settings.JsonExport = true;
+                            break;
                         case "--foreigndomain":
                             if (i + 1 >= args.Length)
                             {
@@ -1357,6 +1360,7 @@ namespace PingCastle
             Console.WriteLine("    --privileged      : includes checks that require high levels of Active Directory access");
             Console.WriteLine("    --datefile        : insert the date into the report filename");
             Console.WriteLine("    --encrypt         : Encrypt the XML report using the RSA key from pingcastle.exe.config. Omit when reloading an encrypted report (--reload-report) to output an unencrypted report");
+            Console.WriteLine("    --json            : generate a JSON report in addition to the XML and HTML reports");
             Console.WriteLine("    --level <level>   : specify the amount of data found in the xml file");
             Console.WriteLine("                      : level: Full, Normal, Light");
             Console.WriteLine("    --no-enum-limit   : remove the max 100 users limitation in html report");

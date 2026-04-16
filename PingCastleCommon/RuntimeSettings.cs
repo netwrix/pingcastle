@@ -58,6 +58,7 @@ namespace PingCastle
         public List<string> DomainToNotExplore;
         public List<string> AntivirusCustomServiceNames;
         public bool EncryptReport = false;
+        public bool JsonExport = false;
         public string mailNotification;
         public string smtpLogin;
         public string smtpPassword;

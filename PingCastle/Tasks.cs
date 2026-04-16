@@ -54,6 +54,7 @@ namespace PingCastle
 
         Dictionary<string, string> xmlreports = new Dictionary<string, string>();
         Dictionary<string, string> htmlreports = new Dictionary<string, string>();
+        Dictionary<string, string> jsonreports = new Dictionary<string, string>();
         Dictionary<string, DateTime> dateReports = new Dictionary<string, DateTime>();
         Dictionary<string, string> aadjsonreport = new Dictionary<string, string>();
         Dictionary<string, string> aadhtmlreport = new Dictionary<string, string>();
@@ -717,6 +718,11 @@ namespace PingCastle
                     }
                     pingCastleReport.SetExportLevel(ExportLevel);
                     xmlreports[domain] = DataHelper<HealthcheckData>.SaveAsXml(pingCastleReport, pingCastleReport.GetMachineReadableFileName(), Settings.EncryptReport);
+                    if (Settings.JsonExport)
+                    {
+                        DisplayAdvancement("Generating json file");
+                        jsonreports[domain] = DataHelper<HealthcheckData>.SaveAsJson(pingCastleReport, pingCastleReport.GetJsonFileName());
+                    }
                     dateReports[domain] = pingCastleReport.GenerationDate;
                     DisplayAdvancement("Done");
                 });

@@ -74,7 +74,7 @@
     <PackageReference Include="System.Net.NameResolution" Version="4.3.0" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.1" />
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="8.0.0" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="8.0.3" />
     <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
     <PackageReference Include="Azure.Core" Version="1.44.1" />
     <PackageReference Include="Microsoft.Graph.Beta" Version="5.99.0-preview" />

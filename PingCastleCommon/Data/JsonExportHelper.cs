@@ -53,7 +53,17 @@ namespace PingCastle.Data
                     property.ShouldSerialize = (_, _) => false;
                     continue;
                 }
+                  var xmlElement = clrProperty.GetCustomAttribute<XmlElementAttribute>();
+                  if (xmlElement != null && !string.IsNullOrEmpty(xmlElement.ElementName))
+                  {
+                      property.Name = xmlElement.ElementName;
+                  }
 
+                  var xmlArray = clrProperty.GetCustomAttribute<XmlArrayAttribute>();
+                  if (xmlArray != null && !string.IsNullOrEmpty(xmlArray.ElementName))
+                  {
+                      property.Name = xmlArray.ElementName;
+                  }
                 // Honor ShouldSerialize*() methods (XmlSerializer convention)
                 var shouldSerializeMethod = typeInfo.Type.GetMethod(
                     "ShouldSerialize" + property.Name,

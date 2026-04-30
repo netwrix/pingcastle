@@ -48,7 +48,7 @@ namespace PingCastle.Data
 
                 // Honor [XmlIgnore] + [IgnoreDataMember] attributes
                 if (clrProperty.GetCustomAttribute<XmlIgnoreAttribute>() != null
-                    && clrProperty.GetCustomAttribute<IgnoreDataMemberAttribute>() != null)
+                    || clrProperty.GetCustomAttribute<IgnoreDataMemberAttribute>() != null)
                 {
                     property.ShouldSerialize = (_, _) => false;
                     continue;

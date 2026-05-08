@@ -77,7 +77,7 @@
 
   <!-- Microsoft Kiota -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.Kiota.Abstractions" Version="1.16.4" />
+    <PackageReference Include="Microsoft.Kiota.Abstractions" Version="1.22.0" />
     <PackageReference Include="Microsoft.Kiota.Authentication.Azure" Version="1.16.4" />
     <PackageReference Include="Microsoft.Kiota.Http.HttpClientLibrary" Version="1.16.4" />
     <PackageReference Include="Microsoft.Kiota.Serialization.Form" Version="1.16.4" />
@@ -90,7 +90,7 @@
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Std.UriTemplate" Version="2.0.1" />
+    <PackageReference Include="Std.UriTemplate" Version="2.0.8" />
   </ItemGroup>
 
   <!-- BCL Extensions -->

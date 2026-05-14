@@ -1,15 +1,4 @@
-
 # PingCastle by Netwrix
-
-## Acquisition Announcement
-
-We are excited to announce that PingCastle has been acquired by [Netwrix](http://www.netwrix.com/)!
-
-Netwrix understands that commercial acquisitions of open source solutions can create concerns within the community. We are committed to actively stewarding the project and maintaining the availability of the open source edition.
-
-PingCastle has a long history of offering both open source and commercial editions. Netwrix is not only committed to preserving the open source project but also increasing development resources to enhance both the open source and commercial versions with new features and capabilities.
-
-Netwrix, an industry leader in Active Directory security solutions and other cybersecurity solutions, ensures a brighter digital future for more than 13,500 customers worldwide. Netwrix empowers security professionals to face digital threats with confidence by enabling them to identify and protect sensitive data as well as to detect, respond to, and recover from attacks.
 
 ## Stay Connected & Contribute
 
@@ -29,7 +18,8 @@ PingCastle provides a streamlined approach to evaluating Active Directory securi
 Rather than pursuing exhaustive evaluation at the expense of efficiency, PingCastle delivers the optimal balance—identifying 80% of critical security issues while requiring just 20% of the time and effort of traditional assessment methods.
 
 ```plain
-*****    #******** Netwrix PingCastle (Version 3.0.5.33)
+
+*****    #******** Netwrix PingCastle (Version 3.5.0.33)
  ***    %********** Get Active Directory Security at 80% in 20% of the time
  *      ####   #### End of support: 2027-08-31.
      ***#### ####
@@ -51,14 +41,13 @@ Do not forget that there are other command line switches like --help that you ca
   7-advanced   -Open the advanced menu
   0-Exit
 ==============================
-This is the main functionality of PingCastle. In a matter of minutes, it produces a report which will give you an overview of your Active Directory security. This report can be generated on other domains by using the existing trust links.
-```
+This is the main functionality of PingCastle. In a matter of minutes, it produces a report which will give you an overview of your Active Directory security. This report can be generated on other domains by using the existing trust links.```
 
 Check <https://www.pingcastle.com> for the documentation and methodology
 
 ## Build
 
-PingCastle is a c# project which can be built from Visual Studio 2012 to Visual Studio 2022.
+PingCastle is a C# project which can be built from Visual Studio 2012 to Visual Studio 2022.
 
 ## Features & Bugs
 
@@ -85,14 +74,12 @@ In summary: Use it freely for internal purposes; purchase a license if you plan 
 
 PingCastle uses the following open source components:
 
-* [Bootstrap](https://getbootstrap.com/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
-* [JQuery](https://jquery.org) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
-* [vis.js](http://visjs.org/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
-* [popper.js](https://popper.js.org/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
-* [Bootstrap Table](https://bootstrap-table.com/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
-* [Bootstrap Table Export](https://bootstrap-table.com) Licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
-* [Table Export](https://github.com/hhurz/tableExport.jquery.plugin) Licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
-* [Font Awesome](https://fontawesome.com) Licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+- [Bootstrap](https://getbootstrap.com/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+- [JQuery](https://jquery.org) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+- [vis.js](http://visjs.org/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+- [popper.js](https://popper.js.org/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+- [Bootstrap Table](https://bootstrap-table.com/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+- [FodyWeavers](https://github.com/Fody/Fody) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
 
 ## Author
 

@@ -1373,7 +1373,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddHeaderText("Group Name");
                 AddHeaderText("Critical?", "Indicates if the group is considered as critical in term of damage capability");
                 AddHeaderText("Nb Admins", "This is the number of user accounts member of this group");
-                AddHeaderText("No MFA", "Accounts without MFA enabled or enforced");
+                AddHeaderText("No. without MFA", "Accounts without MFA enabled or enforced");
                 AddHeaderText("On premise accounts");
                 AddHeaderText("Password Never Expires");
                 AddHeaderText("LastPasswordChangeTimestamp");
@@ -1568,7 +1568,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddHeaderText("When Created");
                 AddHeaderText("Last Password Change");
                 AddHeaderText("Password Never Expires");
-                AddHeaderText("No MFA");
+                AddHeaderText("MFA Status");
                 AddHeaderText("Role Member Type");
                 AddHeaderText("Status");
                 AddHeaderText("Is Licensed");

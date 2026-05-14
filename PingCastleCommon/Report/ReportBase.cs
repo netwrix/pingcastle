@@ -68,9 +68,9 @@ public abstract class ReportBase
         TemplateManager.LoadFontAwesomeCss()
     };
 
-    private List<string> JSToAdd = new List<string> { 
-        TemplateManager.LoadJqueryJs(), 
-        TemplateManager.LoadPopperJs(), 
+    private List<string> JSToAdd = new List<string> {
+        TemplateManager.LoadJqueryJs(),
+        TemplateManager.LoadPopperJs(),
         TemplateManager.LoadBootstrapJs(),
         TemplateManager.LoadBootstrapTableJs(),
         TemplateManager.LoadReportBaseJs()
@@ -390,7 +390,7 @@ public abstract class ReportBase
     protected void AddEndTooltip()
     {
         Add(@"""></i>");
-    }    
+    }
 
     protected void AddHeaderText(string text, string tooltip, bool widetooltip, bool html = false)
     {
@@ -1340,7 +1340,7 @@ public abstract class ReportBase
             case "enablemulticast":
                 return @"<a href=""https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-admx-dnsclient#admx-dnsclient-turn-off-multicast"">Turn off multicast name resolution</a> (<a href=""https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-llmnrp/02b1d227-d7a2-4026-9fd6-27ea5651fe85"">Technical details</a>)";
             case "enablesecuritysignature":
-                return @"<a href=""https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/smbv1-microsoft-network-server-digitally-sign-communications-if-client-agrees"">Microsoft network server: Digitally sign communications (if client agrees)</a> (<a href=""https://www.stigviewer.com/stig/windows_server_2016/2017-11-20/finding/V-73663"">Technical details</a>)";
+                return @"<a href=""https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/smbv1-microsoft-network-server-digitally-sign-communications-if-client-agrees"">Microsoft network server: Digitally sign communications (if client agrees)</a>";
             case "enablemodulelogging":
                 return @"<a href=""https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_group_policy_settings?view=powershell-6"">Powershell: Turn on Module logging</a>";
             case "enablescriptblocklogging":
@@ -1838,7 +1838,7 @@ public abstract class ReportBase
         Add(@"</g></svg></div>");
     }
 
-    static string[] colors = new string[] { 
+    static string[] colors = new string[] {
         "#ff0029",
         "#377eb8",
         "#66a61e",

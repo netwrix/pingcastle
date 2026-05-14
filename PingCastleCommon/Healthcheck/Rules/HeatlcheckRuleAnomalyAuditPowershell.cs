@@ -11,7 +11,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("A-AuditPowershell", RiskRuleCategory.Anomalies, RiskModelCategory.Audit)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
     [RuleIntroducedIn(2, 8)]
-    [RuleSTIG("V-68819", "PowerShell script block logging must be enabled", STIGFramework.Windows10)]
+    [RuleSTIG("V-220860", "PowerShell script block logging must be enabled", STIGFramework.Windows10)]
     [RuleMaturityLevel(3)]
     [RuleMitreAttackMitigation(MitreAttackMitigation.Audit)]
     public class HeatlcheckRuleAnomalyAuditPowershell : RuleBase<HealthcheckData>

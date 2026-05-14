@@ -29,12 +29,12 @@ namespace PingCastle.Cloud.Common
 
         public string ToJsonString()
         {
-            return JsonSerializer.Serialize(this);
+            return JsonSerializer.Serialize(this, GetType());
         }
 
         public string ToBase64JsonString()
         {
-            var data = JsonSerializer.Serialize(this);
+            var data = JsonSerializer.Serialize(this, GetType());
             var payloadString = Encoding.UTF8.GetBytes(data);
             return Convert.ToBase64String(payloadString);
         }

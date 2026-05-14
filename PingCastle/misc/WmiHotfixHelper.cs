@@ -3,83 +3,87 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Management;
 using System.Text.RegularExpressions;
+using System.Threading;
 using PingCastle.UserInterface;
+using PingCastleCommon.Utility;
 
 namespace PingCastle.misc
 {
     internal class WmiHotfixHelper : IHotfixService
     {
         private static readonly Regex KbRegex = new Regex(@"KB(\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly DateTime Ms17010AlertDate = new DateTime(2017, 3, 14, 0, 0, 0, DateTimeKind.Utc);
 
-        /// <summary>
-        /// Initializes a new instance of the WmiHotfixHelper class.
-        /// </summary>
         public WmiHotfixHelper()
         {
         }
 
         /// <summary>
-        /// Attempts to retrieve installed hotfixes from a remote computer using WMI.
+        /// Retrieves installed hotfixes from a remote computer using WMI.
         /// </summary>
         /// <param name="hostName">Target computer hostname or IP address</param>
-        /// <param name="hotfixes">Output set of discovered KB numbers (e.g., "KB4012598")</param>
-        /// <returns>True if hotfixes were successfully retrieved, false otherwise</returns>
-        public bool TryGetInstalledHotfixes(string hostName, out HashSet<string> hotfixes)
-        {
-            return TryGetInstalledHotfixes(hostName, out hotfixes, UserInterfaceFactory.GetUserInterface());
-        }
-
-        /// <summary>
-        /// Attempts to retrieve installed hotfixes from a remote computer using WMI.
-        /// </summary>
-        /// <param name="hostName">Target computer hostname or IP address</param>
-        /// <param name="hotfixes">Output set of discovered KB numbers (e.g., "KB4012598")</param>
         /// <param name="ui">User interface for displaying messages</param>
-        /// <returns>True if hotfixes were successfully retrieved, false otherwise</returns>
-        public bool TryGetInstalledHotfixes(string hostName, out HashSet<string> hotfixes, IUserInterface ui)
+        /// <returns>A <see cref="HotfixQueryResult"/> containing discovered KB numbers and query status</returns>
+        public HotfixQueryResult TryGetInstalledHotfixes(string hostName, IUserInterface ui, CancellationToken cancellationToken = default)
         {
-            hotfixes = new HashSet<string>();
+            var result = new HotfixQueryResult();
 
             try
             {
-                // Primary method: Win32_QuickFixEngineering (fastest and most direct)
-                if (TryGetHotfixesFromQuickFixEngineering(hostName, hotfixes, ui))
+                if (TryGetHotfixesFromQuickFixEngineering(hostName, result, ui))
                 {
-                    if (hotfixes.Count > 0)
+                    if (result.KbNumbers.Count > 0)
                     {
-                        Trace.WriteLine($"Retrieved {hotfixes.Count} hotfixes from {hostName} using Win32_QuickFixEngineering");
-                        return true;
+                        result.Status = HotfixQueryStatus.Success;
+                        Trace.WriteLine($"Retrieved {result.KbNumbers.Count} hotfixes from {hostName.SanitizeForLog()} using Win32_QuickFixEngineering");
+                        return result;
                     }
+
+                    Trace.WriteLine($"No hotfixes found on {hostName.SanitizeForLog()} using WMI methods");
+                    result.Status = HotfixQueryStatus.NoResults;
+                    return result;
                 }
 
-                // Fallback method: Win32_Product (more comprehensive but slower)
-                if (TryGetHotfixesFromWin32Product(hostName, hotfixes, ui))
-                {
-                    if (hotfixes.Count > 0)
-                    {
-                        Trace.WriteLine($"Retrieved {hotfixes.Count} hotfixes from {hostName} using Win32_Product fallback");
-                        return true;
-                    }
-                }
-
-                // If no hotfixes found using WMI methods
-                Trace.WriteLine($"No hotfixes found on {hostName} using WMI methods");
-                return false;
+                Trace.WriteLine($"WMI connection failed for {hostName.SanitizeForLog()}");
+                result.Status = HotfixQueryStatus.ConnectionFailed;
+                result.FailureReason = "WMI query failed — see trace log for details";
+                return result;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                result.Status = HotfixQueryStatus.AccessDenied;
+                result.FailureReason = ex.Message;
+                var msg = $"Access denied retrieving hotfixes from {hostName.SanitizeForLog()} using WMI: {ex.Message}";
+                Trace.WriteLine(msg);
+                ui.DisplayMessage(msg);
+                return result;
+            }
+            catch (System.Runtime.InteropServices.COMException ex) when (ex.HResult == unchecked((int)0x800706BA))
+            {
+                result.Status = HotfixQueryStatus.ConnectionFailed;
+                result.FailureReason = ex.Message;
+                Trace.WriteLine($"RPC server unavailable for {hostName.SanitizeForLog()}: {ex.Message}");
+                return result;
+            }
+            catch (TimeoutException ex)
+            {
+                result.Status = HotfixQueryStatus.Timeout;
+                result.FailureReason = ex.Message;
+                Trace.WriteLine($"Timeout retrieving hotfixes from {hostName.SanitizeForLog()}: {ex.Message}");
+                return result;
             }
             catch (Exception ex)
             {
-                var msg = $"Could not retrieve hotfixes from {hostName} using WMI methods: {ex.Message}";
+                result.Status = HotfixQueryStatus.ConnectionFailed;
+                result.FailureReason = ex.Message;
+                var msg = $"Could not retrieve hotfixes from {hostName.SanitizeForLog()} using WMI methods: {ex.Message}";
                 Trace.WriteLine(msg);
                 ui.DisplayMessage(msg);
-                return false;
+                return result;
             }
         }
 
-        /// <summary>
-        /// Primary method: Uses Win32_QuickFixEngineering WMI class to retrieve hotfixes.
-        /// This is the fastest and most direct approach, well-suited for most Windows systems.
-        /// </summary>
-        private bool TryGetHotfixesFromQuickFixEngineering(string hostName, HashSet<string> hotfixes, IUserInterface ui)
+        private bool TryGetHotfixesFromQuickFixEngineering(string hostName, HotfixQueryResult result, IUserInterface ui)
         {
             try
             {
@@ -87,7 +91,7 @@ namespace PingCastle.misc
                 var scope = new ManagementScope($"\\\\{hostName}\\root\\cimv2", connectionOptions);
                 scope.Connect();
 
-                var query = new ObjectQuery("SELECT * FROM Win32_QuickFixEngineering");
+                var query = new ObjectQuery("SELECT HotFixID, Description, InstalledOn FROM Win32_QuickFixEngineering");
                 using (var searcher = new ManagementObjectSearcher(scope, query))
                 using (var collection = searcher.Get())
                 {
@@ -95,78 +99,26 @@ namespace PingCastle.misc
                     {
                         try
                         {
-                            // HotFixID property contains the KB number (e.g., "KB4012598")
                             var hotfixId = obj["HotFixID"]?.ToString();
                             if (!string.IsNullOrEmpty(hotfixId))
                             {
-                                ExtractKbFromString(hotfixId, hotfixes);
+                                ExtractKbFromString(hotfixId, result.KbNumbers);
                             }
 
-                            // Also check Description field as some updates might have KB numbers there
                             var description = obj["Description"]?.ToString();
                             if (!string.IsNullOrEmpty(description))
                             {
-                                ExtractKbFromString(description, hotfixes);
+                                ExtractKbFromString(description, result.KbNumbers);
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                            Trace.WriteLine($"Error processing QuickFix entry on {hostName}: {ex.Message}");
-                        }
-                        finally
-                        {
-                            obj?.Dispose();
-                        }
-                    }
-                }
 
-                return true;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                var msg = $"Access denied when querying Win32_QuickFixEngineering on {hostName}: {ex.Message}";
-                Trace.WriteLine(msg);
-                ui.DisplayMessage(msg);
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine($"Error querying Win32_QuickFixEngineering on {hostName}: {ex.Message}");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Fallback method: Uses Win32_Product WMI class to find installed products with KB numbers.
-        /// This method is more comprehensive but slower and can trigger consistency checks.
-        /// Only used when Win32_QuickFixEngineering doesn't return sufficient results.
-        /// </summary>
-        private bool TryGetHotfixesFromWin32Product(string hostName, HashSet<string> hotfixes, IUserInterface ui)
-        {
-            try
-            {
-                var connectionOptions = CreateConnectionOptions();
-                var scope = new ManagementScope($"\\\\{hostName}\\root\\cimv2", connectionOptions);
-                scope.Connect();
-
-                // Query for products that contain KB in their name
-                var query = new ObjectQuery("SELECT Name FROM Win32_Product WHERE Name LIKE '%KB%'");
-                using (var searcher = new ManagementObjectSearcher(scope, query))
-                using (var collection = searcher.Get())
-                {
-                    foreach (ManagementObject obj in collection)
-                    {
-                        try
-                        {
-                            var productName = obj["Name"]?.ToString();
-                            if (!string.IsNullOrEmpty(productName))
+                            if (result.MostRecentQualityUpdateDate == null)
                             {
-                                ExtractKbFromString(productName, hotfixes);
+                                CheckPostAlertQualityUpdate(obj, result, Ms17010AlertDate);
                             }
                         }
                         catch (Exception ex)
                         {
-                            Trace.WriteLine($"Error processing Win32_Product entry on {hostName}: {ex.Message}");
+                            Trace.WriteLine($"Error processing QuickFix entry on {hostName.SanitizeForLog()}: {ex.Message}");
                         }
                         finally
                         {
@@ -179,45 +131,51 @@ namespace PingCastle.misc
             }
             catch (UnauthorizedAccessException ex)
             {
-                var msg = $"Access denied when querying Win32_Product on {hostName}: {ex.Message}";
+                var msg = $"Access denied when querying Win32_QuickFixEngineering on {hostName.SanitizeForLog()}: {ex.Message}";
                 Trace.WriteLine(msg);
                 ui.DisplayMessage(msg);
                 return false;
             }
             catch (Exception ex)
             {
-                Trace.WriteLine($"Error querying Win32_Product on {hostName}: {ex.Message}");
+                Trace.WriteLine($"Error querying Win32_QuickFixEngineering on {hostName.SanitizeForLog()}: {ex.Message}");
                 return false;
             }
         }
 
-        /// <summary>
-        /// Creates connection options for WMI queries with appropriate timeout and authentication settings.
-        /// </summary>
+        private static void CheckPostAlertQualityUpdate(ManagementObject obj, HotfixQueryResult result, DateTime alertCutoff)
+        {
+            var description = obj["Description"]?.ToString();
+            if (!string.Equals(description, "Update", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            var installedOnStr = obj["InstalledOn"]?.ToString();
+            if (string.IsNullOrEmpty(installedOnStr))
+            {
+                return;
+            }
+
+            if (DateTime.TryParse(installedOnStr, out var installedOn) && installedOn > alertCutoff)
+            {
+                result.MostRecentQualityUpdateDate = installedOn;
+            }
+        }
+
         private ConnectionOptions CreateConnectionOptions()
         {
             var options = new ConnectionOptions
             {
-                // Use current user's credentials (pass-through authentication)
                 EnablePrivileges = true,
-
-                // Set reasonable timeout (90 seconds for network operations)
                 Timeout = TimeSpan.FromSeconds(90),
-
-                // Use default authentication (typically NTLM/Kerberos)
                 Authentication = AuthenticationLevel.PacketPrivacy,
-
-                // Enable impersonation for proper access
                 Impersonation = ImpersonationLevel.Impersonate
             };
 
             return options;
         }
 
-        /// <summary>
-        /// Extracts KB numbers from a given string using regex matching.
-        /// Supports formats like "KB4012598", "kb1234567", etc.
-        /// </summary>
         private void ExtractKbFromString(string input, HashSet<string> hotfixes)
         {
             if (string.IsNullOrEmpty(input))
@@ -232,22 +190,6 @@ namespace PingCastle.misc
                     hotfixes.Add(kbNumber);
                 }
             }
-        }
-
-        /// <summary>
-        /// Alternative method that could be used for additional hotfix detection via PowerShell cmdlets.
-        /// This method uses Get-HotFix cmdlet through WMI if PowerShell remoting is available.
-        /// Currently not implemented but could be added as another fallback mechanism.
-        /// </summary>
-        /// <remarks>
-        /// This would require PowerShell remoting to be enabled on target systems:
-        /// Invoke-Command -ComputerName $hostName -ScriptBlock { Get-HotFix | Select-Object HotFixID }
-        /// </remarks>
-        private bool TryGetHotfixesFromPowerShell(string hostName, HashSet<string> hotfixes, IUserInterface ui)
-        {
-            // Future implementation: Use PowerShell remoting if WMI methods fail
-            // This would require additional dependencies and PowerShell remoting configuration
-            return false;
         }
     }
 }

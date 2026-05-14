@@ -13,7 +13,7 @@ namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("P-ServiceDomainAdmin", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.PrivilegeControl)]
     [RuleComputation(RuleComputationType.TriggerOnThreshold, 15, Threshold: 2)]
-    [RuleSTIG("V-36432", "Membership to the Domain Admins group must be restricted to accounts used only to manage the Active Directory domain and domain controllers.")]
+    [RuleSTIG("V-243467", "Membership to the Domain Admins group must be restricted to accounts used only to manage the Active Directory domain and domain controllers.")]
     [RuleANSSI("R11", "subsection.2.5")]
     [RuleDurANSSI(1, "dont_expire_priv", "Privileged accounts with never-expiring passwords")]
     [RuleMitreAttackMitigation(MitreAttackMitigation.PrivilegedAccountManagement)]

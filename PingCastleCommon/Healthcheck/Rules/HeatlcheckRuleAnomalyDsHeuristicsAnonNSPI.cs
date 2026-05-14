@@ -10,7 +10,7 @@ namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("A-DsHeuristicsAllowAnonNSPI", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-    [RuleSTIG("V-8555", "Anonymous Access to AD forest data above the rootDSE level must be disabled. ", STIGFramework.Forest)]
+    [RuleSTIG("V-243503", "Anonymous Access to AD forest data above the rootDSE level must be disabled. ", STIGFramework.Forest)]
     [RuleDurANSSI(1, "dsheuristics_bad", "Dangerous dsHeuristics settings")]
     [RuleIntroducedIn(2, 9)]
     [RuleMitreAttackTechnique(MitreAttackTechnique.BruteForcePasswordSpraying)]

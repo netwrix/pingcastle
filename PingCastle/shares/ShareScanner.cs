@@ -26,13 +26,14 @@ namespace PingCastle.shares
             return "Computer\tShare\tIsEveryoneAllowed\tIsCurrentUserAllowed";
         }
 
-        override protected string GetCsvData(string computer)
+        override protected string GetCsvData(string computer, System.Threading.CancellationToken cancellationToken = default)
         {
             string output = null;
             if (IsServerAvailable(computer))
             {
                 foreach (string path in ShareEnumerator.EnumShare(computer))
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     bool everyone = ShareEnumerator.IsEveryoneAllowed(computer, path);
                     bool currentUser = ShareEnumerator.IsCurrentUserAllowed(computer, path);
                     if (!String.IsNullOrEmpty(output))

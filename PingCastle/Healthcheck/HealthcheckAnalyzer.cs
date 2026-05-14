@@ -18,6 +18,7 @@ using PingCastle.Utility;
 using PingCastleCommon.Utility;
 using PingCastleCommon.Healthcheck;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices;
@@ -38,6 +39,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace PingCastle.Healthcheck
@@ -188,7 +190,7 @@ namespace PingCastle.Healthcheck
                 DisplayAdvancement("Gathering MSOL data");
                 GenerateMSOLData(domainInfo, adws);
                 DisplayAdvancement("Gathering domain controller data" + (SkipNullSession ? null : " (including null session)" + (SkipRPC ? null : " (including RPC tests)")));
-                GenerateDomainControllerData(domainInfo, adws, parameters);
+                GenerateDomainControllerData(domainInfo, adws, parameters).GetAwaiter().GetResult();
                 GenerateRODCData(domainInfo, adws);
                 GenerateRODCKrbtgtOrphans(domainInfo, adws);
                 GenerateFSMOData(domainInfo, adws);
@@ -223,12 +225,16 @@ namespace PingCastle.Healthcheck
         private void LoadHoneyPotData()
         {
             var s = HoneyPotSettings.GetHoneyPotSettings();
-            if (s == null)
+            if (s?.HoneyPots == null)
+            {
                 return;
+            }
+
             if (s.HoneyPots.Count > 25 && LimitHoneyPot)
             {
                 throw new PingCastleException("You entered more than 25 HoneyPots in the configuration. Honey Pots should not be used as a way to setup exceptions to rules");
             }
+
             healthcheckData.ListHoneyPot = new List<HealthcheckAccountDetailData>();
             foreach (SingleHoneyPotSettings h in s.HoneyPots)
             {
@@ -326,11 +332,11 @@ namespace PingCastle.Healthcheck
                     {
                         foreach (HealthCheckTrustDomainInfoData di in x.msDSTrustForestTrustInfo)
                         {
-                            Trace.WriteLine("msDSTrustForestTrustInfo constains " + di.DnsName);
+                            Trace.WriteLine("msDSTrustForestTrustInfo constains " + di.DnsName.SanitizeForLog());
                             rdi = new ReachableDomainInfo(di.DnsName);
                             if (!domainlist.Contains(rdi))
                             {
-                                Trace.WriteLine("Adding " + di.DnsName + " as msDSTrustForestTrustInfo target");
+                                Trace.WriteLine("Adding " + di.DnsName.SanitizeForLog() + " as msDSTrustForestTrustInfo target");
                                 domainlist.Add(rdi);
                             }
                         }
@@ -628,10 +634,7 @@ namespace PingCastle.Healthcheck
                             // ex: guest, krbtgt for rodc, ...
                             if (x.WhenCreated != DateTime.MinValue)
                             {
-                                var dateTime = (x.PwdLastSet == DateTime.MinValue || x.PwdLastSet <= DateTime.FromFileTime(0))
-                                    ? x.WhenCreated
-                                    : x.PwdLastSet;
-                                var i = HealthcheckHelper.ConvertDateToKey(dateTime);
+                                var i = ConvertPwdLastSetToKey(x);
                                 if (pwdDistribution.ContainsKey(i))
                                     pwdDistribution[i]++;
                                 else
@@ -677,7 +680,7 @@ namespace PingCastle.Healthcheck
         private int ConvertPwdLastSetToKey(ADItem x)
         {
             var dateTime = x.PwdLastSet;
-            if (x.PwdLastSet == DateTime.MinValue || x.PwdLastSet <= DateTime.FromFileTime(0))
+            if (x.PwdLastSet == DateTime.MinValue)
                 dateTime = x.WhenCreated;
             return HealthcheckHelper.ConvertDateToKey(dateTime);
 
@@ -1456,8 +1459,8 @@ namespace PingCastle.Healthcheck
                 if (user.IsEnabled)
                 {
                     {
-                        var dateTime = (user.PwdLastSet == DateTime.MinValue || user.PwdLastSet <= DateTime.FromFileTime(0)) ? user.Created : user.PwdLastSet;
-                        var i = HealthcheckHelper.ConvertDateToKey(dateTime);
+                        var i = HealthcheckHelper.ConvertDateToKey(user.PwdLastSet == DateTime.MinValue ? user.Created : user.PwdLastSet);
+
                         if (pwdDistribution.ContainsKey(i))
                             pwdDistribution[i]++;
                         else
@@ -1488,8 +1491,8 @@ namespace PingCastle.Healthcheck
         {
             healthcheckData.Delegations = new List<HealthcheckDelegationData>();
             healthcheckData.UnprotectedOU = new List<string>();
-            InspectDelegation(domainInfo, adws);
             InspectAdminSDHolder(domainInfo, adws);
+            InspectDelegation(domainInfo, adws);
         }
 
         // SDDL reference from MSDN based on schema version 35 and next
@@ -2543,9 +2546,9 @@ namespace PingCastle.Healthcheck
 
             byte[] certificate;
             var protocols = new List<string>();
-            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 1 starts");
+            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName.SanitizeForLog() + " 1 starts");
             GenerateTLSInfo(uri.Host, uri.Port, protocols, out certificate, "[" + DateTime.Now + "] ");
-            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 2 done for TLS");
+            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName.SanitizeForLog() + " 2 done for TLS");
 
             enrollmentServer.SSLProtocol = protocols;
 
@@ -2557,8 +2560,8 @@ namespace PingCastle.Healthcheck
             // web enrollment
             // https access
             // channel binding
-            var result = ConnectionTester.TestExtendedAuthentication(uri, adws.Credential, "[" + DateTime.Now + "] Test for " + dnsHostName + " ");
-            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 3 done for TestExtendedAuthentication");
+            var result = ConnectionTester.TestExtendedAuthentication(uri, adws.Credential, "[" + DateTime.Now + "] Test for " + dnsHostName.SanitizeForLog() + " ");
+            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName.SanitizeForLog() + " 3 done for TestExtendedAuthentication");
             if (result == ConnectionTesterStatus.ChannelBindingDisabled)
             {
                 enrollmentServer.WebEnrollmentChannelBindingDisabled = true;
@@ -2570,8 +2573,8 @@ namespace PingCastle.Healthcheck
             }
             // http access
             uri = new Uri("http://" + dnsHostName + "/certsrv/certrqxt.asp");
-            result = ConnectionTester.TestConnection(uri, adws.Credential, "[" + DateTime.Now + "] Test for " + dnsHostName + " ");
-            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 4 done for TestConnection");
+            result = ConnectionTester.TestConnection(uri, adws.Credential, "[" + DateTime.Now + "] Test for " + dnsHostName.SanitizeForLog() + " ");
+            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName.SanitizeForLog() + " 4 done for TestConnection");
             if (result == ConnectionTesterStatus.AuthenticationSuccessfull)
             {
                 enrollmentServer.WebEnrollmentHttp = true;
@@ -2582,8 +2585,8 @@ namespace PingCastle.Healthcheck
             // channel binding
             uri = new Uri("https://" + dnsHostName + "/" + System.Net.WebUtility.UrlEncode(CAName) + "_CES_Kerberos/service.svc");
 
-            result = ConnectionTester.TestExtendedAuthentication(uri, adws.Credential, "[" + DateTime.Now + "] Test for " + dnsHostName + " ");
-            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 5 done for TestExtendedAuthentication");
+            result = ConnectionTester.TestExtendedAuthentication(uri, adws.Credential, "[" + DateTime.Now + "] Test for " + dnsHostName.SanitizeForLog() + " ");
+            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName.SanitizeForLog() + " 5 done for TestExtendedAuthentication");
             if (result == ConnectionTesterStatus.ChannelBindingDisabled)
             {
                 enrollmentServer.CESHttps = true;
@@ -2596,8 +2599,8 @@ namespace PingCastle.Healthcheck
 
             // http access
             uri = new Uri("http://" + dnsHostName + "/" + System.Net.WebUtility.UrlEncode(CAName) + "_CES_Kerberos/service.svc");
-            result = ConnectionTester.TestConnection(uri, adws.Credential, "[" + DateTime.Now + "] Test for " + dnsHostName + " ");
-            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName + " 6 done for TestConnection");
+            result = ConnectionTester.TestConnection(uri, adws.Credential, "[" + DateTime.Now + "] Test for " + dnsHostName.SanitizeForLog() + " ");
+            Trace.WriteLine("[" + DateTime.Now + "] Test for " + dnsHostName.SanitizeForLog() + " 6 done for TestConnection");
             if (result == ConnectionTesterStatus.AuthenticationSuccessfull)
             {
                 enrollmentServer.CESHttp = true;
@@ -3887,12 +3890,10 @@ namespace PingCastle.Healthcheck
                 userName = GraphObjectReference.Users;
                 return true;
             }
-            else if (   
-                        sid.IsWellKnown(WellKnownSidType.AccountDomainGuestsSid)
+            else if (sid.IsWellKnown(WellKnownSidType.AccountDomainGuestsSid)
                         || sid.IsWellKnown(WellKnownSidType.AccountDomainUsersSid)
                         || sid.IsWellKnown(WellKnownSidType.AuthenticatedUserSid)
-                        || ( healthcheckData.MachineAccountQuota > 0 && sid.IsWellKnown(WellKnownSidType.AccountComputersSid))
-                    )
+                        || sid.IsWellKnown(WellKnownSidType.AccountComputersSid))
             {
                 try
                 {
@@ -5520,7 +5521,7 @@ namespace PingCastle.Healthcheck
                     try
                     {
                         string rodcDns = dc.DCName + "." + domainInfo.DomainName;
-                        Trace.WriteLine($"Connecting to RODC {rodcDns} to verify cached passwords");
+                        Trace.WriteLine($"Connecting to RODC {rodcDns.SanitizeForLog()} to verify cached passwords");
                         var rodcConnection = new LDAPConnection(rodcDns, 389, adws.Credential, _nativeMethods, _identityProvider);
 
                         if (dc.MsDSRevealedUsersMetadata == null)
@@ -5543,7 +5544,7 @@ namespace PingCastle.Healthcheck
 
                                             if (currentMetadata.LastOriginatingChange == DateTime.FromFileTime(0))
                                             {
-                                                Trace.WriteLine($"Password cleared for {revealedUserDN} on {dc.DCName}: password was purged (timestamp reset to epoch)");
+                                                Trace.WriteLine($"Password cleared for {revealedUserDN} on {dc.DCName.SanitizeForLog()}: password was purged (timestamp reset to epoch)");
                                                 dc.msDSRevealedUsers.Remove(revealedUserDN);
                                                 if (dc.MsDSRevealedUsersMetadata.ContainsKey(revealedUserDN))
                                                     dc.MsDSRevealedUsersMetadata.Remove(revealedUserDN);
@@ -5553,14 +5554,14 @@ namespace PingCastle.Healthcheck
                             }
                             catch (Exception ex)
                             {
-                                Trace.WriteLine($"Error querying metadata for {revealedUserDN} on {dc.DCName}: {ex.Message}");
+                                Trace.WriteLine($"Error querying metadata for {revealedUserDN} on {dc.DCName.SanitizeForLog()}: {ex.Message}");
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        DisplayAdvancementWarning($"Warning: Unable to verify cached passwords on RODC {dc.DCName}: {ex.Message}");
-                        Trace.WriteLine($"Exception connecting to RODC {dc.DCName}: {ex.StackTrace}");
+                        DisplayAdvancementWarning($"Warning: Unable to verify cached passwords on RODC {dc.DCName.SanitizeForLog()}: {ex.Message}");
+                        Trace.WriteLine($"Exception connecting to RODC {dc.DCName.SanitizeForLog()}: {ex.StackTrace}");
                     }
                 }
             }
@@ -5570,58 +5571,59 @@ namespace PingCastle.Healthcheck
             }
         }
 
-        private void GenerateDomainControllerData(ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
+        private async Task GenerateDomainControllerData(ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
         {
             Trace.WriteLine("GenerateDomainControllerData");
-            BlockingQueue<HealthcheckDomainController> queue = new BlockingQueue<HealthcheckDomainController>(200);
-            int numberOfThread = 50;
-            Thread[] threads = new Thread[numberOfThread];
+            var messageQueue = new BlockingCollection<string>(200);
+            var writerTask = Task.Run(() =>
+            {
+                foreach (var msg in messageQueue.GetConsumingEnumerable())
+                {
+                    _ui.DisplayMessage(msg);
+                }
+            });
+            var semaphore = new SemaphoreSlim(10, 10);
+
+            WindowsIdentity impersonationIdentity = null;
+            var identityProvider = ServiceProviderAccessor.GetServiceSafe<IIdentityProvider>();
+            if (identityProvider != null && adws.Credential != null)
+            {
+                try
+                {
+                    impersonationIdentity = identityProvider.GetWindowsIdentityForUser(adws.Credential, adws.Server);
+                    Trace.WriteLine("Using impersonated identity with Kerberos for scanner operations");
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine("Failed to create impersonation identity: " + ex.Message);
+                }
+            }
+
             try
             {
-
-                ParameterizedThreadStart threadFunction = (object index) =>
+                var tasks = healthcheckData.DomainControllers.Select(DC => Task.Run(async () =>
                 {
-                    adws.ThreadInitialization();
-                    int threadId = (int)index;
-
-                    WindowsIdentity impersonationIdentity = null;
-                    var identityProvider = ServiceProviderAccessor.GetServiceSafe<IIdentityProvider>();
-                    if (identityProvider != null && adws.Credential != null)
-                    {
-                        try
-                        {
-                            impersonationIdentity = identityProvider.GetWindowsIdentityForUser(adws.Credential, adws.Server);
-                            Trace.WriteLine($"[{threadId}] Using impersonated identity with Kerberos for scanner operations");
-                        }
-                        catch (Exception ex)
-                        {
-                            Trace.WriteLine($"[{threadId}] Failed to create impersonation identity: {ex.Message}");
-                        }
-                    }
-
+                    await semaphore.WaitAsync();
                     try
                     {
-                    for (; ; )
-                    {
-                        HealthcheckDomainController DC = null;
-                        if (!queue.Dequeue(out DC))
-                        {
-                            Trace.WriteLine("[" + threadId + "] Thread Stop");
-                            break;
-                        }
+                        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+
                         string dns = DC.DCName + "." + domainInfo.DomainName;
-                        Trace.WriteLine("[" + threadId + "] Working on " + dns);
+                        Trace.WriteLine("Working on " + dns.SanitizeForLog());
                         DC.IP = new List<string>();
-                        IPAddress[] addresses = null;
+
+                        IPAddress[] addresses;
                         try
                         {
                             addresses = Dns.GetHostEntry(dns).AddressList;
                         }
                         catch (Exception)
                         {
-                            Trace.WriteLine("[" + threadId + "] Unable to resolve DC " + dns);
-                            continue;
+                            Trace.WriteLine("Unable to resolve DC " + dns.SanitizeForLog());
+                            messageQueue.TryAdd("Computer " + dns.SanitizeForLog() + ": Connection Failed");
+                            return;
                         }
+
                         foreach (var address in addresses)
                         {
                             string addressString = address.ToString();
@@ -5636,69 +5638,101 @@ namespace PingCastle.Healthcheck
                                     break;
                             }
                         }
-                        Trace.WriteLine("[" + threadId + "] Getting individual LDAP data" + dns);
+
+                        Trace.WriteLine("Getting individual LDAP data " + dns.SanitizeForLog());
                         try
                         {
                             var localAdws = new LDAPConnection(dns, parameters.Port, parameters.Credential, _nativeMethods, _identityProvider);
 
                             var localDomainInfo = localAdws.GetDomainInfo();
-                            Trace.WriteLine("[" + threadId + "] Connected LDAP to " + localDomainInfo.DnsHostName);
+                            Trace.WriteLine("Connected LDAP to " + localDomainInfo.DnsHostName.SanitizeForLog());
 
                             string[] adminProperties = new string[] {
-                            "distinguishedname",
-                            "lastlogon",
+                                "distinguishedname",
+                                "lastlogon",
+                                "pwdLastSet",
                             };
                             WorkOnReturnedObjectByADWS callback =
-                                    (ADItem x) =>
-                                    {
-                                        DC.AdminLocalLogin = x.LastLogon;
-                                    };
+                                (ADItem x) =>
+                                {
+                                    DC.AdminLocalLogin = x.LastLogon;
+                                    DC.AdminPwdLastSet = x.PwdLastSet;
+                                };
                             localAdws.Enumerate(domainInfo.DefaultNamingContext, "(objectSid=" + ADConnection.EncodeSidToString(domainInfo.DomainSid + "-" + 500) + ")", adminProperties, callback, "SubTree");
                         }
                         catch (Exception ex)
                         {
-                            Trace.WriteLine("[" + threadId + "] Exception while getting admin login time: " + ex.Message);
-                            Trace.WriteLine("[" + threadId + "] " + ex.StackTrace);
+                            Trace.WriteLine("Exception while getting admin login time for " + dns.SanitizeForLog() + ": " + ex.Message);
+                            Trace.WriteLine(ex.StackTrace);
+
+                            string userMessage;
+                            if (ex is TimeoutException || ex is OperationCanceledException)
+                            {
+                                userMessage = "Computer " + dns.SanitizeForLog() + ": LDAP query timeout";
+                            }
+                            else if (ex is UnauthorizedAccessException)
+                            {
+                                userMessage = "Computer " + dns.SanitizeForLog() + ": LDAP access denied";
+                            }
+                            else if (ex is SocketException)
+                            {
+                                userMessage = "Computer " + dns.SanitizeForLog() + ": LDAP connection failed";
+                            }
+                            else
+                            {
+                                userMessage = "Computer " + dns.SanitizeForLog() + ": LDAP query failed (" + ex.GetType().Name + ")";
+                            }
+
+                            messageQueue.TryAdd(userMessage);
                         }
 
-                        Trace.WriteLine("[" + threadId + "] Working on startup " + dns);
+                        Trace.WriteLine("Working on startup " + dns.SanitizeForLog());
                         DC.StartupTime = _nativeMethods.GetStartupTime(dns);
-                        if (DC.StartupTime == DateTime.MinValue)
-                        {
-                            // startup time could not be obtained - consider the DC as down
-                        }
 
-                        Trace.WriteLine("[" + threadId + "] Working on hotfixes " + dns);
-                        var hotfixCollector = HotFixCollectorFactory.Create<WmiHotfixHelper>();
-                        if (hotfixCollector.TryGetInstalledHotfixes(dns, out HashSet<string> hotfixes, parameters.IsPrivilegedMode))
+                        Trace.WriteLine("Working on hotfixes " + dns.SanitizeForLog());
+                        try
                         {
-                            DC.InstalledHotFixes = hotfixes;
+                            var hotfixCollector = HotFixCollectorFactory.Create();
+                            var hotfixResult = hotfixCollector.GetInstalledHotfixes(dns, parameters.IsPrivilegedMode);
+                            DC.HotfixQueryStatus = hotfixResult.Status.ToString();
+                            DC.InstalledHotFixes = hotfixResult.KbNumbers;
+                            if (hotfixResult.MostRecentQualityUpdateDate.HasValue)
+                            {
+                                DC.MostRecentQualityUpdateDate = hotfixResult.MostRecentQualityUpdateDate;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Trace.WriteLine($"Hotfix collection failed for {dns.SanitizeForLog()}: {ex.GetType().Name}: {ex.Message}");
+                            DC.HotfixQueryStatus = "ConnectionFailed";
                         }
 
                         if (!SkipNullSession)
                         {
-                            Trace.WriteLine("[" + threadId + "] Working on null session " + dns);
+                            Trace.WriteLine("Working on null session " + dns.SanitizeForLog());
                             NullSessionTester session = new NullSessionTester(dns);
                             if (session.EnumerateAccount(1))
                             {
                                 DC.HasNullSession = true;
                             }
                         }
-                        Trace.WriteLine("[" + threadId + "] Working on smb support " + dns);
+
+                        Trace.WriteLine("Working on smb support " + dns.SanitizeForLog());
                         SMBSecurityModeEnum securityMode;
-                        if (SmbScanner.SupportSMB1(dns, out securityMode, "[" + threadId + "] "))
+                        if (SmbScanner.SupportSMB1(dns, out securityMode, string.Empty))
                         {
                             DC.SupportSMB1 = true;
                         }
                         DC.SMB1SecurityMode = securityMode;
-                        if (SmbScanner.SupportSMB2And3(dns, out securityMode, "[" + threadId + "] ", _smb2Test))
+                        if (SmbScanner.SupportSMB2And3(dns, out securityMode, string.Empty, _smb2Test))
                         {
                             DC.SupportSMB2OrSMB3 = true;
                         }
                         DC.SMB2SecurityMode = securityMode;
+
                         if (!SkipNullSession)
                         {
-                            Trace.WriteLine("[" + threadId + "] Working on spooler " + dns);
+                            Trace.WriteLine("Working on spooler " + dns.SanitizeForLog());
                             if (impersonationIdentity != null)
                             {
                                 DC.RemoteSpoolerDetected = WindowsIdentity.RunImpersonated(
@@ -5710,6 +5744,7 @@ namespace PingCastle.Healthcheck
                                 DC.RemoteSpoolerDetected = SpoolerScanner.CheckIfTheSpoolerIsActive(dns);
                             }
                         }
+
                         if (DC.SMB1SecurityMode != SMBSecurityModeEnum.NotTested && DC.SMB2SecurityMode != SMBSecurityModeEnum.NotTested)
                         {
                             bool webClientAccessible;
@@ -5717,11 +5752,11 @@ namespace PingCastle.Healthcheck
                             {
                                 webClientAccessible = WindowsIdentity.RunImpersonated(
                                     impersonationIdentity.AccessToken,
-                                    () => NamedPipeTester.IsRemotePipeAccessible(dns, NamedPipeTester.WebClientPipeName, "[" + threadId + "] "));
+                                    () => NamedPipeTester.IsRemotePipeAccessible(dns, NamedPipeTester.WebClientPipeName, string.Empty));
                             }
                             else
                             {
-                                webClientAccessible = NamedPipeTester.IsRemotePipeAccessible(dns, NamedPipeTester.WebClientPipeName, "[" + threadId + "] ");
+                                webClientAccessible = NamedPipeTester.IsRemotePipeAccessible(dns, NamedPipeTester.WebClientPipeName, string.Empty);
                             }
 
                             if (webClientAccessible)
@@ -5729,77 +5764,57 @@ namespace PingCastle.Healthcheck
                                 DC.WebClientEnabled = true;
                             }
                         }
-                        Trace.WriteLine("[" + threadId + "] Working on ldap ssl " + dns);
-                        GenerateTLSConnectionInfo(dns, DC, adws.Credential, threadId);
-                        Trace.WriteLine("[" + threadId + "] Working on ldap signing requirements " + dns);
-                        GenerateLDAPSigningRequirementInfo(dns, DC, adws.Credential, threadId);
+
+                        Trace.WriteLine("Working on ldap ssl " + dns.SanitizeForLog());
+                        GenerateTLSConnectionInfo(dns, DC, adws.Credential, 0);
+                        Trace.WriteLine("Working on ldap signing requirements " + dns.SanitizeForLog());
+                        GenerateLDAPSigningRequirementInfo(dns, DC, adws.Credential, 0);
+
                         if (!SkipRPC)
                         {
-                            Trace.WriteLine("[" + threadId + "] testing RPC " + dns);
+                            Trace.WriteLine("Testing RPC " + dns.SanitizeForLog());
                             if (impersonationIdentity != null)
                             {
                                 WindowsIdentity.RunImpersonated(
                                     impersonationIdentity.AccessToken,
                                     () =>
                                     {
-                                        TestFirewallRPCDC(DC, threadId, adws.Credential);
+                                        TestFirewallRPCDC(DC, 0, adws.Credential);
                                         return (object)null;
                                     });
                             }
                             else
                             {
-                                TestFirewallRPCDC(DC, threadId, adws.Credential);
+                                TestFirewallRPCDC(DC, 0, adws.Credential);
                             }
                         }
-                        Trace.WriteLine("[" + threadId + "] Done for " + dns);
-                    }
+
+                        Trace.WriteLine("Done for " + dns.SanitizeForLog());
                     }
                     finally
                     {
-                        impersonationIdentity?.Dispose();
+                        semaphore.Release();
                     }
-                };
+                })).ToList();
 
-                // Consumers
-                for (int i = 0; i < numberOfThread; i++)
-                {
-                    threads[i] = new Thread(threadFunction);
-                    threads[i].Start(i);
-                }
-
-                foreach (HealthcheckDomainController DC in healthcheckData.DomainControllers)
-                {
-                    queue.Enqueue(DC);
-                }
-                queue.Quit();
-                Trace.WriteLine("examining dc completed. Waiting for worker thread to complete");
-                for (int i = 0; i < numberOfThread; i++)
-                {
-                    Trace.WriteLine("Waiting for Thead " + i);
-                    threads[i].Join();
-                    Trace.WriteLine("Waiting for Thead " + i + " => Done");
-                }
-                Trace.WriteLine("Done testing null session");
+                await Task.WhenAll(tasks);
+                Trace.WriteLine("Examining DC completed");
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("Exception while generating null session Data: " + ex.Message);
+                Trace.WriteLine("Exception while generating domain controller data: " + ex.Message);
                 Trace.WriteLine(ex.StackTrace);
-                lock (this)
-                {
-                    _ui.DisplayError("Exception while generating null session Data: " + ex.Message);
-                    _ui.DisplayStackTrace(ex.StackTrace);
-                }
+                _ui.DisplayError("Exception while generating domain controller data: " + ex.Message);
+                _ui.DisplayStackTrace(ex.StackTrace);
             }
             finally
             {
-                queue.Quit();
-                for (int i = 0; i < numberOfThread; i++)
-                {
-                    if (threads[i] != null)
-                        threads[i].Join();
-                }
+                impersonationIdentity?.Dispose();
+                messageQueue.CompleteAdding();
             }
+
+            await writerTask;
+
             foreach (var DC in healthcheckData.DomainControllers)
             {
                 if (DC.HasNullSession)
@@ -5981,9 +5996,9 @@ namespace PingCastle.Healthcheck
                                 { c = CACert.GetRawCertData(); return true; }
                                      , null))
                         {
-                            Trace.WriteLine(logPrefix + protocol + " before auth for " + dns);
+                            Trace.WriteLine(logPrefix + protocol + " before auth for " + dns.SanitizeForLog());
                             sslstream.AuthenticateAsClient(dns, null, protocol, false);
-                            Trace.WriteLine(logPrefix + protocol + " supported for " + dns);
+                            Trace.WriteLine(logPrefix + protocol + " supported for " + dns.SanitizeForLog());
                             certificate = c;
                             protocols.Add(protocol.ToString());
                         }
@@ -5991,12 +6006,12 @@ namespace PingCastle.Healthcheck
                 }
                 catch (SocketException)
                 {
-                    Trace.WriteLine(logPrefix + "SSL not supported for " + dns);
+                    Trace.WriteLine(logPrefix + "SSL not supported for " + dns.SanitizeForLog());
                     return;
                 }
                 catch (Exception ex)
                 {
-                    Trace.WriteLine(logPrefix + protocol + " not supported for " + dns + ":" + port + " (" + ex.Message + (ex.InnerException == null ? null : " - " + ex.InnerException.Message) + ")");
+                    Trace.WriteLine(logPrefix + protocol + " not supported for " + dns.SanitizeForLog() + ":" + port + " (" + ex.Message + (ex.InnerException == null ? null : " - " + ex.InnerException.Message) + ")");
                 }
             }
         }
@@ -6294,7 +6309,7 @@ namespace PingCastle.Healthcheck
 
                 if (string.IsNullOrEmpty(dns))
                 {
-                    Trace.WriteLine("Unable to get DNSHostName for " + computerToQuery[computerRole]);
+                    Trace.WriteLine("Unable to get DNSHostName for " + computerToQuery[computerRole].SanitizeForLog());
                     continue;
                 }
                 HealthcheckDomainController theDC = null;
@@ -6308,7 +6323,7 @@ namespace PingCastle.Healthcheck
                 }
                 if (theDC == null)
                 {
-                    Trace.WriteLine("Unable to get DC for " + dns);
+                    Trace.WriteLine("Unable to get DC for " + dns.SanitizeForLog());
                     continue;
                 }
                 if (theDC.FSMO == null)
@@ -6370,7 +6385,7 @@ namespace PingCastle.Healthcheck
 
             var domainDnsZonesNC = "DC=DomainDnsZones," + domainInfo.DefaultNamingContext;
             if (!domainInfo.NamingContexts.Contains(domainDnsZonesNC))
-                Trace.WriteLine($"No naming context for `DC=DomainDnsZones,{domainInfo.DefaultNamingContext}`, trying to use the default one");
+                Trace.WriteLine($"No naming context for `DC=DomainDnsZones,{domainInfo.DefaultNamingContext.SanitizeForLog()}`, trying to use the default one");
 
             var dnDomainLevel = "CN=MicrosoftDNS,DC=DomainDnsZones," + domainInfo.DefaultNamingContext;
             var partitionDN = domainDnsZonesNC;
@@ -6378,7 +6393,7 @@ namespace PingCastle.Healthcheck
 
             var forestDnsZonesNC = "DC=ForestDnsZones," + domainInfo.RootDomainNamingContext;
             if (!domainInfo.NamingContexts.Contains(forestDnsZonesNC))
-                Trace.WriteLine($"No naming context for `DC=ForestDnsZones,{domainInfo.DefaultNamingContext}`, trying to use the default one");
+                Trace.WriteLine($"No naming context for `DC=ForestDnsZones,{domainInfo.DefaultNamingContext.SanitizeForLog()}`, trying to use the default one");
             
             var dnForestLevel = "CN=MicrosoftDNS," + forestDnsZonesNC;
             GenerateDnsDataForPartition(domainInfo, adws, dnForestLevel, forestDnsZonesNC);

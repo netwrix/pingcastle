@@ -303,6 +303,18 @@ namespace PingCastleAutoUpdater.ConfigurationMerge
                             target[propertyName] = CloneJsonNode(sourceValue);
                             _newProperties.Add(propertyName);
                         }
+                        // Target is empty string and source has a real value - take source value
+                        else if (targetValue is JsonValue targetScalar &&
+                                 sourceValue is JsonValue sourceScalar &&
+                                 targetScalar.TryGetValue<string>(out var targetStr) &&
+                                 string.IsNullOrEmpty(targetStr) &&
+                                 sourceScalar.TryGetValue<string>(out var sourceStr) &&
+                                 !string.IsNullOrEmpty(sourceStr))
+                        {
+                            target[propertyName] = CloneJsonNode(sourceValue);
+                            _newProperties.Add(propertyName);
+                        }
+
                         // Other cases - keep target value (preserve user setting)
                         else
                         {

@@ -85,6 +85,12 @@ namespace PingCastleCommon.Healthcheck
 
         private void ProcessNotAesEnabled(ADItem x, IAddAccountData data, DateTime dcWin2008Install)
         {
+            // Skip disabled accounts - they cannot be AS-REP Roasted and Kerberoasting is generally blocked
+            if (x.IsAccountDisabled())
+            {
+                return;
+            }
+
             if (dcWin2008Install != default(DateTime))
             {
                 if ((x.PwdLastSet > new DateTime(1900, 1, 1) && dcWin2008Install > x.PwdLastSet) || (x.PwdLastSet <= new DateTime(1900, 1, 1) && x.WhenCreated.AddHours(1) < dcWin2008Install))
@@ -181,11 +187,11 @@ namespace PingCastleCommon.Healthcheck
                 {
                     // see https://techcommunity.microsoft.com/t5/exchange-team-blog/exchange-2013-2016-monitoring-mailboxes/ba-p/611004?msclkid=bd3898eeb18f11ecb0ad418f45f9d755
                     // exception for exchange accounts whose password is changed regularly
-                    if (x.SAMAccountName != null && x.SAMAccountName.StartsWith("HealthMailbox", StringComparison.OrdinalIgnoreCase) && x.PwdLastSet.AddDays(40) > DateTime.Now)
-                    {
+                    bool isRecentHealthMailbox = x.SAMAccountName != null
+                        && x.SAMAccountName.StartsWith("HealthMailbox", StringComparison.OrdinalIgnoreCase)
+                        && x.PwdLastSet.AddDays(40) > DateTime.Now;
 
-                    }
-                    else
+                    if (!isRecentHealthMailbox && x.PwdLastSet <= DateTime.Now.AddDays(-30))
                     {
                         data.AddDetail("PwdNeverExpires", GetAccountDetail(x));
                     }

@@ -257,9 +257,9 @@ namespace PingCastle.Graph.Reporting
             data.Dependancies = new List<CompromiseGraphDependancyData>(reference.Values);
             data.Dependancies.Sort((CompromiseGraphDependancyData a, CompromiseGraphDependancyData b)
                 =>
-                {
-                    return string.Compare(a.Netbios, b.Netbios);
-                });
+            {
+                return string.Compare(a.Netbios, b.Netbios);
+            });
         }
 
         private void PrepareAnomalyAnalysisData(CompromiseGraphData data)
@@ -597,6 +597,7 @@ namespace PingCastle.Graph.Reporting
                 member.LastLogonTimestamp = x.LastLogonTimestamp;
                 member.Email = x.Mail;
                 member.Class = x.Class;
+                member.ManagedPasswordInterval = x.msDSManagedPasswordInterval;
 
                 if (x.IsAccountDisabled())
                     data.NumberOfMemberDisabled++;

@@ -32,8 +32,7 @@ public static class ConfigurationExtensions
         services.AddScoped<IDisplaySupportMessageService, WindowsDisplaySupportMessageService>();
         services.AddScoped<IPingCastleLogger, TracePingCastleLogger>();
         services.AddSingleton<IHilbertMapGenerator, WindowsHilbertMapGenerator>();
-        services.AddSingleton<IHotfixService, WmiHotfixHelper>();
-        services.AddSingleton<IHotFixCollector, HotFixCollector>();
+        services.AddSingleton<IHotFixCollector>(_ => HotFixCollectorFactory.Create());
         services.AddSingleton<IOperatingSystemInfoProvider, Utility.WindowsOperatingSystemInfoProvider>();
         services.AddSingleton<ITokenFactory, TokenFactory>();
         services.AddSingleton<IADConnectionFactory, ADConnectionFactory>();

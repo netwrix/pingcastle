@@ -10,9 +10,9 @@ namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("A-NullSession", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
-    [RuleSTIG("V-14798", "Directory data (outside the root DSE) of a non-public directory must be configured to prevent anonymous access.", STIGFramework.ActiveDirectoryService2003)]
     [RuleMaturityLevel(2)]
     [RuleMitreAttackTechnique(MitreAttackTechnique.BruteForcePasswordSpraying)]
+    [RuleSTIG("V-205875", "Windows Server 2019 directory data (outside the root DSE) of a non-public directory must be configured to prevent anonymous access.", STIGFramework.WindowsServer2019)]
     public class HeatlcheckRuleAnomalyNullSession : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

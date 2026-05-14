@@ -2,14 +2,15 @@ namespace PingCastle.Scanners
 {
     using PingCastle.ADWS;
     using PingCastle.Healthcheck;
-    using PingCastle.UserInterface;
+    using PingCastle.misc;
     using PingCastleCommon.Utility;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Threading;
 
     /// <summary>
-    /// Base class for scanners that need to retrieve and analyze installed hotfixes.
+    /// Base class for scanners that need to retrieve and analyse installed hotfixes.
     /// Provides common functionality for hotfix retrieval.
     /// </summary>
     abstract public class HotFixScanner : ScannerBase
@@ -25,30 +26,21 @@ namespace PingCastle.Scanners
         }
 
         /// <summary>
-        /// Retrieves installed hotfixes for a domain controller using WMI.
+        /// Retrieves installed hotfixes for a computer.
         /// </summary>
         /// <param name="computerName">The name of the computer to scan.</param>
-        /// <returns>A HashSet of installed KB numbers, or empty set if retrieval fails</returns>
-        protected HashSet<string> RetrieveInstalledHotfixes(string computerName)
+        /// <param name="cancellationToken">Token used to cancel the operation if the per-host deadline fires.</param>
+        /// <returns>A <see cref="HotfixQueryResult"/> containing query status and discovered KB numbers</returns>
+        protected HotfixQueryResult RetrieveInstalledHotfixes(string computerName, CancellationToken cancellationToken = default)
         {
             try
             {
-                var hotfixCollector = HotfixCollector;
-                IUserInterface ui = UserInterfaceFactory.GetUserInterface();
-
-                if (hotfixCollector.TryGetInstalledHotfixes(computerName, out HashSet<string> hotfixes, ui))
-                {
-                    Trace.WriteLine($"Retrieved {hotfixes.Count} hotfixes for {computerName}");
-                    return hotfixes;
-                }
-
-                Trace.WriteLine($"Unable to retrieve hotfixes for {computerName}");
-                return new HashSet<string>();
+                return HotfixCollector.GetInstalledHotfixes(computerName, cancellationToken: cancellationToken);
             }
             catch (Exception ex)
             {
-                Trace.WriteLine($"Error retrieving hotfixes for {computerName}: {ex.Message}");
-                return new HashSet<string>();
+                Trace.WriteLine($"Error retrieving hotfixes for {computerName.SanitizeForLog()}: {ex.Message}");
+                return new HotfixQueryResult { Status = HotfixQueryStatus.ConnectionFailed, FailureReason = ex.Message };
             }
         }
 

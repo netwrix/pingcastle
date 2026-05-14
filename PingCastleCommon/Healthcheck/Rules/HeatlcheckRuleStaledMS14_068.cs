@@ -34,7 +34,6 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         if (domainController.AzureADKerberos)
                         {
-                            Trace.WriteLine("S-Vuln-MS14-068: Skipping Azure AD Kerberos.");
                             continue;
                         }
 
@@ -43,7 +42,9 @@ namespace PingCastle.Healthcheck.Rules
                             domainController.DCName,
                             domainController.OperatingSystem,
                             domainController.InstalledHotFixes,
-                            domainController.StartupTime);
+                            domainController.StartupTime,
+                            domainController.OperatingSystemVersion,
+                            domainController.MostRecentQualityUpdateDate);
 
                         if (scanResult.IsVulnerable)
                         {

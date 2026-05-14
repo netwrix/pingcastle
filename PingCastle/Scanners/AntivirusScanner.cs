@@ -183,8 +183,9 @@ Or just press enter to use the default.";
             return DisplayState.Run;
         }
 
-        protected override string GetCsvData(string computer)
+        protected override string GetCsvData(string computer, System.Threading.CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             StringBuilder sb = new StringBuilder();
             NativeMethods.UNICODE_STRING us = new NativeMethods.UNICODE_STRING();
             NativeMethods.LSA_OBJECT_ATTRIBUTES loa = new NativeMethods.LSA_OBJECT_ATTRIBUTES();

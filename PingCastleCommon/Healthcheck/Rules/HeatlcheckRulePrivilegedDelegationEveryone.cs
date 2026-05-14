@@ -12,10 +12,10 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("P-DelegationEveryone", RiskRuleCategory.PrivilegedAccounts, RiskModelCategory.DelegationCheck)]
     [RuleComputation(RuleComputationType.PerDiscover, 15)]
     [RuleANSSI("R18", "subsubsection.3.3.2")]
-    [RuleSTIG("V-2370", "The access control permissions for the directory service site group policy must be configured to use the required access permissions.", STIGFramework.ActiveDirectoryService2003)]
     [RuleMaturityLevel(2)]
     [RuleMitreAttackTechnique(MitreAttackTechnique.ForcedAuthentication)]
     [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
+    [RuleSTIG("V-205741", "Windows Server 2019 Active Directory Group Policy objects must have proper access control permissions.", STIGFramework.WindowsServer2019)]
     public class HeatlcheckRulePrivilegedDelegationEveryone : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

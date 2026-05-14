@@ -649,8 +649,7 @@ Second, a more manual way is to essentially reset the password manually once, th
     <value>The purpose is to check for accounts with non-expiring passwords in the "Domain Administrator" group</value>
   </data>
   <data name="P_ServiceDomainAdmin_Solution" xml:space="preserve">
-    <value>Accounts with never expiring passwords are mostly service accounts. 
-    To mitigate the security risk, it is strongly advised to lower the privileges of the "Service Accounts", meaning that they should be removed from the "Domain Administrator" group, while ensuring that the password of each and every "Service Account" is longer than 20 characters</value>
+    <value>Remove identified accounts from the Domain Administrators group, or configure their passwords to expire and establish a regular rotation schedule. If the account is a service account that requires a non-expiring password, consider using a Group Managed Service Account (gMSA) instead, which handles automatic password rotation.</value>
   </data>
   <data name="P_ServiceDomainAdmin_Rationale" xml:space="preserve">
     <value>Presence of accounts with non-expiring passwords in the domain admin group (at least {threshold} accounts): {count}</value>
@@ -965,7 +964,7 @@ For all users in a OU:
     <value>Check for short password length in password policy</value>
   </data>
   <data name="P_ServiceDomainAdmin_Title" xml:space="preserve">
-    <value>Check if Service Accounts (aka accounts with never expiring password) are domain administrators</value>
+    <value>Check if accounts with non-expiring passwords are domain administrators</value>
   </data>
   <data name="A_SHA1RootCert_Title" xml:space="preserve">
     <value>Check for Root Certificates using unsafe hashing algorithm (SHA1)</value>
@@ -1241,8 +1240,7 @@ Previously, the last login date was obtained by querying the LastLogonTimestamp 
     <value>The group "Schema Admins" is used to give permissions to alter the schema. Once a modification is performed on the schema such as new objects, it cannot be undone. This can result in a rebuild of the domain. The best practice is to have this group empty and to add an administrator when a schema update is required, then remove this group membership.</value>
   </data>
   <data name="P_ServiceDomainAdmin_TechnicalExplanation" xml:space="preserve">
-    <value>PingCastle is checking accounts with never expiring password, that are mostly used as service accounts.
-    "Service Accounts" can imply a high security risk as their password are stored in clear text in the LSA database, which can then be easily exploited using Mimikatz or Cain&amp;Abel for instance. In addition, their passwords don't change and can be used in Kerberoast attacks.</value>
+    <value>PingCastle checks for accounts in the Domain Administrators group with the "Password Never Expires" flag set. These accounts pose a high security risk because their credentials are stored in the LSA secrets database and can be extracted using tools such as Mimikatz. Because the password never expires, a compromised credential remains valid indefinitely unless manually rotated.</value>
   </data>
   <data name="P_UnkownDelegation_TechnicalExplanation" xml:space="preserve">
     <value>In the case where a delegation has been created, where the account can't be translated to a NT account, it means that the delegation is actually from another domain or that the user has been deleted. </value>
@@ -1385,10 +1383,10 @@ https://github.com/PSSecTools/Krbtgt</value>
     <value />
   </data>
   <data name="A_MD2IntermediateCert_Documentation" xml:space="preserve">
-    <value>https://www.ssi.gouv.fr/archive/fr/sciences/fichiers/lcr/mu04c.pdf</value>
+    <value>https://tools.ietf.org/html/rfc6149</value>
   </data>
   <data name="A_MD2RootCert_Documentation" xml:space="preserve">
-    <value>https://www.ssi.gouv.fr/archive/fr/sciences/fichiers/lcr/mu04c.pdf</value>
+    <value>https://tools.ietf.org/html/rfc6149</value>
   </data>
   <data name="A_MD4IntermediateCert_Documentation" xml:space="preserve">
     <value>https://tools.ietf.org/html/rfc6150</value>
@@ -1443,8 +1441,8 @@ https://github.com/PSSecTools/Krbtgt</value>
 https://github.com/nsacyber/Pass-the-Hash-Guidance</value>
   </data>
   <data name="A_WeakRSARootCert_Documentation" xml:space="preserve">
-    <value>https://www.iad.gov/iad/library/ia-guidance/ia-solutions-for-classified/algorithm-guidance/commercial-national-security-algorithm-suite-factsheet.cfm
-    https://www.ssi.gouv.fr/guide/cryptographie-les-regles-du-rgs/</value>
+    <value>https://media.defense.gov/2022/Sep/07/2003071836/-1/-1/0/CSI_CNSA_2.0_FAQ_.PDF
+    https://cyber.gouv.fr/le-referentiel-general-de-securite-version-20-les-documents</value>
   </data>
   <data name="P_AdminLogin_Documentation" xml:space="preserve">
     <value>https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/implementing-least-privilege-administrative-models
@@ -1797,7 +1795,7 @@ Note: The SID will only be resolvable after the PDC emulator role is transferred
     <value>DN: {0} Account: {1} Right: {2}</value>
   </data>
   <data name="P_DelegationKeyAdmin_Documentation" xml:space="preserve">
-    <value>https://itpro-tips.com/wp-content/uploads/files/TechnetGallery/Enterprise-Key-Admins-720eb270.zip
+    <value>https://itpro-tips.com/content/files/TechnetGallery/Enterprise-Key-Admins-720eb270.zip
 https://secureidentity.se/adprep-bug-in-windows-server-2016/</value>
   </data>
   <data name="P_OperatorsEmpty_Description" xml:space="preserve">
@@ -2924,8 +2922,8 @@ https://learn.microsoft.com/en-us/powershell/scripting/wmf/whats-new/script-logg
   <data name="A_CertROCA_Documentation" xml:space="preserve">
     <value>https://crocs.fi.muni.cz/public/papers/rsa_ccs17
 https://github.com/crocs-muni/roca
-https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/ADV190026
-https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/ADV170012
+https://msrc.microsoft.com/update-guide/advisory/ADV190026
+https://msrc.microsoft.com/update-guide/advisory/ADV170012
 https://keychest.net/roca</value>
   </data>
   <data name="A_CertROCA_Rationale" xml:space="preserve">
@@ -3007,8 +3005,8 @@ https://keychest.net/roca</value>
     <value>Source: {0} Subject: {1} Module: {2} Expires: {3}</value>
   </data>
   <data name="A_WeakRSARootCert2_Documentation" xml:space="preserve">
-    <value>https://www.iad.gov/iad/library/ia-guidance/ia-solutions-for-classified/algorithm-guidance/commercial-national-security-algorithm-suite-factsheet.cfm
-    https://www.ssi.gouv.fr/guide/cryptographie-les-regles-du-rgs/</value>
+    <value>https://media.defense.gov/2022/Sep/07/2003071836/-1/-1/0/CSI_CNSA_2.0_FAQ_.PDF
+    https://cyber.gouv.fr/le-referentiel-general-de-securite-version-20-les-documents</value>
   </data>
   <data name="A_WeakRSARootCert2_Rationale" xml:space="preserve">
     <value>At least one trusted certificate found has a relatively weak RSA key [{count}]</value>
@@ -3388,10 +3386,12 @@ Also Linux servers should be configured with automatic machine account change.</
   </data>
   <data name="S_PwdNeverExpires_TechnicalExplanation" xml:space="preserve">
     <value>Some accounts have passwords which never expire. Should an attacker compromise one of these accounts, he would be able to maintain long-term access to the Active Directory domain.
-    
-We have noted that some Linux servers, domain joined, are configured with a password which never expires.
-This is a misconfiguration because a password change can be configured. It was however not the default on some platform.
-See one of the link below for more information.</value>
+
+        We have noted that some Linux servers, domain joined, are configured with a password which never expires.
+        This is a misconfiguration because a password change can be configured. It was however not the default on some platform.
+        See one of the link below for more information.
+
+        Note: accounts whose password was set within the last 30 days are excluded from this check, as they are considered to have their password rotated automatically.</value>
   </data>
   <data name="S_PwdNeverExpires_Title" xml:space="preserve">
     <value>Check that there is no account with never-expiring passwords</value>
@@ -3510,7 +3510,7 @@ PARTIAL_SECRETS_ACCOUNT (0x04000000) | TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION (0
     <value>Domain controller: {0} Delegate: {1} Identifier: {2}</value>
   </data>
   <data name="P_DelegationDCsourcedeleg_Documentation" xml:space="preserve">
-    <value>https://blog.stealthbits.com/resource-based-constrained-delegation-abuse/</value>
+    <value>https://www.netwrix.com/en/resources/blog/resource-based-constrained-delegation-abuse/</value>
   </data>
   <data name="P_DelegationDCsourcedeleg_Rationale" xml:space="preserve">
     <value>Number of DC with a resource based constrained delegation: {count}</value>
@@ -3967,7 +3967,6 @@ A misconfigured application can change the user password using this old mechanis
   </data>
   <data name="T_AzureADSSO_Documentation" xml:space="preserve">
     <value>https://learn.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-sso-faq#how-can-i-roll-over-the-kerberos-decryption-key-of-the-azureadssoacc-computer-account
-https://itpro-tips.com/wp-content/uploads/files/TechnetGallery/Azure-AD-SSO-Key-Rollover-d2f1604a.zip
 https://www.dsinternals.com/en/impersonating-office-365-users-mimikatz/</value>
   </data>
   <data name="T_AzureADSSO_Rationale" xml:space="preserve">
@@ -4060,7 +4059,7 @@ If the script is detected, Windows 7 is considered as supported and this rule is
     <value />
   </data>
   <data name="A_LAPS_Joined_Computers_Documentation" xml:space="preserve">
-    <value>https://www.securityinsider-wavestone.com/2020/01/taking-over-windows-workstations-pxe-laps.html</value>
+    <value>https://www.riskinsight-wavestone.com/en/2020/01/taking-over-windows-workstations-pxe-laps/</value>
   </data>
   <data name="A_LAPS_Joined_Computers_Rationale" xml:space="preserve">
     <value>The local admin password of at least one computer can be retrieved by the user who joined the computer to the domain</value>
@@ -5532,13 +5531,15 @@ Also to avoid EDR alerts or to not perform the scan, you can run PingCastle with
     <value>DN: {0} Created: {1}</value>
   </data>
   <data name="S_AesNotEnabled_Description" xml:space="preserve">
-    <value>The purpose is to verify that AES is enabled for service accounts.</value>
+    <value>The purpose is to verify that AES is enabled for service accounts. Starting January 2026, Microsoft is phasing out RC4 as the default Kerberos encryption for accounts without explicit encryption type configuration. Accounts flagged by this rule may experience authentication failures after enforcement begins in April 2026.</value>
   </data>
   <data name="S_AesNotEnabled_Solution" xml:space="preserve">
-    <value>It is recommended to enable AES as an encryption algorithm in the user configuration dialog or in the "msDSSupportedEncryptionTypes" attribute at LDAP level. 
-    It has to be enabled in the property of an account by checking all the boxes "This account supports Keberos AES XXX encryption".
-  
-    For GMSA account, you have to manually edit the property msDS-SupportedEncryptionTypes</value>
+    <value>Enable AES encryption on affected accounts by setting the msDS-SupportedEncryptionTypes attribute. This can be done via the user properties dialog (check "This account supports Kerberos AES 128 bit encryption" and "This account supports Kerberos AES 256 bit encryption") or via PowerShell:&lt;br&gt;&lt;br&gt;Enable AES 128 and AES 256 on a single user account (value 0x18 = 24):&lt;pre&gt;Set-ADUser -Identity "serviceaccount" -Replace @{"msDS-SupportedEncryptionTypes" = 24}&lt;/pre&gt;Enable RC4 + AES 128 + AES 256 (value 0x1C = 28) for backwards compatibility:&lt;pre&gt;Set-ADUser -Identity "serviceaccount" -Replace @{"msDS-SupportedEncryptionTypes" = 28}&lt;/pre&gt;For computer accounts:&lt;pre&gt;Set-ADComputer -Identity "COMPUTERNAME" -Replace @{"msDS-SupportedEncryptionTypes" = 28}&lt;/pre&gt;For Group Managed Service Accounts (gMSA):&lt;pre&gt;Set-ADServiceAccount -Identity "gmsa$" -Replace @{"msDS-SupportedEncryptionTypes" = 24}&lt;/pre&gt;&lt;br&gt;&lt;b&gt;Warning: This command will set the default encryption to AES for all accounts without msDS-SupportedEncryptionTypes configured.&lt;/b&gt;&lt;pre&gt;Get-ADObject -LDAPFilter "(&amp;(!(msDS-SupportedEncryptionTypes=*))(|(objectClass=user)(objectClass=computer)(objectClass=msDS-GroupManagedServiceAccount)))" | Set-ADObject -Replace @{"msDS-SupportedEncryptionTypes" = 24}&lt;/pre&gt;&lt;br&gt;Before making changes, review Kerberos audit events (201, 202, 205-207) to identify RC4 dependencies. Most accounts will already have AES password hashes if their password has been changed since a Windows Server 2008 or later domain controller was introduced. Only accounts whose password has never been reset on a domain with an AES-capable domain controller will need a password reset to generate AES keys.&lt;br&gt;&lt;br&gt;&lt;b&gt;Non-Windows Systems (Linux/macOS)&lt;/b&gt;&lt;br&gt;&lt;br&gt;Update the Kerberos configuration in /etc/krb5.conf (or the equivalent path on your distribution) to permit AES encryption. The encryption types can be configured globally in the [libdefaults] section or per-realm in the [realms] section:&lt;pre&gt;default_tgs_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
+default_tkt_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
+permitted_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96&lt;/pre&gt;&lt;br&gt;Regenerate keytabs with AES encryption. Using ktpass on a Windows domain controller:&lt;pre&gt;ktpass -princ HTTP/server.domain.com@DOMAIN.COM -mapuser serviceaccount -crypto AES256-SHA1 -ptype KRB5_NT_PRINCIPAL -pass * -out server.keytab&lt;/pre&gt;Using ktutil on Linux:&lt;pre&gt;ktutil
+addent -password -p HTTP/server.domain.com@DOMAIN.COM -k 1 -e aes256-cts-hmac-sha1-96
+wkt /etc/krb5.keytab
+quit&lt;/pre&gt;</value>
   </data>
   <data name="S_AesNotEnabled_Rationale" xml:space="preserve">
     <value>Presence of service accounts without AES support = {count}</value>
@@ -5547,22 +5548,14 @@ Also to avoid EDR alerts or to not perform the scan, you can run PingCastle with
     <value>Check the use of Kerberos on services accounts without AES support</value>
   </data>
   <data name="S_AesNotEnabled_TechnicalExplanation" xml:space="preserve">
-    <value>The default encryption algorithm used by Kerberos is RC4, which directly utilizes the NTLM hash of the user’s password.
-    However, due to the rapid advancements in computing power, it’s recommended to transition from RC4 to the more secure AES algorithm.
-    
- Before disabling RC4, the first step is to enable AES.
- It’s important to note that service accounts and user accounts with the ‘serviceprincipalname’ attribute (also known as SPN) need to be configured to support AES. 
- Without this configuration, AES will not be fully operational.
- 
- Accounts are listed if :
- 1) no password changed occured after the first DC Win 2008 install to initate AES secrets or 
- 2) they have a SPN and the account is not flaged to use AES for encryption with msDS-SupportedEncryptionTypes
- 
- Also be advised that other checks must be performed before disabling RC4 (such as trust accounts, ...). A dedicated section in this report explores AES compatibility.
-    </value>
+    <value>By default, Kerberos uses RC4 encryption, which relies directly on the NTLM hash of the account password. RC4 is considered weak and Microsoft is actively deprecating it in favour of AES (see below).&lt;br&gt;&lt;br&gt;Accounts are flagged by this rule if:&lt;ul&gt;&lt;li&gt;Their password has not been changed since the first Windows Server 2008 domain controller was installed, meaning no AES key material has been generated for the account.&lt;/li&gt;&lt;li&gt;They have a Service Principal Name (SPN) and the &lt;code&gt;msDS-SupportedEncryptionTypes&lt;/code&gt; attribute does not include AES (bits 0x8 or 0x10 are not set).&lt;/li&gt;&lt;/ul&gt;Enabling AES on these accounts is the first step towards removing RC4 dependency. Note that additional checks are required before fully disabling RC4, such as verifying trust account encryption settings. A dedicated section in this report explores AES compatibility.&lt;br&gt;&lt;br&gt;&lt;b&gt;Microsoft RC4 Deprecation (January 2026)&lt;/b&gt;&lt;br&gt;&lt;br&gt;Microsoft is phasing out RC4 as the default Kerberos encryption in a three-phase rollout:&lt;ul&gt;&lt;li&gt;&lt;b&gt;Phase 1 (January 2026):&lt;/b&gt; Audit mode — new Kerberos events (201, 202, 205-207) allow organisations to identify RC4 dependencies without enforcement changes.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Phase 2 (April 2026):&lt;/b&gt; Enforcement — the default changes to AES-SHA1 (0x18) for accounts without explicit msDS-SupportedEncryptionTypes configuration. Accounts will receive AES encrypted tickets instead of RC4.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Phase 3 (July 2026):&lt;/b&gt; Full enforcement — RC4 becomes available only through explicit per-account configuration.&lt;/li&gt;&lt;/ul&gt;After enforcement, accounts without AES configured may still work if their environment supports the new defaults, but may also experience authentication failures depending on their configuration and dependencies.&lt;br&gt;&lt;br&gt;&lt;b&gt;Registry Keys&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;code&gt;HKLM\System\CurrentControlSet\services\KDC\DefaultDomainSupportedEncTypes&lt;/code&gt; (REG_DWORD) controls the default encryption for accounts without explicit msDS-SupportedEncryptionTypes on the domain controller.&lt;ul&gt;&lt;li&gt;Recommended value 0x18 (24): AES128 + AES256 (enforcement default)&lt;/li&gt;&lt;li&gt;Value 0x38 (56): AES128 + AES256 + AES256-SK — for AES-only environments with enforced AES session keys&lt;/li&gt;&lt;li&gt;Value 0x3C (60): RC4 + AES128 + AES256 + AES256-SK — for backwards compatibility with enforced AES session keys&lt;/li&gt;&lt;/ul&gt;&lt;code&gt;HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters\RC4DefaultDisablementPhase&lt;/code&gt; (REG_DWORD, requires restart) controls the RC4 deprecation phase on the domain controller. This is a temporary key that will be removed after July 2026.&lt;ul&gt;&lt;li&gt;0 = No audit, no change&lt;/li&gt;&lt;li&gt;1 = Warning events logged on default RC4 usage (Phase 1 default, January 2026)&lt;/li&gt;&lt;li&gt;2 = Kerberos assumes RC4 is not enabled by default (Phase 2 default, April 2026)&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;msDS-SupportedEncryptionTypes Bitmask Reference&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;table class="table table-striped table-bordered"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Hex&lt;/th&gt;&lt;th&gt;Decimal&lt;/th&gt;&lt;th&gt;Encryption Types&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;0x1&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;DES-CBC-CRC&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;0x2&lt;/td&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;DES-CBC-MD5&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;0x4&lt;/td&gt;&lt;td&gt;4&lt;/td&gt;&lt;td&gt;RC4-HMAC&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;0x8&lt;/td&gt;&lt;td&gt;8&lt;/td&gt;&lt;td&gt;AES128-CTS-HMAC-SHA1-96&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;0x10&lt;/td&gt;&lt;td&gt;16&lt;/td&gt;&lt;td&gt;AES256-CTS-HMAC-SHA1-96&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;0x20&lt;/td&gt;&lt;td&gt;32&lt;/td&gt;&lt;td&gt;AES256-CTS-HMAC-SHA1-96-SK (enforce AES session keys when RC4 is in use)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;0x18&lt;/td&gt;&lt;td&gt;24&lt;/td&gt;&lt;td&gt;AES128 + AES256 (recommended, enforcement default)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;0x1C&lt;/td&gt;&lt;td&gt;28&lt;/td&gt;&lt;td&gt;RC4 + AES128 + AES256&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;0x38&lt;/td&gt;&lt;td&gt;56&lt;/td&gt;&lt;td&gt;AES128 + AES256 + AES256-SK (AES-only with enforced AES session keys)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;0x3C&lt;/td&gt;&lt;td&gt;60&lt;/td&gt;&lt;td&gt;RC4 + AES128 + AES256 + AES256-SK (backwards compatible with enforced AES session keys)&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;br&gt;&lt;b&gt;Non-Windows Systems&lt;/b&gt;&lt;br&gt;&lt;br&gt;Unix/Linux/macOS machines authenticating via Kerberos will need their krb5.conf updated to permit AES encryption types. Keytabs generated with RC4 encryption will need to be regenerated with AES support. Applications using GSSAPI or native Kerberos libraries should be tested after the transition.</value>
   </data>
   <data name="S_AesNotEnabled_Documentation" xml:space="preserve">
-    <value>https://learn.microsoft.com/en-us/archive/blogs/openspecification/msds-supportedencryptiontypes-episode-1-computer-accounts</value>
+    <value>https://learn.microsoft.com/en-us/archive/blogs/openspecification/msds-supportedencryptiontypes-episode-1-computer-accounts
+https://techcommunity.microsoft.com/blog/coreinfrastructureandsecurityblog/what-changed-in-rc4-with-the-january-2026-windows-update-and-why-it-is-important/4504732
+https://support.microsoft.com/en-us/topic/kb5021131-how-to-manage-the-kerberos-protocol-changes-related-to-cve-2022-37966-fd837ac3-cdec-4e76-a6ec-86e67501407d
+https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-kile/6cfc7b50-11ed-4b4d-846d-6f08f0812919
+https://support.microsoft.com/en-us/topic/how-to-manage-kerberos-kdc-usage-of-rc4-for-service-account-ticket-issuance-changes-related-to-cve-2026-20833-1ebcda33-720a-4da8-93c1-b0496e1910dc</value>
   </data>
   <data name="S_AesNotEnabled_ReportLocation" xml:space="preserve">
     <value>The detail can be found in &lt;a href="#useraccountanalysis"&gt;User information&lt;/a&gt; and &lt;a href="#computeraccountanalysis"&gt;Computer information&lt;/a&gt;</value>

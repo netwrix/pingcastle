@@ -7,6 +7,7 @@
 using PingCastle.Rules;
 using System;
 using System.Diagnostics;
+using PingCastleCommon.Utility;
 
 namespace PingCastle.Healthcheck.Rules
 {
@@ -61,6 +62,17 @@ namespace PingCastle.Healthcheck.Rules
                         continue;
                     if (days <= threshold)
                     {
+                        if (dc.AdminPwdLastSet != DateTime.MinValue)
+                        {
+                            // Positive = password was reset after login (the scenario we intend to suppress)
+                            var pwdResetHoursAfterLogin = (dc.AdminPwdLastSet - dc.AdminLocalLogin).TotalHours;
+                            // Suppress when password was reset within 24h after login; -1h tolerance covers clock skew and workflows that reset prior to usage
+                            if (pwdResetHoursAfterLogin >= -1 && pwdResetHoursAfterLogin <= 24)
+                            {
+                                Trace.WriteLine($"P-AdminLogin: DC {dc.DCName.SanitizeForLog()} skipped - login within 24h of password reset (pwdLastSet: {dc.AdminPwdLastSet.ToString("u").SanitizeForLog()}, login: {dc.AdminLocalLogin.ToString("u").SanitizeForLog()}, resetHoursAfterLogin: {pwdResetHoursAfterLogin.ToString("F2").SanitizeForLog()}h)");
+                                continue;
+                            }
+                        }
                         AddRawDetail(dc.DCName, dc.AdminLocalLogin.ToString("u"));
                         if (minDays > days)
                             minDays = days;

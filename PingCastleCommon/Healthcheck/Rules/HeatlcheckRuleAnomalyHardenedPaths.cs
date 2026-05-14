@@ -11,7 +11,7 @@ namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("A-HardenedPaths", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-    [RuleSTIG("V-63577", "Hardened UNC Paths must be defined to require mutual authentication and integrity for at least the \\\\*\\SYSVOL and \\\\*\\NETLOGON shares.", STIGFramework.Windows10)]
+    [RuleSTIG("V-250319", "Hardened UNC Paths must be defined to require mutual authentication and integrity for at least the \\\\*\\SYSVOL and \\\\*\\NETLOGON shares.", STIGFramework.Windows10)]
     [RuleMaturityLevel(2)]
     [RuleMitreAttackTechnique(MitreAttackTechnique.ManintheMiddleLLMNRNBTNSPoisoningandSMBRelay)]
     [RuleIntroducedIn(2, 10, 1)]

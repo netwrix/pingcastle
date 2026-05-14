@@ -98,7 +98,7 @@ Or just press enter to use the default.";
             return DisplayState.Run;
         }
 
-        protected override string GetCsvData(string computer)
+        protected override string GetCsvData(string computer, System.Threading.CancellationToken cancellationToken = default)
         {
             StringBuilder sb = new StringBuilder();
             NativeMethods.UNICODE_STRING us = new NativeMethods.UNICODE_STRING();
@@ -158,6 +158,7 @@ Or just press enter to use the default.";
                     i = 0;
                     foreach (var entry in RemoteReference)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         if (translated[i].DomainIndex >= 0)
                         {
                             if (sb.Length != 0)
@@ -174,6 +175,7 @@ Or just press enter to use the default.";
                     }
                     foreach (var entry in customService)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         if (sb.Length != 0)
                         {
                             sb.Append("\r\n");

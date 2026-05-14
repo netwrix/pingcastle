@@ -166,6 +166,21 @@ namespace PingCastle.ADWS
                     Trace.WriteLine(ex.Message);
                     return;
                 }
+                if (ex.ErrorCode == unchecked((int)0x8007200A))
+                {
+                    Trace.WriteLine("LDAP server is not operational or unreachable (0x8007200A)");
+                    throw new SocketException(10061); // Connection refused — caught as SocketException upstream
+                }
+                if (ex.ErrorCode == unchecked((int)0x8007054B))
+                {
+                    Trace.WriteLine("Specified domain does not exist or could not be contacted (0x8007054B)");
+                    throw new SocketException(10061);
+                }
+                if (ex.ExtendedError == 234)
+                {
+                    Trace.WriteLine("Server returned 'more results available' at outer level — possible heavy load or large result set");
+                }
+                Trace.WriteLine($"Unhandled DirectoryServicesCOMException ErrorCode=0x{unchecked((uint)ex.ErrorCode):X8} — re-throwing");
                 throw;
             }
         }

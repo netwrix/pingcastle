@@ -970,6 +970,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         }
 
 
+        private const string DcDelegationTooltip =
+            "Domain Controllers require unconstrained delegation for core operations and should not have delegation removed.";
+
         private void GenerateListAccount(HealthcheckAccountData data, string root, string accordion)
         {
             GenerateAccordion(accordion,
@@ -1008,13 +1011,26 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         GenerateListAccountDetail(accordion, "sectionnotaesenabled" + root, "Objects where AES usage with kerberos may be cause issues", data.ListNotAesEnabled,
                             tooltip: "Accounts are listed if 1) no password changed occured after the first DC Win 2008 install to initate AES secrets or 2) they have a SPN and the account is not flaged to use AES for encryption with msDS-SupportedEncryptionTypes");
                     }
+                    var dcDns = root == "computer" && Report.DomainControllers?.Count > 0
+                        ? new HashSet<string>(
+                            Report.DomainControllers.Select(dc => dc.DistinguishedName),
+                            StringComparer.OrdinalIgnoreCase)
+                        : null;
                     if (data.ListEnabledTrustedToAuthenticateForDelegation != null && data.ListEnabledTrustedToAuthenticateForDelegation.Count > 0)
                     {
-                        GenerateListAccountDetail(accordion, "sectionenabledtrusteddelegation" + root, "Objects trusted to authenticate for delegation for enabled accounts", data.ListEnabledTrustedToAuthenticateForDelegation);
+                        GenerateListAccountDetail(accordion, "sectionenabledtrusteddelegation" + root,
+                            "Objects trusted to authenticate for delegation for enabled accounts",
+                            data.ListEnabledTrustedToAuthenticateForDelegation,
+                            tooltip: dcDns != null ? DcDelegationTooltip : null,
+                            domainControllerDns: dcDns);
                     }
                     if (data.ListDisabledTrustedToAuthenticateForDelegation != null && data.ListDisabledTrustedToAuthenticateForDelegation.Count > 0)
                     {
-                        GenerateListAccountDetail(accordion, "sectiondisabledtrusteddelegation" + root, "Objects trusted to authenticate for delegation for disabled accounts", data.ListDisabledTrustedToAuthenticateForDelegation);
+                        GenerateListAccountDetail(accordion, "sectiondisabledtrusteddelegation" + root,
+                            "Objects trusted to authenticate for delegation for disabled accounts",
+                            data.ListDisabledTrustedToAuthenticateForDelegation,
+                            tooltip: dcDns != null ? DcDelegationTooltip : null,
+                            domainControllerDns: dcDns);
                     }
                     if (data.ListReversibleEncryption != null && data.ListReversibleEncryption.Count > 0)
                     {
@@ -1049,7 +1065,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             }
         }
 
-        void GenerateListAccountDetail(string accordion, string id, string title, List<HealthcheckAccountDetailData> list, string tooltip = null)
+        void GenerateListAccountDetail(string accordion, string id, string title, List<HealthcheckAccountDetailData> list, string tooltip = null,
+            HashSet<string> domainControllerDns = null)
         {
             if (list == null)
             {
@@ -1071,6 +1088,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddHeaderText("Creation");
                     AddHeaderText("Last logon");
                     AddHeaderText("Pwd Last Set");
+                    if (domainControllerDns != null)
+                    {
+                        AddHeaderText("Domain Controller");
+                    }
                     if (eventDate)
                     {
                         AddHeaderText("Event date");
@@ -1092,6 +1113,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         AddCellText((detail.CreationDate > DateTime.MinValue ? detail.CreationDate.ToString("u") : "Access Denied"));
                         AddCellText((detail.LastLogonDate > DateTime.MinValue ? detail.LastLogonDate.ToString("u") : "Never"));
                         AddCellText((detail.PwdLastSet > DateTime.MinValue ? detail.PwdLastSet.ToString("u") : "Never"));
+                        if (domainControllerDns != null)
+                        {
+                            AddCellText(domainControllerDns.Contains(detail.DistinguishedName) ? "Yes" : "No");
+                        }
                         if (eventDate)
                         {
                             if (detail.Event == DateTime.MinValue)
@@ -1115,8 +1140,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         if (number >= MaxNumberUsersInHtmlReport)
                         {
+                            var baseColspan = eventDate ? 5 : 4;
                             Add("<td colspan='");
-                            Add(eventDate ? 5 : 4);
+                            Add(domainControllerDns != null ? baseColspan + 1 : baseColspan);
                             Add("' class='text'>");
                             AddEncoded(string.Format(MaxNumberUsersInHtmlReportMessage, MaxNumberUsersInHtmlReport));
                             Add("</td>");
@@ -1204,7 +1230,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 if ((Report.LapsDistribution != null && Report.LapsDistribution.Count > 0) || (Report.LapsNewDistribution != null && Report.LapsNewDistribution.Count > 0))
                 {
-                    AddParagraph("Here is the distribution of the LAPS password freshness (legacy vs the new Microsoft extension).");
+                    AddParagraph("Here is the distribution of the LAPS password fresshness (legacy vs the new Microsoft extension).");
                     if (Report.NewLAPSInstalled == DateTime.MinValue)
                     {
                         // if chart if for legacy values
@@ -2048,7 +2074,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             AddHeaderText("Priority to remediate", "Indicates a set of objects considered as a priority when establishing a remediation plan.");
             AddHeaderText("Critical Object Found", "Indicates if critical objects such as everyone, authenticated users or domain users can take control, directly or not, of one of the objects.");
             AddHeaderText("Number of objects with Indirect", "Indicates the count of objects per category having at least one indirect user detected.");
-            AddHeaderText("Max number of indirect users", "Indicates the maximum on all objects of the number of users having indirect access to the object.");
+            AddHeaderText("Max number of indirect numbers", "Indicates the maximum on all objects of the number of users having indirect access to the object.");
             AddHeaderText("Max ratio", "Indicates in percentage the value of (number of indirect users / number of direct users) if at least one direct users exists. Else the value is zero.");
             AddBeginTableData();
             foreach (var objectRisk in (CompromiseGraphDataObjectRisk[])Enum.GetValues(typeof(CompromiseGraphDataObjectRisk)))

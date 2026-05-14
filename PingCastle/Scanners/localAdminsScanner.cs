@@ -30,13 +30,14 @@ namespace PingCastle.Scanners
             return "Computer\tSID\tAccount";
         }
 
-        override protected string GetCsvData(string computer)
+        override protected string GetCsvData(string computer, System.Threading.CancellationToken cancellationToken = default)
         {
             string output = null;
             List<SecurityIdentifier> users = localAdminsEnumerator.Export(computer);
 
             foreach (SecurityIdentifier user in users)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 string account = ConvertSIDToName(user.Value, computer);
                 if (!String.IsNullOrEmpty(output))
                     output += "\r\n";

@@ -28,7 +28,7 @@ namespace PingCastle.Scanners
             return "Computer\tBinding";
         }
 
-        override protected string GetCsvData(string computer)
+        override protected string GetCsvData(string computer, System.Threading.CancellationToken cancellationToken = default)
         {
             StringBuilder sb = new StringBuilder();
             DisplayAdvancement(computer, "Connecting to Oxid Resolver");
@@ -45,6 +45,7 @@ namespace PingCastle.Scanners
             {
                 foreach (var binding in bindings)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     if (sb.Length != 0)
                         sb.Append("\r\n");
                     sb.Append(computer);

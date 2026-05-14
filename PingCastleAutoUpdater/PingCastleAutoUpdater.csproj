@@ -26,11 +26,15 @@
     <ProjectReference Include="..\PingCastleCommon\PingCastleCommon.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="PingCastleAutoUpdates_Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.1" />
+    <PackageReference Include="System.Private.Uri" Version="4.3.2" />
   </ItemGroup>
   <ItemGroup>
     <None Update="README.md">

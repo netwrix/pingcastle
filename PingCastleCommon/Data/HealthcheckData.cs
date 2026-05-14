@@ -266,6 +266,8 @@ namespace PingCastle.Healthcheck
         public string Class { get; set; }
 
         public string Sid { get; set; }
+
+        public int ManagedPasswordInterval { get; set; }
     }
 
     [DebuggerDisplay("{GroupName}")]
@@ -1296,6 +1298,12 @@ namespace PingCastle.Healthcheck
         [XmlAttribute]
         public DateTime AdminLocalLogin { get; set; }
 
+        /// <summary>
+        /// The timestamp when the built-in Administrator account (RID 500) password was last set
+        /// </summary>
+        [XmlAttribute]
+        public DateTime AdminPwdLastSet { get; set; }
+
         public List<HealthcheckDCRPCInterface> RPCInterfacesOpen { get; set; }
 
         /// <summary>
@@ -1318,6 +1326,12 @@ namespace PingCastle.Healthcheck
             get { return InstalledHotFixes?.ToArray(); }
             set { InstalledHotFixes = value != null ? new HashSet<string>(value) : null; }
         }
+
+        [DefaultValue(null)]
+        public DateTime? MostRecentQualityUpdateDate { get; set; }
+
+        [DefaultValue(null)]
+        public string HotfixQueryStatus { get; set; }
     }
 
     [XmlType("delegation")]
@@ -1426,16 +1440,6 @@ namespace PingCastle.Healthcheck
         public static string GetMachineReadableFileName(string DomainFQDN, DateTime GenerationDate)
         {
             return "ad_hc_" + DomainFQDN + (UseDateInFileNameValue ? "_" + GenerationDate.ToString("yyyyMMddTHHmmss") : null) + ".xml";
-        }
-
-        public static string GetJsonFileName(string DomainFQDN, DateTime GenerationDate)
-        {
-            return "ad_hc_" + DomainFQDN + (UseDateInFileNameValue ? "_" + GenerationDate.ToString("yyyyMMddTHHmmss") : null) + ".json";
-        }
-
-        public string GetJsonFileName()
-        {
-            return GetJsonFileName(DomainFQDN, GenerationDate);
         }
 
         public void SetExportLevel(PingCastleReportDataExportLevel level)

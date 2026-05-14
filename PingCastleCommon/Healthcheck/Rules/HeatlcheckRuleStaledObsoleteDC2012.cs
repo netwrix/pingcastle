@@ -11,7 +11,7 @@ namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("S-DC-2012", RiskRuleCategory.StaleObjects, RiskModelCategory.ObsoleteOS)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-    [RuleSTIG("V-8551", "The domain functional level must be at a Windows Server version still supported by Microsoft.")]
+    [RuleSTIG("V-243480", "The domain functional level must be at a Windows Server version still supported by Microsoft.")]
     [RuleANSSI("R12", "subsection.3.1")]
     [RuleDurANSSI(1, "warning_dc_obsolete", "DC/RODC with an obsolete operating system")]
     [RuleIntroducedIn(3, 1)]

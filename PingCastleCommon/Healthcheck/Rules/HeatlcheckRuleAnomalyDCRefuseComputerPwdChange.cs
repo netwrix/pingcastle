@@ -11,9 +11,9 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("A-DCRefuseComputerPwdChange", RiskRuleCategory.Anomalies, RiskModelCategory.PassTheCredential)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleIntroducedIn(2, 7)]
-    [RuleSTIG("V-4408", "The domain controller must be configured to allow reset of machine account passwords.", STIGFramework.ActiveDirectoryService2008)]
     [RuleMaturityLevel(2)]
     [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
+    [RuleSTIG("V-205876", "Windows Server 2019 domain controllers must be configured to not allow computer account password changes to be refused.", STIGFramework.WindowsServer2019)]
     public class HeatlcheckRuleAnomalyDCRefuseComputerPwdChange : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

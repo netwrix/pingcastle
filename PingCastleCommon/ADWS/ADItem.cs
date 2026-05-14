@@ -234,6 +234,8 @@ namespace PingCastle.ADWS
         public long msDSLockoutObservationWindow { get; set; }
         [ADAttributeAttribute("msDS-LockoutDuration", ADAttributeValueKind.LongValue)]
         public long msDSLockoutDuration { get; set; }
+        [ADAttributeAttribute("msDS-ManagedPasswordInterval", ADAttributeValueKind.IntValue)]
+        public int msDSManagedPasswordInterval { get; set; }
         [ADAttributeAttribute("msDS-PasswordReversibleEncryptionEnabled", ADAttributeValueKind.BoolValue)]
         public bool msDSPasswordReversibleEncryptionEnabled { get; set; }
         [ADAttributeAttribute("msDS-ReplAttributeMetaData", ADAttributeValueKind.ReplMetadataValue2)]

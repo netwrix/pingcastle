@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace PingCastle.Rules
 {
@@ -18,6 +19,7 @@ namespace PingCastle.Rules
     {
         private static Dictionary<string, RuleBase<T>> _cachedRules = null;
         private static readonly object _lock = new object();
+        private static Type[] _cachedRuleTypes;
 
         public IInfrastructureSettings InfrastructureSettings { get; set; }
         private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
@@ -42,8 +44,12 @@ namespace PingCastle.Rules
 
         public static void ReloadRules()
         {
-            _cachedRules = new Dictionary<string, RuleBase<T>>();
-            LoadRules(_cachedRules);
+            lock (_lock)
+            {
+                var rules = new Dictionary<string, RuleBase<T>>();
+                LoadRules(rules);
+                _cachedRules = rules;
+            }
         }
 
         public static void LoadRules(Dictionary<string, RuleBase<T>> rules)
@@ -105,16 +111,8 @@ namespace PingCastle.Rules
         // For Dependency Injection-constructed rules with a provided IServiceProvider
         public static IEnumerable<RuleBase<T>> GetRulesFromDI(IServiceProvider serviceProvider)
         {
-            var ruleBaseType = typeof(RuleBase<T>);
-            var ruleTypes = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => {
-                    try { return a.GetExportedTypes(); }
-                    catch { return Array.Empty<Type>(); }
-                })
-                .Where(type => ruleBaseType.IsAssignableFrom(type) && !type.IsAbstract);
-
             var rules = new Dictionary<string, RuleBase<T>>();
-            foreach (Type type in ruleTypes)
+            foreach (Type type in GetRuleTypes())
             {
                 RuleBase<T> rule = null;
                 try
@@ -145,6 +143,36 @@ namespace PingCastle.Rules
             }
 
             return rules.Values;
+        }
+
+        private static Type[] GetRuleTypes()
+        {
+            if (_cachedRuleTypes == null)
+            {
+                lock (_lock)
+                {
+                    if (_cachedRuleTypes == null)
+                    {
+                        var ruleBaseType = typeof(RuleBase<T>);
+                        _cachedRuleTypes = AppDomain.CurrentDomain.GetAssemblies()
+                            .SelectMany(a =>
+                            {
+                                try
+                                {
+                                    return a.GetExportedTypes();
+                                }
+                                catch
+                                { 
+                                    return Array.Empty<Type>();
+                                }
+                            })
+                            .Where(type => ruleBaseType.IsAssignableFrom(type) && !type.IsAbstract)
+                            .ToArray();
+                    }
+                }
+            }
+
+            return _cachedRuleTypes;
         }
 
         public static void LoadCustomRules()
@@ -202,12 +230,13 @@ namespace PingCastle.Rules
             rule.Initialize();
         }
 
-        public List<RuleBase<T>> ComputeRiskRules(T data)
+        public List<RuleBase<T>> ComputeRiskRules(T data, CancellationToken cancellationToken = default)
         {
             var output = new List<RuleBase<T>>();
             Trace.WriteLine("Begining to run risk rule");
             foreach (var rule in Rules)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 string ruleName = rule.GetType().ToString();
                 Trace.WriteLine("Rule: " + ruleName);
                 try

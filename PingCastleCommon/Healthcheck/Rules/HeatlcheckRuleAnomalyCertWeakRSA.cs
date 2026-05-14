@@ -15,9 +15,9 @@ namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("A-WeakRSARootCert", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
-    [RuleSTIG("V-14820", "PKI certificates (server and clients) must be issued by the DoD PKI or an approved External Certificate Authority (ECA).", STIGFramework.ActiveDirectoryService2003)]
     [RuleDurANSSI(1, "certificates_vuln", "Weak or vulnerable certificates")]
     [RuleMitreAttackTechnique(MitreAttackTechnique.WeakenEncryptionReduceKeySpace)]
+    [RuleSTIG("V-205646", "Windows Server 2019 domain Controller PKI certificates must be issued by the DoD PKI or an approved External Certificate Authority (ECA).", STIGFramework.WindowsServer2019)]
     public class HeatlcheckRuleAnomalyCertWeakRSA : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
@@ -82,7 +82,7 @@ namespace PingCastle.Healthcheck.Rules
                 var WSUSCache = new List<string>();
                 foreach (var wsus in healthcheckData.GPOWSUS)
                 {
-                    if (wsus.WSUSserverCertificate != null && wsus.WSUSserverCertificate.Length > 0 
+                    if (wsus.WSUSserverCertificate != null && wsus.WSUSserverCertificate.Length > 0
                         && !string.IsNullOrEmpty(wsus.WSUSserver) && !WSUSCache.Contains(wsus.WSUSserver))
                     {
                         WSUSCache.Add(wsus.WSUSserver);
@@ -106,7 +106,7 @@ namespace PingCastle.Healthcheck.Rules
                             }
                         }
                     }
-                    if (wsus.WSUSserverAlternateCertificate != null && wsus.WSUSserverAlternateCertificate.Length > 0 
+                    if (wsus.WSUSserverAlternateCertificate != null && wsus.WSUSserverAlternateCertificate.Length > 0
                         && !string.IsNullOrEmpty(wsus.WSUSserverAlternate) && !WSUSCache.Contains(wsus.WSUSserverAlternate))
                     {
                         WSUSCache.Add(wsus.WSUSserverAlternate);

@@ -1,4 +1,3 @@
-
 # PingCastle by Netwrix
 
 ## Stay Connected & Contribute
@@ -19,7 +18,6 @@ PingCastle provides a streamlined approach to evaluating Active Directory securi
 Rather than pursuing exhaustive evaluation at the expense of efficiency, PingCastle delivers the optimal balance—identifying 80% of critical security issues while requiring just 20% of the time and effort of traditional assessment methods.
 
 ```plain
-
 *****    #******** Netwrix PingCastle (Version 3.5.0.33)
  ***    %********** Get Active Directory Security at 80% in 20% of the time
  *      ####   #### End of support: 2027-08-31.
@@ -42,7 +40,8 @@ Do not forget that there are other command line switches like --help that you ca
   7-advanced   -Open the advanced menu
   0-Exit
 ==============================
-This is the main functionality of PingCastle. In a matter of minutes, it produces a report which will give you an overview of your Active Directory security. This report can be generated on other domains by using the existing trust links.```
+This is the main functionality of PingCastle. In a matter of minutes, it produces a report which will give you an overview of your Active Directory security. This report can be generated on other domains by using the existing trust links.
+```
 
 Check <https://www.pingcastle.com> for the documentation and methodology
 
@@ -75,12 +74,14 @@ In summary: Use it freely for internal purposes; purchase a license if you plan 
 
 PingCastle uses the following open source components:
 
-- [Bootstrap](https://getbootstrap.com/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
-- [JQuery](https://jquery.org) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
-- [vis.js](http://visjs.org/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
-- [popper.js](https://popper.js.org/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
-- [Bootstrap Table](https://bootstrap-table.com/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
-- [FodyWeavers](https://github.com/Fody/Fody) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+* [Bootstrap](https://getbootstrap.com/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+* [JQuery](https://jquery.org) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+* [vis.js](http://visjs.org/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+* [popper.js](https://popper.js.org/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+* [Bootstrap Table](https://bootstrap-table.com/) licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+* [Bootstrap Table Export](https://bootstrap-table.com) Licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+* [Table Export](https://github.com/hhurz/tableExport.jquery.plugin) Licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
+* [Font Awesome](https://fontawesome.com) Licensed under the [MIT license](https://tldrlegal.com/license/mit-license)
 
 ## Author
 

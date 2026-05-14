@@ -36,21 +36,29 @@ namespace PingCastle.Data
         private static void ApplyShouldSerializeAndXmlIgnore(JsonTypeInfo typeInfo)
         {
             if (typeInfo.Kind != JsonTypeInfoKind.Object)
-                return;
-
-            foreach (var property in typeInfo.Properties)
             {
+                return;
+            }
+
+            for (int i = typeInfo.Properties.Count - 1; i >= 0; i--)
+            {
+                var property = typeInfo.Properties[i];
                 var clrProperty = typeInfo.Type.GetProperty(property.Name,
                     BindingFlags.Public | BindingFlags.Instance);
 
                 if (clrProperty == null)
+                {
                     continue;
+                }
 
-                // Honor [XmlIgnore] + [IgnoreDataMember] attributes
+                // Honor [XmlIgnore] + [IgnoreDataMember] attributes by removing the property
+                // entirely. Just setting ShouldSerialize = false leaves the property registered
+                // under its original name, which collides when another property is renamed onto
+                // it via [XmlArray]/[XmlElement] (e.g. InstalledHotFixes vs InstalledHotFixesArray).
                 if (clrProperty.GetCustomAttribute<XmlIgnoreAttribute>() != null
                     || clrProperty.GetCustomAttribute<IgnoreDataMemberAttribute>() != null)
                 {
-                    property.ShouldSerialize = (_, _) => false;
+                    typeInfo.Properties.RemoveAt(i);
                     continue;
                 }
 

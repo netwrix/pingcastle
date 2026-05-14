@@ -15,6 +15,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using System.Security.Permissions;
 using System.Text;
+using System.Text.Json;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -127,6 +128,31 @@ namespace PingCastle.Data
             edElement.CipherData.CipherValue = encryptedElement;
             EncryptedXml.ReplaceElement(elementToEncrypt, edElement, false);
             xmlDoc.Save(outStream);
+        }
+
+        public static string SaveAsJson(T data, string filename)
+        {
+            try
+            {
+                data.SetIntegrity();
+                string json = GetJsonClearText(data);
+                if (!string.IsNullOrEmpty(filename))
+                {
+                    File.WriteAllText(filename, json, Encoding.UTF8);
+                }
+                return json;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("Error when saving JSON " + filename + " error: " + ex.Message);
+                throw;
+            }
+        }
+
+        public static string GetJsonClearText(T data)
+        {
+            var options = JsonExportHelper.CreateOptions();
+            return JsonSerializer.Serialize(data, options);
         }
 
         public static T LoadXml(string filename)

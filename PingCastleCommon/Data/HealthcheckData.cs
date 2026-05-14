@@ -1428,6 +1428,16 @@ namespace PingCastle.Healthcheck
             return "ad_hc_" + DomainFQDN + (UseDateInFileNameValue ? "_" + GenerationDate.ToString("yyyyMMddTHHmmss") : null) + ".xml";
         }
 
+        public static string GetJsonFileName(string DomainFQDN, DateTime GenerationDate)
+        {
+            return "ad_hc_" + DomainFQDN + (UseDateInFileNameValue ? "_" + GenerationDate.ToString("yyyyMMddTHHmmss") : null) + ".json";
+        }
+
+        public string GetJsonFileName()
+        {
+            return GetJsonFileName(DomainFQDN, GenerationDate);
+        }
+
         public void SetExportLevel(PingCastleReportDataExportLevel level)
         {
             Level = level;

@@ -469,7 +469,7 @@ namespace PingCastle.Healthcheck
                 dc.CreationDate = DateBetween2Dates(healthcheckData.DomainCreation, DateTime.Now);
                 // last logon timestam can have a delta of 14 days
                 dc.LastComputerLogonDate = DateTime.Now.AddDays(-1 * rnd.Next(180));
-                dc.DistinguishedName = "DC=DC";
+                dc.DistinguishedName = "CN=" + dc.DCName + ",OU=Domain Controllers,DC=" + healthcheckData.DomainFQDN.Replace(".", ",DC=");
                 dc.OperatingSystem = "Windows 2019";
                 healthcheckData.DomainControllers.Add(dc);
             }

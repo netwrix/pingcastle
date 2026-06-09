@@ -8,13 +8,11 @@ namespace PingCastle.Healthcheck
 {
     public class HotFixCollector : IHotFixCollector
     {
-        private readonly IHotfixService _cimService;
-        private readonly IHotfixService _wmiService;
+        private readonly IHotfixService _hotfixService;
 
-        public HotFixCollector(IHotfixService cimService, IHotfixService wmiService)
+        public HotFixCollector(IHotfixService hotfixService)
         {
-            _cimService = cimService ?? throw new System.ArgumentNullException(nameof(cimService));
-            _wmiService = wmiService ?? throw new System.ArgumentNullException(nameof(wmiService));
+            _hotfixService = hotfixService ?? throw new System.ArgumentNullException(nameof(hotfixService));
         }
 
         public HotfixQueryResult GetInstalledHotfixes(string hostName, bool isPrivilegedMode = true, CancellationToken cancellationToken = default)
@@ -35,36 +33,17 @@ namespace PingCastle.Healthcheck
                 return new HotfixQueryResult { Status = HotfixQueryStatus.ConnectionFailed, FailureReason = "Invalid hostname" };
             }
 
-            var cimResult = _cimService.TryGetInstalledHotfixes(hostName, ui, cancellationToken);
-            if (cimResult.Status == HotfixQueryStatus.Success)
+            var result = _hotfixService.TryGetInstalledHotfixes(hostName, ui, cancellationToken);
+            if (result.Status == HotfixQueryStatus.Success)
             {
-                Trace.WriteLine($"CIM succeeded for {hostName.SanitizeForLog()} with {cimResult.KbNumbers.Count} hotfixes");
-                return cimResult;
+                Trace.WriteLine($"Retrieved {result.KbNumbers.Count} hotfixes from {hostName.SanitizeForLog()}");
+            }
+            else
+            {
+                Trace.WriteLine($"Hotfix detection failed for {hostName.SanitizeForLog()} with status {result.Status}: {result.FailureReason}");
             }
 
-            Trace.WriteLine($"CIM failed for {hostName.SanitizeForLog()} with status {cimResult.Status}: {cimResult.FailureReason}");
-
-            if (cimResult.Status == HotfixQueryStatus.AccessDenied)
-            {
-                Trace.WriteLine($"Skipping WMI fallback for {hostName.SanitizeForLog()} - same credentials would fail");
-                return cimResult;
-            }
-
-            if (cimResult.Status == HotfixQueryStatus.ConnectionFailed || cimResult.Status == HotfixQueryStatus.Timeout || cimResult.Status == HotfixQueryStatus.NoResults)
-            {
-                Trace.WriteLine($"Attempting WMI fallback for {hostName.SanitizeForLog()}");
-                var wmiResult = _wmiService.TryGetInstalledHotfixes(hostName, ui, cancellationToken);
-                if (wmiResult.Status == HotfixQueryStatus.Success)
-                {
-                    Trace.WriteLine($"WMI fallback succeeded for {hostName.SanitizeForLog()} with {wmiResult.KbNumbers.Count} hotfixes");
-                    return wmiResult;
-                }
-
-                Trace.WriteLine($"WMI fallback also failed for {hostName.SanitizeForLog()} with status {wmiResult.Status}: {wmiResult.FailureReason}");
-                return wmiResult;
-            }
-
-            return cimResult;
+            return result;
         }
     }
 }

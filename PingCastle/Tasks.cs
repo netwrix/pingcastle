@@ -127,7 +127,7 @@ namespace PingCastle
                 scanner.Initialize(Settings);
 
                 // Only call QueryForAdditionalParameterInInteractiveMode if Server is not already set
-                if (string.IsNullOrEmpty(Settings.Server) 
+                if (string.IsNullOrEmpty(Settings.Server)
                     && scanner.QueryForAdditionalParameterInInteractiveMode() != DisplayState.Run)
                 {
                     return;

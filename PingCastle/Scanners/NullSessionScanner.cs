@@ -30,7 +30,7 @@ namespace PingCastle.Scanners
             return "Computer\tIs Null sessions enabled\tExample";
         }
 
-        override protected string GetCsvData(string computer)
+        override protected string GetCsvData(string computer, System.Threading.CancellationToken cancellationToken = default)
         {
             StringBuilder sb = new StringBuilder();
             string header = null;
@@ -45,6 +45,7 @@ namespace PingCastle.Scanners
                                 sb.Append(server.Value);
                             });
             bool enabled = false;
+            cancellationToken.ThrowIfCancellationRequested();
             DisplayAdvancement(computer, "Testing MS-SAMR");
             header = computer + " \tMS-SAMR\t";
             if (session.EnumerateAccount(TypeOfEnumeration.Samr, (ScanningMode == 0 ? 1 : NullSessionEnumerationLimit)))
@@ -58,6 +59,7 @@ namespace PingCastle.Scanners
             }
             if (!enabled)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 DisplayAdvancement(computer, "Testing MS-LSAT");
                 header = computer + "\tMS-LSAT\t";
                 if (session.EnumerateAccount(TypeOfEnumeration.Lsa, (ScanningMode == 0 ? 1 : NullSessionEnumerationLimit)))

@@ -129,7 +129,7 @@ namespace PingCastle
         private static void InitializeServiceProvider()
         {
             var configBuilder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.console.json", optional: true, reloadOnChange: false);
 
             var configuration = configBuilder.Build();
@@ -378,7 +378,7 @@ namespace PingCastle
             PingCastle.Rules.RuleSet<HealthcheckData>.LoadCustomRules();
         }
 
-        const string BasicEditionLicense = "PC2H4sIAAAAAAAACmNkYGDgAGIGB3vlteH3GJmBzDQgdmMoYkgFQgUGV4YUhkyGEiDOZ8gD8vOB8goMAUB+HkM6gzNDIkMxUDYHrFYXiP2AKkqAdBqQLgLSyUA6FwhTgbxkoK5EoFoFhlKgrlQGFqBNXEDsBDYlEygPAg1AXLb/itWtM6uf7ly/uZtv7SxPHttDPQaqPxWM5uew1ysdKlvsv1tPpbv7wpVuWae1iY+WJfj+tHE6YyfeVlO+INohVypO5kXTUv4WOzHdZ3PeTuaIXpS1b5+0Zu0Bbz5DDfMVpo6FP8pt76S4F39L8snU2/pDXXNVgTCvksBdq0PrSh7L+q0HAKu1tDAYAQAA";
+        const string BasicEditionLicense = "PC2H4sIAAAAAAAACmNkYGDgAGKGhmtm+vPvMTIDmWlA7MZQxJAKhAoMrgwpDJkMJUCcz5AH5OcD5RUYAoD8PIZ0BmeGRIZioGwOWK0uEPsBVZQA6TQgXQSkk4F0LhCmAnnJQF2JQLUKDKVAXakMLECbuIDYCWxKJlAe7BQgru9jbWPIO2O78eJKNm4LtzCWgoMn/fVY0+8cY7Fp1VT81lPlFN6Waj2D7+ABpv+rWcQflKfdYqpYG8q+O/Pcy21HPfjZGTeunxnwVttRqFgloUcx8c+Zt6fX2NopTymoyNn8uWjq7BcqzzU9mi5FBCruPVXJ4PPo0BPjw9WxhvHpTWWpHbwAZlqnBxgBAAA=";
         string _serialNumber;
         public string GetSerialNumber()
         {

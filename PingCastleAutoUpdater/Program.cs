@@ -16,92 +16,42 @@ using System.Threading.Tasks;
 namespace PingCastleAutoUpdater
 {
     class Program
-	{
-		class Release
-		{
-			public string name { get; set; }
-			public bool prerelease { get; set; }
-			public DateTime published_at { get; set; }
-			public List<Asset> assets { get; set; }
-		}
-
-		class Asset
-		{
-			public string name { get; set; }
-			public int size { get; set; }
-			public string browser_download_url { get; set; }
-		}
-
+    {
         private static async Task Main(string[] args)
-		{
-			Program program = new Program();
-			await program.RunAsync(args);
-		}
+        {
+            Program program = new Program();
+            await program.RunAsync(args);
+        }
 
-		bool forceDownload = false;
-		bool preview = false;
-		bool dryRun = false;
-		int numberOfDaysToWait = 0;
-		string releaseInfoUrl = "https://api.github.com/repos/netwrix/pingcastle/releases";
+        bool forceDownload = false;
+        bool preview = false;
+        bool dryRun = false;
+        int numberOfDaysToWait = 0;
+        string releaseInfoUrl = "https://api.github.com/repos/netwrix/pingcastle/releases";
 
         private async Task RunAsync(string[] args)
-		{
-			Trace.WriteLine("Before parsing arguments");
-			for (int i = 0; i < args.Length; i++)
-			{
-				switch (args[i])
-				{
-					case "--api-url":
-						if (i + 1 >= args.Length)
-						{
-							WriteInRed("argument for --api-url is mandatory");
-							return;
-						}
-
-                        var customUrl = args[++i];
-                        if (!IsValidReleaseUrl(customUrl))
-                        {
-                            WriteInRed("Invalid API URL. Only HTTP and HTTPS URLs are allowed.");
-                            return;
-                        }
-
-                        releaseInfoUrl = customUrl;
-						break;
-					case "--force-download":
-						forceDownload = true;
-						break;
-					case "--help":
-						DisplayHelp();
-						return;
-					case "--use-preview":
-						preview = true;
-						break;
-					case "--dry-run":
-						dryRun = true;
-						break;
-					case "--wait-for-days":
-						if (i + 1 >= args.Length)
-						{
-							WriteInRed("argument for --wait-for-days is mandatory");
-							return;
-						}
-						{
-							if (!int.TryParse(args[++i], out numberOfDaysToWait))
-							{
-								WriteInRed("argument for --wait-for-days is not a valid value (typically: 30)");
-								return;
-							}
-						}
-						break;
-					default:
-						WriteInRed("unknow argument: " + args[i]);
-						DisplayHelp();
-						return;
-				}
-			}
-			Console.WriteLine("Do not forget that there are other command line switches like --help that you can use");
-			Console.WriteLine("Running on " + Environment.Version);
-			Console.WriteLine();
+        {
+            Trace.WriteLine("Before parsing arguments");
+            var parseResult = UpdaterLogic.ParseArguments(args);
+            if (parseResult.ShowHelp)
+            {
+                DisplayHelp();
+                return;
+            }
+            if (!parseResult.Success)
+            {
+                WriteInRed(parseResult.Error);
+                DisplayHelp();
+                return;
+            }
+            forceDownload = parseResult.ForceDownload;
+            preview = parseResult.Preview;
+            dryRun = parseResult.DryRun;
+            numberOfDaysToWait = parseResult.WaitForDays;
+            releaseInfoUrl = parseResult.ApiUrl;
+            Console.WriteLine("Do not forget that there are other command line switches like --help that you can use");
+            Console.WriteLine("Running on " + Environment.Version);
+            Console.WriteLine();
 
             Release release = await GetLatestReleaseFromUpdateUrlAsync();
             if (release == null)
@@ -109,32 +59,32 @@ namespace PingCastleAutoUpdater
 
             string currentVersion = GetCurrentVersionFromExecutable();
 
-			// Initialize configuration orchestrator for pre-update migration
-			string exePath = Environment.ProcessPath ?? AppContext.BaseDirectory;
-			string exeDirectory = Path.GetDirectoryName(exePath);
-			var pathContext = new ConfigurationPathContext(exeDirectory);
-			var configOrchestrator = new ConfigurationOrchestrationService(pathContext, dryRun);
+            // Initialize configuration orchestrator for pre-update migration
+            string exePath = Environment.ProcessPath ?? AppContext.BaseDirectory;
+            string exeDirectory = Path.GetDirectoryName(exePath);
+            var pathContext = new ConfigurationPathContext(exeDirectory);
+            var configOrchestrator = new ConfigurationOrchestrationService(pathContext, dryRun);
 
-			// Perform initial state migration if both XML and JSON configs exist
-			// This should happen regardless of whether an update is needed
-			bool migrationPerformed = configOrchestrator.PerformInitialStateMigration();
-			if (migrationPerformed)
-			{
-				Console.WriteLine("Initial configuration state migration completed.");
-				Console.WriteLine();
-			}
+            // Perform initial state migration if both XML and JSON configs exist
+            // This should happen regardless of whether an update is needed
+            bool migrationPerformed = configOrchestrator.PerformInitialStateMigration();
+            if (migrationPerformed)
+            {
+                Console.WriteLine("Initial configuration state migration completed.");
+                Console.WriteLine();
+            }
 
             if (!IsUpdateRequired(currentVersion, release.name))
-			{
-				Console.WriteLine("Update is not required. Program is stopping.");
-				return;
-			}
-			string downloadUrl = release.assets.First().browser_download_url;
-			Console.WriteLine("Downloading " + downloadUrl);
-			Console.WriteLine();
+            {
+                Console.WriteLine("Update is not required. Program is stopping.");
+                return;
+            }
+            string downloadUrl = release.assets.First().browser_download_url;
+            Console.WriteLine("Downloading " + downloadUrl);
+            Console.WriteLine();
 
-			ProceedReleaseInstall(downloadUrl, dryRun);
-		}
+            ProceedReleaseInstall(downloadUrl, dryRun);
+        }
 
         /// <summary>
         /// Returns PingCastle.exe version if it's found in the same directory
@@ -182,25 +132,7 @@ namespace PingCastleAutoUpdater
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             IEnumerable<Release> releases = JsonSerializer.Deserialize<List<Release>>(releaseInfo, options);
 
-            if (numberOfDaysToWait > 0)
-            {
-                Console.WriteLine("Only releases older than " + numberOfDaysToWait + " day(s) are selected");
-                releases = releases.Where(r => r.published_at.AddDays(numberOfDaysToWait) < DateTime.Now);
-            }
-
-            if (!preview)
-            {
-                releases = releases.Where(r => r.prerelease == false);
-            }
-            else
-            {
-                Console.WriteLine("Prerelease are included");
-            }
-
-            releases = releases.OrderByDescending(i => i.published_at);
-
-            // Realise the releases as an array now that filtering and sorting have been applied.
-            var release = releases.FirstOrDefault();
+            var release = UpdaterLogic.FilterAndSortReleases(releases, preview, numberOfDaysToWait);
             if (release == null)
                 Console.WriteLine("There is no release matching the requirements");
             else
@@ -256,82 +188,17 @@ namespace PingCastleAutoUpdater
 
         private bool IsUpdateRequired(string currentVersion, string latestVersion)
         {
-            if (forceDownload)
-            {
-                Console.WriteLine("Update forced - download will proceed");
-                return true;
-            }
-
-            if (string.IsNullOrEmpty(currentVersion))
-            {
-                Console.WriteLine("No current version detected - download will proceed");
-                return true;
-            }
-
-            try
-            {
-                var current = new Version(currentVersion);
-                var latest = ParseReleaseVersion(latestVersion);
-
-                if (latest > current)
-                {
-                    Console.WriteLine($"Update available: {currentVersion} -> {latestVersion}");
-                    return true;
-                }
-                else if (latest == current)
-                {
-                    Console.WriteLine($"Current version {currentVersion} is up to date with latest release {latestVersion}");
-                    return false;
-                }
-                else
-                {
-                    Console.WriteLine($"Current version {currentVersion} is newer than latest release {latestVersion}");
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Version comparison failed - proceeding with update from {currentVersion} to {latestVersion}");
-                return true;
-            }
+            return UpdaterLogic.IsUpdateRequired(currentVersion, latestVersion, forceDownload);
         }
 
-        private Version ParseReleaseVersion(string releaseName)
-        {
-            // Release names are typically like "PingCastle 3.3.0.0" or "3.3.0.0"
-            // Extract the version number part
-            if (string.IsNullOrEmpty(releaseName))
-            {
-                throw new ArgumentException("Release name is empty");
-            }
-
-            // Try to find version pattern in the release name
-            var parts = releaseName.Split(' ');
-            for (int i = parts.Length - 1; i >= 0; i--)
-            {
-                var part = parts[i];
-                if (Version.TryParse(part, out Version version))
-                {
-                    return version;
-                }
-            }
-
-            // If no valid version found, try the entire string
-            if (Version.TryParse(releaseName, out Version directVersion))
-            {
-                return directVersion;
-            }
-
-            throw new ArgumentException($"Could not parse version from release name: {releaseName}");
-        }
 
         private static void WriteInRed(string data)
-		{
-			Console.ForegroundColor = ConsoleColor.Red;
-			Console.WriteLine(data);
-			Trace.WriteLine("[Red]" + data);
-			Console.ResetColor();
-		}
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(data);
+            Trace.WriteLine("[Red]" + data);
+            Console.ResetColor();
+        }
 
         private static void BackupExistingConfigurations(ConfigurationPathContext pathContext, bool dryRun)
         {
@@ -391,17 +258,17 @@ namespace PingCastleAutoUpdater
                 {
                     foreach (var entry in archive.Entries)
                     {
-						FilesValidator.CheckPathTraversal(entry.FullName);
-						var targetFilePath = Path.GetFullPath(entry.FullName);
+                        FilesValidator.CheckPathTraversal(entry.FullName);
+                        var targetFilePath = Path.GetFullPath(entry.FullName);
                         // do not save .config file except if it doesn't exists
                         // and do not overwrite the updater file because it's running !
                         string appConfigFile = AppDomain.CurrentDomain.FriendlyName + ".config";
                         if (targetFilePath.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
-							&& !Path.GetFileName(targetFilePath).Equals(appConfigFile, StringComparison.OrdinalIgnoreCase))
+                            && !Path.GetFileName(targetFilePath).Equals(appConfigFile, StringComparison.OrdinalIgnoreCase))
                         {
                             // Copy if not present.
-							if(!File.Exists(targetFilePath))
-							{
+                            if (!File.Exists(targetFilePath))
+                            {
                                 // In dry-run mode with existing JSON, extract PingCastle.exe.config for analysis
                                 if (dryRun && Path.GetFileName(targetFilePath).Equals("PingCastle.exe.config", StringComparison.OrdinalIgnoreCase)
                                     && File.Exists(pathContext.JsonConfigPath))
@@ -412,8 +279,8 @@ namespace PingCastleAutoUpdater
                                 {
                                     performCopy(entry, null, dryRun);
                                 }
-								continue;
-							}
+                                continue;
+                            }
 
                             configOrchestrator.HandleXmlConfigDuringExtraction(entry, targetFilePath);
                         }
@@ -467,7 +334,7 @@ namespace PingCastleAutoUpdater
 
             using (var e = entry.Open())
             {
-				string exeFullPath = Path.GetFullPath(exePath);
+                string exeFullPath = Path.GetFullPath(exePath);
 
                 Console.WriteLine("Saving " + entryFullName);
                 if (File.Exists(entryFullPath))
@@ -508,24 +375,16 @@ namespace PingCastleAutoUpdater
             }
         }
 
-        private static bool IsValidReleaseUrl(string url)
-        {
-            if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
-                return false;
-
-            return uri.Scheme == "http" || uri.Scheme == "https";
-        }
-
         private static void DisplayHelp()
-		{
-			Console.WriteLine("switch:");
-			Console.WriteLine("  --help              : display this message");
-			Console.WriteLine("");
-			Console.WriteLine("  --api-url http://xx : use an alternative url for checking for updates");
-			Console.WriteLine("  --force-download    : download the latest release even if it is not the most recent. Useful for tests");
-			Console.WriteLine("  --use-preview       : download preview release if it is the most recent");
-			Console.WriteLine("  --dry-run           : preview changes without modifying files");
-			Console.WriteLine("  --wait-for-days  30 : ensure the releases has been made public for at least X days");
-		}
-	}
+        {
+            Console.WriteLine("switch:");
+            Console.WriteLine("  --help              : display this message");
+            Console.WriteLine("");
+            Console.WriteLine("  --api-url http://xx : use an alternative url for checking for updates");
+            Console.WriteLine("  --force-download    : download the latest release even if it is not the most recent. Useful for tests");
+            Console.WriteLine("  --use-preview       : download preview release if it is the most recent");
+            Console.WriteLine("  --dry-run           : preview changes without modifying files");
+            Console.WriteLine("  --wait-for-days  30 : ensure the releases has been made public for at least X days");
+        }
+    }
 }

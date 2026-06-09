@@ -257,16 +257,6 @@ namespace PingCastleAutoUpdater.ConfigurationConversion
                 }
             }
 
-            // If no RSA keys found, add default
-            if (rsaKeysArray.Count == 0)
-            {
-                var defaultKey = new JsonObject();
-                defaultKey["Name"] = "default";
-                defaultKey["PublicKey"] = null;
-                defaultKey["PrivateKey"] = null;
-                rsaKeysArray.Add(defaultKey);
-            }
-
             encryption["RSAKeys"] = rsaKeysArray;
             return encryption;
         }
@@ -288,17 +278,6 @@ namespace PingCastleAutoUpdater.ConfigurationConversion
                 }
             }
 
-            // If no honey pots found, add defaults
-            if (honeyPotsArray.Count == 0)
-            {
-                var defaultHoneyPot1 = new JsonObject { ["SamAccountName"] = "HoneyPot", ["DistinguishedName"] = null };
-                var defaultHoneyPot2 = new JsonObject { ["SamAccountName"] = null, ["DistinguishedName"] = "CN=ADIANT-VIRTUAL-,CN=Computers,DC=test,DC=mysmartlogon,DC=com" };
-                var defaultHoneyPot3 = new JsonObject { ["SamAccountName"] = "HoneyPotInexistant", ["DistinguishedName"] = null };
-                honeyPotsArray.Add(defaultHoneyPot1);
-                honeyPotsArray.Add(defaultHoneyPot2);
-                honeyPotsArray.Add(defaultHoneyPot3);
-            }
-
             honeyPot["HoneyPots"] = honeyPotsArray;
             return honeyPot;
         }
@@ -317,13 +296,6 @@ namespace PingCastleAutoUpdater.ConfigurationConversion
                     riverbedObj["SamAccountName"] = riverbed.GetAttribute("samAccountName") ?? string.Empty;
                     riverbedsArray.Add(riverbedObj);
                 }
-            }
-
-            // If no riverbeds found, add default
-            if (riverbedsArray.Count == 0)
-            {
-                var defaultRiverbed = new JsonObject { ["SamAccountName"] = "Riverbed" };
-                riverbedsArray.Add(defaultRiverbed);
             }
 
             infrastructure["Riverbeds"] = riverbedsArray;
@@ -372,27 +344,6 @@ namespace PingCastleAutoUpdater.ConfigurationConversion
                     customRuleObj["Computations"] = computationsArray;
                     customRulesArray.Add(customRuleObj);
                 }
-            }
-
-            // If no custom rules found, add example
-            if (customRulesArray.Count == 0)
-            {
-                var exampleRule = new JsonObject();
-                exampleRule["RiskId"] = "A-Krbtgt";
-                exampleRule["MaturityLevel"] = null;
-
-                var exampleComputations = new JsonArray();
-                var exampleComputation = new JsonObject
-                {
-                    ["Type"] = "TriggerOnThreshold",
-                    ["Score"] = 50,
-                    ["Threshold"] = 1464,
-                    ["Order"] = 1
-                };
-                exampleComputations.Add(exampleComputation);
-                exampleRule["Computations"] = exampleComputations;
-
-                customRulesArray.Add(exampleRule);
             }
 
             customRules["CustomRules"] = customRulesArray;

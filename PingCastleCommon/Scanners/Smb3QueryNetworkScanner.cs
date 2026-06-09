@@ -30,7 +30,7 @@ namespace PingCastle.Scanners
             return "Computer\tInterfaceId\tIP\tSpeed (in bit/s)";
         }
 
-        override protected string GetCsvData(string computer)
+        override protected string GetCsvData(string computer, System.Threading.CancellationToken cancellationToken = default)
         {
             StringBuilder sb = new StringBuilder();
             DisplayAdvancement(computer, "Connecting to SMB3");
@@ -46,6 +46,7 @@ namespace PingCastle.Scanners
             {
                 foreach (var info in o)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     if (sb.Length != 0)
                         sb.Append("\r\n");
                     sb.Append(computer);

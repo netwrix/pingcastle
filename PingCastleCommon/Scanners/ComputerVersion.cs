@@ -28,8 +28,9 @@ namespace PingCastle.Scanners
             return "Computer\tVersion";
         }
 
-        override protected string GetCsvData(string computer)
+        override protected string GetCsvData(string computer, System.Threading.CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             string version = _nativeMethods.GetComputerVersion(computer);
             if (version != "not found")
             {

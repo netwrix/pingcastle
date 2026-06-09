@@ -10,7 +10,7 @@ using System;
 namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("S-AesNotEnabled", RiskRuleCategory.StaleObjects, RiskModelCategory.OldAuthenticationProtocols)]
-    [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
+    [RuleComputation(RuleComputationType.TriggerOnPresence, 10)]
     [RuleDurANSSI(3, "kerberos_properties_encryption", "Service accounts supported encryption algorithms")]
     [RuleMitreAttackTechnique(MitreAttackTechnique.StealorForgeKerberosTicketsASREPRoasting)]
     [RuleIntroducedIn(3, 3)]

@@ -11,7 +11,7 @@ namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("A-LAPS-Not-Installed", RiskRuleCategory.Anomalies, RiskModelCategory.PassTheCredential)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 15)]
-    [RuleSTIG("V-36438", "Local administrator accounts on domain systems must not share the same password.")]
+    [RuleSTIG("V-243471", "Local administrator accounts on domain systems must not share the same password.")]
     [RuleCERTFR("CERTFR-2015-ACT-046", "SECTION00020000000000000000")]
     [RuleMaturityLevel(3)]
     [RuleMitreAttackTechnique(MitreAttackTechnique.ValidAccountsLocalAccounts)]

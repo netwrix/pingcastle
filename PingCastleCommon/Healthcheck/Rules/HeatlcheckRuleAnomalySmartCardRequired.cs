@@ -10,7 +10,7 @@ namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("A-SmartCardRequired", RiskRuleCategory.Anomalies, RiskModelCategory.PassTheCredential)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 30)]
-    [RuleSTIG("V-72821", "All accounts, privileged and unprivileged, that require smart cards must have the underlying NT hash rotated at least every 60 days.")]
+    [RuleSTIG("V-243476", "All accounts, privileged and unprivileged, that require smart cards must have the underlying NT hash rotated at least every 60 days.")]
     [RuleANSSI("R38", "paragraph.3.6.2.2")]
     [RuleMaturityLevel(3)]
     [RuleMitreAttackTechnique(MitreAttackTechnique.BruteForcePasswordCracking)]

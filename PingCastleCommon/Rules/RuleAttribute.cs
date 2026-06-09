@@ -218,6 +218,10 @@ namespace PingCastle.Rules
 
         public virtual string GenerateLink()
         {
+            if (string.IsNullOrEmpty(URL))
+            {
+                return Label;
+            }
             StringBuilder sb = new StringBuilder();
             sb.Append("<a href=\"");
             sb.Append(URL);
@@ -238,11 +242,8 @@ namespace PingCastle.Rules
     {
         Domain,
         Forest,
-        Windows7,
         Windows10,
-        Windows2008,
-        ActiveDirectoryService2003,
-        ActiveDirectoryService2008
+        WindowsServer2019,
     }
 
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
@@ -267,19 +268,13 @@ namespace PingCastle.Rules
                 switch (Framework)
                 {
                     case STIGFramework.Forest:
-                        return "https://www.stigviewer.com/stig/active_directory_forest/2016-12-19/finding/" + ID;
-                    case STIGFramework.Windows7:
-                        return "https://www.stigviewer.com/stig/windows_7/2012-08-22/finding/" + ID;
+                        return "https://www.stigviewer.com/stigs/active_directory_forest/2025-05-15/finding/" + ID;
                     case STIGFramework.Windows10:
-                        return "https://www.stigviewer.com/stig/windows_10/2018-04-06/finding/" + ID;
-                    case STIGFramework.Windows2008:
-                        return "https://www.stigviewer.com/stig/windows_2008_member_server/2018-03-07/finding/" + ID;
-                    case STIGFramework.ActiveDirectoryService2003:
-                        return "https://www.stigviewer.com/stig/active_directory_service_2003/2011-05-20/finding/" + ID;
-                    case STIGFramework.ActiveDirectoryService2008:
-                        return "https://www.stigviewer.com/stig/active_directory_service_2008/2011-05-23/finding/" + ID;
+                        return "https://www.stigviewer.com/stigs/microsoft_windows_10/2025-02-25/finding/" + ID;
+                    case STIGFramework.WindowsServer2019:
+                        return "https://www.stigviewer.com/stigs/microsoft_windows_server_2019/2025-05-23/finding/" + ID;
                     default:
-                        return "https://www.stigviewer.com/stig/active_directory_domain/2017-12-15/finding/" + ID;
+                        return "https://www.stigviewer.com/stigs/active_directory_domain/2024-09-13/finding/" + ID;
                 }
             }
         }

@@ -1,86 +1,70 @@
-using System.Collections.Generic;
 using System.Diagnostics;
-using PingCastle.UserInterface;
+using System.Threading;
 using PingCastle.misc;
+using PingCastle.UserInterface;
+using PingCastleCommon.Utility;
 
 namespace PingCastle.Healthcheck
 {
-    using PingCastleCommon.Utility;
-
     public class HotFixCollector : IHotFixCollector
     {
-        private readonly IHotfixService _hotfixService;
+        private readonly IHotfixService _cimService;
+        private readonly IHotfixService _wmiService;
 
-        /// <summary>
-        /// Initializes a new instance of the HotFixCollector class.
-        /// </summary>
-        /// <param name="hotfixService">The hotfix service to use for retrieving hotfixes</param>
-        public HotFixCollector(IHotfixService hotfixService)
+        public HotFixCollector(IHotfixService cimService, IHotfixService wmiService)
         {
-            _hotfixService = hotfixService ?? throw new System.ArgumentNullException(nameof(hotfixService));
+            _cimService = cimService ?? throw new System.ArgumentNullException(nameof(cimService));
+            _wmiService = wmiService ?? throw new System.ArgumentNullException(nameof(wmiService));
         }
 
-        /// <summary>
-        /// Attempts to retrieve installed hotfixes from a remote computer using WMI.
-        /// If WMI fails, logs a warning and returns an empty HashSet.
-        /// Hotfix retrieval requires privileged mode access to remote systems.
-        /// </summary>
-        /// <param name="hostName">Target computer hostname or IP address</param>
-        /// <param name="hotfixes">Output set of discovered KB numbers (e.g., "KB4012598")</param>
-        /// <param name="isPrivilegedMode">Whether privileged mode is active. Hotfix collection requires high privileges.</param>
-        /// <returns>True if hotfixes were successfully retrieved, false if WMI failed or privilege check failed</returns>
-        public bool TryGetInstalledHotfixes(string hostName, out HashSet<string> hotfixes, bool isPrivilegedMode = true)
+        public HotfixQueryResult GetInstalledHotfixes(string hostName, bool isPrivilegedMode = true, CancellationToken cancellationToken = default)
         {
-            return TryGetInstalledHotfixes(hostName, out hotfixes, UserInterfaceFactory.GetUserInterface(), isPrivilegedMode);
-        }
-
-
-        /// <summary>
-        /// Attempts to retrieve installed hotfixes from a remote computer using WMI.
-        /// If WMI fails, logs a warning and returns an empty HashSet.
-        /// Hotfix retrieval requires privileged mode access to remote systems.
-        /// </summary>
-        /// <param name="hostName">Target computer hostname or IP address</param>
-        /// <param name="hotfixes">Output set of discovered KB numbers (e.g., "KB4012598")</param>
-        /// <param name="ui">User interface for displaying messages</param>
-        /// <param name="isPrivilegedMode">Whether privileged mode is active. Hotfix collection requires high privileges.</param>
-        /// <returns>True if hotfixes were successfully retrieved, false if WMI failed or privilege check failed</returns>
-        public bool TryGetInstalledHotfixes(string hostName, out HashSet<string> hotfixes, IUserInterface ui, bool isPrivilegedMode = true)
-        {
-            hotfixes = new HashSet<string>();
-
             if (!isPrivilegedMode)
             {
-                Trace.WriteLine($"Hotfix collection skipped for {hostName} - not in privileged mode");
-                return false;
+                Trace.WriteLine($"Hotfix collection skipped for {hostName.SanitizeForLog()} - not in privileged mode");
+                return new HotfixQueryResult { Status = HotfixQueryStatus.NotTested, FailureReason = "Not in privileged mode" };
             }
 
-            // Validate hostname to prevent command/script injection
+            var ui = UserInterfaceFactory.GetUserInterface();
+
             if (!NetworkHelper.IsValidHostName(hostName))
             {
-                var errorMsg = $"Invalid hostname '{hostName}' - contains potentially malicious characters or exceeds length limits";
+                var errorMsg = $"Invalid hostname '{hostName.SanitizeForLog()}' - contains potentially malicious characters or exceeds length limits";
                 Trace.WriteLine(errorMsg);
                 ui.DisplayMessage(errorMsg);
-                return false;
+                return new HotfixQueryResult { Status = HotfixQueryStatus.ConnectionFailed, FailureReason = "Invalid hostname" };
             }
 
-            // Try WMI-based hotfix detection
-            if (_hotfixService.TryGetInstalledHotfixes(hostName, out hotfixes, ui))
+            var cimResult = _cimService.TryGetInstalledHotfixes(hostName, ui, cancellationToken);
+            if (cimResult.Status == HotfixQueryStatus.Success)
             {
-                if (hotfixes.Count > 0)
-                {
-                    Trace.WriteLine($"Successfully retrieved {hotfixes.Count} hotfixes from {hostName} using WMI");
-                    return true;
-                }
+                Trace.WriteLine($"CIM succeeded for {hostName.SanitizeForLog()} with {cimResult.KbNumbers.Count} hotfixes");
+                return cimResult;
             }
 
-            // WMI failed - log warning and return empty HashSet
-            var warningMsg = $"WMI hotfix detection failed for {hostName}. Hotfix information will be unavailable for security analysis.";
-            Trace.WriteLine(warningMsg);
-            ui.DisplayMessage(warningMsg);
+            Trace.WriteLine($"CIM failed for {hostName.SanitizeForLog()} with status {cimResult.Status}: {cimResult.FailureReason}");
 
-            hotfixes = new HashSet<string>();
-            return false;
+            if (cimResult.Status == HotfixQueryStatus.AccessDenied)
+            {
+                Trace.WriteLine($"Skipping WMI fallback for {hostName.SanitizeForLog()} - same credentials would fail");
+                return cimResult;
+            }
+
+            if (cimResult.Status == HotfixQueryStatus.ConnectionFailed || cimResult.Status == HotfixQueryStatus.Timeout || cimResult.Status == HotfixQueryStatus.NoResults)
+            {
+                Trace.WriteLine($"Attempting WMI fallback for {hostName.SanitizeForLog()}");
+                var wmiResult = _wmiService.TryGetInstalledHotfixes(hostName, ui, cancellationToken);
+                if (wmiResult.Status == HotfixQueryStatus.Success)
+                {
+                    Trace.WriteLine($"WMI fallback succeeded for {hostName.SanitizeForLog()} with {wmiResult.KbNumbers.Count} hotfixes");
+                    return wmiResult;
+                }
+
+                Trace.WriteLine($"WMI fallback also failed for {hostName.SanitizeForLog()} with status {wmiResult.Status}: {wmiResult.FailureReason}");
+                return wmiResult;
+            }
+
+            return cimResult;
         }
     }
 }

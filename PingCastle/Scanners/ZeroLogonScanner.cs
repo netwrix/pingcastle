@@ -25,13 +25,14 @@ namespace PingCastle.Scanners
             return Settings.EnsureDataCompleted("Server");
         }
 
-        protected override string GetCsvData(string computer)
+        protected override string GetCsvData(string computer, System.Threading.CancellationToken cancellationToken = default)
         {
             int NegotiateFlags = 0x212fffff;
             int ServerSecureChannel = 6;
             int r = 0;
             for (int i = 0; i < 2000; i++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var Input = new NETLOGON_CREDENTIAL();
                 Input.data = new byte[8];
                 var LazyOutput = new NETLOGON_CREDENTIAL();

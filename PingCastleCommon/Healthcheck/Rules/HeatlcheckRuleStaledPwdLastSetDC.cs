@@ -12,8 +12,8 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("S-PwdLastSet-DC", RiskRuleCategory.StaleObjects, RiskModelCategory.InactiveUserOrComputer)]
     [RuleComputation(RuleComputationType.PerDiscover, 5)]
     [RuleDurANSSI(1, "password_change_dc_no_change", "Domain controllers with passwords unchanged for more than 45 days")]
-    [RuleSTIG("V-63653", "The computer account password must not be prevented from being reset.", STIGFramework.Windows10)]
-    [RuleSTIG("V-3373", "The maximum age for machine account passwords is not set to requirements.", STIGFramework.Windows7)]
+    [RuleSTIG("V-220918", "The computer account password must not be prevented from being reset.", STIGFramework.Windows10)]
+    [RuleSTIG("V-205911", "Windows Server 2019 maximum age for machine account passwords must be configured to 30 days or less.", STIGFramework.WindowsServer2019)]
     [RuleIntroducedIn(2, 9)]
     [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
     public class HeatlcheckRuleStaledPwdLastSetDC : RuleBase<HealthcheckData>

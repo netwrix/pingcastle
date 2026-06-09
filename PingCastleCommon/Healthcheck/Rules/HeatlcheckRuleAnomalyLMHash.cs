@@ -11,9 +11,9 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("A-LMHashAuthorized", RiskRuleCategory.Anomalies, RiskModelCategory.NetworkSniffing)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleANSSI("R37", "paragraph.3.6.2.1")]
-    [RuleSTIG("V-3379", "The system is configured to store the LAN Manager hash of the password in the SAM.", STIGFramework.Windows2008)]
     [RuleMaturityLevel(1)]
     [RuleMitreAttackTechnique(MitreAttackTechnique.BruteForcePasswordCracking)]
+    [RuleSTIG("V-205654", "Windows Server 2019 must be configured to prevent the storage of the LAN Manager hash of passwords.", STIGFramework.WindowsServer2019)]
     public class HeatlcheckRuleAnomalyLMHash : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

@@ -26,9 +26,10 @@ namespace PingCastle.Scanners
             return "Computer\tSpoolerActive";
         }
 
-        override protected string GetCsvData(string computer)
+        override protected string GetCsvData(string computer, System.Threading.CancellationToken cancellationToken = default)
         {
             string output = null;
+            cancellationToken.ThrowIfCancellationRequested();
             bool spoolerActive = CheckIfTheSpoolerIsActive(computer);
 
 

@@ -7,12 +7,17 @@
 using PingCastle.ADWS;
 using PingCastle.Utility;
 using PingCastle.UserInterface;
+using PingCastleCommon.Utility;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.IO;
 using System.Net;
+using System.Security.Principal;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PingCastle.Scanners
 {
@@ -48,9 +53,11 @@ namespace PingCastle.Scanners
         }
 
         private static object _syncRoot = new object();
+        private const int MaxConcurrency = 10;
+        private const int PerHostTimeoutSeconds = 60;
 
         abstract protected string GetCsvHeader();
-        abstract protected string GetCsvData(string computer);
+        abstract protected string GetCsvData(string computer, CancellationToken cancellationToken = default);
 
         public virtual DisplayState QueryForAdditionalParameterInInteractiveMode()
         {
@@ -104,102 +111,113 @@ namespace PingCastle.Scanners
 
         public void ExportAllComputers(string filename)
         {
+            ExportAllComputersAsync(filename).GetAwaiter().GetResult();
+        }
+
+        private async Task ExportAllComputersAsync(string filename)
+        {
             DisplayAdvancement("Getting computer list");
             List<string> computers = GetListOfComputerToExplore();
             DisplayAdvancement(computers.Count + " computers to explore");
-            int numberOfThread = 50;
-            BlockingQueue<string> queue = new BlockingQueue<string>(70);
-            Thread[] threads = new Thread[numberOfThread];
-            Dictionary<string, string> SIDConvertion = new Dictionary<string, string>();
+
+            var semaphore = new SemaphoreSlim(MaxConcurrency, MaxConcurrency);
             int record = 0;
-            using (StreamWriter sw = File.CreateText(filename))
+
+            var messageQueue = new BlockingCollection<string>(200);
+            var writerTask = Task.Run(() =>
             {
-                sw.WriteLine(GetCsvHeader());
-                try
+                foreach (var msg in messageQueue.GetConsumingEnumerable())
                 {
-                    ThreadStart threadFunction = () =>
+                    _ui.DisplayMessage(msg);
+                }
+            });
+
+            WindowsIdentity impersonationIdentity = null;
+            if (_identityProvider != null && Settings.Credential != null)
+            {
+                impersonationIdentity = _identityProvider.GetWindowsIdentityForUser(
+                    Settings.Credential, Settings.Server);
+            }
+
+            try
+            {
+                using (var sw = File.CreateText(filename))
+                {
+                    sw.WriteLine(GetCsvHeader());
+
+                    var tasks = computers.Select(computer => Task.Run(async () =>
                     {
-                        for (; ; )
+                        await semaphore.WaitAsync();
+                        try
                         {
-                            string computer = null;
-                            if (!queue.Dequeue(out computer)) break;
-                            Trace.WriteLine("Working on computer " + computer);
-                            Stopwatch stopWatch = new Stopwatch();
-                            try
+                            using var cts = new CancellationTokenSource(
+                                TimeSpan.FromSeconds(PerHostTimeoutSeconds));
+
+                            string s;
+                            if (impersonationIdentity != null)
                             {
-                                string s = GetCsvData(computer);
-                                if (s != null)
+                                s = WindowsIdentity.RunImpersonated(
+                                    impersonationIdentity.AccessToken,
+                                    () => GetCsvData(computer, cts.Token));
+                            }
+                            else
+                            {
+                                s = GetCsvData(computer, cts.Token);
+                            }
+
+                            if (s != null)
+                            {
+                                int newCount = Interlocked.Increment(ref record);
+                                lock (_syncRoot)
                                 {
-                                    lock (_syncRoot)
-                                    {
-                                        record++;
-                                        sw.WriteLine(s);
-                                        if ((record % 20) == 0)
-                                            sw.Flush();
-                                    }
+                                    sw.WriteLine(s);
+                                    if ((newCount % 20) == 0)
+                                        sw.Flush();
                                 }
                             }
-                            catch (Exception ex)
-                            {
-                                stopWatch.Stop();
-                                Trace.WriteLine("Computer " + computer + " " + ex.Message + " after " + stopWatch.Elapsed);
-                            }
                         }
-                    };
-                    // Consumers
-                    for (int i = 0; i < numberOfThread; i++)
-                    {
-                        threads[i] = new Thread(threadFunction);
-                        threads[i].Start();
-                    }
-
-                    // do it in parallele
-                    int j = 0;
-                    int smallstep = 25;
-                    int bigstep = 1000;
-                    DateTime start = DateTime.Now;
-                    Stopwatch watch = new Stopwatch();
-                    watch.Start();
-                    foreach (string computer in computers)
-                    {
-                        j++;
-                        queue.Enqueue(computer);
-                        if (j % smallstep == 0)
+                        catch (Exception ex)
                         {
-                            string ETCstring = null;
-                            if (j > smallstep && (j - smallstep) % bigstep != 0)
-                            {
-                                _ui.ClearCurrentConsoleLine();
-                            }
-                            if (j > bigstep)
-                            {
-                                long totalTime = ((long)(watch.ElapsedMilliseconds * computers.Count) / j);
-                                ETCstring = " [ETC:" + start.AddMilliseconds(totalTime).ToLongTimeString() + "]";
-                            }
-                            DisplayAdvancement(j + " of " + computers.Count + ETCstring);
-                        }
-                    }
-                    queue.Quit();
-                    Trace.WriteLine("insert computer completed. Waiting for worker thread to complete");
-                    for (int i = 0; i < numberOfThread; i++)
-                    {
-                        threads[i].Join();
-                    }
-                    Trace.WriteLine("Done insert file");
-                }
-                finally
-                {
+                            Trace.WriteLine("Computer " + computer.SanitizeForLog() + ": " + ex.Message);
 
-                    queue.Quit();
-                    for (int i = 0; i < numberOfThread; i++)
-                    {
-                        if (threads[i] != null)
-                            if (threads[i].ThreadState == System.Threading.ThreadState.Running)
-                                threads[i].Abort();
-                    }
+                            string userMessage;
+                            if (ex is TimeoutException || ex is OperationCanceledException)
+                            {
+                                userMessage = "Computer " + computer.SanitizeForLog() + ": Timeout";
+                            }
+                            else if (ex is UnauthorizedAccessException)
+                            {
+                                userMessage = "Computer " + computer.SanitizeForLog() + ": Access Denied";
+                            }
+                            else if (ex is System.Net.Sockets.SocketException)
+                            {
+                                userMessage = "Computer " + computer.SanitizeForLog() + ": Connection Failed";
+                            }
+                            else
+                            {
+                                userMessage = "Computer " + computer.SanitizeForLog() + ": " + ex.GetType().Name;
+                            }
+
+                            messageQueue.TryAdd(userMessage);
+                        }
+                        finally
+                        {
+                            semaphore.Release();
+                        }
+                    }));
+
+                    await Task.WhenAll(tasks);
                 }
-                DisplayAdvancement("Done");
             }
+            finally
+            {
+                impersonationIdentity?.Dispose();
+            }
+
+            messageQueue.CompleteAdding();
+            await writerTask;
+
+            DisplayAdvancement("Done");
         }
 
         List<string> GetListOfComputerToExplore()

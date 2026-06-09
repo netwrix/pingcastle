@@ -145,8 +145,9 @@ namespace PingCastle.Scanners
             return "Computer\tSMB Port Open\tSMB1 with dialect NT LM 0.12\tSMB1 Sign Required\tSMB2 with dialect 0x0202\tSMB2 with dialect 0x0210\tSMB3 with dialect 0x0300\tSMB3 with dialect 0x0302\tSMB3 with dialect 0x0311\tSMB2 and SMB3 message Signature Required";
         }
 
-        override protected string GetCsvData(string computer)
+        override protected string GetCsvData(string computer, System.Threading.CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             bool isPortOpened = true;
             bool SMBv1 = false;
             bool SMBv2_0x0202 = false;

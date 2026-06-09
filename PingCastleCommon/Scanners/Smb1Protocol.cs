@@ -169,10 +169,10 @@ namespace PingCastle.Scanners
                     if ((SmbSecurityMode & 4) != 0)
                     {
                         securityMode = SMBSecurityModeEnum.SmbSigningEnabled;
-                    }
-                    else if ((SmbSecurityMode & 8) != 0)
-                    {
-                        securityMode = SMBSecurityModeEnum.SmbSigningEnabled | SMBSecurityModeEnum.SmbSigningRequired;
+                        if ((SmbSecurityMode & 8) != 0)
+                        {
+                            securityMode |= SMBSecurityModeEnum.SmbSigningRequired;
+                        }
                     }
                     else
                     {

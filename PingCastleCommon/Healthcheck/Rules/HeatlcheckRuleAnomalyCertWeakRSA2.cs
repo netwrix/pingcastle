@@ -14,10 +14,10 @@ namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("A-WeakRSARootCert2", RiskRuleCategory.Anomalies, RiskModelCategory.CertificateTakeOver)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 1)]
-    [RuleSTIG("V-14820", "PKI certificates (server and clients) must be issued by the DoD PKI or an approved External Certificate Authority (ECA).", STIGFramework.ActiveDirectoryService2003)]
     [RuleDurANSSI(3, "certificates_vuln", "Weak or vulnerable certificates")]
     [RuleIntroducedIn(2, 9)]
     [RuleMitreAttackTechnique(MitreAttackTechnique.WeakenEncryptionReduceKeySpace)]
+    [RuleSTIG("V-205646", "Windows Server 2019 domain Controller PKI certificates must be issued by the DoD PKI or an approved External Certificate Authority (ECA).", STIGFramework.WindowsServer2019)]
     public class HeatlcheckRuleAnomalyCertWeakRSA2 : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

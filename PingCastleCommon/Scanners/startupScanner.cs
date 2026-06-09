@@ -29,8 +29,9 @@ namespace PingCastle.Scanners
             return "Computer\tStartup";
         }
 
-        override protected string GetCsvData(string computer)
+        override protected string GetCsvData(string computer, System.Threading.CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             DateTime startup = _nativeMethods.GetStartupTime(computer);
             if (startup != DateTime.MinValue)
             {

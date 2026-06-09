@@ -156,7 +156,7 @@ namespace PingCastle.Healthcheck
             return String.Join(", ", attributes.ToArray());
         }
 
-        static public string GetTrustType(int trustType)
+        public static string GetTrustType(int trustType)
         {
             switch (trustType)
             {
@@ -168,7 +168,10 @@ namespace PingCastle.Healthcheck
                     return "MIT";
                 case 4:
                     return "DCE";
+                case 5:
+                    return "AAD";
             }
+
             return "Unknown: " + trustType.ToString();
         }
 
@@ -185,6 +188,7 @@ namespace PingCastle.Healthcheck
                 case 3:
                     return "Bidirectional";
             }
+
             return "Unknown: " + trustDirection.ToString();
         }
     }

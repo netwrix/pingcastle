@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Management;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -146,7 +147,8 @@ namespace PingCastle.misc
         private static void CheckPostAlertQualityUpdate(ManagementObject obj, HotfixQueryResult result, DateTime alertCutoff)
         {
             var description = obj["Description"]?.ToString();
-            if (!string.Equals(description, "Update", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(description, "Update", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(description, "Security Update", StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
@@ -157,7 +159,7 @@ namespace PingCastle.misc
                 return;
             }
 
-            if (DateTime.TryParse(installedOnStr, out var installedOn) && installedOn > alertCutoff)
+            if (DateTime.TryParse(installedOnStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out var installedOn) && installedOn > alertCutoff)
             {
                 result.MostRecentQualityUpdateDate = installedOn;
             }

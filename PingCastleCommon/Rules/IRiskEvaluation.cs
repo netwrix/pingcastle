@@ -12,7 +12,7 @@ namespace PingCastle.Rules
     {
         int GlobalScore { get; set; }
         int StaleObjectsScore { get; set; }
-        int PrivilegiedGroupScore { get; set; }
+        int PrivilegedGroupScore { get; set; }
         int TrustScore { get; set; }
         int AnomalyScore { get; set; }
         int MaturityLevel { get; set; }

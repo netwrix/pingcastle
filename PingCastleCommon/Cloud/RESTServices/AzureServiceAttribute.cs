@@ -30,5 +30,4 @@ namespace PingCastle.Cloud.RESTServices.Azure
         }
     }
 
-
 }

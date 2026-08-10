@@ -153,7 +153,6 @@ namespace PingCastle.Cloud.Logs
             return Encoding.UTF8.GetBytes(sb.ToString());
         }
 
-
         byte[] ResponseMessageToString(HttpResponseMessage response)
         {
             var sb = new StringBuilder();
@@ -195,7 +194,6 @@ namespace PingCastle.Cloud.Logs
             message.Append(httpResponse.ReasonPhrase + "\r\n");
         }
 
-
         private SessionMetadata CreateMetadataForSession(int sessionId, DateTimeOffset startTime, TimeSpan duration)
         {
             var metadata = new SessionMetadata
@@ -230,7 +228,6 @@ namespace PingCastle.Cloud.Logs
             }
             return metadata;
         }
-
 
         void CloseFile()
         {

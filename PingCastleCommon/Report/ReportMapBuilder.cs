@@ -30,7 +30,6 @@ namespace PingCastle.Report
             Brand(license);
         }
 
-
         public delegate void GraphLogging(string message);
 
         public GraphLogging Log { get; set; }
@@ -134,7 +133,6 @@ namespace PingCastle.Report
             AddLine(@"</script>");
         }
 
-
         #region json file
 
         public string GenerateJsonFileFull(IMigrationChecker migrationChecker)
@@ -182,7 +180,7 @@ namespace PingCastle.Report
                     sb.Append("      ,\"score\": " + data.GlobalScore);
                     sb.Append("      ,\"maturityLevel\": " + data.MaturityLevel);
                     sb.Append("      ,\"staleObjectsScore\": " + data.StaleObjectsScore);
-                    sb.Append("      ,\"privilegiedGroupScore\": " + data.PrivilegiedGroupScore);
+                    sb.Append("      ,\"privilegedGroupScore\": " + data.PrivilegedGroupScore);
                     sb.Append("      ,\"trustScore\": " + data.TrustScore);
                     sb.Append("      ,\"anomalyScore\": " + data.AnomalyScore);
                     if (data.UserAccountData != null)
@@ -449,7 +447,7 @@ namespace PingCastle.Report
                 sb.Append("      ,\"score\": " + data.GlobalScore);
                 sb.Append("      ,\"maturityLevel\": " + data.MaturityLevel);
                 sb.Append("      ,\"staleObjectsScore\": " + data.StaleObjectsScore);
-                sb.Append("      ,\"privilegiedGroupScore\": " + data.PrivilegiedGroupScore);
+                sb.Append("      ,\"privilegedGroupScore\": " + data.PrivilegedGroupScore);
                 sb.Append("      ,\"trustScore\": " + data.TrustScore);
                 sb.Append("      ,\"anomalyScore\": " + data.AnomalyScore);
             }
@@ -475,7 +473,6 @@ namespace PingCastle.Report
             }
             sb.Append("}");
         }
-
 
         public string GenerateJsonFileChordDiagram(IMigrationChecker migrationChecker)
         {
@@ -509,7 +506,7 @@ namespace PingCastle.Report
                     sb.Append("      ,\"score\": " + data.GlobalScore);
                     sb.Append("      ,\"maturityLevel\": " + data.MaturityLevel);
                     sb.Append("      ,\"staleObjectsScore\": " + data.StaleObjectsScore);
-                    sb.Append("      ,\"privilegiedGroupScore\": " + data.PrivilegiedGroupScore);
+                    sb.Append("      ,\"privilegedGroupScore\": " + data.PrivilegedGroupScore);
                     sb.Append("      ,\"trustScore\": " + data.TrustScore);
                     sb.Append("      ,\"anomalyScore\": " + data.AnomalyScore);
                     if (data.UserAccountData != null)

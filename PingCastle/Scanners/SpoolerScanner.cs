@@ -32,7 +32,6 @@ namespace PingCastle.Scanners
             cancellationToken.ThrowIfCancellationRequested();
             bool spoolerActive = CheckIfTheSpoolerIsActive(computer);
 
-
             output = computer + "\t" + spoolerActive;
             return output;
         }

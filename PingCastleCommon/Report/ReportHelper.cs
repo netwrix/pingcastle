@@ -129,7 +129,6 @@ namespace PingCastle.Report
             return returnString;
         }
 
-
         private static bool NeedEscape(string src, int i)
         {
             char c = src[i];

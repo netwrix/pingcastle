@@ -27,7 +27,6 @@ namespace PingCastle.Graph.Database
         public Guid DomainGuid;
     }
 
-
     public enum SearchType
     {
         Unknown,
@@ -38,7 +37,6 @@ namespace PingCastle.Graph.Database
         DisplayName,
         PrimaryGroupId,
     }
-
 
     public interface IDataStorage
     {

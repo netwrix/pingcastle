@@ -93,8 +93,6 @@ namespace PingCastle.misc
             return false;
         }
 
-
-
         enum QueryType
         {
             A = 1,
@@ -110,7 +108,6 @@ namespace PingCastle.misc
             CH = 3,
             HS = 4
         }
-
 
         public static void Revolve(string dnsName)
         {
@@ -165,7 +162,6 @@ namespace PingCastle.misc
                 throw new Win32Exception("Unable to get size of DnsWriteQuestionToBuffer");
             }
 
-
             byte[] query = new byte[querySize]; // Adjust the buffer size as needed
             if (!NativeMethods.DnsWriteQuestionToBuffer(query, ref querySize, domainName, (int)QueryType.DNS_TYPE_ANY, 0, false))
             {
@@ -214,8 +210,6 @@ namespace PingCastle.misc
                 {
                     Marshal.FreeHGlobal(ptr);
                 }
-
-
 
                 var res = NativeMethods.DnsExtractRecordsFromMessage(response, response.Length, out dnsResultList);
                 if (!res)

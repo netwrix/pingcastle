@@ -3,9 +3,10 @@
 
   <!-- Basic Properties -->
   <PropertyGroup>
+    <PackageLicenseExpression>NPOSL-3.0</PackageLicenseExpression>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <LangVersion>12.0</LangVersion>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <LangVersion>14.0</LangVersion>
     <RootNamespace>PingCastle</RootNamespace>
     <AssemblyName>PingCastle</AssemblyName>
     <ApplicationIcon>pingcastle.ico</ApplicationIcon>
@@ -38,99 +39,82 @@
 
   <!-- WCF Support (Critical for ADWS) -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.1" />
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.1" />
-    <PackageReference Include="System.ServiceModel.Primitives" Version="8.0.0" />
-    <PackageReference Include="System.ServiceModel.Http" Version="8.0.0" />
-    <PackageReference Include="System.ServiceModel.Duplex" Version="6.0.0" />
-    <PackageReference Include="System.ServiceModel.Security" Version="6.0.0" />
-    <PackageReference Include="System.ServiceModel.NetTcp" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="System.ServiceModel.Primitives" />
+    <PackageReference Include="System.ServiceModel.Http" />
+    <PackageReference Include="System.ServiceModel.Duplex" />
+    <PackageReference Include="System.ServiceModel.Security" />
+    <PackageReference Include="System.ServiceModel.NetTcp" />
   </ItemGroup>
 
   <!-- Windows-Specific APIs -->
   <ItemGroup>
-    <PackageReference Include="System.DirectoryServices" Version="8.0.0" />
-    <PackageReference Include="System.DirectoryServices.Protocols" Version="8.0.0" />
-    <PackageReference Include="System.Drawing.Common" Version="8.0.11" />
-    <PackageReference Include="Microsoft.Management.Infrastructure" Version="3.0.0" />
-    <PackageReference Include="System.Management" Version="8.0.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.1" />
+    <PackageReference Include="System.DirectoryServices.Protocols" />
+    <PackageReference Include="Microsoft.Management.Infrastructure" />
+    <PackageReference Include="System.Management" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" />
   </ItemGroup>
 
   <!-- Azure & Graph -->
   <ItemGroup>
-    <PackageReference Include="Azure.Core" Version="1.44.1" />
-    <PackageReference Include="Microsoft.Graph.Beta" Version="5.99.0-preview" />
-    <PackageReference Include="Microsoft.Graph.Core" Version="3.2.3" />
+    <PackageReference Include="Azure.Core" />
+    <PackageReference Include="Microsoft.Graph.Beta" />
+    <PackageReference Include="Microsoft.Graph.Core" />
   </ItemGroup>
 
   <!-- Microsoft Identity -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.IdentityModel.Abstractions" Version="8.3.1" />
-    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.3.1" />
-    <PackageReference Include="Microsoft.IdentityModel.Logging" Version="8.3.1" />
-    <PackageReference Include="Microsoft.IdentityModel.Protocols" Version="8.3.1" />
-    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.3.1" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.3.1" />
-    <PackageReference Include="Microsoft.IdentityModel.Validators" Version="8.3.1" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Abstractions" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+    <PackageReference Include="Microsoft.IdentityModel.Logging" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" />
+    <PackageReference Include="Microsoft.IdentityModel.Validators" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
   </ItemGroup>
 
   <!-- Microsoft Kiota -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.Kiota.Abstractions" Version="1.16.4" />
-    <PackageReference Include="Microsoft.Kiota.Authentication.Azure" Version="1.16.4" />
-    <PackageReference Include="Microsoft.Kiota.Http.HttpClientLibrary" Version="1.16.4" />
-    <PackageReference Include="Microsoft.Kiota.Serialization.Form" Version="1.16.4" />
-    <PackageReference Include="Microsoft.Kiota.Serialization.Json" Version="1.16.4" />
-    <PackageReference Include="Microsoft.Kiota.Serialization.Multipart" Version="1.16.4" />
-    <PackageReference Include="Microsoft.Kiota.Serialization.Text" Version="1.16.4" />
+    <PackageReference Include="Microsoft.Kiota.Abstractions" />
+    <PackageReference Include="Microsoft.Kiota.Authentication.Azure" />
+    <PackageReference Include="Microsoft.Kiota.Http.HttpClientLibrary" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Form" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Json" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Multipart" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Text" />
   </ItemGroup>
 
   <!-- Core Utilities -->
   <ItemGroup>
-    <PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Std.UriTemplate" Version="2.0.1" />
+    <PackageReference Include="HtmlAgilityPack" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Std.UriTemplate" />
   </ItemGroup>
 
   <!-- BCL Extensions -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
-  </ItemGroup>
-
-  <!-- Azure SDK -->
-  <ItemGroup>
-    <PackageReference Include="System.ClientModel" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
   </ItemGroup>
 
   <!-- Advanced System Packages -->
   <ItemGroup>
-    <PackageReference Include="System.Memory.Data" Version="6.0.0" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Private.Uri" Version="4.3.2" />
-    <PackageReference Include="System.Net.Http.WinHttpHandler" Version="6.0.0" />
-    <PackageReference Include="System.Text.Json" Version="8.0.5" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="8.0.0" />
-    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.1" />
-    <PackageReference Include="System.Resources.Extensions" Version="8.0.0" />
-    <PackageReference Include="System.IO.Packaging" Version="4.7.0" />
-    <PackageReference Include="System.Security.Permissions" Version="8.0.0" />
-    <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
+    <PackageReference Include="System.Memory.Data" />
+    <PackageReference Include="System.Net.Http.WinHttpHandler" />
   </ItemGroup>
 
   <!-- Build Tools -->
   <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+    <PackageReference Include="StyleCop.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Bcl.Memory" />
   </ItemGroup>
 
   <!-- Linked CommonAssemblyInfo -->

@@ -86,7 +86,6 @@ namespace PingCastle.misc
                     }
                 }
 
-
                 return ConnectionTesterStatus.AuthenticationFailure;
 
             }

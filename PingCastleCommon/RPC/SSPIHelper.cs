@@ -221,8 +221,6 @@ public class SSPIHelper : ISSPIHelper
             _bGotCredentials = true;
         }
 
-
-
         SecBufferDesc ClientToken = new SecBufferDesc(MAX_TOKEN_SIZE);
 
         try
@@ -431,7 +429,6 @@ public class SSPIHelper : ISSPIHelper
     public void SignMessage(byte[] message, out byte[] signedBuffer)
     {
         signedBuffer = null;
-
 
         SecPkgContext_Sizes ContextSizes = new SecPkgContext_Sizes();
 

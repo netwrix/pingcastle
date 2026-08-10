@@ -296,7 +296,7 @@ namespace PingCastle.Report
                     Add("</span>");
                     Add("</td>");
                     AddCellNumScore(data.StaleObjectsScore);
-                    AddCellNumScore(data.PrivilegiedGroupScore);
+                    AddCellNumScore(data.PrivilegedGroupScore);
                     AddCellNumScore(data.TrustScore);
                     AddCellNumScore(data.AnomalyScore);
                     AddCellDate(data.GenerationDate);
@@ -405,7 +405,8 @@ namespace PingCastle.Report
                 AddHeaderText("Nb Bad PrimaryGroup");
                 AddHeaderText("Nb Password not Req.");
                 AddHeaderText("Nb Des enabled.");
-                AddHeaderText("Nb Trusted delegation");
+                AddHeaderText("Nb Enabled Trusted delegation");
+                AddHeaderText("Nb Disabled Trusted delegation");
                 AddHeaderText("Nb Reversible password");
                 AddBeginTableData();
                 HealthcheckAccountData total = new HealthcheckAccountData();
@@ -468,7 +469,8 @@ namespace PingCastle.Report
                 AddHeaderText("Nb Inactive");
                 AddHeaderText("Nb SidHistory");
                 AddHeaderText("Nb Bad PrimaryGroup");
-                AddHeaderText("Nb Trusted delegation");
+                AddHeaderText("Nb Enabled Trusted delegation");
+                AddHeaderText("Nb Disabled Trusted delegation");
                 AddHeaderText("Nb Reversible password");
                 AddBeginTableData();
                 HealthcheckAccountData total = new HealthcheckAccountData();
@@ -1168,7 +1170,6 @@ namespace PingCastle.Report
                     {
                         AddParagraph("Here is the distribution where the password has been changed for the last time. Only enabled user accounts are analyzed (no guest account for example).");
                         AddDistributionSeriesChart(dist, "general");
-
 
                         AddBeginTable("Password Distribution");
                         AddHeaderText("Domain");

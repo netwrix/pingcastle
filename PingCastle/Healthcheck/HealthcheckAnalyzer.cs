@@ -362,7 +362,6 @@ namespace PingCastle.Healthcheck
             }
         }
 
-
         private void GenerateGeneralData(ADDomainInfo domainInfo, ADWebService adws)
         {
             // adding the domain sid
@@ -733,7 +732,6 @@ namespace PingCastle.Healthcheck
             return processor.ProcessAccount(data, x, computerCheck, DCWin2008Install, ListHoneyPot);
         }
 
-
         public const string computerfilter = "(&(ObjectCategory=computer))";
         public static string[] computerProperties = new string[] {
                         "distinguishedname",
@@ -759,7 +757,6 @@ namespace PingCastle.Healthcheck
         {
 
             var LAPSAnalyzer = CheckLAPSInstalled(domainInfo, adws);
-
 
             Dictionary<string, HealthcheckOSData> operatingSystems = new Dictionary<string, HealthcheckOSData>();
             Dictionary<string, HealthcheckOSVersionData> operatingSystemVersion = new Dictionary<string, HealthcheckOSVersionData>();
@@ -959,7 +956,6 @@ namespace PingCastle.Healthcheck
                         Trace.WriteLine(ex.ToString());
                     }
                 };
-
 
             var computerPropertiesList = new List<string>(computerProperties);
 
@@ -1576,7 +1572,6 @@ namespace PingCastle.Healthcheck
             }
             return output;
         }
-
 
         private void InspectDelegation(ADDomainInfo domainInfo, ADWebService adws)
         {
@@ -2318,7 +2313,6 @@ namespace PingCastle.Healthcheck
                     ct.WhenChanged = x.WhenChanged;
                     ct.SchemaVersion = x.msPKITemplateSchemaVersion;
 
-
                     // from https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-crtd/1192823c-d839-4bc3-9b6b-fa8c53507ae1
 
                     if ((x.msPKICertificateNameFlag & 1) != 0)
@@ -2331,7 +2325,6 @@ namespace PingCastle.Healthcheck
                         ct.EnrolleeSupplies += 2;
                     if ((x.msPKICertificateNameFlag & 0x00000008) != 0)
                         ct.EnrolleeSupplies += 4;
-
 
                     ct.IssuanceRequirementsEmpty = true;
                     if (x.msPKITemplateSchemaVersion == 3 || (x.msPKITemplateSchemaVersion == 4 && (x.msPKIPrivateKeyFlag & 0x00000100) != 0))
@@ -2468,7 +2461,6 @@ namespace PingCastle.Healthcheck
                     }
                 };
 
-
             adws.Enumerate(domainInfo.ConfigurationNamingContext, "(DistinguishedName=CN=NTAuthCertificates,CN=Public Key Services,CN=Services," + domainInfo.ConfigurationNamingContext + ")", properties, callback);
 
         }
@@ -2492,9 +2484,7 @@ namespace PingCastle.Healthcheck
                     }
                 };
 
-
             adws.Enumerate("CN=Public Key Services,CN=Services," + domainInfo.ConfigurationNamingContext, "(objectClass=pKIEnrollmentService)", properties, callback);
-
 
             BlockingQueue<ADItem> queue = new BlockingQueue<ADItem>(200);
             int numberOfThread = 20;
@@ -2648,7 +2638,6 @@ namespace PingCastle.Healthcheck
             adws.Enumerate("CN=System Management,CN=System," + domainInfo.DefaultNamingContext, "(objectClass=mSSMSManagementPoint)", properties, callback);
         }
 
-
         private void GenerateExchangeInfo(ADDomainInfo domainInfo, ADWebService adws)
         {
 
@@ -2659,7 +2648,6 @@ namespace PingCastle.Healthcheck
                                             healthcheckData.ExchangeInstall = aditem.WhenCreated;
                                             healthcheckData.ExchangeSchemaVersion = aditem.RangeUpper;
                                         });
-
 
             healthcheckData.ExchangeServers = new List<HealthcheckExchangeServer>();
             if (healthcheckData.ExchangeSchemaVersion > 0)
@@ -2683,7 +2671,6 @@ namespace PingCastle.Healthcheck
                                             });
             }
         }
-
 
         private void GenerateMsiData(ADDomainInfo domainInfo, ADWebService adws, Dictionary<string, GPO> GPOList)
         {
@@ -2887,6 +2874,12 @@ namespace PingCastle.Healthcheck
                 var groupNameNode = node.SelectSingleNode("@name");
                 if (groupNameNode == null)
                     continue;
+                var groupSidNode = node.SelectSingleNode("Properties/@groupSid");
+                string groupName = groupNameNode.Value;
+                if (groupSidNode != null && string.Equals(groupSidNode.Value, "S-1-5-32-547", StringComparison.OrdinalIgnoreCase))
+                {
+                    groupName = GraphObjectReference.PowerUsers;
+                }
                 foreach (XmlNode userNameNode in node.SelectNodes(@"Properties/Members/Member[@action=""ADD""]"))
                 {
                     var sidnode = userNameNode.SelectSingleNode("@sid");
@@ -2932,7 +2925,7 @@ namespace PingCastle.Healthcheck
                     membership.GPOName = GPO.DisplayName;
                     membership.GPOId = GPO.InternalName;
                     membership.User = user;
-                    membership.MemberOf = groupNameNode.Value;
+                    membership.MemberOf = groupName;
 
                     lock (healthcheckData.GPOLocalMembership)
                     {
@@ -3979,7 +3972,6 @@ namespace PingCastle.Healthcheck
             return output;
         }
 
-
         private void GetGPOList(ADDomainInfo domainInfo, ADWebService adws, Dictionary<string, GPO> GPOList)
         {
             string[] properties = new string[] {
@@ -4397,6 +4389,10 @@ namespace PingCastle.Healthcheck
                     {
                         user1 = GraphObjectReference.Users;
                     }
+                    else if (user1 == "*S-1-5-32-547")
+                    {
+                        user1 = GraphObjectReference.PowerUsers;
+                    }
                     else if (user1.StartsWith("*S-1-5-") && user1.EndsWith("-513"))
                     {
                         user1 = GraphObjectReference.DomainUsers;
@@ -4425,6 +4421,10 @@ namespace PingCastle.Healthcheck
                     else if (user2 == "*S-1-5-32-545")
                     {
                         user2 = GraphObjectReference.Users;
+                    }
+                    else if (user2 == "*S-1-5-32-547")
+                    {
+                        user2 = GraphObjectReference.PowerUsers;
                     }
                     else if (user2.StartsWith("*S-1-5-") && user2.EndsWith("-513"))
                     {
@@ -4642,7 +4642,6 @@ namespace PingCastle.Healthcheck
                 PSO.Properties.Add(new GPPSecurityPolicyProperty(setting, value));
             }
         }
-
 
         private void SubExtractLsaSettingsBis(string line, GPO GPO)
         {
@@ -5471,7 +5470,6 @@ namespace PingCastle.Healthcheck
             adws.Enumerate(domainInfo.ConfigurationNamingContext, filter, properties, callback);
         }
 
-
         private void CheckDisplaySpecifier(ADDomainInfo domainInfo, ADWebService adws)
         {
             healthcheckData.DisplaySpecifier = new List<HealthCheckDisplaySpecifier>();
@@ -5684,6 +5682,7 @@ namespace PingCastle.Healthcheck
                             }
 
                             messageQueue.TryAdd(userMessage);
+                            return;
                         }
 
                         Trace.WriteLine("Working on startup " + dns.SanitizeForLog());
@@ -6122,7 +6121,6 @@ namespace PingCastle.Healthcheck
                 }
             );
 
-
             var msDSRevealOnDemandGroup = new Dictionary<string, List<string>>();
             var msDSNeverRevealGroup = new Dictionary<string, List<string>>();
 
@@ -6223,7 +6221,6 @@ namespace PingCastle.Healthcheck
                 }
             }
 
-
             //Search for RODC without Readonly flag on sysvol
             adws.Enumerate(domainInfo.DefaultNamingContext,
                                             "(&(msDFSR-ReadOnly=FALSE)(cn=SYSVOL Subscription))",
@@ -6295,7 +6292,6 @@ namespace PingCastle.Healthcheck
             adws.Enumerate(domainInfo.SchemaNamingContext, "(&(objectClass=dMD)(fSMORoleOwner=*))", properties, callback);
             role = "Domain naming Master";
             adws.Enumerate(domainInfo.ConfigurationNamingContext, "(&(objectClass=crossRefContainer)(fSMORoleOwner=*))", properties, callback);
-
 
             foreach (var computerRole in computerToQuery.Keys)
             {

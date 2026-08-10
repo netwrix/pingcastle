@@ -51,7 +51,6 @@ namespace PingCastle
 
         private static readonly IUserInterface Ui = UserInterfaceFactory.GetUserInterface();
 
-
         Dictionary<string, string> xmlreports = new Dictionary<string, string>();
         Dictionary<string, string> htmlreports = new Dictionary<string, string>();
         Dictionary<string, string> jsonreports = new Dictionary<string, string>();
@@ -769,7 +768,6 @@ namespace PingCastle
                     }
                 );
         }
-
 
         public bool RegenerateHtmlTask()
         {

@@ -223,6 +223,5 @@ namespace PingCastle.RPC
             return output;
         }
 
-
     }
 }

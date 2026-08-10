@@ -114,7 +114,6 @@ namespace PingCastle.Cloud.Credentials
         const int CRYPT_EXPORTABLE = 1;
         const int CRYPT_USER_KEYSET = 0x1000;
 
-
         [DllImport("crypt32.dll", SetLastError = true)]
         static extern IntPtr PFXImportCertStore(ref CRYPTOAPI_BLOB pPfx, [MarshalAs(UnmanagedType.LPWStr)] String szPassword, uint dwFlags);
 
@@ -183,7 +182,6 @@ namespace PingCastle.Cloud.Credentials
                 return true;
             }
         }
-
 
         [DllImport("crypt32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]

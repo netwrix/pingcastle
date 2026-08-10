@@ -202,7 +202,6 @@ namespace PingCastle
 
         #endregion
 
-
         [DllImport("advapi32.dll")]
         internal static extern int LsaFreeMemory(IntPtr pBuffer);
 
@@ -292,7 +291,6 @@ namespace PingCastle
             }
             return null;
         }
-
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct STAT_WORKSTATION_0
@@ -408,7 +406,6 @@ namespace PingCastle
 
         [DllImport("Netapi32", CharSet = CharSet.Auto)]
         internal static extern int NetApiBufferFree(IntPtr Buffer);
-
 
         [DllImport("Dnsapi.dll", CharSet = CharSet.Unicode, EntryPoint = "DnsQuery_W")]
         internal static extern int DnsQuery([In] string recordName, [In] short recordType, [In] int options, [In] IntPtr servers, out IntPtr dnsResultList, [Out] IntPtr reserved);

@@ -21,6 +21,7 @@ using PingCastle.UserInterface;
 using PingCastleCommon;
 using PingCastleCommon.RPC;
 using PingCastleCommon.Scanners;
+using PingCastleCommon.Utility;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -71,7 +72,9 @@ namespace PingCastle
             MissingApiKeyArgument = 5,
             InvalidLicense = 6,
             InvalidCommandLineArguments = 7,
-            UnknownErrorSeeConsole = 8
+            UnknownErrorSeeConsole = 8,
+            MissingApiKeyFileArgument = 9,
+            InvalidApiKeyFile = 10
         }
 
         private Dictionary<PossibleTasks, Func<bool>> actions;
@@ -211,6 +214,15 @@ namespace PingCastle
                         ExitCodes.MissingApiKeyArgument.Exit();
                     }
                     settings.apiKey = args[++i];
+                }
+                else if (args[i] == "--api-key-file")
+                {
+                    if (i + 1 >= args.Length)
+                    {
+                        WriteInRed("argument for --api-key-file is mandatory");
+                        ExitCodes.MissingApiKeyFileArgument.Exit();
+                    }
+                    settings.apiKey = ReadApiKeyFromFile(args[++i]);
                 }
             }
 
@@ -353,6 +365,57 @@ namespace PingCastle
             return true;
         }
 
+        private string ReadApiKeyFromFile(string path)
+        {
+            try
+            {
+                if (!File.Exists(path))
+                {
+                    WriteInRed("--api-key-file path does not exist");
+                    ExitCodes.InvalidApiKeyFile.Exit();
+                }
+
+                var content = File.ReadAllText(path);
+                var newlineIndex = content.IndexOfAny(new[] { '\r', '\n' });
+                var key = (newlineIndex >= 0 ? content.Substring(0, newlineIndex) : content).Trim();
+
+                if (string.IsNullOrEmpty(key))
+                {
+                    WriteInRed("--api-key-file is empty");
+                    ExitCodes.InvalidApiKeyFile.Exit();
+                }
+
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (IOException ex)
+                {
+                    // best-effort cleanup; the key has already been read, and the file is still restricted by its ACL
+                    Trace.WriteLine(ex.Message.SanitizeForLog());
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    // best-effort cleanup; the key has already been read, and the file is still restricted by its ACL
+                    Trace.WriteLine(ex.Message.SanitizeForLog());
+                }
+
+                return key;
+            }
+            catch (IOException ex)
+            {
+                WriteInRed("failed to read --api-key-file: " + ex.Message);
+                ExitCodes.InvalidApiKeyFile.Exit();
+                return null;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                WriteInRed("failed to read --api-key-file: " + ex.Message);
+                ExitCodes.InvalidApiKeyFile.Exit();
+                return null;
+            }
+        }
+
         private string BuildHeader()
         {
             var license = LicenseCache.Instance.GetLicense();
@@ -378,7 +441,7 @@ namespace PingCastle
             PingCastle.Rules.RuleSet<HealthcheckData>.LoadCustomRules();
         }
 
-        const string BasicEditionLicense = "PC2H4sIAAAAAAAACmNkYGDgAGKGhmtm+vPvMTIDmWlA7MZQxJAKhAoMrgwpDJkMJUCcz5AH5OcD5RUYAoD8PIZ0BmeGRIZioGwOWK0uEPsBVZQA6TQgXQSkk4F0LhCmAnnJQF2JQLUKDKVAXakMLECbuIDYCWxKJlAe7BQgru9jbWPIO2O78eJKNm4LtzCWgoMn/fVY0+8cY7Fp1VT81lPlFN6Waj2D7+ABpv+rWcQflKfdYqpYG8q+O/Pcy21HPfjZGTeunxnwVttRqFgloUcx8c+Zt6fX2NopTymoyNn8uWjq7BcqzzU9mi5FBCruPVXJ4PPo0BPjw9WxhvHpTWWpHbwAZlqnBxgBAAA=";
+        const string BasicEditionLicense = "PC2H4sIAAAAAAAACmNkYGDgAGIGhuKa5+fvMTIDWWlA7MZQxJAKhAoMrgwpDJkMJUCcz5AH5OcD5RUYAoD8PIZ0BmeGRIZioGwOWK0uEPsBVZQA6TQgXQSkk4F0LhCmAnnJQF2JQLUKDKVAXakMLECbuIDYCWxKJlAeBBqAuLNy9Yx/DzoqQjfwtS4+X/pz984PNZpXPBfrb5+ulXHhSkKBEUf0ZDHmCbERQUtu+26Ma2FdJrZv2631rLEX1qm+je3ftnnZjWu/TmpxWslZsE7jOjuv19j79pOCJ20BjTERjLLzdtmcEz2y5OD333daHxtqaObP9r41xeqZccG1YDPpEtvpdQCUpipaGAEAAA==";
         string _serialNumber;
         public string GetSerialNumber()
         {
@@ -639,6 +702,7 @@ namespace PingCastle
                         case "--license":
                         case "--api-endpoint":
                         case "--api-key":
+                        case "--api-key-file":
                             i++;
                             break;
                         case "--log":
@@ -1323,17 +1387,17 @@ namespace PingCastle
             return DisplayState.Exit;
         }
 
-
         private static void DisplayHelp()
         {
             Console.WriteLine("switch:");
-            Console.WriteLine("  --help              : io this message");
+            Console.WriteLine("  --help              : show this message");
             Console.WriteLine("  --interactive       : force the interactive mode");
             Console.WriteLine("  --log               : generate a log file");
             Console.WriteLine("  --log-console       : add log to the console");
             Console.WriteLine("  --log-samba <option>: enable samba login (example: 10)");
             Console.WriteLine("  --api-endpoint <>   : to upload report via api call eg: http://server");
             Console.WriteLine("  --api-key  <key>    : and using the api key as registered");
+            Console.WriteLine("  --api-key-file <path>: read the api key from the first line of the file (file is deleted after read)");
             Console.WriteLine("");
             Console.WriteLine("Common options when connecting to the AD");
             Console.WriteLine("  --server <server>     Target a DC or domain. Default: current domain");
@@ -1385,7 +1449,7 @@ namespace PingCastle
             Console.WriteLine("");
             Console.WriteLine("--rules               : Generate an html containing all the rules used by PingCastle");
             Console.WriteLine("");
-            Console.WriteLine("  --generate-key      : generate and io a new RSA key for encryption");
+            Console.WriteLine("  --generate-key      : generate and show a new RSA key for encryption");
             Console.WriteLine("");
             Console.WriteLine("  --no-csp-header     : disable the Content Security Policy header. More risks but enables styles & js when stored on a webserver");
             Console.WriteLine("");
@@ -1475,6 +1539,8 @@ namespace PingCastle
             Console.WriteLine("  6 : InvalidLicense - license validation failed or expired");
             Console.WriteLine("  7 : InvalidCommandLineArguments - command line parsing failed");
             Console.WriteLine("  8 : UnknownErrorSeeConsole - an error occurred, check console output or logs if logging enabled");
+            Console.WriteLine("  9 : MissingApiKeyFileArgument - --api-key-file requires a path argument");
+            Console.WriteLine("  10 : InvalidApiKeyFile - --api-key-file could not be read or is empty");
         }
     }
 
@@ -1492,7 +1558,6 @@ namespace PingCastle
             Environment.Exit((int)exitCode);
         }
     }
-
 
 }
 

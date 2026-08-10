@@ -14,7 +14,6 @@ namespace PingCastle.Bot
              UInt32 dwFlagsAndAttributes,
              IntPtr hTemplateFile);
 
-
         private const UInt32 GENERIC_READ = 0x80000000;
         private const UInt32 GENERIC_WRITE = 0x40000000;
         private const UInt32 OPEN_EXISTING = 3;

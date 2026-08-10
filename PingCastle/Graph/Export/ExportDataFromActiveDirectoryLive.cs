@@ -179,7 +179,7 @@ namespace PingCastle.Graph.Export
                         }
                     };
             adws.Enumerate(domainInfo.DefaultNamingContext,
-                                                "(&(msDS-AllowedToDelegateTo=*)((userAccountControl:1.2.840.113556.1.4.804:=16777216)))",
+                                                "(&(msDS-AllowedToDelegateTo=*)(!(userAccountControl:1.2.840.113556.1.4.804:=2)))",
                                                 new string[] { "objectSid", "msDS-AllowedToDelegateTo", "userAccountControl" }, callback);
                     RelationFactory.InitializeDelegation(map, protocolTransitionSid);
                     }

@@ -58,7 +58,6 @@ namespace PingCastle.Data
 
         }
 
-
         private static string SaveAsXmlClearText(T data, string filename)
         {
             string xml = GetXmlClearText(data);
@@ -276,7 +275,6 @@ namespace PingCastle.Data
             Trace.WriteLine("The program tried to use " + keyid + " keys");
             throw new PingCastleDataException(filename, "Unable to find a key in the configuration which can decrypt the document");
         }
-
 
     }
 

@@ -182,7 +182,6 @@ namespace PingCastle.RPC
             public IntPtr SidInfo;
         }
 
-
         [StructLayout(LayoutKind.Sequential)]
         private struct LSAPR_REFERENCED_DOMAIN_LIST
         {
@@ -473,7 +472,6 @@ namespace PingCastle.RPC
                 return null;
             LSAPR_REFERENCED_DOMAIN_LIST ReferencedDomains = (LSAPR_REFERENCED_DOMAIN_LIST)Marshal.PtrToStructure(IntPtrReferencedDomains, typeof(LSAPR_REFERENCED_DOMAIN_LIST));
             LSAPR_TRANSLATED_NAMES TranslatedNames = (LSAPR_TRANSLATED_NAMES)Marshal.PtrToStructure(IntPtrTranslatedNames, typeof(LSAPR_TRANSLATED_NAMES));
-
 
             int SizeTranslatedName = Marshal.SizeOf(typeof(LSAPR_TRANSLATED_NAME));
             int SizeTrustInformation = Marshal.SizeOf(typeof(LSAPR_TRUST_INFORMATION));

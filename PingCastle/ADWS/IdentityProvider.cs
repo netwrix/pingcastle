@@ -27,7 +27,6 @@ internal class IdentityProvider : IIdentityProvider
         _nativeMethods = nativeMethods;
     }
 
-
     public WindowsIdentity GetWindowsIdentityForUser(NetworkCredential credential, string remoteserver)
     {
         IntPtr token = IntPtr.Zero;

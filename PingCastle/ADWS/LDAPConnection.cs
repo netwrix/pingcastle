@@ -5,6 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices;
 using System.Net;
@@ -134,6 +135,7 @@ namespace PingCastle.ADWS
 
                     if (aditem != null)
                     {
+                        ResolveRangedAttributes(sr, aditem);
                         try
                         {
                             callback(aditem);
@@ -340,6 +342,141 @@ namespace PingCastle.ADWS
         public override void ThreadInitialization()
         {
             FileConnection.ThreadInitialization();
+        }
+
+        /// <summary>
+        /// AD's default MaxValRange limit for multi-valued attributes.
+        /// When exceeded, AD returns a ranged attribute (e.g. "member;range=0-1499")
+        /// requiring additional queries to retrieve remaining values.
+        /// </summary>
+        internal const int DefaultMaxValRange = 1500;
+
+        private void ResolveRangedAttributes(SearchResult sr, ADItem aditem)
+        {
+            foreach (string name in sr.Properties.PropertyNames)
+            {
+                int rangeIndex = name.IndexOf(";range=", StringComparison.OrdinalIgnoreCase);
+                if (rangeIndex < 0 || name.EndsWith("*"))
+                {
+                    continue;
+                }
+
+                string baseName = name.Substring(0, rangeIndex);
+                string[] rangeParts = name.Substring(rangeIndex + 7).Split('-');
+                if (!int.TryParse(rangeParts[1], out int rangeEnd))
+                {
+                    continue;
+                }
+
+                var additional = FetchRemainingRangedValues(
+                    Server, Port, Credential, aditem.DistinguishedName, baseName, rangeEnd + 1);
+                if (additional.Count > 0)
+                {
+                    MergeRangedValues(aditem, baseName, additional);
+                }
+            }
+        }
+
+        public static List<string> FetchRemainingRangedValues(
+            string server, int port, NetworkCredential credential, string dn, string attributeName, int startRange)
+        {
+            var allValues = new List<string>();
+            int nextStart = startRange;
+            bool done = false;
+
+            while (!done)
+            {
+                string rangeAttr = attributeName + ";range=" + nextStart + "-*";
+                var authTypes = AuthenticationTypes.ServerBind | AuthenticationTypes.Secure
+                    | (port == 636 ? AuthenticationTypes.SecureSocketsLayer : 0);
+                string ldapPath = @"LDAP://" + server + (port == 0 ? null : ":" + port) + "/" + dn;
+
+                using (var entry = credential == null
+                    ? new DirectoryEntry(ldapPath, null, null, authTypes)
+                    : new DirectoryEntry(ldapPath, credential.UserName, credential.Password, authTypes))
+                using (var searcher = new DirectorySearcher(entry))
+                {
+                    searcher.SearchScope = SearchScope.Base;
+                    searcher.Filter = "(objectClass=*)";
+                    searcher.PropertiesToLoad.Add(rangeAttr);
+                    var result = searcher.FindOne();
+                    if (result == null)
+                    {
+                        break;
+                    }
+
+                    bool found = false;
+                    foreach (string propName in result.Properties.PropertyNames)
+                    {
+                        if (!propName.StartsWith(attributeName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+                        if (propName.Length > attributeName.Length && propName[attributeName.Length] != ';')
+                        {
+                            continue;
+                        }
+
+                        foreach (string val in result.Properties[propName])
+                        {
+                            allValues.Add(val);
+                        }
+
+                        if (propName.EndsWith("*") || propName.Length == attributeName.Length)
+                        {
+                            done = true;
+                        }
+                        else
+                        {
+                            int ri = propName.IndexOf(";range=", StringComparison.OrdinalIgnoreCase);
+                            if (ri >= 0)
+                            {
+                                string[] rp = propName.Substring(ri + 7).Split('-');
+                                if (int.TryParse(rp[1], out int newEnd))
+                                {
+                                    nextStart = newEnd + 1;
+                                }
+                                else
+                                {
+                                    done = true;
+                                }
+                            }
+                            else
+                            {
+                                done = true;
+                            }
+                        }
+                        found = true;
+                        break;
+                    }
+                    if (!found)
+                    {
+                        done = true;
+                    }
+                }
+            }
+            return allValues;
+        }
+
+        public static void MergeRangedValues(ADItem aditem, string attributeName, List<string> additionalValues)
+        {
+            string[] existing;
+            if (string.Equals(attributeName, "member", StringComparison.OrdinalIgnoreCase))
+            {
+                existing = aditem.Member ?? Array.Empty<string>();
+                var merged = new string[existing.Length + additionalValues.Count];
+                Array.Copy(existing, merged, existing.Length);
+                additionalValues.CopyTo(merged, existing.Length);
+                aditem.Member = merged;
+            }
+            else if (string.Equals(attributeName, "memberof", StringComparison.OrdinalIgnoreCase))
+            {
+                existing = aditem.MemberOf ?? Array.Empty<string>();
+                var merged = new string[existing.Length + additionalValues.Count];
+                Array.Copy(existing, merged, existing.Length);
+                additionalValues.CopyTo(merged, existing.Length);
+                aditem.MemberOf = merged;
+            }
         }
     }
 }

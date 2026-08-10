@@ -165,7 +165,6 @@ namespace PingCastle.Cloud.Data
     public class HealthCheckCloudDataRoleMember
     {
 
-
         public string ObjectId { get; set; }
 
         public string EmailAddress { get; set; }
@@ -219,6 +218,8 @@ namespace PingCastle.Cloud.Data
         // we are using a xml serialization trick to be resilient if a new RiskRuleCategory is added in the future
         public string RiskId { get; set; }
 
+        public int MaturityLevel { get; set; }
+
         public string Rationale { get; set; }
 
         public List<string> Details { get; set; }
@@ -227,6 +228,18 @@ namespace PingCastle.Cloud.Data
 
         public RiskRuleCategory Category { get; set; }
         public RiskModelCategory Model { get; set; }
+
+        public string Description { get; set; }
+
+        public string RemediationGuidance { get; set; }
+
+        public List<string> RemediationCommands { get; set; } = new List<string>();
+
+        public List<string> DocumentationLinks { get; set; } = new List<string>();
+
+        public List<string> MitreTechniqueIds { get; set; } = new List<string>();
+
+        public List<string> MitreMitigationIds { get; set; } = new List<string>();
     }
     public class HealthCheckCloudData : JsonSerialization<HealthCheckCloudData>, IRiskEvaluation
     {
@@ -277,13 +290,11 @@ namespace PingCastle.Cloud.Data
             }
         }
 
-
         public string TenantName { get; set; }
 
         public string TenantId { get; set; }
 
         public DateTime TenantCreation { get; set; }
-
 
         public string Region { get; set; }
         // from JWT : onprem_sid
@@ -334,7 +345,6 @@ namespace PingCastle.Cloud.Data
 
         public List<string> ProvisionAuthorizedServiceInstances { get; set; }
 
-
         public List<HealthCheckCloudDataDomain> Domains { get; set; }
 
         public List<HealthCheckCloudDataRole> Roles { get; set; }
@@ -363,7 +373,6 @@ namespace PingCastle.Cloud.Data
 
         public List<HealthCheckCloudDataTenantInformation> ExternalTenantInformation { get; set; }
 
-
         public bool? AzureADConnectDirSyncConfigured { get; set; }
         public bool? AzureADConnectDirSyncEnabled { get; set; }
         public int   AzureADConnectFederatedDomainCount { get; set; }
@@ -386,7 +395,9 @@ namespace PingCastle.Cloud.Data
         public List<HealthCheckCloudDataForwardingMailboxes> ForwardingMailboxes { get; set; }
         public int GlobalScore { get; set; }
         public int StaleObjectsScore { get; set; }
-        public int PrivilegiedGroupScore { get; set; }
+        // Preserve backwards compatibility: existing JSON responses use the misspelled property name.
+        [JsonPropertyName("PrivilegiedGroupScore")]
+        public int PrivilegedGroupScore { get; set; }
         public int TrustScore { get; set; }
         public int AnomalyScore { get; set; }
 

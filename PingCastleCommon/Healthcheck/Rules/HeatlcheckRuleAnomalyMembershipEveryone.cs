@@ -26,6 +26,8 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     if (string.Equals(membership.MemberOf, GraphObjectReference.Users, StringComparison.OrdinalIgnoreCase))
                         continue;
+                    if (string.Equals(membership.MemberOf, GraphObjectReference.PowerUsers, StringComparison.OrdinalIgnoreCase))
+                        continue;
                     AddRawDetail(membership.GPOName, membership.MemberOf, membership.User);
                 }
             }

@@ -22,7 +22,6 @@ namespace PingCastle.Cloud.RESTServices
         public string P3PHeader;
     }
 
-
     // All these are defined in the Win10 WDK
     [Guid("CDAECE56-4EDF-43DF-B113-88E4556FA1BB")]
     [ComImport]
@@ -41,7 +40,6 @@ namespace PingCastle.Cloud.RESTServices
     public class WindowsTokenProvider
     {
     }
-
 
     public class CookieInfoManager
     {

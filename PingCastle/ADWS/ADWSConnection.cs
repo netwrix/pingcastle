@@ -5,6 +5,7 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.UserInterface;
+using PingCastleCommon.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -246,6 +247,7 @@ namespace PingCastle.ADWS
 							}
                             if (aditem != null)
                             {
+                                ResolveRangedAttributes(aditem);
                                 try
                                 {
                                     callback(aditem);
@@ -443,7 +445,6 @@ namespace PingCastle.ADWS
             using var stringWriter = new StringWriter();
             using var xmlWriter = XmlWriter.Create(stringWriter);
 
-
             // Write the start of the SOAP envelope
             xmlWriter.WriteStartElement("s", "Envelope", "http://www.w3.org/2003/05/soap-envelope");
             xmlWriter.WriteStartElement("s", "Body", "http://www.w3.org/2003/05/soap-envelope");
@@ -509,6 +510,29 @@ namespace PingCastle.ADWS
         public override void ThreadInitialization()
         {
             FileConnection.ThreadInitialization();
+        }
+
+        private void ResolveRangedAttributes(ADItem aditem)
+        {
+            if (aditem.Member == null || aditem.Member.Length < LDAPConnection.DefaultMaxValRange)
+            {
+                return;
+            }
+
+            try
+            {
+                var additional = LDAPConnection.FetchRemainingRangedValues(
+                    Server, Port, Credential, aditem.DistinguishedName, "member", aditem.Member.Length);
+                if (additional.Count > 0)
+                {
+                    LDAPConnection.MergeRangedValues(aditem, "member", additional);
+                    Trace.WriteLine("Resolved " + additional.Count + " additional members for " + aditem.DistinguishedName.SanitizeForLog() + " via ranged retrieval");
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("Warning: ranged retrieval via LDAP failed for " + aditem.DistinguishedName.SanitizeForLog() + ": " + ex.Message);
+            }
         }
 
         void CleanConnection<TChannel>(ClientBase<TChannel> c) where TChannel : class

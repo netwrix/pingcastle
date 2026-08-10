@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-
 namespace PingCastle.misc
 {
     class RestrictedToken

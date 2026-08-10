@@ -40,9 +40,6 @@ namespace PingCastle.Scanners
             public UInt16 MID;
         };
 
-
-
-
         const int SMB_COM_NEGOTIATE = 0x72;
 
         const int SMB_FLAGS_CASE_INSENSITIVE = 0x08;
@@ -80,8 +77,6 @@ namespace PingCastle.Scanners
             return getBytes(header);
         }
 
-
-
         static byte[] getBytes(object structure)
         {
             int size = Marshal.SizeOf(structure);
@@ -113,8 +108,6 @@ namespace PingCastle.Scanners
             Array.Copy(dialect, 0, output, 3, dialect.Length);
             return output;
         }
-
-
 
         static byte[] GetNegotiatePacket(byte[] header, byte[] smbPacket)
         {

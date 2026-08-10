@@ -31,12 +31,14 @@ namespace PingCastle.Graph.Reporting
         private IDataStorage storage;
         private List<string> stopNodes = new List<string>();
         private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
+        private List<HealthcheckAccountDetailData> _honeyPotList;
 
         public void PerformAnalyze(HealthcheckData data, ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
         {
             ExportDataFromActiveDirectoryLive export = new ExportDataFromActiveDirectoryLive(domainInfo, adws, parameters.Credential);
             var ObjectReference = export.ExportData(parameters.AdditionalNamesForDelegationAnalysis);
             storage = export.Storage;
+            _honeyPotList = data.ListHoneyPot;
 
             data.ControlPaths = new CompromiseGraphData();
             data.ControlPaths.Data = new List<SingleCompromiseGraphData>();
@@ -298,7 +300,6 @@ namespace PingCastle.Graph.Reporting
                     }
                 }
 
-
             }
             data.AnomalyAnalysis = new List<CompromiseGraphAnomalyAnalysisData>();
             data.AnomalyAnalysis.AddRange(reference.Values);
@@ -447,7 +448,6 @@ namespace PingCastle.Graph.Reporting
             );
         }
 
-
         private void BuildDeletedObjects(ADDomainInfo domainInfo, CompromiseGraphData data, SingleCompromiseGraphData singleCompromiseData, Dictionary<int, Node> chartNodes)
         {
             singleCompromiseData.DeletedObjects = new List<SingleCompromiseGraphDeletedData>();
@@ -513,7 +513,6 @@ namespace PingCastle.Graph.Reporting
             hcdata.PrivilegedGroups.Add(groupData);
         }
 
-
         private HealthCheckGroupData AnalyzeGroupData(ADWebService adws, string groupName, Node rootNode, IEnumerable<Node> members)
         {
             HealthCheckGroupData data = new HealthCheckGroupData();
@@ -534,7 +533,15 @@ namespace PingCastle.Graph.Reporting
             {
                 // avoid computer included in the "cert publisher" group)
                 if (x.ADItem != null && IsNodeTypeAComputerNode(x.ADItem.Class))
+                {
                     continue;
+                }
+
+                if (IsHoneyPotNode(x))
+                {
+                    continue;
+                }
+
                 data.NumberOfMember++;
                 var member = BuildMemberDetail(adws, data, x);
                 data.Members.Add(member);
@@ -1220,5 +1227,23 @@ namespace PingCastle.Graph.Reporting
         }
         #endregion data file
 
+        private bool IsHoneyPotNode(Node x)
+        {
+            if (_honeyPotList == null || x.ADItem == null)
+            {
+                return false;
+            }
+
+            foreach (var h in _honeyPotList)
+            {
+                if (string.Equals(h.Name, x.ADItem.SAMAccountName, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(h.DistinguishedName, x.ADItem.DistinguishedName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

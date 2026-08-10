@@ -698,7 +698,6 @@ namespace PingCastle.ADWS
             return list.ToArray();
         }
 
-
         private static X509Certificate2Collection ExtractCertificateStore(XmlNode item)
         {
             XmlNode child = item.FirstChild;
@@ -733,7 +732,6 @@ namespace PingCastle.ADWS
             return list.ToArray();
         }
 
-
         private static List<DnsProperty> ExtractDnsProperty(ICollection<byte[]> data)
         {
             var output = new List<DnsProperty>();
@@ -761,11 +759,17 @@ namespace PingCastle.ADWS
             while (child != null && child is XmlElement)
             {
                 string name = StripNamespace(child.Name).ToLowerInvariant();
-                if (AttributeTranslation.ContainsKey(name))
+                string lookupName = name;
+                int rangeIndex = name.IndexOf(";range=", StringComparison.OrdinalIgnoreCase);
+                if (rangeIndex >= 0)
+                {
+                    lookupName = name.Substring(0, rangeIndex);
+                }
+                if (AttributeTranslation.ContainsKey(lookupName))
                 {
                     try
                     {
-                        var translation = AttributeTranslation[name];
+                        var translation = AttributeTranslation[lookupName];
                         switch (translation.aDAttributeAttribute.ValueKind)
                         {
                             case ADAttributeValueKind.BoolValue:
@@ -897,11 +901,17 @@ namespace PingCastle.ADWS
             {
                 if (name == "ntsecuritydescriptor")
                     continue;
-                if (AttributeTranslation.ContainsKey(name))
+                string lookupName = name;
+                int rangeIndex = name.IndexOf(";range=", StringComparison.OrdinalIgnoreCase);
+                if (rangeIndex >= 0)
+                {
+                    lookupName = name.Substring(0, rangeIndex);
+                }
+                if (AttributeTranslation.ContainsKey(lookupName))
                 {
                     try
                     {
-                        var translation = AttributeTranslation[name];
+                        var translation = AttributeTranslation[lookupName];
                         switch (translation.aDAttributeAttribute.ValueKind)
                         {
                             case ADAttributeValueKind.BoolValue:
@@ -1071,12 +1081,18 @@ namespace PingCastle.ADWS
             foreach (string name2 in data.Keys)
             {
                 var name = name2.ToLowerInvariant();
-                if (AttributeTranslation.ContainsKey(name))
+                string lookupName = name;
+                int rangeIndex = name.IndexOf(";range=", StringComparison.OrdinalIgnoreCase);
+                if (rangeIndex >= 0)
                 {
-                    Trace.WriteLine("Working on " + name);
+                    lookupName = name.Substring(0, rangeIndex);
+                }
+                if (AttributeTranslation.ContainsKey(lookupName))
+                {
+                    Trace.WriteLine("Working on " + lookupName);
                     try
                     {
-                        var translation = AttributeTranslation[name];
+                        var translation = AttributeTranslation[lookupName];
                         switch (translation.aDAttributeAttribute.ValueKind)
                         {
                             case ADAttributeValueKind.BoolValue:

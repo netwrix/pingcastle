@@ -19,13 +19,9 @@ using System.Reflection;
 [assembly: AssemblyCompany("Netwrix Corporation")]
 [assembly: AssemblyProduct("PingCastle")]
 [assembly: AssemblyCopyright("")]
-[assembly: AssemblyTrademark("PingCastle�")]
-[assembly: AssemblyVersion("0.0.0.0")]
-#if DEBUG
-[assembly: AssemblyFileVersion("99.0.0.0")]
-#else
-[assembly: AssemblyFileVersion("0.0.0.0")]
-#endif
+[assembly: AssemblyTrademark("PingCastle™")]
+[assembly: AssemblyVersion("4.0.0.20")]
+[assembly: AssemblyFileVersion("4.0.0.20")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCulture("")]

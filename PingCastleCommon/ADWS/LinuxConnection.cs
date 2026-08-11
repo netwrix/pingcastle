@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using PingCastleCommon.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -77,6 +78,7 @@ namespace PingCastle.ADWS
                     {
                         data[prop] = GetValueBin(j, prop);
                     }
+                    ResolveRangedAttributes(j, data);
                     var aditem = ADItem.Create(data);
                     callback(aditem);
                     j = ldap_next_entry(connection, j);
@@ -261,6 +263,135 @@ namespace PingCastle.ADWS
             this.Credential = Credential;
         }
 
+        private void ResolveRangedAttributes(IntPtr entry, Dictionary<string, berval[]> data)
+        {
+            IntPtr dnPtr = ldap_get_dn(connection, entry);
+            if (dnPtr == IntPtr.Zero)
+            {
+                return;
+            }
+            string dn = Marshal.PtrToStringAnsi(dnPtr);
+            ldap_memfree(dnPtr);
+
+            var attrNames = new List<string>();
+            IntPtr ber = IntPtr.Zero;
+            IntPtr attr = ldap_first_attribute(connection, entry, ref ber);
+            while (attr != IntPtr.Zero)
+            {
+                string name = Marshal.PtrToStringAnsi(attr);
+                if (name != null)
+                {
+                    attrNames.Add(name);
+                }
+                attr = ldap_next_attribute(connection, entry, ber);
+            }
+
+            foreach (string attrName in attrNames)
+            {
+                int rangeIndex = attrName.IndexOf(";range=", StringComparison.OrdinalIgnoreCase);
+                if (rangeIndex < 0)
+                {
+                    continue;
+                }
+
+                string baseName = attrName.Substring(0, rangeIndex);
+                var values = GetValueBin(entry, attrName);
+                if (values == null)
+                {
+                    continue;
+                }
+
+                if (attrName.EndsWith("*"))
+                {
+                    data[baseName] = values;
+                    continue;
+                }
+
+                string[] rangeParts = attrName.Substring(rangeIndex + 7).Split('-');
+                if (!int.TryParse(rangeParts[1], out int rangeEnd))
+                {
+                    data[baseName] = values;
+                    continue;
+                }
+
+                var allValues = new List<berval>(values);
+                int nextStart = rangeEnd + 1;
+                bool done = false;
+
+                while (!done)
+                {
+                    string rangeAttr = baseName + ";range=" + nextStart + "-*";
+                    IntPtr rangeResult;
+                    var r = ldap_search_s(connection, dn, LDAPScope.LDAP_SCOPE_BASE,
+                        "(objectClass=*)", new[] { rangeAttr }, false, out rangeResult);
+                    if (r != 0)
+                    {
+                        Trace.WriteLine("Ranged retrieval failed with error " + r + " for " + dn.SanitizeForLog());
+                        break;
+                    }
+
+                    try
+                    {
+                        IntPtr rBer = IntPtr.Zero;
+                        IntPtr rAttr = ldap_first_attribute(connection, rangeResult, ref rBer);
+                        bool found = false;
+                        while (rAttr != IntPtr.Zero)
+                        {
+                            string rName = Marshal.PtrToStringAnsi(rAttr);
+                            if (rName != null &&
+                                rName.StartsWith(baseName, StringComparison.OrdinalIgnoreCase) &&
+                                (rName.Length == baseName.Length || rName[baseName.Length] == ';'))
+                            {
+                                var moreValues = GetValueBin(rangeResult, rName);
+                                if (moreValues != null)
+                                {
+                                    allValues.AddRange(moreValues);
+                                }
+
+                                if (rName.EndsWith("*") || rName.Length == baseName.Length)
+                                {
+                                    done = true;
+                                }
+                                else
+                                {
+                                    int ri = rName.IndexOf(";range=", StringComparison.OrdinalIgnoreCase);
+                                    if (ri >= 0)
+                                    {
+                                        string[] rp = rName.Substring(ri + 7).Split('-');
+                                        if (int.TryParse(rp[1], out int newEnd))
+                                        {
+                                            nextStart = newEnd + 1;
+                                        }
+                                        else
+                                        {
+                                            done = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        done = true;
+                                    }
+                                }
+                                found = true;
+                                break;
+                            }
+                            rAttr = ldap_next_attribute(connection, rangeResult, rBer);
+                        }
+                        if (!found)
+                        {
+                            done = true;
+                        }
+                    }
+                    finally
+                    {
+                        ldap_memfree(rangeResult);
+                    }
+                }
+
+                data[baseName] = allValues.ToArray();
+            }
+        }
+
         LinuxSidResolver sidResolver;
         public override string ConvertSIDToName(string sidstring, out string referencedDomain)
         {
@@ -332,6 +463,9 @@ namespace PingCastle.ADWS
 
         [DllImport(LdapLibrary, EntryPoint = "ldap_first_attribute", CharSet = CharSet.Ansi)]
         internal static extern IntPtr ldap_first_attribute([In] ConnectionHandle ldapHandle, [In] IntPtr result, ref IntPtr address);
+
+        [DllImport(LdapLibrary, EntryPoint = "ldap_next_attribute", CharSet = CharSet.Ansi)]
+        internal static extern IntPtr ldap_next_attribute([In] ConnectionHandle ldapHandle, [In] IntPtr result, [In] IntPtr address);
 
         [DllImport(LdapLibrary, EntryPoint = "ldap_first_entry", CharSet = CharSet.Ansi)]
         internal static extern IntPtr ldap_first_entry([In] ConnectionHandle ldapHandle, [In] IntPtr result);
@@ -413,12 +547,10 @@ namespace PingCastle.ADWS
             }
         }
 
-
         public override void ThreadInitialization()
         {
             
         }
     }
-
 
 }

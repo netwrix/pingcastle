@@ -78,7 +78,6 @@ namespace PingCastle.Report
             Add(Report.GenerationDate.ToString("yyyy-MM-dd"));
         }
 
-
         protected override void ReferenceJSAndCSS()
         {
             AddStyle(TemplateManager.LoadReportRiskControlsCss());
@@ -155,7 +154,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             Add("'>");
         }
 
-
         protected void AddBenchmarkSection()
         {
             Add(@"
@@ -188,7 +186,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
   </div>
 </div>
 ");
-
 
             var d = ReportBenchmark.GetData(Report, _license);
             Add(@"<form class='d-print-none' action='");
@@ -229,7 +226,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             });
             GenerateSection("Privileged Accounts", () =>
             {
-                GenerateSubIndicatorHeader("Privileged Accounts", Report.GlobalScore, Report.PrivilegiedGroupScore, "It is about administrators of the Active Directory");
+                GenerateSubIndicatorHeader("Privileged Accounts", Report.GlobalScore, Report.PrivilegedGroupScore, "It is about administrators of the Active Directory");
                 GenerateIndicatorPanel("DetailPrivileged", "Privileged Accounts rule details", RiskRuleCategory.PrivilegedAccounts, Report.RiskRules, Report.applicableRules);
             });
             GenerateSection("Trusts", () =>
@@ -258,8 +255,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         protected override void GenerateFooterInformation()
         {
         }
-
-
 
         #region maturity
 
@@ -392,7 +387,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     var l = data[i];
 
-
                     Add(@"<div id=""maturitylevel");
                     Add(i);
                     Add(Report.GenerationDate.ToFileTime().ToString());
@@ -402,7 +396,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add(" active");
                     }
                     Add(@""">");
-
 
                     Add("<p class='mt-2'>");
 
@@ -501,43 +494,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             keys.Sort((RuleMitreAttackTechniqueAttribute a, RuleMitreAttackTechniqueAttribute b) => { return string.Compare(a.Label, b.Label); });
 
             Add("<h2>Techniques</h2>");
-            // CARDS
-            Add("<div class='row'><div class='col-lg-12'>");
-            Add("<div class='row row-cols-" + Enum.GetValues(typeof(MitreAttackMainTechnique)).Length + "'>");
-            foreach (MitreAttackMainTechnique mainTechnique in Enum.GetValues(typeof(MitreAttackMainTechnique)))
-            {
-                Add("<div class='col'>");
-                Add("<div class='card'>");
-                Add("<div class='card-body'>");
-                Add("<h5 class='card-title'>");
-                var description = ReportHelper.GetEnumDescription(mainTechnique);
-                Add(description);
-                Add("</h5>");
-                int num = 0;
-                foreach (var l in keys)
-                {
-                    if (l.MainTechnique != mainTechnique)
-                        continue;
-                    num++;
-                }
-                if (num > 0)
-                {
-                    Add("<p class='card-text'>");
-                    Add(num);
-                    Add(" technique(s) matched");
-                    Add("</p>");
-                }
-                else
-                {
-                    Add("<p class='card-text'>No technique matched</p>");
-                }
-                Add("</div>");
-                Add("</div>");
-                Add("</div>");
-            }
-            Add("</div>");
-            Add("</div></div>");
-
 
             // tab header
             if (reference.Count > 0)
@@ -552,7 +508,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         if (l.MainTechnique != mainTechnique)
                             continue;
-                        num++;
+                        num += reference[l].Count;
                     }
                     if (num > 0)
                     {
@@ -569,13 +525,15 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add(@""">");
                         var description = ReportHelper.GetEnumDescription(mainTechnique);
                         Add(description);
+                        Add(" (");
+                        Add(num);
+                        Add(")");
                         Add("</a>");
                         Add("</li>");
                     }
                 }
                 Add("</ul>");
                 Add("</div></div>");
-
 
                 // tab content
                 Add("<div class='row'><div class='col-lg-12'>");
@@ -588,7 +546,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         if (l.MainTechnique != mainTechnique)
                             continue;
-                        num++;
+                        num += reference[l].Count;
                     }
                     if (num > 0)
                     {
@@ -605,8 +563,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add(@""">");
 
                         Add("<div class='row'><div class='col-lg-12'>");
-                        var description = ReportHelper.GetEnumDescription(mainTechnique);
-                        Add("<p class='mt-2'><strong>" + description + "</strong></p>");
 
                         foreach (var l in keys)
                         {
@@ -617,9 +573,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add(((RuleFrameworkReference)l).URL);
                             Add(">");
                             Add(((RuleFrameworkReference)l).Label);
-                            Add("</a> [");
+                            Add("</a> (");
                             Add(reference[l].Count);
-                            Add("]</p>");
+                            Add(")</p>");
                             GenerateAccordion("rulesmitre" + l.ID + l.SubID, () =>
                             {
                                 reference[l].Sort((HealthcheckRiskRule a, HealthcheckRiskRule b) => { return -a.Points.CompareTo(b.Points); });
@@ -635,6 +591,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 }
                 Add("</div>");
                 Add("</div></div>");
+            }
+            else
+            {
+                Add("<p>No technique matched</p>");
             }
 
         }
@@ -668,41 +628,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             Add("<hr>");
             Add("<h2 class='mt-4'>Mitigations</h2>");
 
-            // CARDS
-            Add("<div class='row'><div class='col-lg-12'>");
-            Add("<div class='row row-cols-" + Enum.GetValues(typeof(MitreAttackMitigation)).Length + "'>");
-            foreach (MitreAttackMitigation mainTechnique in Enum.GetValues(typeof(MitreAttackMitigation)))
-            {
-                Add("<div class='col'>");
-                Add("<div class='card'>");
-                Add("<div class='card-body'>");
-                Add("<h5 class='card-title'>");
-                var description = ReportHelper.GetEnumDescription(mainTechnique);
-                Add(description);
-                Add("</h5>");
-                int num = 0;
-                foreach (var l in keys)
-                {
-                    if (l.MainTechnique != mainTechnique)
-                        continue;
-                    num++;
-                }
-                if (num > 0)
-                {
-                    Add("<p class='card-text'>Mitigation did matched");
-                    Add("</p>");
-                }
-                else
-                {
-                    Add("<p class='card-text'>No match</p>");
-                }
-                Add("</div>");
-                Add("</div>");
-                Add("</div>");
-            }
-            Add("</div>");
-            Add("</div></div>");
-
             // tab header
             if (reference.Count > 0)
             {
@@ -716,7 +641,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         if (l.MainTechnique != mainTechnique)
                             continue;
-                        num++;
+                        num += reference[l].Count;
                     }
                     if (num > 0)
                     {
@@ -733,13 +658,15 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add(@""">");
                         var description = ReportHelper.GetEnumDescription(mainTechnique);
                         Add(description);
+                        Add(" (");
+                        Add(num);
+                        Add(")");
                         Add("</a>");
                         Add("</li>");
                     }
                 }
                 Add("</ul>");
                 Add("</div></div>");
-
 
                 // tab content
                 Add("<div class='row'><div class='col-lg-12'>");
@@ -752,7 +679,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         if (l.MainTechnique != mainTechnique)
                             continue;
-                        num++;
+                        num += reference[l].Count;
                     }
                     if (num > 0)
                     {
@@ -769,8 +696,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add(@""">");
 
                         Add("<div class='row'><div class='col-lg-12'>");
-                        var description = ReportHelper.GetEnumDescription(mainTechnique);
-                        Add("<p class='mt-2'><strong>" + description + "</strong></p>");
 
                         foreach (var l in keys)
                         {
@@ -781,9 +706,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add(((RuleFrameworkReference)l).URL);
                             Add(">");
                             Add(((RuleFrameworkReference)l).Label);
-                            Add("</a> [");
+                            Add("</a> (");
                             Add(reference[l].Count);
-                            Add("]</p>");
+                            Add(")</p>");
                             GenerateAccordion("rulesmitre" + l.ID + l.SubID, () =>
                             {
                                 reference[l].Sort((HealthcheckRiskRule a, HealthcheckRiskRule b) => { return -a.Points.CompareTo(b.Points); });
@@ -799,6 +724,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 }
                 Add("</div>");
                 Add("</div></div>");
+            }
+            else
+            {
+                Add("<p>No mitigation matched</p>");
             }
         }
 
@@ -968,7 +897,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             }
             GenerateDomainSIDHistoryList(Report.UserAccountData);
         }
-
 
         private const string DcDelegationTooltip =
             "Domain Controllers require unconstrained delegation for core operations and should not have delegation removed.";
@@ -1219,7 +1147,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             GenerateOperatingSystemList();
             GenerateDomainSIDHistoryList(Report.ComputerAccountData);
             GenerateDCInformation();
-
 
             GenerateSubSection("LAPS Analysis", "lapsanalysis");
             if (_license.IsBasic())
@@ -1581,7 +1508,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             );
 
         }
-
 
         #endregion computer info
 
@@ -2551,7 +2477,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             AddLine("</script>");
         }
 
-
         string BuildJasonFromSingleCompromiseGraph(SingleCompromiseGraphData data)
         {
             StringBuilder output = new StringBuilder();
@@ -2814,7 +2739,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             }
 
         }
-
 
         #endregion trust
 
@@ -3531,7 +3455,6 @@ Here is the list of servers configured for WEF found in GPO</p>
 ");
             }
 
-
             // krbtgt
             GenerateSubSection("krbtgt (Used for Golden ticket attacks)", "krbtgt");
             Add(@"
@@ -4061,7 +3984,6 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                             AddCellNum(modulesize);
                             AddCellText(cert.SignatureAlgorithm.FriendlyName);
                             AddEndRow();
-
 
                         }
                         AddEndTable();

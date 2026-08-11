@@ -37,7 +37,9 @@ namespace PingCastle.Data
 
         public int GlobalScore { get; set; }
         public int StaleObjectsScore { get; set; }
-        public int PrivilegiedGroupScore { get; set; }
+        // Preserve backwards compatibility: existing XML reports use the misspelled element name.
+        [XmlElement("PrivilegiedGroupScore")]
+        public int PrivilegedGroupScore { get; set; }
         public int TrustScore { get; set; }
         public int AnomalyScore { get; set; }
 

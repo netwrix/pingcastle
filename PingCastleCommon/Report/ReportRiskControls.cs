@@ -17,7 +17,6 @@ namespace PingCastle.Report
             _license = license;
         }
 
-
         int GetRulesNumberForCategory(List<HealthcheckRiskRule> rules, RiskRuleCategory category)
         {
             int count = 0;
@@ -55,7 +54,7 @@ namespace PingCastle.Report
 ");
             GenerateSubIndicator("Stale Object", data.GlobalScore, data.StaleObjectsScore, rules, RiskRuleCategory.StaleObjects, "It is about operations related to user or computer objects");
             GenerateSubIndicator("Trusts", data.GlobalScore, data.TrustScore, rules, RiskRuleCategory.Trusts, "It is about connections between two Active Directories");
-            GenerateSubIndicator("Privileged Accounts", data.GlobalScore, data.PrivilegiedGroupScore, rules, RiskRuleCategory.PrivilegedAccounts, "It is about administrators of the Active Directory");
+            GenerateSubIndicator("Privileged Accounts", data.GlobalScore, data.PrivilegedGroupScore, rules, RiskRuleCategory.PrivilegedAccounts, "It is about administrators of the Active Directory");
             GenerateSubIndicator("Anomalies", data.GlobalScore, data.AnomalyScore, rules, RiskRuleCategory.Anomalies, "It is about specific security control points");
             Add(@"
 		</div>

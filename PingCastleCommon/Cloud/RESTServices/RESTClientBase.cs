@@ -68,7 +68,6 @@ namespace PingCastle.Cloud.RESTServices.Azure
             public JsonErrorOdataError OdataError { get; set; }
         }
 
-
         public List<U> CallEndPointWithPagging<T, U>(string function, T input = default(T), string optionalQuery = "")
         {
             return CallEndPointWithPaggingAsync<T, U>(function, input, optionalQuery).GetAwaiter().GetResult();
@@ -159,7 +158,6 @@ namespace PingCastle.Cloud.RESTServices.Azure
                 return JsonSerializer.Deserialize<U>(jsonOuput);
             }
         }
-
 
         virtual protected string BuidEndPoint(string function, string optionalQuery)
         {

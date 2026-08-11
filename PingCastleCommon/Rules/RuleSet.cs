@@ -285,7 +285,7 @@ namespace PingCastle.Rules
             // consolidate scores
             data.GlobalScore = 0;
             data.StaleObjectsScore = 0;
-            data.PrivilegiedGroupScore = 0;
+            data.PrivilegedGroupScore = 0;
             data.TrustScore = 0;
             data.AnomalyScore = 0;
             data.MaturityLevel = 5;
@@ -297,7 +297,7 @@ namespace PingCastle.Rules
                         data.AnomalyScore += rule.Points;
                         break;
                     case RiskRuleCategory.PrivilegedAccounts:
-                        data.PrivilegiedGroupScore += rule.Points;
+                        data.PrivilegedGroupScore += rule.Points;
                         break;
                     case RiskRuleCategory.StaleObjects:
                         data.StaleObjectsScore += rule.Points;
@@ -317,15 +317,15 @@ namespace PingCastle.Rules
             // limit to 100
             if (data.StaleObjectsScore > 100)
                 data.StaleObjectsScore = 100;
-            if (data.PrivilegiedGroupScore > 100)
-                data.PrivilegiedGroupScore = 100;
+            if (data.PrivilegedGroupScore > 100)
+                data.PrivilegedGroupScore = 100;
             if (data.TrustScore > 100)
                 data.TrustScore = 100;
             if (data.AnomalyScore > 100)
                 data.AnomalyScore = 100;
             // max of all scores
             data.GlobalScore = Math.Max(data.StaleObjectsScore,
-                                            Math.Max(data.PrivilegiedGroupScore,
+                                            Math.Max(data.PrivilegedGroupScore,
                                             Math.Max(data.TrustScore, data.AnomalyScore)));
         }
 

@@ -20,7 +20,7 @@
         output += '<br/>Score: ' + d.score;
         output += '<ul>';
         output += '<li>StaleObjects: ' + d.staleObjectsScore;
-        output += '<li>Privilegied Group: ' + d.privilegiedGroupScore;
+        output += '<li>Privileged Group: ' + d.privilegedGroupScore;
         output += '<li>Trust: ' + d.trustScore;
         output += '<li>Anomaly: ' + d.anomalyScore;
         output += '</ul>';
@@ -60,7 +60,7 @@ function reshape(tree) {
             score: n["score"],
             maturityLevel: n["maturityLevel"],
             staleObjectsScore: n["staleObjectsScore"],
-            privilegiedGroupScore: n["privilegiedGroupScore"],
+            privilegedGroupScore: n["privilegedGroupScore"],
             trustScore: n["trustScore"],
             anomalyScore: n["anomalyScore"],
             BU: n["BU"],

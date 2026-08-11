@@ -407,6 +407,18 @@ namespace PingCastle.Rules
         LateralMovement,
         [Description("Persistence")]
         Persistence,
+        [Description("Collection")]
+        Collection,
+        [Description("Command and Control")]
+        CommandAndControl,
+        [Description("Exfiltration")]
+        Exfiltration,
+        [Description("Impact")]
+        Impact,
+        [Description("Reconnaissance")]
+        Reconnaissance,
+        [Description("Resource Development")]
+        ResourceDevelopment,
     }
 
     public enum MitreAttackTechnique
@@ -505,6 +517,15 @@ namespace PingCastle.Rules
             MainTechnique = mit.Main;
         }
 
+        public RuleMitreAttackTechniqueAttribute(MitreAttackMainTechnique main, string id, string subId, string label, string subLabel)
+        {
+            ID = id;
+            SubID = subId ?? string.Empty;
+            Country = "mitre";
+            Label = ID + (!string.IsNullOrEmpty(SubID) ? "." + SubID : null) + " " + label + (!string.IsNullOrEmpty(subLabel) ? ": " + subLabel : null);
+            MainTechnique = main;
+        }
+
         public string ID { get; private set; }
         public string SubID { get; private set; }
         public MitreAttackMainTechnique MainTechnique { get; private set; }
@@ -529,7 +550,6 @@ namespace PingCastle.Rules
         public string Label { get; set; }
     }
 
-
     public enum MitreAttackMitigation
     {
         [Description("Audit")]
@@ -553,6 +573,57 @@ namespace PingCastle.Rules
         [Description("User Account Management")]
         [MitreAttackMitigation("M1018", "User Account Management")]
         UserAccountManagement,
+        [Description("User Training")]
+        [MitreAttackMitigation("M1017", "User Training")]
+        UserTraining,
+        [Description("Multi-factor Authentication")]
+        [MitreAttackMitigation("M1032", "Multi-factor Authentication")]
+        MultiFactorAuthentication,
+        [Description("Password Policies")]
+        [MitreAttackMitigation("M1027", "Password Policies")]
+        PasswordPolicies,
+        [Description("Account Use Policies")]
+        [MitreAttackMitigation("M1036", "Account Use Policies")]
+        AccountUsePolicies,
+        [Description("Restrict Web-Based Content")]
+        [MitreAttackMitigation("M1021", "Restrict Web-Based Content")]
+        RestrictWebBasedContent,
+        [Description("Restrict File and Directory Permissions")]
+        [MitreAttackMitigation("M1022", "Restrict File and Directory Permissions")]
+        RestrictFileAndDirectoryPermissions,
+        [Description("Restrict Registry Permissions")]
+        [MitreAttackMitigation("M1024", "Restrict Registry Permissions")]
+        RestrictRegistryPermissions,
+        [Description("Network Segmentation")]
+        [MitreAttackMitigation("M1030", "Network Segmentation")]
+        NetworkSegmentation,
+        [Description("Network Intrusion Prevention")]
+        [MitreAttackMitigation("M1031", "Network Intrusion Prevention")]
+        NetworkIntrusionPrevention,
+        [Description("Filter Network Traffic")]
+        [MitreAttackMitigation("M1037", "Filter Network Traffic")]
+        FilterNetworkTraffic,
+        [Description("Encrypt Sensitive Information")]
+        [MitreAttackMitigation("M1041", "Encrypt Sensitive Information")]
+        EncryptSensitiveInformation,
+        [Description("Disable or Remove Feature or Program")]
+        [MitreAttackMitigation("M1042", "Disable or Remove Feature or Program")]
+        DisableOrRemoveFeatureOrProgram,
+        [Description("Boot Integrity")]
+        [MitreAttackMitigation("M1046", "Boot Integrity")]
+        BootIntegrity,
+        [Description("Antivirus/Antimalware")]
+        [MitreAttackMitigation("M1049", "Antivirus/Antimalware")]
+        AntivirusAntimalware,
+        [Description("Exploit Protection")]
+        [MitreAttackMitigation("M1050", "Exploit Protection")]
+        ExploitProtection,
+        [Description("Software Configuration")]
+        [MitreAttackMitigation("M1054", "Software Configuration")]
+        SoftwareConfiguration,
+        [Description("Pre-compromise")]
+        [MitreAttackMitigation("M1056", "Pre-compromise")]
+        PreCompromise,
     }
 
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
@@ -567,6 +638,14 @@ namespace PingCastle.Rules
             ID = mit.ID;
             Country = "mitre";
             Label = "Mitre Att&ck - Mitigation - " + mit.Label;
+            MainTechnique = mitigation;
+        }
+
+        public RuleMitreAttackMitigationAttribute(MitreAttackMitigation mitigation, string id, string label)
+        {
+            ID = id;
+            Country = "mitre";
+            Label = "Mitre Att&ck - Mitigation - " + label;
             MainTechnique = mitigation;
         }
 

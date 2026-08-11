@@ -23,7 +23,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
-
 public abstract class ReportBase
 {
 
@@ -173,7 +172,6 @@ public abstract class ReportBase
             JSToAdd.Add(script);
     }
 
-
     protected virtual void Hook(StringBuilder sbHtml)
     {
 
@@ -284,7 +282,6 @@ public abstract class ReportBase
     {
         Add(@"</dl>");
     }
-
 
     protected void AddAnchor(string label)
     {
@@ -1655,7 +1652,6 @@ public abstract class ReportBase
         public string toolTip { get; set; }
     }
 
-
     protected void AddDistributionChart(IEnumerable<DistributionItem> input, string id)
     {
         AddDistributionSeriesChart(new Dictionary<string, IEnumerable<DistributionItem>> { { string.Empty, input } }, id);
@@ -1721,7 +1717,6 @@ public abstract class ReportBase
             max = 50;
         else
             max = 10;
-
 
         // draw chart
         Add(@"<div id='pdwdistchart");
@@ -1826,7 +1821,6 @@ public abstract class ReportBase
 
             if (!single)
                 tooltip = serie + ": " + tooltip;
-
 
             Add(@"<rect class=""bar"" fill=""");
             Add(GetColor(i1++, global.Count));

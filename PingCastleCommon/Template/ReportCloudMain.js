@@ -19,7 +19,7 @@ function delegatedPrincipal(value, row) {
 function azureRole(value, row) {
     if (row.roleTemplateId) {
         return "<a href='https://learn.microsoft.com/en-us/azure/active-directory/roles/permissions-reference#"
-            + encodeURI(row.displayName.replace(" ", "-").toLowerCase()) + "'>" + encodeURI(row.displayName).replace("%20", " ") + "</a>";
+            + encodeURI(row.displayName.replace(/ /g, "-").toLowerCase()) + "'>" + encodeURI(row.displayName).replace(/%20/g, " ") + "</a>";
     }
     return value;
 }

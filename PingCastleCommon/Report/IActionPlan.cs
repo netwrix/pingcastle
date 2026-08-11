@@ -19,7 +19,6 @@ namespace PingCastle.Report
 
     }
 
-
     public interface IActionPlanConsolidation : IActionPlan
     {
         void LoadDomain(HealthcheckData data);

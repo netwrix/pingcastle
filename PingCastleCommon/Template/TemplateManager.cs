@@ -59,7 +59,6 @@ namespace PingCastle.template
             return LoadTemplate(ResourceNamespace + ".responsivetemplate.html.gz");
         }
 
-
         public static string LoadBootstrapCss()
         {
             return LoadTemplate(ResourceNamespace + ".bootstrap.min.css.gz");
@@ -100,6 +99,16 @@ namespace PingCastle.template
             return LoadTemplate(ResourceNamespace + ".jquery.min.js.gz");
         }
 
+        public static string LoadMarkedJs()
+        {
+            return LoadTemplate(ResourceNamespace + ".marked.min.js.gz");
+        }
+
+        public static string LoadPurifyJs()
+        {
+            return LoadTemplate(ResourceNamespace + ".purify.min.js.gz");
+        }
+
         public static string LoadVisJs()
         {
             return LoadTemplate(ResourceNamespace + ".vis.min.js.gz");
@@ -124,7 +133,6 @@ namespace PingCastle.template
         {
             return LoadTemplate(ResourceNamespace + ".fontawesome.all.min.css.gz");
         }
-
 
         public static string LoadReportBaseJs()
         {

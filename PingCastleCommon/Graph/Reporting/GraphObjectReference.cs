@@ -42,6 +42,7 @@ namespace PingCastle.Graph.Reporting
         public const string Users = "Users";
         public const string DomainUsers = "Domain Users";
         public const string DomainComputers = "Domain Computers";
+        public const string PowerUsers = "Power Users";
 
         public const string GroupPolicyCreatorOwners = "Group Policy Creator Owners";
         public const string ExchangeDomainServers = "Exchange Domain Servers";
@@ -69,7 +70,7 @@ namespace PingCastle.Graph.Reporting
                         new GraphSingleObject("S-1-5-32-552", Replicator, CompromiseGraphDataObjectRisk.Medium),
                         new GraphSingleObject(data.DomainSid.Value + "-500", Administrator, CompromiseGraphDataObjectRisk.Critical),
                         new GraphSingleObject(data.DomainSid.Value + "-512", DomainAdministrators, CompromiseGraphDataObjectRisk.Critical),
-                        new GraphSingleObject(data.DomainSid.Value + "-517", CertificatePublishers), 
+                        new GraphSingleObject(data.DomainSid.Value + "-517", CertificatePublishers),
                         new GraphSingleObject(data.DomainSid.Value + "-518", SchemaAdministrators, CompromiseGraphDataObjectRisk.Critical),
                         new GraphSingleObject(data.DomainSid.Value + "-519", EnterpriseAdministrators, CompromiseGraphDataObjectRisk.Critical),
                         new GraphSingleObject(data.DomainSid.Value + "-526", KeyAdministrators, CompromiseGraphDataObjectRisk.Medium),

@@ -217,7 +217,6 @@ namespace PingCastle.Graph.Export
             }
         }
 
-
         // utility fonction to avoid inserting duplicate relations
         private static void IncludeRelationInDictionary(Dictionary<string, List<RelationType>> relationToAdd, string targetsid, RelationType relationType)
         {
@@ -423,7 +422,6 @@ namespace PingCastle.Graph.Export
                 Storage.InsertRelation(dn, MappingType.DistinguishedName, aditem.DistinguishedName, MappingType.DistinguishedName, RelationType.GPLINK);
             }
         }
-
 
         // from a DN string, get the parent. 
         // the problem is that there can be dn with escape string
@@ -761,7 +759,6 @@ namespace PingCastle.Graph.Export
                 });
             }
         }
-
 
         private void AnalyzeRegistryPol(string gpoPath, string applyTo, string artefactPath)
         {

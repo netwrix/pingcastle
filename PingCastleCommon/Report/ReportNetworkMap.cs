@@ -78,7 +78,6 @@ namespace PingCastle.Report
 ");
         }
 
-
         private static NetworkMapData BuildNetworkMapData(PingCastleReportCollection<HealthcheckData> reports)
         {
             var data = new NetworkMapData()

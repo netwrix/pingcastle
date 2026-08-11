@@ -236,7 +236,6 @@ namespace PingCastle.ADWS
             }
         }
 
-
         public System.IO.Stream GetFileStream(string path)
         {
             lock(lockThread)
@@ -251,13 +250,11 @@ namespace PingCastle.ADWS
             }
         }
 
-
         public string GetShortName(string path)
         {
             var t = path.Split('\\');
             return t[t.Length - 1];
         }
-
 
         public DateTime GetLastWriteTime(string path)
         {
@@ -281,14 +278,12 @@ namespace PingCastle.ADWS
             }
         }
 
-
         public string PathCombine(string path1, string path2)
         {
             if (path1.EndsWith("\\"))
                 return path1 + path2;
             return path1 + "\\" + path2;
         }
-
 
         public List<string> GetAllSubDirectories(string path)
         {
@@ -466,7 +461,6 @@ namespace PingCastle.ADWS
             // released by GC
         }
 
-
         ~LinuxFileConnection()
         {
             // The object went out of scope and finalized is called
@@ -476,7 +470,6 @@ namespace PingCastle.ADWS
             Dispose(false);
         }
         #endregion IDispose
-
 
     }
 
@@ -517,7 +510,6 @@ namespace PingCastle.ADWS
 
         [DllImport(LinuxFileConnection.SmbLibrary, CharSet = CharSet.Ansi)]
         static extern int smbc_close(int fd);
-
 
         public override bool CanRead
         {

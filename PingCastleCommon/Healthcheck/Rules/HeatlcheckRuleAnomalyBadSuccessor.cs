@@ -36,7 +36,6 @@ namespace PingCastle.Healthcheck.Rules
             "CreateChild msDS-DelegatedManagedServiceAccount Objects"
         };
 
-
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             Initialize();

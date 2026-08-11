@@ -329,7 +329,6 @@ namespace PingCastle.ADWS
             // released by GC
         }
 
-
         ~ADWebService()
         {
             // The object went out of scope and finalized is called

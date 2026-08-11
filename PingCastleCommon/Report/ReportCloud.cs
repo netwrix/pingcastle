@@ -32,6 +32,10 @@ namespace PingCastle.Report
         
         public IAADActionPlan ActionPlanOrchestrator { get; set; }
 
+        // Canonical titles from the Risk Definitions store, keyed by RiskId. Takes priority over
+        // the legacy hardcoded RuleSet<HealthCheckCloudData> lookup, which only covers 6 of 102 Entra risks.
+        public IReadOnlyDictionary<string, string> RiskDefinitionTitles { get; set; }
+
         protected HealthCheckCloudData Report;
         protected ADHealthCheckingLicense _license;
 
@@ -57,10 +61,66 @@ namespace PingCastle.Report
             AddStyle(TemplateManager.LoadReportBaseCss());
             AddStyle(TemplateManager.LoadReportRiskControlsCss());
             AddScript(TemplateManager.LoadBootstrapTableJs());
+            AddScript(TemplateManager.LoadTableExportJs());
+            AddScript(TemplateManager.LoadBootstrapTableExportJs());
             AddScript(TemplateManager.LoadReportBaseJs());
             AddScript(TemplateManager.LoadReportCloudMainJs());
             AddStyle(TemplateManager.LoadFontAwesomeCss());
+            AddScript(TemplateManager.LoadMarkedJs());
+            AddScript(TemplateManager.LoadPurifyJs());
+            AddStyle(AdvisedSolutionCss);
+            AddScript(AdvisedSolutionJs);
         }
+
+        private const string AdvisedSolutionCss = @"
+details.advised-solution { margin-bottom: 1rem; }
+details.advised-solution > summary { cursor: pointer; margin-bottom: 0.25rem; }
+.advised-code-block { position: relative; margin: 0.5rem 0; }
+.advised-code-block pre { background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 4px; padding: 0.75rem 3rem 0.75rem 0.75rem; overflow-x: auto; font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace; font-size: 0.875rem; }
+.advised-code-block .advised-copy-btn { position: absolute; top: 0.25rem; right: 0.25rem; padding: 0.15rem 0.4rem; line-height: 1; }
+details.advised-code-details { margin: 0.5rem 0; }
+details.advised-code-details > summary { cursor: pointer; margin-bottom: 0.25rem; }
+";
+
+        private const string AdvisedSolutionJs = @"
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.advised-solution-content[data-markdown-content]').forEach(function (el) {
+        var md = el.getAttribute('data-markdown-content');
+        if (md && typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+            el.innerHTML = DOMPurify.sanitize(marked.parse(md));
+            el.querySelectorAll('pre > code').forEach(function (codeEl) {
+                var pre = codeEl.parentElement;
+                var wrapper = document.createElement('div');
+                wrapper.className = 'advised-code-block';
+                pre.parentNode.insertBefore(wrapper, pre);
+                wrapper.appendChild(pre);
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn btn-sm btn-outline-secondary advised-copy-btn';
+                btn.title = 'Copy to clipboard';
+                btn.setAttribute('aria-label', 'Copy code to clipboard');
+                btn.innerHTML = '<i class=\""fa-solid fa-copy\""></i>';
+                btn.addEventListener('click', function () {
+                    navigator.clipboard.writeText(codeEl.textContent).then(function () {
+                        btn.innerHTML = '<i class=\""fa-solid fa-check\""></i>';
+                        setTimeout(function () { btn.innerHTML = '<i class=\""fa-solid fa-copy\""></i>'; }, 1500);
+                    });
+                });
+                wrapper.appendChild(btn);
+                if (codeEl.classList.contains('language-powershell')) {
+                    var details = document.createElement('details');
+                    details.className = 'advised-code-details';
+                    var summary = document.createElement('summary');
+                    summary.textContent = 'Show PowerShell script';
+                    details.appendChild(summary);
+                    wrapper.parentNode.insertBefore(details, wrapper);
+                    details.appendChild(wrapper);
+                }
+            });
+        }
+    });
+});
+";
 
         protected override void GenerateBodyInformation()
         {
@@ -122,7 +182,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             GenerateSection("MITRE ATT&CK&#174;", GenerateMitreAttackInformation);
             GenerateSection("Rules", () =>
             {
-                GenerateIndicatorPanel("DetailStale", "All rule details", Report.RiskRules);
+                GenerateIndicatorPanel("DetailStale", "All rule details", GetDeduplicatedRiskRules());
             });
             GenerateSection("Tenant Information", GenerateTenantInformation);
             GenerateSection("On premise Information", GenerateOnPremiseInformation);
@@ -251,37 +311,129 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             return tokens;
         }
 
+        public static string GetRuleSectionTitle(string canonicalTitle, string rationale)
+        {
+            return string.IsNullOrEmpty(canonicalTitle) ? rationale : canonicalTitle;
+        }
+
+        private List<HealthCheckCloudDataRiskRule> _deduplicatedRiskRules;
+
+        // Report.RiskRules can contain multiple entries sharing the same RiskId with different
+        // Rationale text. Keep only the first per RiskId so presentation and counting never show
+        // duplicates (AB#451769). Dedup by RiskId rather than resolved title so it still works
+        // when the Cloud microservice is unreachable and RiskDefinitionTitles is unavailable.
+        internal List<HealthCheckCloudDataRiskRule> GetDeduplicatedRiskRules()
+        {
+            if (_deduplicatedRiskRules != null)
+                return _deduplicatedRiskRules;
+
+            var seenRiskIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var result = new List<HealthCheckCloudDataRiskRule>();
+            foreach (var rule in Report.RiskRules)
+            {
+                if (seenRiskIds.Add(rule.RiskId ?? string.Empty))
+                {
+                    result.Add(rule);
+                }
+            }
+            _deduplicatedRiskRules = result;
+            return result;
+        }
+
+        // Risk Definitions titles take priority over the legacy hardcoded RuleSet<HealthCheckCloudData>
+        // lookup, which only covers 6 of 102 Entra risks (AB#445582).
+        public static string ResolveCanonicalTitle(string riskId, string legacyTitle, IReadOnlyDictionary<string, string> riskDefinitionTitles)
+        {
+            if (riskDefinitionTitles != null && riskDefinitionTitles.TryGetValue(riskId, out var definitionTitle) && !string.IsNullOrEmpty(definitionTitle))
+            {
+                return definitionTitle;
+            }
+            return legacyTitle;
+        }
+
         protected void GenerateIndicatorPanelDetail(string category, HealthCheckCloudDataRiskRule rule, string optionalId = null)
         {
             string safeRuleId = rule.RiskId.Replace("$", "dollar");
             var hcrule = RuleSet<HealthCheckCloudData>.GetRuleFromID(rule.RiskId);
-            GenerateAccordionDetailForRule("rules" + optionalId + safeRuleId, "rules" + category, rule.Rationale, rule, hcrule,
+            string canonicalTitle = ResolveCanonicalTitle(rule.RiskId, hcrule?.Title, RiskDefinitionTitles);
+            GenerateAccordionDetailForRule("rules" + optionalId + safeRuleId, "rules" + category, GetRuleSectionTitle(canonicalTitle, rule.Rationale), rule, hcrule,
                 () =>
                 {
-                    if (hcrule == null)
-                    {
-                    }
-                    else
+                    var title = GetRuleSectionTitle(canonicalTitle, rule.Rationale);
+                    if (!String.IsNullOrEmpty(title))
                     {
                         Add("<h3>");
-                        Add(hcrule.Title);
-                        Add("</h3>\r\n<strong>Rule ID:</strong><p class=\"text-justify\">");
-                        Add(hcrule.RiskId);
-                        Add("</p>\r\n<strong>Description:</strong><p class=\"text-justify\">");
-                        Add(NewLineToBR(hcrule.Description));
-                        Add("</p>\r\n<strong>Technical explanation:</strong><p class=\"text-justify\">");
+                        AddEncoded(title);
+                        Add("</h3>\r\n");
+                    }
+
+                    Add("<strong>Rule ID:</strong><p class=\"text-justify\">");
+                    AddEncoded(rule.RiskId);
+                    Add("</p>\r\n");
+
+                    var description = !String.IsNullOrEmpty(rule.Description) ? rule.Description : hcrule?.Description;
+                    if (!String.IsNullOrEmpty(description))
+                    {
+                        Add("<strong>Description:</strong><p class=\"text-justify\">");
+                        Add(NewLineToBR(description));
+                        Add("</p>\r\n");
+                    }
+
+                    if (hcrule != null && !String.IsNullOrEmpty(hcrule.TechnicalExplanation))
+                    {
+                        Add("<strong>Technical explanation:</strong><p class=\"text-justify\">");
                         Add(NewLineToBR(hcrule.TechnicalExplanation));
-                        Add("</p>\r\n<strong>Advised solution:</strong><p class=\"text-justify\">");
-                        Add(NewLineToBR(hcrule.Solution));
-                        Add("</p>\r\n<strong>Points:</strong><p>");
+                        Add("</p>\r\n");
+                    }
+
+                    var remediationSummary = !String.IsNullOrEmpty(rule.RemediationGuidance) ? rule.RemediationGuidance : hcrule?.Solution;
+                    if (!String.IsNullOrEmpty(remediationSummary))
+                    {
+                        Add("<details class=\"advised-solution\"><summary><strong>Advised solution:</strong></summary>");
+                        Add("<div class=\"advised-solution-content text-justify\" data-markdown-content=\"");
+                        AddEncoded(remediationSummary);
+                        Add("\"><p class=\"text-justify\">");
+                        Add(NewLineToBR(remediationSummary));
+                        Add("</p></div></details>\r\n");
+                    }
+
+                    if (rule.RemediationCommands != null && rule.RemediationCommands.Count > 0)
+                    {
+                        Add("<strong>PowerShell remediation:</strong>\r\n<pre class=\"bg-light p-2\"><code>");
+                        foreach (var command in rule.RemediationCommands)
+                        {
+                            AddEncoded(command);
+                            Add("\r\n");
+                        }
+                        Add("</code></pre>\r\n");
+                    }
+
+                    if (hcrule != null)
+                    {
+                        Add("<strong>Points:</strong><p>");
                         Add(NewLineToBR(hcrule.GetComputationModelString()));
                         Add("</p>\r\n");
-                        if (!String.IsNullOrEmpty(hcrule.Documentation))
+                    }
+
+                    var docLinks = rule.DocumentationLinks;
+                    if (docLinks != null && docLinks.Count > 0)
+                    {
+                        Add("<strong>Documentation:</strong><ul>");
+                        foreach (var link in docLinks)
                         {
-                            Add("<strong>Documentation:</strong><p>");
-                            Add(hcrule.Documentation);
-                            Add("</p>");
+                            Add("<li><a href=\"");
+                            AddEncoded(link);
+                            Add("\" target=\"_blank\" rel=\"noopener noreferrer\">");
+                            AddEncoded(link);
+                            Add("</a></li>");
                         }
+                        Add("</ul>");
+                    }
+                    else if (hcrule != null && !String.IsNullOrEmpty(hcrule.Documentation))
+                    {
+                        Add("<strong>Documentation:</strong><p>");
+                        Add(hcrule.Documentation);
+                        Add("</p>");
                     }
                     if ((rule.Details != null && rule.Details.Count > 0) || (hcrule != null && !String.IsNullOrEmpty(hcrule.ReportLocation)))
                     {
@@ -514,7 +666,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     var l = data[i];
 
-
                     Add(@"<div id=""maturitylevel");
                     Add(i);
                     Add(Report.GenerationDate.ToFileTime().ToString());
@@ -524,7 +675,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add(" active");
                     }
                     Add(@""">");
-
 
                     Add("<p class='mt-2'>");
 
@@ -546,13 +696,14 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     Add(" you need to fix the following rules:</p>");
                     GenerateAccordion("rulesmaturity" + i, () =>
                     {
-                        Report.RiskRules.Sort((HealthCheckCloudDataRiskRule a, HealthCheckCloudDataRiskRule b)
+                        var deduplicatedRiskRules = GetDeduplicatedRiskRules();
+                        deduplicatedRiskRules.Sort((HealthCheckCloudDataRiskRule a, HealthCheckCloudDataRiskRule b)
                             =>
                         {
                             return -a.Points.CompareTo(b.Points);
                         }
                         );
-                        foreach (HealthCheckCloudDataRiskRule rule in Report.RiskRules)
+                        foreach (HealthCheckCloudDataRiskRule rule in deduplicatedRiskRules)
                         {
                             if (l.Contains(rule.RiskId))
                                 GenerateIndicatorPanelDetail("maturity" + i, rule, "maturity" + i);
@@ -569,17 +720,25 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         private Dictionary<int, List<string>> GetCurrentMaturityLevel()
         {
             var output = new Dictionary<int, List<string>>();
-            foreach (var rule in Report.RiskRules)
+            foreach (var rule in GetDeduplicatedRiskRules())
             {
-                var hcrule = RuleSet<HealthCheckCloudData>.GetRuleFromID(rule.RiskId);
-                if (hcrule == null)
+                int level = rule.MaturityLevel;
+                if (level <= 0)
+                {
+                    var hcrule = RuleSet<HealthCheckCloudData>.GetRuleFromID(rule.RiskId);
+                    if (hcrule == null)
+                    {
+                        continue;
+                    }
+                    level = hcrule.MaturityLevel;
+                }
+                if (level <= 0)
                 {
                     continue;
                 }
-                int level = hcrule.MaturityLevel;
                 if (!output.ContainsKey(level))
                     output[level] = new List<string>();
-                output[level].Add(hcrule.RiskId);
+                output[level].Add(rule.RiskId);
             }
             return output;
         }
@@ -602,64 +761,52 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         void GenerateMitreTechnique()
         {
             var reference = new Dictionary<RuleMitreAttackTechniqueAttribute, List<HealthCheckCloudDataRiskRule>>();
-            foreach (var rule in Report.RiskRules)
+            var byKey = new Dictionary<string, RuleMitreAttackTechniqueAttribute>(StringComparer.OrdinalIgnoreCase);
+
+            void AddMapping(RuleMitreAttackTechniqueAttribute attr, HealthCheckCloudDataRiskRule rule)
+            {
+                var key = attr.ID + "." + attr.SubID;
+                if (!byKey.TryGetValue(key, out var existing))
+                {
+                    byKey[key] = attr;
+                    reference[attr] = new List<HealthCheckCloudDataRiskRule> { rule };
+                    return;
+                }
+
+                var bucket = reference[existing];
+                if (!bucket.Contains(rule))
+                {
+                    bucket.Add(rule);
+                }
+            }
+
+            foreach (var rule in GetDeduplicatedRiskRules())
             {
                 var hcrule = RuleSet<HealthCheckCloudData>.GetRuleFromID(rule.RiskId);
-                if (hcrule == null)
+                if (hcrule != null)
                 {
-                    continue;
-                }
-                object[] frameworks = hcrule.GetType().GetCustomAttributes(typeof(RuleMitreAttackTechniqueAttribute), true);
-                foreach (RuleMitreAttackTechniqueAttribute f in frameworks)
-                {
-                    if (!reference.ContainsKey(f))
+                    object[] frameworks = hcrule.GetType().GetCustomAttributes(typeof(RuleMitreAttackTechniqueAttribute), true);
+                    foreach (RuleMitreAttackTechniqueAttribute f in frameworks)
                     {
-                        reference[f] = new List<HealthCheckCloudDataRiskRule>();
+                        AddMapping(f, rule);
                     }
-                    reference[f].Add(rule);
+                }
+
+                if (rule.MitreTechniqueIds != null)
+                {
+                    foreach (var id in rule.MitreTechniqueIds)
+                    {
+                        if (MitreAttackCatalog.TryGetTechnique(id, out var info))
+                        {
+                            AddMapping(new RuleMitreAttackTechniqueAttribute(info.Main, info.ID, info.SubID, info.Label, info.SubLabel), rule);
+                        }
+                    }
                 }
             }
             var keys = new List<RuleMitreAttackTechniqueAttribute>(reference.Keys);
             keys.Sort((RuleMitreAttackTechniqueAttribute a, RuleMitreAttackTechniqueAttribute b) => { return string.Compare(a.Label, b.Label); });
 
             Add("<h2>Techniques</h2>");
-            // CARDS
-            Add("<div class='row'><div class='col-lg-12'>");
-            Add("<div class='row row-cols-" + Enum.GetValues(typeof(MitreAttackMainTechnique)).Length + "'>");
-            foreach (MitreAttackMainTechnique mainTechnique in Enum.GetValues(typeof(MitreAttackMainTechnique)))
-            {
-                Add("<div class='col'>");
-                Add("<div class='card'>");
-                Add("<div class='card-body'>");
-                Add("<h5 class='card-title'>");
-                var description = ReportHelper.GetEnumDescription(mainTechnique);
-                Add(description);
-                Add("</h5>");
-                int num = 0;
-                foreach (var l in keys)
-                {
-                    if (l.MainTechnique != mainTechnique)
-                        continue;
-                    num++;
-                }
-                if (num > 0)
-                {
-                    Add("<p class='card-text'>");
-                    Add(num);
-                    Add(" technique(s) matched");
-                    Add("</p>");
-                }
-                else
-                {
-                    Add("<p class='card-text'>No technique matched</p>");
-                }
-                Add("</div>");
-                Add("</div>");
-                Add("</div>");
-            }
-            Add("</div>");
-            Add("</div></div>");
-
 
             // tab header
             if (reference.Count > 0)
@@ -674,7 +821,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         if (l.MainTechnique != mainTechnique)
                             continue;
-                        num++;
+                        num += reference[l].Count;
                     }
                     if (num > 0)
                     {
@@ -691,13 +838,15 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add(@""">");
                         var description = ReportHelper.GetEnumDescription(mainTechnique);
                         Add(description);
+                        Add(" (");
+                        Add(num);
+                        Add(")");
                         Add("</a>");
                         Add("</li>");
                     }
                 }
                 Add("</ul>");
                 Add("</div></div>");
-
 
                 // tab content
                 Add("<div class='row'><div class='col-lg-12'>");
@@ -710,7 +859,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         if (l.MainTechnique != mainTechnique)
                             continue;
-                        num++;
+                        num += reference[l].Count;
                     }
                     if (num > 0)
                     {
@@ -727,8 +876,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add(@""">");
 
                         Add("<div class='row'><div class='col-lg-12'>");
-                        var description = ReportHelper.GetEnumDescription(mainTechnique);
-                        Add("<p class='mt-2'><strong>" + description + "</strong></p>");
 
                         foreach (var l in keys)
                         {
@@ -739,9 +886,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add(((RuleFrameworkReference)l).URL);
                             Add(">");
                             Add(((RuleFrameworkReference)l).Label);
-                            Add("</a> [");
+                            Add("</a> (");
                             Add(reference[l].Count);
-                            Add("]</p>");
+                            Add(")</p>");
                             GenerateAccordion("rulesmitre" + l.ID + l.SubID, () =>
                             {
                                 reference[l].Sort((HealthCheckCloudDataRiskRule a, HealthCheckCloudDataRiskRule b) => { return -a.Points.CompareTo(b.Points); });
@@ -758,30 +905,65 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 Add("</div>");
                 Add("</div></div>");
             }
+            else
+            {
+                Add("<p>No technique matched</p>");
+            }
 
         }
 
         void GenerateMitreMitigation()
         {
             var reference = new Dictionary<RuleMitreAttackMitigationAttribute, List<HealthCheckCloudDataRiskRule>>();
+            var byKey = new Dictionary<string, RuleMitreAttackMitigationAttribute>(StringComparer.OrdinalIgnoreCase);
             int notcovered = 0;
-            foreach (var rule in Report.RiskRules)
+
+            void AddMapping(RuleMitreAttackMitigationAttribute attr, HealthCheckCloudDataRiskRule rule)
             {
-                var hcrule = RuleSet<HealthCheckCloudData>.GetRuleFromID(rule.RiskId);
-                if (hcrule == null)
+                if (!byKey.TryGetValue(attr.ID, out var existing))
                 {
-                    continue;
+                    byKey[attr.ID] = attr;
+                    reference[attr] = new List<HealthCheckCloudDataRiskRule> { rule };
+                    return;
                 }
-                object[] frameworks = hcrule.GetType().GetCustomAttributes(typeof(RuleMitreAttackMitigationAttribute), true);
-                if (frameworks == null || frameworks.Length == 0)
-                    notcovered++;
-                foreach (RuleMitreAttackMitigationAttribute f in frameworks)
+
+                var bucket = reference[existing];
+                if (!bucket.Contains(rule))
                 {
-                    if (!reference.ContainsKey(f))
+                    bucket.Add(rule);
+                }
+            }
+
+            foreach (var rule in GetDeduplicatedRiskRules())
+            {
+                var attributesAdded = 0;
+
+                var hcrule = RuleSet<HealthCheckCloudData>.GetRuleFromID(rule.RiskId);
+                if (hcrule != null)
+                {
+                    object[] frameworks = hcrule.GetType().GetCustomAttributes(typeof(RuleMitreAttackMitigationAttribute), true);
+                    foreach (RuleMitreAttackMitigationAttribute f in frameworks)
                     {
-                        reference[f] = new List<HealthCheckCloudDataRiskRule>();
+                        AddMapping(f, rule);
+                        attributesAdded++;
                     }
-                    reference[f].Add(rule);
+                }
+
+                if (rule.MitreMitigationIds != null)
+                {
+                    foreach (var id in rule.MitreMitigationIds)
+                    {
+                        if (MitreAttackCatalog.TryGetMitigation(id, out var info))
+                        {
+                            AddMapping(new RuleMitreAttackMitigationAttribute(info.Mitigation, info.ID, info.Label), rule);
+                            attributesAdded++;
+                        }
+                    }
+                }
+
+                if (attributesAdded == 0)
+                {
+                    notcovered++;
                 }
             }
             var keys = new List<RuleMitreAttackMitigationAttribute>(reference.Keys);
@@ -790,41 +972,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             Add("<hr>");
             Add("<h2 class='mt-4'>Mitigations</h2>");
 
-            // CARDS
-            Add("<div class='row'><div class='col-lg-12'>");
-            Add("<div class='row row-cols-" + Enum.GetValues(typeof(MitreAttackMitigation)).Length + "'>");
-            foreach (MitreAttackMitigation mainTechnique in Enum.GetValues(typeof(MitreAttackMitigation)))
-            {
-                Add("<div class='col'>");
-                Add("<div class='card'>");
-                Add("<div class='card-body'>");
-                Add("<h5 class='card-title'>");
-                var description = ReportHelper.GetEnumDescription(mainTechnique);
-                Add(description);
-                Add("</h5>");
-                int num = 0;
-                foreach (var l in keys)
-                {
-                    if (l.MainTechnique != mainTechnique)
-                        continue;
-                    num++;
-                }
-                if (num > 0)
-                {
-                    Add("<p class='card-text'>Mitigation did matched");
-                    Add("</p>");
-                }
-                else
-                {
-                    Add("<p class='card-text'>No match</p>");
-                }
-                Add("</div>");
-                Add("</div>");
-                Add("</div>");
-            }
-            Add("</div>");
-            Add("</div></div>");
-
             // tab header
             if (reference.Count > 0)
             {
@@ -838,7 +985,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         if (l.MainTechnique != mainTechnique)
                             continue;
-                        num++;
+                        num += reference[l].Count;
                     }
                     if (num > 0)
                     {
@@ -855,13 +1002,15 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add(@""">");
                         var description = ReportHelper.GetEnumDescription(mainTechnique);
                         Add(description);
+                        Add(" (");
+                        Add(num);
+                        Add(")");
                         Add("</a>");
                         Add("</li>");
                     }
                 }
                 Add("</ul>");
                 Add("</div></div>");
-
 
                 // tab content
                 Add("<div class='row'><div class='col-lg-12'>");
@@ -874,7 +1023,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         if (l.MainTechnique != mainTechnique)
                             continue;
-                        num++;
+                        num += reference[l].Count;
                     }
                     if (num > 0)
                     {
@@ -891,8 +1040,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add(@""">");
 
                         Add("<div class='row'><div class='col-lg-12'>");
-                        var description = ReportHelper.GetEnumDescription(mainTechnique);
-                        Add("<p class='mt-2'><strong>" + description + "</strong></p>");
 
                         foreach (var l in keys)
                         {
@@ -903,9 +1050,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add(((RuleFrameworkReference)l).URL);
                             Add(">");
                             Add(((RuleFrameworkReference)l).Label);
-                            Add("</a> [");
+                            Add("</a> (");
                             Add(reference[l].Count);
-                            Add("]</p>");
+                            Add(")</p>");
                             GenerateAccordion("rulesmitre" + l.ID + l.SubID, () =>
                             {
                                 reference[l].Sort((HealthCheckCloudDataRiskRule a, HealthCheckCloudDataRiskRule b) => { return -a.Points.CompareTo(b.Points); });
@@ -922,10 +1069,13 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 Add("</div>");
                 Add("</div></div>");
             }
+            else
+            {
+                Add("<p>No mitigation matched</p>");
+            }
         }
 
         #endregion
-
 
         private void GenerateTenantInformation()
         {
@@ -1087,8 +1237,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             public int TopTotal { get; set; }
             public int NumberOfDomains { get; set; }
         }
-
-
 
         Dictionary<string, TenantInformation> GenerateTenantInfo()
         {
@@ -1713,7 +1861,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             if (Report.Applications == null || Report.Applications.Count == 0)
                 return;
 
-
             AddBeginModal("application_modal", "",
                 ShowModalType.XL);
             DescribeBegin();
@@ -1755,7 +1902,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             AddEndTable();
 
             AddEndModal();
-
 
             Add("<h3>All applications</h3>");
             AddParagraph("Here is a list of the application defined on Entra ID.");

@@ -78,7 +78,6 @@ namespace PingCastle.Cloud.Export
             var groups = new Dictionary<string, string>();
             var g = GraphApiClientFactory.Create(settings.AzureCredential);
 
-
             var tenantId = settings.AzureCredential.TenantidToQuery;
             using (var swuser = TextWriter.Synchronized(File.CreateText(tenantId + "_users.txt")))
             using (var swgroup = TextWriter.Synchronized(File.CreateText(tenantId + "_groups.txt")))

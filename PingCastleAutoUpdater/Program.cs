@@ -191,7 +191,6 @@ namespace PingCastleAutoUpdater
             return UpdaterLogic.IsUpdateRequired(currentVersion, latestVersion, forceDownload);
         }
 
-
         private static void WriteInRed(string data)
         {
             Console.ForegroundColor = ConsoleColor.Red;

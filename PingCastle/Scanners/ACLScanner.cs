@@ -96,7 +96,6 @@ namespace PingCastle.Scanners
                                     sw.WriteLine(x.DistinguishedName + "\t" + match.Value.Value + "\t" + accessrule.ActiveDirectoryRights.ToString());
                                 }
 
-
                             }
                         }
                     }

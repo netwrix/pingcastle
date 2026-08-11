@@ -37,7 +37,6 @@ namespace PingCastle.misc
         QWord = 11
     }
 
-
     [DebuggerDisplay("{Key}: {Value}")]
     public class RegistryPolRecord
     {
@@ -166,7 +165,6 @@ namespace PingCastle.misc
             }
             throw new InvalidDataException("Record overflow");
         }
-
 
         public bool IsValueSet(string key, string value, out int data)
         {

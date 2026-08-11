@@ -437,7 +437,6 @@ namespace PingCastle.Healthcheck
         public string Password { get; set; }
         public DateTime Changed { get; set; }
 
-
         public string Type { get; set; }
 
         public string GPOName { get; set; }
@@ -858,7 +857,6 @@ namespace PingCastle.Healthcheck
                 }
             }
         }
-
 
         public void AddWithoutDetail(string property)
         {
@@ -1354,8 +1352,6 @@ namespace PingCastle.Healthcheck
 
         public DateTime ChangedDate { get; set; }
 
-
-
         public int ServerRoles { get; set; }
 
         public string[] ComponentStates { get; set; }
@@ -1572,7 +1568,7 @@ namespace PingCastle.Healthcheck
             if (MaturityLevel == 0)
             {
                 MaturityLevel = 5;
-                foreach (var rule in RiskRules)
+                foreach (var rule in RiskRules.ToList())
                 {
                     var hcrule = RuleSet<HealthcheckData>.GetRuleFromID(rule.RiskId);
                     if (hcrule == null)
@@ -1581,7 +1577,9 @@ namespace PingCastle.Healthcheck
                     }
                     int level = hcrule.MaturityLevel;
                     if (level > 0 && level < MaturityLevel)
+                    {
                         MaturityLevel = level;
+                    }
                 }
             }
         }
@@ -1640,7 +1638,9 @@ namespace PingCastle.Healthcheck
         public int NumberOfDC { get; set; }
         public int GlobalScore { get; set; }
         public int StaleObjectsScore { get; set; }
-        public int PrivilegiedGroupScore { get; set; }
+        // Preserve backwards compatibility: existing XML reports use the misspelled element name.
+        [XmlElement("PrivilegiedGroupScore")]
+        public int PrivilegedGroupScore { get; set; }
         public int TrustScore { get; set; }
         public int AnomalyScore { get; set; }
 
@@ -1830,6 +1830,7 @@ namespace PingCastle.Healthcheck
         public List<HealthCheckSCCMServer> SCCMServers { get; set; }
 
         public bool ShouldSerializePrivilegedGroups() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
+        [XmlElement("PrivilegiedGroups")]
         public List<HealthCheckGroupData> PrivilegedGroups { get; set; }
 
         public bool ShouldSerializeAllPrivilegedMembers() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
@@ -2353,7 +2354,7 @@ namespace PingCastle.Healthcheck
                 clone.PrivilegedGroups = new List<HealthCheckGroupData>(PrivilegedGroups);
             }
 
-            clone.PrivilegiedGroupScore = PrivilegiedGroupScore;
+            clone.PrivilegedGroupScore = PrivilegedGroupScore;
             clone.ProtectedUsersNotPrivileged = ProtectedUsersNotPrivileged;
             if (ReachableDomains != null)
             {

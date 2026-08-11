@@ -5,8 +5,10 @@
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
 using PingCastle.Rules;
+using PingCastleCommon.Utility;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace PingCastle.Healthcheck.Rules
 {
@@ -78,7 +80,11 @@ namespace PingCastle.Healthcheck.Rules
             var auditToHavePerDC = new Dictionary<string, Dictionary<string, RequiredSimple>>(StringComparer.OrdinalIgnoreCase);
             foreach (var dc in healthcheckData.DomainControllers)
             {
-                auditToHavePerDC.Add(dc.DistinguishedName,
+                if (auditToHavePerDC.ContainsKey(dc.DistinguishedName))
+                {
+                    Trace.WriteLine($"A-AuditDC: duplicate DC distinguished name encountered: {dc.DistinguishedName.SanitizeForLog()}");
+                }
+                auditToHavePerDC[dc.DistinguishedName] =
                     new Dictionary<string, RequiredSimple>(StringComparer.OrdinalIgnoreCase)
                     {
                         {"0CCE9230-69AE-11D9-BED3-505054503030", new RequiredSimple("Policy Change / Authentication Policy Change", "Collect events 4713, 4716, 4739, 4867, to track trust modifications", false)},
@@ -94,8 +100,7 @@ namespace PingCastle.Healthcheck.Rules
                         {"0CCE9228-69AE-11D9-BED3-505054503030", new RequiredSimple("Privilege Use / Sensitive Privilege Use", "Collect events 4672, 4673, 4674 for privileges tracking such as the debug one", false)},
                         {"0CCE921B-69AE-11D9-BED3-505054503030", new RequiredSimple("Logon/Logoff / Special Logon", "Collect event 4964 for special group attributed at logon", false)},
                         {"0CCE9235-69AE-11D9-BED3-505054503030", new RequiredSimple("Account Management / User Account Management", "Collect events 4720,22,23,38,65,66,80,94 for user account mamangement", false)},
-                    }
-                );
+                    };
             }
 
             if (healthcheckData.GPOAuditSimple != null)

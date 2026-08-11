@@ -538,7 +538,6 @@ namespace PingCastle.Healthcheck
             // adding the domain Netbios name
             healthcheckData.NetBIOSName = healthcheckData.DomainFQDN.Split('.')[0];
 
-
             healthcheckData.DomainFunctionalLevel = rnd.Next(healthcheckData.ForestFunctionalLevel, 8);
             healthcheckData.SchemaVersion = SchemaVersion(healthcheckData.ForestFunctionalLevel);
             healthcheckData.SchemaInternalVersion = 1;

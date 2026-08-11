@@ -50,13 +50,11 @@ namespace PingCastle.RPC
             public IntPtr Unbind;
         }
 
-
         [StructLayout(LayoutKind.Sequential)]
         private struct RPC_VERSION
         {
             public ushort MajorVersion;
             public ushort MinorVersion;
-
 
             public static readonly RPC_VERSION INTERFACE_VERSION = new RPC_VERSION() { MajorVersion = 1, MinorVersion = 0 };
             public static readonly RPC_VERSION SYNTAX_VERSION = new RPC_VERSION() { MajorVersion = 2, MinorVersion = 0 };
@@ -74,8 +72,6 @@ namespace PingCastle.RPC
             public Guid SyntaxGUID;
             public RPC_VERSION SyntaxVersion;
         }
-
-
 
         [StructLayout(LayoutKind.Sequential)]
         private struct RPC_CLIENT_INTERFACE

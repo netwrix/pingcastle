@@ -22,7 +22,6 @@ namespace PingCastle.Exports
             get { return "Export all users"; }
         }
 
-
         public override void Export(string filename)
         {
             _identityProvider = _identityProvider ?? ServiceProviderAccessor.GetServiceSafe<IIdentityProvider>();
@@ -32,7 +31,7 @@ namespace PingCastle.Exports
             using (ADWebService adws = new ADWebService(Settings.Server, Settings.Port, Settings.Credential, _identityProvider, _nativeMethods))
             {
                 domainInfo = adws.DomainInfo;
-                
+
                 int export = 0;
                 using (StreamWriter sw = File.CreateText(filename))
                 {
@@ -71,8 +70,7 @@ namespace PingCastle.Exports
                     }
 
                     sw.WriteLine(string.Join("\t", header.ToArray()));
-                    
-                    
+
                     WorkOnReturnedObjectByADWS callback =
                         (ADItem x) =>
                         {
@@ -82,7 +80,6 @@ namespace PingCastle.Exports
                             {
                                 DisplayAdvancement("Exported: " + export);
                             }
-
 
                             var data = new List<string>();
                             data.Add(x.DistinguishedName);
@@ -99,9 +96,7 @@ namespace PingCastle.Exports
                             {
                                 // Skip LAPS properties (computer-only)
                                 if (lapsProperties.Contains(p))
-                                {
                                     continue;
-                                }
 
                                 data.Add(d.PropertiesSet.Contains(p).ToString());
 

@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace PingCastleCommon.Utility
 {
@@ -84,6 +86,55 @@ namespace PingCastleCommon.Utility
                 }
             }
             return sb.ToString();
+        }
+
+        private static readonly Regex EmailPattern = new(
+            @"\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b",
+            RegexOptions.Compiled);
+
+        public static string RedactEmail(this string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return string.Empty;
+            }
+
+            return EmailPattern.Replace(value, "[EMAIL_REDACTED]");
+        }
+
+        /// <summary>
+        /// Validates an email address format.
+        /// </summary>
+        /// <param name="email">The email address to validate.</param>
+        /// <returns>True if the email is valid, false otherwise.</returns>
+        public static bool IsValidEmail(this string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return false;
+            }
+
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                if (addr.Address != email)
+                {
+                    return false;
+                }
+
+                // MailAddress accepts domains without a TLD (e.g. "user@scim").
+                // Require at least one dot in the domain for a valid TLD.
+                string host = addr.Host;
+                return host.Contains('.');
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
         }
     }
 }

@@ -101,7 +101,6 @@ namespace PingCastle.ADWS
             }
         }
 
-
         #region IDispose
         public void Dispose()
         {
@@ -132,7 +131,6 @@ namespace PingCastle.ADWS
             // Release the unmanaged resource in any case as they will not be 
             // released by GC
         }
-
 
         ~WindowsFileConnection()
         {

@@ -125,7 +125,6 @@ namespace PingCastle.ADWS
             return auth;
         }
 
-
         private int ConnectWithFull()
         {
             Trace.WriteLine(@"Before ConnectoWithFull");
@@ -266,7 +265,7 @@ namespace PingCastle.ADWS
 
     internal class SambaConnectionHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
-        
+
         public SambaConnectionHandle()
             : base(true)
         {

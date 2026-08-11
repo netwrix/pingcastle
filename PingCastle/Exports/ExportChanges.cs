@@ -43,7 +43,6 @@ namespace PingCastle.Exports
 
                     sw.WriteLine(string.Join("\t", header.ToArray()));
 
-
                     EventHandler<ObjectChangedEventArgs> callback =
                         (object sender, ObjectChangedEventArgs e) =>
                         {
@@ -101,7 +100,6 @@ namespace PingCastle.Exports
                             }
                         };
 
-
                     using (ChangeNotifier notifier = new ChangeNotifier(connect))
                     {
 
@@ -126,7 +124,6 @@ namespace PingCastle.Exports
             UserInterfaceFactory.GetUserInterface().DisplayWarning(value);
             Trace.WriteLine(value);
         }
-
 
         public class ChangeNotifier : IDisposable
         {

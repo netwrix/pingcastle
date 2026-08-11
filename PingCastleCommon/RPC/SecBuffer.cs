@@ -10,7 +10,6 @@ namespace PingCastle.RPC
         public int BufferType;
         public IntPtr pvBuffer;
 
-
         public SecBuffer(int bufferSize)
         {
             cbBuffer = bufferSize;

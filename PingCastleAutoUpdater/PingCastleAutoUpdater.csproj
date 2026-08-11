@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <OutputType>Exe</OutputType>
     <RootNamespace>PingCastleAutoUpdater</RootNamespace>
     <AssemblyName>PingCastleAutoUpdater</AssemblyName>
@@ -29,12 +29,12 @@
     <InternalsVisibleTo Include="PingCastleAutoUpdates_Tests" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+    <PackageReference Include="StyleCop.Analyzers">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.1" />
-    <PackageReference Include="System.Private.Uri" Version="4.3.2" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
+    <PackageReference Include="Microsoft.Bcl.Memory" />
   </ItemGroup>
   <ItemGroup>
     <None Update="README.md">

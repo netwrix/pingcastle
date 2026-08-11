@@ -44,7 +44,6 @@ namespace PingCastle.Cloud.Analyzer
             _ui = UserInterfaceFactory.GetUserInterface();
         }
 
-
         public async Task<HealthCheckCloudData> Analyze()
         {
             try
@@ -646,7 +645,6 @@ namespace PingCastle.Cloud.Analyzer
             var templatesById = await templates.ToDictionaryAsync(k => k.Id);
             var assignedTemplatesIds = new ConcurrentDictionary<string, byte>();
             var allRoles = new ConcurrentBag<HealthCheckCloudDataRole>();
-
 
             var tasks = new List<Task>();
             await foreach (var role in api.GetRolesAsync())

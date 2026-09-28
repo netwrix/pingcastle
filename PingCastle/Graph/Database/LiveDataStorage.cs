@@ -42,7 +42,6 @@ namespace PingCastle.Graph.Database
 
     public interface IDataStorage
     {
-        // TODO - to be removed
         // used to store various information about the domain in general (its FQDN, its SID, ...)
         Dictionary<string, string> GetDatabaseInformation();
 

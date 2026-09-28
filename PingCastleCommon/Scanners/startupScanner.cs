@@ -9,8 +9,6 @@ using System;
 
 namespace PingCastle.Scanners
 {
-    // TODO: Is this code live or dead?
-
     public class startupScanner : ScannerBase
     {
         private readonly IWindowsNativeMethods _nativeMethods;

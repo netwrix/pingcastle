@@ -1,3 +1,5 @@
 *.min.css
 *.min.js
+!marked.min.js
+!purify.min.js
 *.gz

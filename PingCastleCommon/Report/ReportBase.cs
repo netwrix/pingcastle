@@ -67,9 +67,9 @@ public abstract class ReportBase
         TemplateManager.LoadFontAwesomeCss()
     };
 
-    private List<string> JSToAdd = new List<string> {
-        TemplateManager.LoadJqueryJs(),
-        TemplateManager.LoadPopperJs(),
+    private List<string> JSToAdd = new List<string> { 
+        TemplateManager.LoadJqueryJs(), 
+        TemplateManager.LoadPopperJs(), 
         TemplateManager.LoadBootstrapJs(),
         TemplateManager.LoadBootstrapTableJs(),
         TemplateManager.LoadReportBaseJs()
@@ -387,7 +387,7 @@ public abstract class ReportBase
     protected void AddEndTooltip()
     {
         Add(@"""></i>");
-    }
+    }    
 
     protected void AddHeaderText(string text, string tooltip, bool widetooltip, bool html = false)
     {
@@ -1832,7 +1832,7 @@ public abstract class ReportBase
         Add(@"</g></svg></div>");
     }
 
-    static string[] colors = new string[] {
+    static string[] colors = new string[] { 
         "#ff0029",
         "#377eb8",
         "#66a61e",

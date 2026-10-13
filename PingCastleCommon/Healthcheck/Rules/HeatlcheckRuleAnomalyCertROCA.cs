@@ -78,7 +78,7 @@ namespace PingCastle.Healthcheck.Rules
                 var WSUSCache = new List<string>();
                 foreach (var wsus in healthcheckData.GPOWSUS)
                 {
-                    if (wsus.WSUSserverCertificate != null && wsus.WSUSserverCertificate.Length > 0
+                    if (wsus.WSUSserverCertificate != null && wsus.WSUSserverCertificate.Length > 0 
                         && !string.IsNullOrEmpty(wsus.WSUSserver) && !WSUSCache.Contains(wsus.WSUSserver))
                     {
                         WSUSCache.Add(wsus.WSUSserver);
@@ -102,7 +102,7 @@ namespace PingCastle.Healthcheck.Rules
                             }
                         }
                     }
-                    if (wsus.WSUSserverAlternateCertificate != null && wsus.WSUSserverAlternateCertificate.Length > 0
+                    if (wsus.WSUSserverAlternateCertificate != null && wsus.WSUSserverAlternateCertificate.Length > 0 
                         && !string.IsNullOrEmpty(wsus.WSUSserverAlternate) && !WSUSCache.Contains(wsus.WSUSserverAlternate))
                     {
                         WSUSCache.Add(wsus.WSUSserverAlternate);

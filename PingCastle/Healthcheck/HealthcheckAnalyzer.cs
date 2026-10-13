@@ -2688,6 +2688,8 @@ namespace PingCastle.Healthcheck
                     if (pos1 < 0)
                         return;
                     int pos2 = x.DistinguishedName.IndexOf('}', pos1);
+                    if (pos2 < 0)
+                        return;
                     string GPOGuid = x.DistinguishedName.Substring(pos1, pos2 - pos1 + 1).ToLowerInvariant();
                     if (!GPOList.ContainsKey(GPOGuid))
                         return;

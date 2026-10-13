@@ -265,7 +265,7 @@ namespace PingCastle.ADWS
 
     internal class SambaConnectionHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
-
+        
         public SambaConnectionHandle()
             : base(true)
         {

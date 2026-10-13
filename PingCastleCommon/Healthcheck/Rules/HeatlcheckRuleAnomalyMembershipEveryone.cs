@@ -20,8 +20,8 @@ namespace PingCastle.Healthcheck.Rules
         {
             foreach (GPOMembership membership in healthcheckData.GPOLocalMembership)
             {
-                if (membership.User == GraphObjectReference.AuthenticatedUsers || membership.User == GraphObjectReference.Everyone ||
-                        membership.User == GraphObjectReference.Users || membership.User == GraphObjectReference.Anonymous ||
+                if (membership.User == GraphObjectReference.AuthenticatedUsers || membership.User == GraphObjectReference.Everyone || 
+                        membership.User == GraphObjectReference.Users || membership.User == GraphObjectReference.Anonymous|| 
                         membership.User == GraphObjectReference.DomainUsers || membership.User == GraphObjectReference.DomainComputers)
                 {
                     if (string.Equals(membership.MemberOf, GraphObjectReference.Users, StringComparison.OrdinalIgnoreCase))

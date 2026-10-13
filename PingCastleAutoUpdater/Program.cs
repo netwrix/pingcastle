@@ -16,42 +16,42 @@ using System.Threading.Tasks;
 namespace PingCastleAutoUpdater
 {
     class Program
-    {
+	{
         private static async Task Main(string[] args)
-        {
-            Program program = new Program();
-            await program.RunAsync(args);
-        }
+		{
+			Program program = new Program();
+			await program.RunAsync(args);
+		}
 
-        bool forceDownload = false;
-        bool preview = false;
-        bool dryRun = false;
-        int numberOfDaysToWait = 0;
-        string releaseInfoUrl = "https://api.github.com/repos/netwrix/pingcastle/releases";
+		bool forceDownload = false;
+		bool preview = false;
+		bool dryRun = false;
+		int numberOfDaysToWait = 0;
+		string releaseInfoUrl = "https://api.github.com/repos/netwrix/pingcastle/releases";
 
         private async Task RunAsync(string[] args)
-        {
-            Trace.WriteLine("Before parsing arguments");
-            var parseResult = UpdaterLogic.ParseArguments(args);
-            if (parseResult.ShowHelp)
-            {
-                DisplayHelp();
-                return;
-            }
-            if (!parseResult.Success)
-            {
-                WriteInRed(parseResult.Error);
-                DisplayHelp();
-                return;
-            }
-            forceDownload = parseResult.ForceDownload;
-            preview = parseResult.Preview;
-            dryRun = parseResult.DryRun;
-            numberOfDaysToWait = parseResult.WaitForDays;
-            releaseInfoUrl = parseResult.ApiUrl;
-            Console.WriteLine("Do not forget that there are other command line switches like --help that you can use");
-            Console.WriteLine("Running on " + Environment.Version);
-            Console.WriteLine();
+		{
+			Trace.WriteLine("Before parsing arguments");
+			var parseResult = UpdaterLogic.ParseArguments(args);
+			if (parseResult.ShowHelp)
+			{
+				DisplayHelp();
+				return;
+			}
+			if (!parseResult.Success)
+			{
+				WriteInRed(parseResult.Error);
+				DisplayHelp();
+				return;
+			}
+			forceDownload = parseResult.ForceDownload;
+			preview = parseResult.Preview;
+			dryRun = parseResult.DryRun;
+			numberOfDaysToWait = parseResult.WaitForDays;
+			releaseInfoUrl = parseResult.ApiUrl;
+			Console.WriteLine("Do not forget that there are other command line switches like --help that you can use");
+			Console.WriteLine("Running on " + Environment.Version);
+			Console.WriteLine();
 
             Release release = await GetLatestReleaseFromUpdateUrlAsync();
             if (release == null)
@@ -59,32 +59,32 @@ namespace PingCastleAutoUpdater
 
             string currentVersion = GetCurrentVersionFromExecutable();
 
-            // Initialize configuration orchestrator for pre-update migration
-            string exePath = Environment.ProcessPath ?? AppContext.BaseDirectory;
-            string exeDirectory = Path.GetDirectoryName(exePath);
-            var pathContext = new ConfigurationPathContext(exeDirectory);
-            var configOrchestrator = new ConfigurationOrchestrationService(pathContext, dryRun);
+			// Initialize configuration orchestrator for pre-update migration
+			string exePath = Environment.ProcessPath ?? AppContext.BaseDirectory;
+			string exeDirectory = Path.GetDirectoryName(exePath);
+			var pathContext = new ConfigurationPathContext(exeDirectory);
+			var configOrchestrator = new ConfigurationOrchestrationService(pathContext, dryRun);
 
-            // Perform initial state migration if both XML and JSON configs exist
-            // This should happen regardless of whether an update is needed
-            bool migrationPerformed = configOrchestrator.PerformInitialStateMigration();
-            if (migrationPerformed)
-            {
-                Console.WriteLine("Initial configuration state migration completed.");
-                Console.WriteLine();
-            }
+			// Perform initial state migration if both XML and JSON configs exist
+			// This should happen regardless of whether an update is needed
+			bool migrationPerformed = configOrchestrator.PerformInitialStateMigration();
+			if (migrationPerformed)
+			{
+				Console.WriteLine("Initial configuration state migration completed.");
+				Console.WriteLine();
+			}
 
             if (!IsUpdateRequired(currentVersion, release.name))
-            {
-                Console.WriteLine("Update is not required. Program is stopping.");
-                return;
-            }
-            string downloadUrl = release.assets.First().browser_download_url;
-            Console.WriteLine("Downloading " + downloadUrl);
-            Console.WriteLine();
+			{
+				Console.WriteLine("Update is not required. Program is stopping.");
+				return;
+			}
+			string downloadUrl = release.assets.First().browser_download_url;
+			Console.WriteLine("Downloading " + downloadUrl);
+			Console.WriteLine();
 
-            ProceedReleaseInstall(downloadUrl, dryRun);
-        }
+			ProceedReleaseInstall(downloadUrl, dryRun);
+		}
 
         /// <summary>
         /// Returns PingCastle.exe version if it's found in the same directory
@@ -192,12 +192,12 @@ namespace PingCastleAutoUpdater
         }
 
         private static void WriteInRed(string data)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(data);
-            Trace.WriteLine("[Red]" + data);
-            Console.ResetColor();
-        }
+		{
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine(data);
+			Trace.WriteLine("[Red]" + data);
+			Console.ResetColor();
+		}
 
         private static void BackupExistingConfigurations(ConfigurationPathContext pathContext, bool dryRun)
         {
@@ -257,17 +257,17 @@ namespace PingCastleAutoUpdater
                 {
                     foreach (var entry in archive.Entries)
                     {
-                        FilesValidator.CheckPathTraversal(entry.FullName);
-                        var targetFilePath = Path.GetFullPath(entry.FullName);
+						FilesValidator.CheckPathTraversal(entry.FullName);
+						var targetFilePath = Path.GetFullPath(entry.FullName);
                         // do not save .config file except if it doesn't exists
                         // and do not overwrite the updater file because it's running !
                         string appConfigFile = AppDomain.CurrentDomain.FriendlyName + ".config";
                         if (targetFilePath.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
-                            && !Path.GetFileName(targetFilePath).Equals(appConfigFile, StringComparison.OrdinalIgnoreCase))
+							&& !Path.GetFileName(targetFilePath).Equals(appConfigFile, StringComparison.OrdinalIgnoreCase))
                         {
                             // Copy if not present.
-                            if (!File.Exists(targetFilePath))
-                            {
+							if(!File.Exists(targetFilePath))
+							{
                                 // In dry-run mode with existing JSON, extract PingCastle.exe.config for analysis
                                 if (dryRun && Path.GetFileName(targetFilePath).Equals("PingCastle.exe.config", StringComparison.OrdinalIgnoreCase)
                                     && File.Exists(pathContext.JsonConfigPath))
@@ -278,8 +278,8 @@ namespace PingCastleAutoUpdater
                                 {
                                     performCopy(entry, null, dryRun);
                                 }
-                                continue;
-                            }
+								continue;
+							}
 
                             configOrchestrator.HandleXmlConfigDuringExtraction(entry, targetFilePath);
                         }
@@ -333,7 +333,7 @@ namespace PingCastleAutoUpdater
 
             using (var e = entry.Open())
             {
-                string exeFullPath = Path.GetFullPath(exePath);
+				string exeFullPath = Path.GetFullPath(exePath);
 
                 Console.WriteLine("Saving " + entryFullName);
                 if (File.Exists(entryFullPath))
@@ -375,15 +375,15 @@ namespace PingCastleAutoUpdater
         }
 
         private static void DisplayHelp()
-        {
-            Console.WriteLine("switch:");
-            Console.WriteLine("  --help              : display this message");
-            Console.WriteLine("");
-            Console.WriteLine("  --api-url http://xx : use an alternative url for checking for updates");
-            Console.WriteLine("  --force-download    : download the latest release even if it is not the most recent. Useful for tests");
-            Console.WriteLine("  --use-preview       : download preview release if it is the most recent");
-            Console.WriteLine("  --dry-run           : preview changes without modifying files");
-            Console.WriteLine("  --wait-for-days  30 : ensure the releases has been made public for at least X days");
-        }
-    }
+		{
+			Console.WriteLine("switch:");
+			Console.WriteLine("  --help              : display this message");
+			Console.WriteLine("");
+			Console.WriteLine("  --api-url http://xx : use an alternative url for checking for updates");
+			Console.WriteLine("  --force-download    : download the latest release even if it is not the most recent. Useful for tests");
+			Console.WriteLine("  --use-preview       : download preview release if it is the most recent");
+			Console.WriteLine("  --dry-run           : preview changes without modifying files");
+			Console.WriteLine("  --wait-for-days  30 : ensure the releases has been made public for at least X days");
+		}
+	}
 }

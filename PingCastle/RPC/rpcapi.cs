@@ -241,7 +241,7 @@ namespace PingCastle.RPC
 
         protected Int32 BindUsingPipe(string server, out IntPtr binding, NetworkCredential credential = null)
         {
-
+            
             IntPtr bindingstring = IntPtr.Zero;
             binding = IntPtr.Zero;
             Int32 status;
@@ -358,7 +358,7 @@ namespace PingCastle.RPC
                 return status;
 
             status = NativeMethods.RpcEpResolveBinding(binding, rpcClientInterface);
-
+            
             return status;
         }
 

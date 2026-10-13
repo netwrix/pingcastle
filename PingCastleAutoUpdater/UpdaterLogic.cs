@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using PingCastleCommon.Utility;
 
@@ -29,11 +30,13 @@ namespace PingCastleAutoUpdater
         public bool DryRun { get; set; }
         public bool ShowHelp { get; set; }
         public int WaitForDays { get; set; }
-        public string ApiUrl { get; set; } = "https://api.github.com/repos/netwrix/pingcastle/releases";
+        public string ApiUrl { get; set; } = UpdaterLogic.DefaultApiUrl;
     }
 
     internal static class UpdaterLogic
     {
+        internal const string DefaultApiUrl = "https://api.github.com/repos/netwrix/pingcastle/releases";
+
         internal static bool IsValidReleaseUrl(string url)
         {
             if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
@@ -76,7 +79,8 @@ namespace PingCastleAutoUpdater
 
             if (string.IsNullOrEmpty(currentVersion))
             {
-                return true;
+                Trace.WriteLine("Current version could not be determined. Aborting update (fail-closed).");
+                return false;
             }
 
             try
@@ -85,10 +89,11 @@ namespace PingCastleAutoUpdater
                 var latest = ParseReleaseVersion(latestVersion);
                 return latest > current;
             }
-            catch
+            catch (Exception ex)
             {
-                // Fail safe: proceed with update when version comparison is uncertain
-                return true;
+                // Fail closed: abort the update when version comparison is uncertain
+                Trace.WriteLine($"Could not compare versions '{currentVersion.SanitizeForLog()}' and '{latestVersion.SanitizeForLog()}': {ex.Message.SanitizeForLog()}. Aborting update (fail-closed).");
+                return false;
             }
         }
 

@@ -31,7 +31,7 @@ namespace PingCastle.Exports
             using (ADWebService adws = new ADWebService(Settings.Server, Settings.Port, Settings.Credential, _identityProvider, _nativeMethods))
             {
                 domainInfo = adws.DomainInfo;
-
+                
                 int export = 0;
                 using (StreamWriter sw = File.CreateText(filename))
                 {

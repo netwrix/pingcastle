@@ -78,15 +78,3 @@ ProcessTemplate -File ReportNetworkMap.js
 ProcessTemplate -File ReportCompromiseGraph.js
 ProcessTemplate -File ReportCloudMain.js
 ProcessTemplate -File fontawesome.all.min.css
-ProcessTemplate -File bootstrap-table-export.min.js
-ProcessTemplate -File bootstrap-table.min.css
-ProcessTemplate -File bootstrap-table.min.js
-ProcessTemplate -File bootstrap.min.css
-ProcessTemplate -File bootstrap.min.js
-ProcessTemplate -File dashboardtest.html
-ProcessTemplate -File jquery.min.js
-ProcessTemplate -File popper.min.js
-ProcessTemplate -File tableExport.min.js
-ProcessTemplate -File vis.min.css
-ProcessTemplate -File vis.min.js
-ProcessTemplate -File fontawesome.all.min.css

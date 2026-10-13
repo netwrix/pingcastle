@@ -1,4 +1,4 @@
-﻿namespace PingCastle.Cloud.Common;
+namespace PingCastle.Cloud.Common;
 
 using System;
 using System.Text.Json;

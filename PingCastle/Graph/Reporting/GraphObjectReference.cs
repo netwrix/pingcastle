@@ -42,6 +42,7 @@ namespace PingCastle.Graph.Reporting
         public const string Users = "Users";
         public const string DomainUsers = "Domain Users";
         public const string DomainComputers = "Domain Computers";
+        public const string PowerUsers = "Power Users";
 
         public const string GroupPolicyCreatorOwners = "Group Policy Creator Owners";
         public const string ExchangeDomainServers = "Exchange Domain Servers";

@@ -9,7 +9,7 @@ namespace PingCastle.RPC
 {
     public class RpcFirewallChecker : rpcapi
     {
-
+        
         int maxOpNum;
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]

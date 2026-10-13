@@ -32,7 +32,7 @@ namespace PingCastle.misc
                 if (key == null)
                 {
                     value = null;
-                    var msg = $"Registry key not found: Path='{keyPath}' on Host='{hostName}'. Value '{keyValueName}' is null.";
+                    var msg =  $"Registry key not found: Path='{keyPath}' on Host='{hostName}'. Value '{keyValueName}' is null.";
                     Trace.WriteLine(msg);
                     ui.DisplayMessage(msg);
                     return false;

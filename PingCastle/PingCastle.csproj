@@ -50,7 +50,6 @@
   <!-- Windows-Specific APIs -->
   <ItemGroup>
     <PackageReference Include="System.DirectoryServices.Protocols" />
-    <PackageReference Include="Microsoft.Management.Infrastructure" />
     <PackageReference Include="System.Management" />
     <PackageReference Include="System.Configuration.ConfigurationManager" />
   </ItemGroup>

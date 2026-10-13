@@ -14,7 +14,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleANSSI("R38", "paragraph.3.6.2.2")]
     [RuleDurANSSI(4, "smartcard_expire_passwords", "Missing password expiration for smart card users")]
     [RuleMitreAttackTechnique(MitreAttackTechnique.BruteForcePasswordCracking)]
-    [RuleIntroducedIn(3, 3)]
+    [RuleIntroducedIn(3,3)]
     public class HeatlcheckRuleAnomalySmartCardExpirePassword : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

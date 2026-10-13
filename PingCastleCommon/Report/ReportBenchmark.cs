@@ -13,7 +13,7 @@ namespace PingCastle.Report
 #if TEST_BENCHMARK
             return "https://localhost:5001/Benchmark";
 #else
-            return "https://stat.pingcastle.com/Benchmark";
+            return "https://stat.pingcastle.com/Benchmark"; 
 #endif
         }
 

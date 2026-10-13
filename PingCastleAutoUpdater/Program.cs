@@ -1,7 +1,9 @@
-﻿using PingCastleAutoUpdater.ConfigurationConversion;
+﻿using PingCastle.misc;
+using PingCastleAutoUpdater.ConfigurationConversion;
 using PingCastleAutoUpdater.ConfigurationMerge;
 using PingCastleAutoUpdater.ConfigurationOrchestration;
 using PingCastleCommon;
+using PingCastleCommon.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,18 +18,18 @@ using System.Threading.Tasks;
 namespace PingCastleAutoUpdater
 {
     class Program
-    {
+	{
         private static async Task Main(string[] args)
-        {
-            Program program = new Program();
-            await program.RunAsync(args);
-        }
+		{
+			Program program = new Program();
+			await program.RunAsync(args);
+		}
 
         bool forceDownload = false;
         bool preview = false;
         bool dryRun = false;
         int numberOfDaysToWait = 0;
-        string releaseInfoUrl = "https://api.github.com/repos/netwrix/pingcastle/releases";
+        string releaseInfoUrl = UpdaterLogic.DefaultApiUrl;
 
         private async Task RunAsync(string[] args)
         {
@@ -38,12 +40,14 @@ namespace PingCastleAutoUpdater
                 DisplayHelp();
                 return;
             }
+
             if (!parseResult.Success)
             {
                 WriteInRed(parseResult.Error);
                 DisplayHelp();
                 return;
             }
+
             forceDownload = parseResult.ForceDownload;
             preview = parseResult.Preview;
             dryRun = parseResult.DryRun;
@@ -59,32 +63,58 @@ namespace PingCastleAutoUpdater
 
             string currentVersion = GetCurrentVersionFromExecutable();
 
-            // Initialize configuration orchestrator for pre-update migration
-            string exePath = Environment.ProcessPath ?? AppContext.BaseDirectory;
-            string exeDirectory = Path.GetDirectoryName(exePath);
-            var pathContext = new ConfigurationPathContext(exeDirectory);
-            var configOrchestrator = new ConfigurationOrchestrationService(pathContext, dryRun);
+			// Initialize configuration orchestrator for pre-update migration
+			string exePath = Environment.ProcessPath ?? AppContext.BaseDirectory;
+			string exeDirectory = Path.GetDirectoryName(exePath);
+			var pathContext = new ConfigurationPathContext(exeDirectory);
+			var configOrchestrator = new ConfigurationOrchestrationService(pathContext, dryRun);
 
-            // Perform initial state migration if both XML and JSON configs exist
-            // This should happen regardless of whether an update is needed
-            bool migrationPerformed = configOrchestrator.PerformInitialStateMigration();
-            if (migrationPerformed)
-            {
-                Console.WriteLine("Initial configuration state migration completed.");
-                Console.WriteLine();
-            }
+			// Perform initial state migration if both XML and JSON configs exist
+			// This should happen regardless of whether an update is needed
+			bool migrationPerformed = configOrchestrator.PerformInitialStateMigration();
+			if (migrationPerformed)
+			{
+				Console.WriteLine("Initial configuration state migration completed.");
+				Console.WriteLine();
+			}
 
             if (!IsUpdateRequired(currentVersion, release.name))
             {
                 Console.WriteLine("Update is not required. Program is stopping.");
                 return;
             }
-            string downloadUrl = release.assets.First().browser_download_url;
+
+            if (release.assets == null || release.assets.Count == 0)
+            {
+                Trace.WriteLine("Release contains no assets. Aborting update.");
+                WriteInRed("Release contains no assets. Aborting update.");
+                return;
+            }
+
+            Asset asset = release.assets.FirstOrDefault(a =>
+                !string.IsNullOrEmpty(a.name) &&
+                a.name.StartsWith("PingCastle", StringComparison.OrdinalIgnoreCase) &&
+                a.name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
+            if (asset == null)
+            {
+                Trace.WriteLine("No matching PingCastle ZIP asset found in release.");
+                WriteInRed("No matching asset in release. Aborting update.");
+                return;
+            }
+
+            string downloadUrl = asset.browser_download_url;
+            if (!UpdaterLogic.IsValidReleaseUrl(downloadUrl))
+            {
+                Trace.WriteLine("Invalid asset download URL: " + downloadUrl.SanitizeForLog());
+                WriteInRed("Invalid asset download URL. Aborting update.");
+                return;
+            }
+
             Console.WriteLine("Downloading " + downloadUrl);
             Console.WriteLine();
 
-            ProceedReleaseInstall(downloadUrl, dryRun);
-        }
+			ProceedReleaseInstall(downloadUrl, dryRun);
+		}
 
         /// <summary>
         /// Returns PingCastle.exe version if it's found in the same directory
@@ -192,12 +222,12 @@ namespace PingCastleAutoUpdater
         }
 
         private static void WriteInRed(string data)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(data);
-            Trace.WriteLine("[Red]" + data);
-            Console.ResetColor();
-        }
+		{
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine(data);
+			Trace.WriteLine("[Red]" + data);
+			Console.ResetColor();
+		}
 
         private static void BackupExistingConfigurations(ConfigurationPathContext pathContext, bool dryRun)
         {
@@ -251,61 +281,98 @@ namespace PingCastleAutoUpdater
                 // Backup existing configurations
                 BackupExistingConfigurations(pathContext, dryRun);
 
-                WebResponse response = request.GetResponse();
-                using (Stream responseStream = response.GetResponseStream())
-                using (var archive = new ZipArchive(responseStream, ZipArchiveMode.Read))
+                string tempZipPath = Path.Combine(Path.GetTempPath(), "PingCastleUpdate-" + Guid.NewGuid().ToString("N") + ".zip");
+                try
                 {
-                    foreach (var entry in archive.Entries)
+                    WebResponse response = request.GetResponse();
+                    using (Stream responseStream = response.GetResponseStream())
+                    using (var tempFileStream = File.Create(tempZipPath))
                     {
-                        FilesValidator.CheckPathTraversal(entry.FullName);
-                        var targetFilePath = Path.GetFullPath(entry.FullName);
-                        // do not save .config file except if it doesn't exists
-                        // and do not overwrite the updater file because it's running !
-                        string appConfigFile = AppDomain.CurrentDomain.FriendlyName + ".config";
-                        if (targetFilePath.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
-                            && !Path.GetFileName(targetFilePath).Equals(appConfigFile, StringComparison.OrdinalIgnoreCase))
+                        responseStream.CopyTo(tempFileStream);
+                    }
+
+                    if (!PackageIntegrityVerifier.VerifyArchive(tempZipPath, dryRun ? null : exeDirectory, out string failureReason))
+                    {
+                        Trace.WriteLine(failureReason + " Aborting install.");
+                        WriteInRed(failureReason + " Aborting install.");
+                        return;
+                    }
+
+                    using (var archive = ZipFile.OpenRead(tempZipPath))
+                    {
+                        foreach (var entry in archive.Entries)
                         {
-                            // Copy if not present.
-                            if (!File.Exists(targetFilePath))
+                            var targetFilePath = FilesValidator.CheckPathTraversal(entry.FullName, exeDirectory);
+
+                            // Skip signed executables that were already installed from their verified copies.
+                            if (!dryRun && PackageIntegrityVerifier.RequiresSignature(entry))
                             {
-                                // In dry-run mode with existing JSON, extract PingCastle.exe.config for analysis
-                                if (dryRun && Path.GetFileName(targetFilePath).Equals("PingCastle.exe.config", StringComparison.OrdinalIgnoreCase)
-                                    && File.Exists(pathContext.JsonConfigPath))
+                                continue;
+                            }
+
+                            // do not save .config file except if it doesn't exists
+                            // and do not overwrite the updater file because it's running !
+                            string appConfigFile = AppDomain.CurrentDomain.FriendlyName + ".config";
+                            if (targetFilePath.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileName(targetFilePath).Equals(appConfigFile, StringComparison.OrdinalIgnoreCase))
+                            {
+                                // Copy if not present.
+                                if (!File.Exists(targetFilePath))
                                 {
-                                    configOrchestrator.HandleXmlConfigDuringExtraction(entry, targetFilePath);
+                                    // In dry-run mode with existing JSON, extract PingCastle.exe.config for analysis
+                                    if (dryRun && Path.GetFileName(targetFilePath).Equals("PingCastle.exe.config", StringComparison.OrdinalIgnoreCase)
+                                        && File.Exists(pathContext.JsonConfigPath))
+                                    {
+                                        configOrchestrator.HandleXmlConfigDuringExtraction(entry, targetFilePath);
+                                    }
+                                    else
+                                    {
+                                        performCopy(entry, null, dryRun);
+                                    }
+
+                                    continue;
                                 }
-                                else
+
+                                configOrchestrator.HandleXmlConfigDuringExtraction(entry, targetFilePath);
+                            }
+                            else if (Path.GetFileName(targetFilePath).Equals("appsettings.console.json", StringComparison.OrdinalIgnoreCase))
+                            {
+                                // If JSON backup exists, we'll handle conversion after extraction
+                                if (!dryRun && File.Exists(pathContext.JsonBackupPath))
+                                {
+                                    // Don't merge the new JSON from zip yet - we'll convert XML and merge instead
+                                    performCopy(entry, null, dryRun);
+                                    continue;
+                                }
+
+                                // Copy if not present.
+                                if (!File.Exists(targetFilePath))
                                 {
                                     performCopy(entry, null, dryRun);
+                                    continue;
                                 }
-                                continue;
-                            }
 
-                            configOrchestrator.HandleXmlConfigDuringExtraction(entry, targetFilePath);
-                        }
-                        else if (Path.GetFileName(targetFilePath).Equals("appsettings.console.json", StringComparison.OrdinalIgnoreCase))
-                        {
-                            // If JSON backup exists, we'll handle conversion after extraction
-                            if (!dryRun && File.Exists(pathContext.JsonBackupPath))
-                            {
-                                // Don't merge the new JSON from zip yet - we'll convert XML and merge instead
-                                performCopy(entry, null, dryRun);
-                                continue;
+                                configOrchestrator.HandleJsonConfigDuringExtraction(entry, targetFilePath);
                             }
-
-                            // Copy if not present.
-                            if (!File.Exists(targetFilePath))
+                            else
                             {
                                 performCopy(entry, null, dryRun);
-                                continue;
                             }
-
-                            configOrchestrator.HandleJsonConfigDuringExtraction(entry, targetFilePath);
                         }
-                        else
+                    }
+                }
+                finally
+                {
+                    try
+                    {
+                        if (File.Exists(tempZipPath))
                         {
-                            performCopy(entry, null, dryRun);
+                            File.Delete(tempZipPath);
                         }
+                    }
+                    catch (IOException ex)
+                    {
+                        Trace.WriteLine("Unable to remove the temporary update archive: " + ex.Message);
                     }
                 }
             }
@@ -333,7 +400,7 @@ namespace PingCastleAutoUpdater
 
             using (var e = entry.Open())
             {
-                string exeFullPath = Path.GetFullPath(exePath);
+				string exeFullPath = Path.GetFullPath(exePath);
 
                 Console.WriteLine("Saving " + entryFullName);
                 if (File.Exists(entryFullPath))
@@ -379,7 +446,7 @@ namespace PingCastleAutoUpdater
             Console.WriteLine("switch:");
             Console.WriteLine("  --help              : display this message");
             Console.WriteLine("");
-            Console.WriteLine("  --api-url http://xx : use an alternative url for checking for updates");
+            Console.WriteLine("  --api-url https://xx : use an alternative url for checking for updates");
             Console.WriteLine("  --force-download    : download the latest release even if it is not the most recent. Useful for tests");
             Console.WriteLine("  --use-preview       : download preview release if it is the most recent");
             Console.WriteLine("  --dry-run           : preview changes without modifying files");

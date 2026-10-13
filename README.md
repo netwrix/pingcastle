@@ -18,15 +18,15 @@ PingCastle provides a streamlined approach to evaluating Active Directory securi
 Rather than pursuing exhaustive evaluation at the expense of efficiency, PingCastle delivers the optimal balance—identifying 80% of critical security issues while requiring just 20% of the time and effort of traditional assessment methods.
 
 ```plain
-*****    #******** Netwrix PingCastle (Version 3.5.0.33)
+ *****    #******** Netwrix PingCastle (Version 4.0.0.27)
  ***    %********** Get Active Directory Security at 80% in 20% of the time
- *      ####   #### End of support: 2027-08-31.
-     ***#### ####
-   *********   #### To find out more about PingCastle, visit <https://www.pingcastle.com>
- ####******%    ##  For online documentation, visit <https://helpcenter.netwrix.com/category/pingcastle>
-####               For support and questions:
- ***********     ** -   Open-source community, visit <https://github.com/netwrix/pingcastle/issues>
- ***********   %*** -   Customers, visit <https://www.netwrix.com/support.html>
+ *      ####   #### End of support: 2028-01-31.
+     ***####   ####
+   *********   #### To find out more about PingCastle, visit https://www.pingcastle.com
+ ####******%    ##  For online documentation, visit https://helpcenter.netwrix.com/category/pingcastle
+ ####               For support and questions:
+ ***********     ** -   Open-source community, visit https://github.com/netwrix/pingcastle/issues
+ ***********   %*** -   Customers, visit https://www.netwrix.com/support.html
 What do you want to do?
 =======================
 Using interactive mode.

@@ -1,5 +1,6 @@
 *.min.css
 *.min.js
+*.gz
 !bootstrap-table-export.min.js
 !bootstrap-table.min.css
 !bootstrap-table.min.js
@@ -12,4 +13,3 @@
 !vis.min.css
 !vis.min.js
 !fontawesome.all.min.css
-*.gz

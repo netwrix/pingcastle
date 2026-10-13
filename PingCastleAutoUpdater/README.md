@@ -1,4 +1,4 @@
-﻿# PingCastle Auto Updater
+# PingCastle Auto Updater
 
 PingCastleAutoUpdater is an automated update tool that downloads and installs the latest versions of PingCastle from GitHub releases. It manages configuration migrations, handles file updates, and ensures your PingCastle installation stays current with minimal manual effort.
 

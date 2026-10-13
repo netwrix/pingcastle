@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
+using PingCastleCommon.Utility;
 
 namespace PingCastle.ADWS
 {
@@ -133,7 +134,14 @@ namespace PingCastle.ADWS
                 {
                     domainInfo = (DOMAIN_CONTROLLER_INFO)Marshal.PtrToStructure(pDCI, typeof(DOMAIN_CONTROLLER_INFO));
 
-                    return domainInfo.DomainControllerName.Substring(2);
+                    var name = domainInfo.DomainControllerName;
+                    Trace.WriteLine("DomainControllerName returned by DsGetDcName: \"" + name.SanitizeForLog() + "\"");
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        Trace.WriteLine("DsGetDcName-empty-name: DsGetDcName returned ERROR_SUCCESS but DomainControllerName was null or empty for domain \"" + domain.SanitizeForLog() + "\"");
+                        return name;
+                    }
+                    return name.StartsWith(@"\\") ? name.Substring(2) : name;
                 }
                 else
                 {

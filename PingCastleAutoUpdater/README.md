@@ -247,8 +247,9 @@ This phase ensures existing users' legacy configurations are migrated before the
 
 #### Phase 2: Post-Update Configuration Handling (During/After Update)
 During the update extraction:
-- **Backup**: New configurations are temporarily stored with `tempNew_` prefix
-- **Merge**: Configurations are intelligently merged with existing settings
+- **Backup**: The existing `appsettings.console.json` is copied to `appsettings.console.json.bak` before extraction
+- **JSON configuration**: An existing `appsettings.console.json` is never overwritten or merged; the file from the release is only installed when no configuration exists yet. The shipped file contains sample values (honeypots, Riverbed, SMTP) that must not end up in a real configuration. New settings introduced by a release use their built-in defaults until you add them to your file.
+- **XML configuration**: New XML configurations are temporarily stored with `tempNew_` prefix and merged with existing settings
 - **Conversion**: If needed, additional XML-to-JSON conversions are performed
 - **Preservation**: Custom settings are preserved across versions
 

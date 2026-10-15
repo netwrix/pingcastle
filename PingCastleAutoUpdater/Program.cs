@@ -337,14 +337,6 @@ namespace PingCastleAutoUpdater
                             }
                             else if (Path.GetFileName(targetFilePath).Equals("appsettings.console.json", StringComparison.OrdinalIgnoreCase))
                             {
-                                // If JSON backup exists, we'll handle conversion after extraction
-                                if (!dryRun && File.Exists(pathContext.JsonBackupPath))
-                                {
-                                    // Don't merge the new JSON from zip yet - we'll convert XML and merge instead
-                                    performCopy(entry, null, dryRun);
-                                    continue;
-                                }
-
                                 // Copy if not present.
                                 if (!File.Exists(targetFilePath))
                                 {
@@ -352,7 +344,10 @@ namespace PingCastleAutoUpdater
                                     continue;
                                 }
 
-                                configOrchestrator.HandleJsonConfigDuringExtraction(entry, targetFilePath);
+                                // Never overwrite or merge into an existing user configuration: the shipped
+                                // appsettings.console.json contains sample values (honeypots, Riverbed, SMTP)
+                                // that would replace or be appended to the user's real settings.
+                                Console.WriteLine((dryRun ? "[DRY-RUN] Would keep existing " : "Keeping existing ") + entry.FullName);
                             }
                             else
                             {

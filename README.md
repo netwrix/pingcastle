@@ -18,7 +18,7 @@ PingCastle provides a streamlined approach to evaluating Active Directory securi
 Rather than pursuing exhaustive evaluation at the expense of efficiency, PingCastle delivers the optimal balance—identifying 80% of critical security issues while requiring just 20% of the time and effort of traditional assessment methods.
 
 ```plain
- *****    #******** Netwrix PingCastle (Version 4.0.0.27)
+ *****    #******** Netwrix PingCastle (Version 4.0.0.33)
  ***    %********** Get Active Directory Security at 80% in 20% of the time
  *      ####   #### End of support: 2028-01-31.
      ***####   ####

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Package manifest",
+  "description": "The files of a package: path relative to the package root with '/' separators, size in bytes and SHA256 in hexadecimal.",
+  "type": "object",
+  "required": [ "files" ],
+  "properties": {
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [ "path", "size", "sha256" ],
+        "properties": {
+          "path": {
+            "description": "No ':' (alternate data stream) and no trailing dot or space, which can make Windows resolve a name to a different file than its extension suggests.",
+            "type": "string",
+            "pattern": "^[^:]*[^:. ]$"
+          },
+          "size": { "type": "integer", "minimum": 0 },
+          "sha256": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" }
+        }
+      }
+    }
+  }
+}

@@ -1,15 +1,3 @@
 *.min.css
 *.min.js
 *.gz
-!bootstrap-table-export.min.js
-!bootstrap-table.min.css
-!bootstrap-table.min.js
-!bootstrap.min.css
-!bootstrap.min.js
-!dashboardtest.html
-!jquery.min.js
-!popper.min.js
-!tableExport.min.js
-!vis.min.css
-!vis.min.js
-!fontawesome.all.min.css

@@ -1,7 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Text.Json.Nodes;
+using Netwrix.ArchiveVerification;
+using PingCastleAutoUpdater.ConfigurationMerge;
 using PingCastleCommon.Utility;
 
 namespace PingCastleAutoUpdater
@@ -36,6 +41,45 @@ namespace PingCastleAutoUpdater
     internal static class UpdaterLogic
     {
         internal const string DefaultApiUrl = "https://api.github.com/repos/netwrix/pingcastle/releases";
+
+        internal const string ConsoleSettingsFileName = "appsettings.console.json";
+
+        internal const string ServerSettingsName = "appsettings";
+
+        /// <summary>
+        /// A custom --api-url is a PingCastle Enterprise /api/Release endpoint: it returns the release list in
+        /// the format of the GitHub releases API, and serves the shared licence under it.
+        /// </summary>
+        internal static string GetServerFileUrl(string apiUrl, string fileName)
+        {
+            return $"{apiUrl.TrimEnd('/')}/{fileName}";
+        }
+
+        /// <summary>
+        /// From another installation only PingCastle.exe and PingCastleAutoUpdater.exe are installed, whatever its package holds.
+        /// </summary>
+        internal static List<ZipArchiveEntry> SelectEntries(IEnumerable<ZipArchiveEntry> entries, bool consoleOnly)
+        {
+            return entries.Where(e => !consoleOnly || ArchiveInstaller.ConsoleExecutables.Contains(e.FullName, StringComparer.OrdinalIgnoreCase)).ToList();
+        }
+
+        /// <summary>
+        /// Merges the licence shared by the server into the local settings: a local licence is kept, a missing or
+        /// empty one is taken from the server. Any other setting the server sends is ignored, as a server must not
+        /// push values such as BrandJs, which ends up in every report.
+        /// </summary>
+        internal static void MergeConsoleSettings(string serverSettingsPath, string targetPath)
+        {
+            // Opened, or created empty, in one step; an empty file starts from no settings.
+            using (var local = new FileStream(targetPath, FileMode.OpenOrCreate))
+            {
+                local.Write(local.Length == 0 ? "{}"u8 : default);
+            }
+
+            var license = JsonNode.Parse(File.ReadAllText(serverSettingsPath))?["License"]?.DeepClone();
+            File.WriteAllText(serverSettingsPath, new JsonObject { ["License"] = license }.ToJsonString());
+            new JsonConfigMerger().MergeJsonConfigFiles(targetPath, serverSettingsPath);
+        }
 
         internal static bool IsValidReleaseUrl(string url)
         {

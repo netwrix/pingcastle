@@ -1,4 +1,5 @@
-﻿using PingCastle.misc;
+﻿using Netwrix.ArchiveVerification;
+using PingCastle.misc;
 using PingCastleAutoUpdater.ConfigurationConversion;
 using PingCastleAutoUpdater.ConfigurationMerge;
 using PingCastleAutoUpdater.ConfigurationOrchestration;
@@ -17,12 +18,22 @@ using System.Threading.Tasks;
 
 namespace PingCastleAutoUpdater
 {
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     class Program
 	{
-        private static async Task Main(string[] args)
+        // The only place errors are handled: any failure aborts the update.
+        private static async Task<int> Main(string[] args)
 		{
-			Program program = new Program();
-			await program.RunAsync(args);
+            try
+            {
+                await new Program().RunAsync(args);
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                WriteInRed(ex.Message.SanitizeForLog() + " Aborting update.");
+                return 1;
+            }
 		}
 
         bool forceDownload = false;
@@ -57,7 +68,8 @@ namespace PingCastleAutoUpdater
             Console.WriteLine("Running on " + Environment.Version);
             Console.WriteLine();
 
-            Release release = await GetLatestReleaseFromUpdateUrlAsync();
+            var fromServer = releaseInfoUrl != UpdaterLogic.DefaultApiUrl;
+            var release = await GetLatestReleaseFromUpdateUrlAsync();
             if (release == null)
                 return;
 
@@ -113,7 +125,19 @@ namespace PingCastleAutoUpdater
             Console.WriteLine("Downloading " + downloadUrl);
             Console.WriteLine();
 
-			ProceedReleaseInstall(downloadUrl, dryRun);
+            if (ProceedReleaseInstall(downloadUrl, dryRun, consoleOnly: fromServer) && fromServer && !dryRun)
+            {
+                await MergeConsoleSettingsAsync(UpdaterLogic.GetServerFileUrl(releaseInfoUrl, UpdaterLogic.ServerSettingsName), Path.Combine(exeDirectory, UpdaterLogic.ConsoleSettingsFileName));
+            }
+        }
+
+        private static async Task MergeConsoleSettingsAsync(string url, string targetPath)
+        {
+            Console.WriteLine("Downloading " + url);
+            using var downloaded = new TempFile();
+            await File.WriteAllTextAsync(downloaded.FullPath, await GetFromUrlAsync(url));
+            UpdaterLogic.MergeConsoleSettings(downloaded.FullPath, targetPath);
+            Console.WriteLine("Merged " + UpdaterLogic.ConsoleSettingsFileName);
 		}
 
         /// <summary>
@@ -231,7 +255,10 @@ namespace PingCastleAutoUpdater
 
         private static void BackupExistingConfigurations(ConfigurationPathContext pathContext, bool dryRun)
         {
-            if (dryRun) return;
+            if (dryRun)
+            {
+                return;
+            }
 
             if (File.Exists(pathContext.JsonConfigPath))
             {
@@ -258,7 +285,8 @@ namespace PingCastleAutoUpdater
             }
         }
 
-        static void ProceedReleaseInstall(string url, bool dryRun)
+        // Returns false when the archive is rejected and nothing was installed.
+        static bool ProceedReleaseInstall(string url, bool dryRun, bool consoleOnly)
         {
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
@@ -281,31 +309,30 @@ namespace PingCastleAutoUpdater
                 // Backup existing configurations
                 BackupExistingConfigurations(pathContext, dryRun);
 
-                string tempZipPath = Path.Combine(Path.GetTempPath(), "PingCastleUpdate-" + Guid.NewGuid().ToString("N") + ".zip");
+                using var tempZip = new TempFile();
                 try
                 {
                     WebResponse response = request.GetResponse();
                     using (Stream responseStream = response.GetResponseStream())
-                    using (var tempFileStream = File.Create(tempZipPath))
+                    using (var tempFileStream = File.Create(tempZip.FullPath))
                     {
                         responseStream.CopyTo(tempFileStream);
                     }
 
-                    if (!PackageIntegrityVerifier.VerifyArchive(tempZipPath, dryRun ? null : exeDirectory, out string failureReason))
+                    using (var verified = new VerifiedArchive(tempZip.FullPath))
                     {
-                        Trace.WriteLine(failureReason + " Aborting install.");
-                        WriteInRed(failureReason + " Aborting install.");
-                        return;
-                    }
+                        var entries = UpdaterLogic.SelectEntries(verified.Entries, consoleOnly);
+                        if (!dryRun)
+                        {
+                            ArchiveInstaller.Install(entries.Where(e => VerifiedArchive.RequiresSignature(e.FullName)), exeDirectory);
+                        }
 
-                    using (var archive = ZipFile.OpenRead(tempZipPath))
-                    {
-                        foreach (var entry in archive.Entries)
+                        foreach (var entry in entries)
                         {
                             var targetFilePath = FilesValidator.CheckPathTraversal(entry.FullName, exeDirectory);
 
                             // Skip signed executables that were already installed from their verified copies.
-                            if (!dryRun && PackageIntegrityVerifier.RequiresSignature(entry))
+                            if (!dryRun && VerifiedArchive.RequiresSignature(entry.FullName))
                             {
                                 continue;
                             }
@@ -359,21 +386,20 @@ namespace PingCastleAutoUpdater
                                 performCopy(entry, null, dryRun);
                             }
                         }
-                    }
-                }
-                finally
-                {
-                    try
-                    {
-                        if (File.Exists(tempZipPath))
+
+                        // A server keeps the package it serves; replace it so that it matches the installed files.
+                        var package = Path.Combine(exeDirectory, ArchiveInstaller.PackageDirectory, ArchiveInstaller.PackageFileName);
+                        if (!dryRun && File.Exists(package))
                         {
-                            File.Delete(tempZipPath);
+                            File.Copy(tempZip.FullPath, package, overwrite: true);
                         }
                     }
-                    catch (IOException ex)
-                    {
-                        Trace.WriteLine("Unable to remove the temporary update archive: " + ex.Message);
-                    }
+                }
+                catch (ArchiveVerificationException ex)
+                {
+                    Trace.WriteLine(ex.Message + " Aborting install.");
+                    WriteInRed(ex.Message + " Aborting install.");
+                    return false;
                 }
             }
             catch (WebException ex)
@@ -384,6 +410,7 @@ namespace PingCastleAutoUpdater
 
             // After extraction, perform conversion and merge if needed
             configOrchestrator.PerformPostExtractionConversionAndMerge();
+            return true;
         }
 
         static void performCopy(ZipArchiveEntry entry, string alternativeName = null, bool dryRun = false)
@@ -400,38 +427,7 @@ namespace PingCastleAutoUpdater
 
             using (var e = entry.Open())
             {
-				string exeFullPath = Path.GetFullPath(exePath);
-
                 Console.WriteLine("Saving " + entryFullName);
-                if (File.Exists(entryFullPath))
-                {
-                    // If trying to overwrite the current exe (which is in use), use File.Replace
-                    if (string.Compare(entryFullPath, exeFullPath, StringComparison.OrdinalIgnoreCase) == 0)
-                    {
-                        string bakFileName = entryFullPath + ".bak";
-                        string tempFileName = entryFullPath + ".tmp";
-
-                        // Write new version to temp file first
-                        using (var tempFileStream = File.Create(tempFileName))
-                        {
-                            e.CopyTo(tempFileStream);
-                            tempFileStream.Close();
-                        }
-
-                        try
-                        {
-                            // File.Replace handles in-use files correctly on Windows
-                            File.Replace(tempFileName, entryFullPath, bakFileName, ignoreMetadataErrors: true);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Warning: Could not replace in-use file '{entryFullName}': {ex.Message}");
-                            // Clean up temp file
-                            try { File.Delete(tempFileName); } catch { }
-                        }
-                        return;
-                    }
-                }
 
                 using (var fileStream = File.Create(entryFullPath))
                 {
@@ -446,7 +442,7 @@ namespace PingCastleAutoUpdater
             Console.WriteLine("switch:");
             Console.WriteLine("  --help              : display this message");
             Console.WriteLine("");
-            Console.WriteLine("  --api-url https://xx : use an alternative url for checking for updates");
+            Console.WriteLine("  --api-url https://xx : update from PingCastle Enterprise instead of GitHub (https://server/api/Release)");
             Console.WriteLine("  --force-download    : download the latest release even if it is not the most recent. Useful for tests");
             Console.WriteLine("  --use-preview       : download preview release if it is the most recent");
             Console.WriteLine("  --dry-run           : preview changes without modifying files");

@@ -9,5 +9,7 @@ namespace PingCastle.RPC
         public uint cbMaxSignature;
         public uint cbBlockSize;
         public uint cbSecurityTrailer;
-    };
+    }
+
+;
 }

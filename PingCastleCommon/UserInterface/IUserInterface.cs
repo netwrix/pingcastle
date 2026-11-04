@@ -1,5 +1,4 @@
-﻿
-namespace PingCastle.UserInterface
+﻿namespace PingCastle.UserInterface
 {
     using System.Collections.Generic;
     using System.Security;
@@ -77,6 +76,7 @@ namespace PingCastle.UserInterface
         void DisplayError(List<string> messages);
 
         void AddText(string message);
+
         /// <summary>
         /// Displays a message to the user
         /// </summary>
@@ -100,6 +100,5 @@ namespace PingCastle.UserInterface
         /// <param name="prompt">The text to display, asking for the password</param>
         /// <returns>A <see cref="SecureString"/> containing the password</returns>
         SecureString ReadInputPassword(string prompt);
-
     }
 }

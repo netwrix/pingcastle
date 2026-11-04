@@ -17,25 +17,28 @@ namespace PingCastle.shares
 {
     public class ShareEnumerator
     {
-
         private static bool IsEveryoneHere(FileSystemSecurity fss)
         {
             foreach (FileSystemAccessRule accessrule in fss.GetAccessRules(true, true, typeof(SecurityIdentifier)))
             {
                 // ignore audit / denied ace
                 if (accessrule.AccessControlType != AccessControlType.Allow)
+                {
                     continue;
+                }
+
                 if (((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.WorldSid)
                     || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AuthenticatedUserSid)
                     || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.BuiltinUsersSid)
                     || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AccountComputersSid)
                     || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AccountDomainUsersSid)
                     || ((SecurityIdentifier)accessrule.IdentityReference).IsWellKnown(WellKnownSidType.AnonymousSid)
-                    )
+                   )
                 {
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -51,7 +54,10 @@ namespace PingCastle.shares
                     foreach (DirectoryInfo di2 in di.GetDirectories())
                     {
                         if (di2.Name.Equals("Default", StringComparison.InvariantCultureIgnoreCase))
+                        {
                             continue;
+                        }
+
                         FileSystemSecurity fss = di2.GetAccessControl(AccessControlSections.Access);
                         if (IsEveryoneHere(fss))
                         {
@@ -72,6 +78,7 @@ namespace PingCastle.shares
             {
                 Trace.WriteLine(path + " " + ex.Message);
             }
+
             return false;
         }
 
@@ -87,7 +94,9 @@ namespace PingCastle.shares
                     foreach (DirectoryInfo di2 in di.GetDirectories())
                     {
                         if (di2.Name.Equals("Default", StringComparison.InvariantCultureIgnoreCase))
+                        {
                             continue;
+                        }
 
                         try
                         {
@@ -99,6 +108,7 @@ namespace PingCastle.shares
                             continue;
                         }
                     }
+
                     return false;
                 }
                 else
@@ -118,6 +128,7 @@ namespace PingCastle.shares
             {
                 Trace.WriteLine(path + " " + ex.Message);
             }
+
             return false;
         }
 
@@ -134,6 +145,7 @@ namespace PingCastle.shares
                     {
                         return true;
                     }
+
                     // backup files
                     if (fi.Extension.Equals("bak", StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -145,6 +157,7 @@ namespace PingCastle.shares
             {
                 Trace.WriteLine(path + " " + ex.Message);
             }
+
             return false;
         }
 
@@ -168,10 +181,13 @@ namespace PingCastle.shares
                     {
                         output.Add(shi1.shi1_netname);
                     }
+
                     currentPtr = new IntPtr(currentPtr.ToInt64() + nStructSize);
                 }
+
                 NativeMethods.NetApiBufferFree(bufPtr);
             }
+
             return output;
         }
     }

@@ -21,7 +21,6 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData, ICollection<DomainKey> SourceDomains)
         {
-
             Dictionary<string, int> domainList = new Dictionary<string, int>();
             if (healthcheckData.UserAccountData != null && healthcheckData.UserAccountData.ListDomainSidHistory != null
                 && healthcheckData.UserAccountData.ListDomainSidHistory.Count > 0)
@@ -35,13 +34,18 @@ namespace PingCastle.Healthcheck.Rules
                         if (SourceDomains == null || !SourceDomains.Contains(data.Domain))
                         {
                             if (!domainList.ContainsKey(data.DomainSid))
+                            {
                                 domainList.Add(data.DomainSid, data.Count);
+                            }
                             else
+                            {
                                 domainList[data.DomainSid] += data.Count;
+                            }
                         }
                     }
                 }
             }
+
             if (healthcheckData.ComputerAccountData != null && healthcheckData.ComputerAccountData.ListDomainSidHistory != null
                 && healthcheckData.ComputerAccountData.ListDomainSidHistory.Count > 0)
             {
@@ -53,13 +57,18 @@ namespace PingCastle.Healthcheck.Rules
                         if (SourceDomains == null || !SourceDomains.Contains(data.Domain))
                         {
                             if (!domainList.ContainsKey(data.DomainSid))
+                            {
                                 domainList.Add(data.DomainSid, data.Count);
+                            }
                             else
+                            {
                                 domainList[data.DomainSid] += data.Count;
+                            }
                         }
                     }
                 }
             }
+
             if (domainList.Count > 0)
             {
                 foreach (string domain in domainList.Keys)
@@ -67,6 +76,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(domain, domainList[domain]);
                 }
             }
+
             return null;
         }
     }

@@ -31,7 +31,7 @@ namespace PingCastle.Exports
             using (ADWebService adws = new ADWebService(Settings.Server, Settings.Port, Settings.Credential, _identityProvider, _nativeMethods))
             {
                 domainInfo = adws.DomainInfo;
-                
+
                 int export = 0;
                 using (StreamWriter sw = File.CreateText(filename))
                 {
@@ -57,7 +57,9 @@ namespace PingCastle.Exports
                     {
                         // Skip LAPS properties (computer-only)
                         if (lapsProperties.Contains(prop))
+                        {
                             continue;
+                        }
 
                         if (prop == "BadPrimaryGroup")
                         {
@@ -96,11 +98,13 @@ namespace PingCastle.Exports
                             {
                                 // Skip LAPS properties (computer-only)
                                 if (lapsProperties.Contains(p))
+                                {
                                     continue;
+                                }
 
                                 data.Add(d.PropertiesSet.Contains(p).ToString());
-
                             }
+
                             sw.WriteLine(string.Join("\t", data.ToArray()));
                         };
 

@@ -12,7 +12,6 @@ using System.Security.Principal;
 
 namespace PingCastle.RPC
 {
-
     [DebuggerDisplay("{Name}")]
     public class SAMR_ENUMERATION_ENTRY
     {
@@ -22,8 +21,8 @@ namespace PingCastle.RPC
 
     public class samr2 : rpcapi
     {
-
-        private static byte[] MIDL_ProcFormatStringx86 = new byte[] {
+        private static byte[] MIDL_ProcFormatStringx86 = new byte[]
+        {
                 0x00,0x48,0x00,0x00,0x00,0x00,0x00,0x00,0x10,0x00,0x31,0x04,0x00,0x00,0x00,0x5c,0x22,0x00,0x40,0x00,0x44,0x04,0x08,0x01,0x00,0x00,0x00,0x00,0x00,0x00,
                 0x0a,0x00,0x00,0x00,0x02,0x00,0x10,0x01,0x04,0x00,0x0a,0x00,0x48,0x00,0x08,0x00,0x08,0x00,0x70,0x00,0x0c,0x00,0x08,0x00,0x00,0x48,0x00,0x00,0x00,0x00,
                 0x01,0x00,0x08,0x00,0x30,0xe0,0x00,0x00,0x00,0x00,0x38,0x00,0x40,0x00,0x44,0x02,0x08,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x01,0x00,0x00,0x12,0x00,
@@ -46,7 +45,8 @@ namespace PingCastle.RPC
                 0x08,0x00,0x00
             };
 
-        private static byte[] MIDL_ProcFormatStringx64 = new byte[] {
+        private static byte[] MIDL_ProcFormatStringx64 = new byte[]
+        {
                 0x00,0x48,0x00,0x00,0x00,0x00,0x00,0x00,0x20,0x00,0x31,0x08,0x00,0x00,0x00,0x5c,0x22,0x00,0x40,0x00,0x44,0x04,0x0a,0x01,0x00,0x00,0x00,0x00,0x00,0x00,
                 0x00,0x00,0x0a,0x00,0x00,0x00,0x02,0x00,0x10,0x01,0x08,0x00,0x0a,0x00,0x48,0x00,0x10,0x00,0x08,0x00,0x70,0x00,0x18,0x00,0x08,0x00,0x00,0x48,0x00,0x00,
                 0x00,0x00,0x01,0x00,0x10,0x00,0x30,0xe0,0x00,0x00,0x00,0x00,0x38,0x00,0x40,0x00,0x44,0x02,0x0a,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x01,
@@ -70,7 +70,8 @@ namespace PingCastle.RPC
                 0x00
         };
 
-        private static byte[] MIDL_TypeFormatStringx86 = new byte[] {
+        private static byte[] MIDL_TypeFormatStringx86 = new byte[]
+        {
                 0x00,0x00,0x12,0x08,0x05,0x5c,0x11,0x04,0x02,0x00,0x30,0xa0,0x00,0x00,0x11,0x04,0x02,0x00,0x30,0xe1,0x00,0x00,0x30,0x41,0x00,0x00,0x11,0x00,0x14,0x00,
                 0x1c,0x01,0x02,0x00,0x17,0x55,0x02,0x00,0x01,0x00,0x17,0x55,0x00,0x00,0x01,0x00,0x05,0x5b,0x16,0x03,0x08,0x00,0x4b,0x5c,0x46,0x5c,0x04,0x00,0x04,0x00,
                 0x12,0x00,0xe0,0xff,0x5b,0x06,0x06,0x08,0x5c,0x5b,0x11,0x14,0x02,0x00,0x12,0x00,0x1e,0x00,0x1d,0x00,0x06,0x00,0x01,0x5b,0x15,0x00,0x06,0x00,0x4c,0x00,
@@ -82,7 +83,8 @@ namespace PingCastle.RPC
                 0x00,0x01,0x00
         };
 
-        private static byte[] MIDL_TypeFormatStringx64 = new byte[] {
+        private static byte[] MIDL_TypeFormatStringx64 = new byte[]
+        {
                 0x00,0x00,0x12,0x08,0x05,0x5c,0x11,0x04,0x02,0x00,0x30,0xa0,0x00,0x00,0x11,0x04,0x02,0x00,0x30,0xe1,0x00,0x00,0x30,0x41,0x00,0x00,0x11,0x00,0x14,0x00,
                 0x1c,0x01,0x02,0x00,0x17,0x55,0x02,0x00,0x01,0x00,0x17,0x55,0x00,0x00,0x01,0x00,0x05,0x5b,0x1a,0x03,0x10,0x00,0x00,0x00,0x08,0x00,0x06,0x06,0x40,0x36,
                 0x5c,0x5b,0x12,0x00,0xde,0xff,0x11,0x14,0x02,0x00,0x12,0x00,0x1e,0x00,0x1d,0x00,0x06,0x00,0x01,0x5b,0x15,0x00,0x06,0x00,0x4c,0x00,0xf4,0xff,0x5c,0x5b,
@@ -97,7 +99,9 @@ namespace PingCastle.RPC
         {
             public UInt32 EntriesRead;
             public IntPtr Buffer;
-        };
+        }
+
+;
 
         [StructLayout(LayoutKind.Sequential)]
         private struct SAMPR_RID_ENUMERATION
@@ -106,7 +110,9 @@ namespace PingCastle.RPC
             public UInt16 Length;
             public UInt16 MaximumLength;
             public IntPtr buffer;
-        };
+        }
+
+;
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         public samr2()
@@ -120,6 +126,7 @@ namespace PingCastle.RPC
             {
                 InitializeStub(interfaceId, MIDL_ProcFormatStringx86, MIDL_TypeFormatStringx86, "\\pipe\\samr");
             }
+
             UseNullSession = true;
         }
 
@@ -169,8 +176,11 @@ namespace PingCastle.RPC
             finally
             {
                 if (intptrServer != IntPtr.Zero)
+                {
                     Marshal.FreeHGlobal(intptrServer);
+                }
             }
+
             return (int)result.ToInt64();
         }
 
@@ -207,6 +217,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("SamrCloseHandle failed 0x" + Marshal.GetExceptionCode().ToString("x"));
                 return Marshal.GetExceptionCode();
             }
+
             return (int)result.ToInt64();
         }
 
@@ -250,6 +261,7 @@ namespace PingCastle.RPC
                         handle3.Free();
                     }
                 }
+
                 Buffer = Unmarshal_SAMR_ENUMRATION(IntptrBuffer);
             }
             catch (SEHException)
@@ -258,6 +270,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("SamrEnumerateDomainsInSamServer failed 0x" + Marshal.GetExceptionCode().ToString("x"));
                 return Marshal.GetExceptionCode();
             }
+
             return (int)result.ToInt64();
         }
 
@@ -265,7 +278,10 @@ namespace PingCastle.RPC
         private SAMR_ENUMERATION_ENTRY[] Unmarshal_SAMR_ENUMRATION(IntPtr IntptrBuffer)
         {
             if (IntptrBuffer == IntPtr.Zero)
+            {
                 return null;
+            }
+
             SAMPR_ENUMERATION_BUFFER Buffer = (SAMPR_ENUMERATION_BUFFER)Marshal.PtrToStructure(IntptrBuffer, typeof(SAMPR_ENUMERATION_BUFFER));
 
             SAMR_ENUMERATION_ENTRY[] output = new SAMR_ENUMERATION_ENTRY[Buffer.EntriesRead];
@@ -277,10 +293,16 @@ namespace PingCastle.RPC
                 output[i].RelativeId = ridenumaration.RelativeId.ToInt64();
                 output[i].Name = Marshal.PtrToStringUni(ridenumaration.buffer, ridenumaration.Length / 2);
                 if (ridenumaration.buffer != IntPtr.Zero && ridenumaration.MaximumLength > 0)
+                {
                     FreeMemory(ridenumaration.buffer);
+                }
             }
+
             if (Buffer.Buffer != IntPtr.Zero)
+            {
                 FreeMemory(Buffer.Buffer);
+            }
+
             FreeMemory(IntptrBuffer);
             return output;
         }
@@ -320,6 +342,7 @@ namespace PingCastle.RPC
                             handle2.Free();
                         }
                     }
+
                     DomainId = new SecurityIdentifier(sid);
                     FreeMemory(sid);
                 }
@@ -329,6 +352,7 @@ namespace PingCastle.RPC
                     return Marshal.GetExceptionCode();
                 }
             }
+
             return (int)result.ToInt64();
         }
 
@@ -371,6 +395,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("SamrOpenDomain failed 0x" + Marshal.GetExceptionCode().ToString("x"));
                 return Marshal.GetExceptionCode();
             }
+
             return (int)result.ToInt64();
         }
 
@@ -414,6 +439,7 @@ namespace PingCastle.RPC
                         handle3.Free();
                     }
                 }
+
                 Buffer = Unmarshal_SAMR_ENUMRATION(IntptrBuffer);
             }
             catch (SEHException)
@@ -422,6 +448,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("SamrEnumerateUsersInDomain failed 0x" + Marshal.GetExceptionCode().ToString("x"));
                 return Marshal.GetExceptionCode();
             }
+
             return (int)result.ToInt64();
         }
     }

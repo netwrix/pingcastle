@@ -18,11 +18,15 @@ namespace PingCastle.Healthcheck.Rules
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.DefaultOUChanged == null)
+            {
                 return null;
+            }
+
             foreach (var c in healthcheckData.DefaultOUChanged)
             {
                 AddRawDetail(c.Expected, c.Found);
             }
+
             return null;
         }
     }

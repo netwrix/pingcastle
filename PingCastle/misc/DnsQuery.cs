@@ -74,8 +74,10 @@ namespace PingCastle.misc
                                 Trace.WriteLine("DNS: type: " + partialDnsRecord.type + " value: " + partialDnsRecord.name);
                                 break;
                         }
+
                         intPtr = partialDnsRecord.next;
                     }
+
                     return true;
                 }
                 finally
@@ -86,10 +88,12 @@ namespace PingCastle.misc
                     }
                 }
             }
+
             if (num != 0)
             {
                 Trace.WriteLine("DnsQuery for zone transfert returned " + num);
             }
+
             return false;
         }
 
@@ -114,7 +118,6 @@ namespace PingCastle.misc
             const int mdnsPort = 5353;
             using (var udpClient = new UdpClient())
             {
-
                 try
                 {
                     udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
@@ -216,6 +219,7 @@ namespace PingCastle.misc
                 {
                     var error = Marshal.GetLastWin32Error();
                 }
+
                 var intPtr = dnsResultList;
                 while (intPtr != IntPtr.Zero)
                 {
@@ -227,6 +231,7 @@ namespace PingCastle.misc
                             Trace.WriteLine("DNS: type: " + partialDnsRecord.type + " value: " + partialDnsRecord.name);
                             break;
                     }
+
                     intPtr = partialDnsRecord.next;
                 }
             }
@@ -238,7 +243,6 @@ namespace PingCastle.misc
                 }
             }
         }
-
     }
 }
 

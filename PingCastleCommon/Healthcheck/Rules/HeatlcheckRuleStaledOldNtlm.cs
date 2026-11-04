@@ -14,13 +14,13 @@ namespace PingCastle.Healthcheck.Rules
     [RuleMitreAttackTechnique(MitreAttackTechnique.ManintheMiddleLLMNRNBTNSPoisoningandSMBRelay)]
     [RuleANSSI("R37", "paragraph.3.6.2.1")]
     [RuleMaturityLevel(2)]
-    [RuleIntroducedIn(2,11,2)]
+    [RuleIntroducedIn(2, 11, 2)]
     public class HeatlcheckRuleStaledOldNtlm : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             var gpo = new Dictionary<IGPOReference, int>();
-            
+
             if (healthcheckData.GPOLsaPolicy != null)
             {
                 foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
@@ -39,7 +39,7 @@ namespace PingCastle.Healthcheck.Rules
             }
 
             var o = ApplyGPOPrority2(healthcheckData, gpo);
-           
+
             bool found = false;
             foreach (var v in o)
             {
@@ -49,11 +49,12 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(v.Key.GPOName, v.Value);
                 }
             }
-            
+
             if (!found)
             {
                 AddRawDetail("Windows default without an active GPO", "3");
             }
+
             return null;
         }
     }

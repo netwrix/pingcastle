@@ -16,9 +16,15 @@ namespace PingCastle.Scanners
 {
     public class nullsessionTrustScanner : IScanner
     {
+        public string Name
+        {
+            get { return "nullsession-trust"; }
+        }
 
-        public string Name { get { return "nullsession-trust"; } }
-        public string Description { get { return "Dump the trusts of a domain via null session if possible"; } }
+        public string Description
+        {
+            get { return "Dump the trusts of a domain via null session if possible"; }
+        }
 
         RuntimeSettings Settings;
 
@@ -44,6 +50,7 @@ namespace PingCastle.Scanners
                 DisplayAdvancement("Error " + res + " (" + new Win32Exception(res).Message + ")");
                 return;
             }
+
             DisplayAdvancement("Success - " + domains.Count + " trusts found");
             using (StreamWriter sw = File.CreateText(filename))
             {

@@ -22,10 +22,12 @@ namespace PingCastle.Healthcheck.Rules
             {
                 AddRawDetail("Domain", ReportHelper.DecodeDomainFunctionalLevel(healthcheckData.DomainFunctionalLevel));
             }
+
             if (healthcheckData.ForestFunctionalLevel < 4)
             {
                 AddRawDetail("Forest", ReportHelper.DecodeForestFunctionalLevel(healthcheckData.ForestFunctionalLevel));
             }
+
             return null;
         }
     }

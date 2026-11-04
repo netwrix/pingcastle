@@ -45,8 +45,8 @@ namespace PingCastle.RPC
 
     public class lsa : rpcapi
     {
-
-        private static byte[] MIDL_ProcFormatStringx86 = new byte[] {
+        private static byte[] MIDL_ProcFormatStringx86 = new byte[]
+        {
             0x00,0x48,0x00,0x00,0x00,0x00,0x00,0x00,0x08,0x00,0x30,0xe0,0x00,0x00,0x00,0x00,0x38,0x00,0x40,0x00,0x44,0x02,0x08,0x01,0x00,0x00,0x00,0x00,0x00,0x00,
             0x18,0x01,0x00,0x00,0x06,0x00,0x70,0x00,0x04,0x00,0x08,0x00,0x00,0x48,0x00,0x00,0x00,0x00,0x01,0x00,0x04,0x00,0x32,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
             0x40,0x00,0x08,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x48,0x00,0x00,0x00,0x00,0x02,0x00,0x04,0x00,0x32,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x40,0x00,
@@ -68,7 +68,8 @@ namespace PingCastle.RPC
             0x1b,0x01,0x0c,0x00,0x86,0x03,0x48,0x00,0x10,0x00,0x0d,0x00,0x58,0x01,0x14,0x00,0x08,0x00,0x70,0x00,0x18,0x00,0x08,0x00,0x00
             };
 
-        private static byte[] MIDL_ProcFormatStringx64 = new byte[] {
+        private static byte[] MIDL_ProcFormatStringx64 = new byte[]
+        {
             0x00,0x48,0x00,0x00,0x00,0x00,0x00,0x00,0x10,0x00,0x30,0xe0,0x00,0x00,0x00,0x00,0x38,0x00,0x40,0x00,0x44,0x02,0x0a,0x01,0x00,0x00,0x00,0x00,0x00,0x00,
             0x00,0x00,0x18,0x01,0x00,0x00,0x06,0x00,0x70,0x00,0x08,0x00,0x08,0x00,0x00,0x48,0x00,0x00,0x00,0x00,0x01,0x00,0x08,0x00,0x32,0x00,0x00,0x00,0x00,0x00,
             0x00,0x00,0x40,0x00,0x0a,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x48,0x00,0x00,0x00,0x00,0x02,0x00,0x08,0x00,0x32,0x00,0x00,0x00,0x00,0x00,
@@ -91,7 +92,8 @@ namespace PingCastle.RPC
             0x88,0x02,0x1b,0x01,0x18,0x00,0x00,0x03,0x48,0x00,0x20,0x00,0x0d,0x00,0x58,0x01,0x28,0x00,0x08,0x00,0x70,0x00,0x30,0x00,0x08,0x00,0x00
         };
 
-        private static byte[] MIDL_TypeFormatStringx86 = new byte[] {
+        private static byte[] MIDL_TypeFormatStringx86 = new byte[]
+        {
             0x00,0x00,0x11,0x04,0x02,0x00,0x30,0xe1,0x00,0x00,0x12,0x08,0x05,0x5c,0x11,0x00,0xb0,0x00,0x1c,0x00,0x01,0x00,0x17,0x00,0x02,0x00,0x01,0x00,0x17,0x00,
             0x00,0x00,0x01,0x00,0x02,0x5b,0x16,0x03,0x08,0x00,0x4b,0x5c,0x46,0x5c,0x04,0x00,0x04,0x00,0x12,0x00,0xe0,0xff,0x5b,0x06,0x06,0x08,0x5c,0x5b,0x1d,0x00,
             0x06,0x00,0x01,0x5b,0x15,0x00,0x06,0x00,0x4c,0x00,0xf4,0xff,0x5c,0x5b,0x1b,0x03,0x04,0x00,0x04,0x00,0xf9,0xff,0x01,0x00,0x08,0x5b,0x17,0x03,0x08,0x00,
@@ -125,7 +127,8 @@ namespace PingCastle.RPC
             0x5c,0x5b,0x1a,0x03,0x08,0x00,0x00,0x00,0x08,0x00,0x4c,0x00,0xc6,0xff,0x36,0x5b,0x12,0x00,0xda,0xff,0x11,0x08,0x08,0x5c,0x00
         };
 
-        private static byte[] MIDL_TypeFormatStringx64 = new byte[] {
+        private static byte[] MIDL_TypeFormatStringx64 = new byte[]
+        {
             0x00,0x00,0x11,0x04,0x02,0x00,0x30,0xe1,0x00,0x00,0x12,0x08,0x05,0x5c,0x11,0x00,0x96,0x00,0x1c,0x00,0x01,0x00,0x17,0x00,0x02,0x00,0x01,0x00,0x17,0x00,
             0x00,0x00,0x01,0x00,0x02,0x5b,0x1a,0x03,0x10,0x00,0x00,0x00,0x08,0x00,0x06,0x06,0x40,0x36,0x5c,0x5b,0x12,0x00,0xde,0xff,0x1d,0x00,0x06,0x00,0x01,0x5b,
             0x15,0x00,0x06,0x00,0x4c,0x00,0xf4,0xff,0x5c,0x5b,0x1b,0x03,0x04,0x00,0x04,0x00,0xf9,0xff,0x01,0x00,0x08,0x5b,0x17,0x03,0x08,0x00,0xf0,0xff,0x02,0x02,
@@ -197,7 +200,9 @@ namespace PingCastle.RPC
             public UInt16 MaximumLength;
             public IntPtr buffer;
             public IntPtr Sid;
-        };
+        }
+
+;
 
         [StructLayout(LayoutKind.Sequential)]
         private struct LSAPR_TRANSLATED_NAMES
@@ -228,6 +233,7 @@ namespace PingCastle.RPC
             {
                 InitializeStub(interfaceId, MIDL_ProcFormatStringx86, MIDL_TypeFormatStringx86, "\\pipe\\lsarpc", 0);
             }
+
             UseNullSession = true;
         }
 
@@ -280,8 +286,11 @@ namespace PingCastle.RPC
             finally
             {
                 if (intptrSystemName != IntPtr.Zero)
+                {
                     Marshal.FreeHGlobal(intptrSystemName);
+                }
             }
+
             return (int)result.ToInt64();
         }
 
@@ -318,6 +327,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("LsarClose failed 0x" + Marshal.GetExceptionCode().ToString("x"));
                 return Marshal.GetExceptionCode();
             }
+
             return (int)result.ToInt64();
         }
 
@@ -349,6 +359,7 @@ namespace PingCastle.RPC
                         handle1.Free();
                     }
                 }
+
                 PolicyInformation = Unmarshal_LSAPR_POLICY_ACCOUNT_DOM_INFO(IntPtrPolicyInformation);
             }
             catch (SEHException)
@@ -357,6 +368,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("LsarQueryInformationPolicy failed 0x" + Marshal.GetExceptionCode().ToString("x"));
                 return Marshal.GetExceptionCode();
             }
+
             return (int)result.ToInt64();
         }
 
@@ -364,16 +376,25 @@ namespace PingCastle.RPC
         private LSA_DOMAIN_INFORMATION Unmarshal_LSAPR_POLICY_ACCOUNT_DOM_INFO(IntPtr IntPtrPolicyInformation)
         {
             if (IntPtrPolicyInformation == IntPtr.Zero)
+            {
                 return null;
+            }
+
             LSAPR_POLICY_ACCOUNT_DOM_INFO Buffer = (LSAPR_POLICY_ACCOUNT_DOM_INFO)Marshal.PtrToStructure(IntPtrPolicyInformation, typeof(LSAPR_POLICY_ACCOUNT_DOM_INFO));
             LSA_DOMAIN_INFORMATION output = new LSA_DOMAIN_INFORMATION();
             output.DomainName = Marshal.PtrToStringUni(Buffer.buffer, Buffer.Length / 2);
             output.DomainSid = new SecurityIdentifier(Buffer.DomainSid);
 
             if (Buffer.buffer != IntPtr.Zero && Buffer.MaximumLength > 0)
+            {
                 FreeMemory(Buffer.buffer);
+            }
+
             if (Buffer.DomainSid != IntPtr.Zero)
+            {
                 FreeMemory(Buffer.DomainSid);
+            }
+
             FreeMemory(IntPtrPolicyInformation);
             return output;
         }
@@ -425,6 +446,7 @@ namespace PingCastle.RPC
                         handle4.Free();
                     }
                 }
+
                 if (result == IntPtr.Zero || result == new IntPtr(0x00000107))
                 {
                     LookupResult = Marshal_LsarLookupSids_Output(IntPtrReferencedDomains, IntPtrTranslatedNames);
@@ -442,6 +464,7 @@ namespace PingCastle.RPC
                     handle.Free();
                 }
             }
+
             return (int)result.ToInt64();
         }
 
@@ -459,6 +482,7 @@ namespace PingCastle.RPC
                 HandleToFree.Add(handlesid);
                 sidPtr[i] = handlesid.AddrOfPinnedObject();
             }
+
             GCHandle handle = GCHandle.Alloc(sidPtr, GCHandleType.Pinned);
             HandleToFree.Add(handle);
             output.SidInfo = handle.AddrOfPinnedObject();
@@ -469,7 +493,10 @@ namespace PingCastle.RPC
         private LSA_LOOKUP_RESULT[] Marshal_LsarLookupSids_Output(IntPtr IntPtrReferencedDomains, IntPtr IntPtrTranslatedNames)
         {
             if (IntPtrReferencedDomains == IntPtr.Zero || IntPtrTranslatedNames == IntPtr.Zero)
+            {
                 return null;
+            }
+
             LSAPR_REFERENCED_DOMAIN_LIST ReferencedDomains = (LSAPR_REFERENCED_DOMAIN_LIST)Marshal.PtrToStructure(IntPtrReferencedDomains, typeof(LSAPR_REFERENCED_DOMAIN_LIST));
             LSAPR_TRANSLATED_NAMES TranslatedNames = (LSAPR_TRANSLATED_NAMES)Marshal.PtrToStructure(IntPtrTranslatedNames, typeof(LSAPR_TRANSLATED_NAMES));
 
@@ -483,14 +510,24 @@ namespace PingCastle.RPC
                 LSAPR_TRUST_INFORMATION trustInformation = (LSAPR_TRUST_INFORMATION)Marshal.PtrToStructure(new IntPtr(ReferencedDomains.Domains.ToInt64() + SizeTrustInformation * i), typeof(LSAPR_TRUST_INFORMATION));
 
                 if (trustInformation.buffer != IntPtr.Zero)
+                {
                     referencedDomainsString[i] = Marshal.PtrToStringUni(trustInformation.buffer, trustInformation.Length / 2);
+                }
+
                 if (trustInformation.Sid != null)
+                {
                     referencedDomainsSid[i] = new SecurityIdentifier(trustInformation.Sid);
+                }
 
                 if (trustInformation.buffer != IntPtr.Zero && trustInformation.MaximumLength > 0)
+                {
                     FreeMemory(trustInformation.buffer);
+                }
+
                 if (trustInformation.Sid != IntPtr.Zero)
+                {
                     FreeMemory(trustInformation.Sid);
+                }
             }
 
             LSA_LOOKUP_RESULT[] output = new LSA_LOOKUP_RESULT[TranslatedNames.Entries];
@@ -500,13 +537,18 @@ namespace PingCastle.RPC
                 output[i] = new LSA_LOOKUP_RESULT();
 
                 if (translatedName.buffer != IntPtr.Zero)
+                {
                     output[i].TranslatedName = Marshal.PtrToStringUni(translatedName.buffer, translatedName.Length / 2);
+                }
+
                 output[i].Use = (SID_NAME_USE)translatedName.Use;
                 output[i].DomainName = referencedDomainsString[translatedName.DomainIndex];
                 output[i].DomainSid = referencedDomainsSid[translatedName.DomainIndex];
 
                 if (translatedName.buffer != IntPtr.Zero && translatedName.MaximumLength > 0)
+                {
                     FreeMemory(translatedName.buffer);
+                }
             }
 
             FreeMemory(ReferencedDomains.Domains);

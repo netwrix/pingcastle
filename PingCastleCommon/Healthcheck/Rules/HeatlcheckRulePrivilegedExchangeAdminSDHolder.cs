@@ -18,14 +18,15 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            foreach (HealthcheckDelegationData delegation in healthcheckData.Delegations)
+            foreach (HealthcheckDelegationData delegation in healthcheckData.Delegations ?? [])
             {
                 if (delegation.DistinguishedName == "AdminSDHolder"
-                    && delegation.Account.Contains("Exchange"))
+                    && delegation.Account?.Contains("Exchange") == true)
                 {
                     return 1;
                 }
             }
+
             return 0;
         }
     }

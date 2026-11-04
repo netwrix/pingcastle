@@ -18,7 +18,10 @@ namespace PingCastle.Healthcheck.Rules
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.ControlPaths == null)
+            {
                 return 0;
+            }
+
             foreach (var analysis in healthcheckData.ControlPaths.Data)
             {
                 if (analysis.Typology == Data.CompromiseGraphDataTypology.Infrastructure
@@ -30,6 +33,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

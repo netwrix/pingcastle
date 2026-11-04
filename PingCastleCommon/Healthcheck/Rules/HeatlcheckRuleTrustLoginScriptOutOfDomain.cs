@@ -27,6 +27,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(script.LoginScript);
                 }
             }
+
             foreach (HealthcheckGPOLoginScriptData script in healthcheckData.GPOLoginScript)
             {
                 if (IsForeignScript(script.CommandLine, healthcheckData) != null)
@@ -35,6 +36,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(script.CommandLine);
                 }
             }
+
             return null;
         }
 
@@ -48,12 +50,14 @@ namespace PingCastle.Healthcheck.Rules
                     Trace.WriteLine("Unable to parse the url: " + uristring);
                     return null;
                 }
+
                 // important, to avoid an exception in uri.IsUnc
                 if (!uri.IsAbsoluteUri)
                 {
                     Trace.WriteLine("The url is not absolute: " + uristring);
                     return null;
                 }
+
                 // try to find url matching server.domain.fqdn
                 if (uri.IsUnc && uri.Host.Contains("."))
                 {
@@ -70,9 +74,11 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         return null;
                     }
+
                     return server;
                 }
             }
+
             return null;
         }
     }

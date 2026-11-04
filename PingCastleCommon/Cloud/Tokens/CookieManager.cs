@@ -55,11 +55,15 @@ namespace PingCastle.Cloud.RESTServices
             {
                 throw new ApplicationException("Unable to retrieve the PRT. Is Windows support for Entra ID installed ? (" + ex.Message + "). You should use manual credential to login to Entra ID.");
             }
+
             IntPtr ptr;
             uint count;
             var error = provider.GetCookieInfoForUri(uri, out count, out ptr);
             if (error != 0)
+            {
                 throw new COMException("unable to call GetCookieInfoForUri", error);
+            }
+
             var offset = ptr;
             for (int i = 0; i < count; i++)
             {
@@ -71,5 +75,4 @@ namespace PingCastle.Cloud.RESTServices
             return output;
         }
     }
-
 }

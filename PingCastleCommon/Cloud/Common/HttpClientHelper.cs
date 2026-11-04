@@ -29,8 +29,10 @@ namespace PingCastle.Cloud.Common
                 {
                     query[item.Key] = item.Value;
                 }
+
                 builder.Query = query.ToString();
             }
+
             return builder.ToString();
         }
 
@@ -40,6 +42,7 @@ namespace PingCastle.Cloud.Common
             {
                 _generator.Dispose();
             }
+
             _generator = generator;
             if (_cachedHttpClient != null)
             {
@@ -47,27 +50,45 @@ namespace PingCastle.Cloud.Common
                 _cachedHttpClient = null;
             }
         }
+
         static SazGenerator _generator;
 
         public static async Task<int> LogNavigatingAsync(Uri url)
         {
             if (_generator == null)
+            {
                 return 0;
+            }
+
             if (url.Scheme == "res")
+            {
                 url = new Uri(url.ToString().Replace("res://", "http://"));
+            }
+
             if (url.Scheme != "http" && url.Scheme != "https")
+            {
                 return 0;
+            }
+
             return await _generator.RecordBeginQueryAsync(new HttpRequestMessage(HttpMethod.Get, url));
         }
 
         public static async Task LogNavigatedAsync(int logSessionId, Uri url, string documentText)
         {
             if (_generator == null)
+            {
                 return;
+            }
+
             if (url.Scheme == "res")
+            {
                 url = new Uri(url.ToString().Replace("res://", "http://"));
+            }
+
             if (url.Scheme != "http" && url.Scheme != "https")
+            {
                 return;
+            }
 
             using (var ms = new MemoryStream())
             {
@@ -84,16 +105,22 @@ namespace PingCastle.Cloud.Common
         public static async Task<int> LogSoapBeginAsync(Message request)
         {
             if (_generator == null)
+            {
                 return 0;
+            }
 
             HttpRequestMessageProperty prop = null;
             if (request.Properties.ContainsKey("httpRequest"))
             {
                 prop = (HttpRequestMessageProperty)request.Properties["httpRequest"];
             }
+
             var m = HttpMethod.Get;
             if (prop != null && string.Equals(prop.Method, "post", StringComparison.OrdinalIgnoreCase))
+            {
                 m = HttpMethod.Post;
+            }
+
             var r = new HttpRequestMessage(m, request.Headers.Action);
             using (var ms = new MemoryStream())
             {
@@ -110,7 +137,9 @@ namespace PingCastle.Cloud.Common
         public static async Task LogSoapEndAsync(int logSessionId, Message request)
         {
             if (_generator == null)
+            {
                 return;
+            }
 
             using (var ms = new MemoryStream())
             {
@@ -122,7 +151,6 @@ namespace PingCastle.Cloud.Common
                 result.Content = new StreamContent(ms);
                 await _generator.RecordEndQueryAsync(logSessionId, result);
             }
-
         }
 
         public static string LogComment
@@ -130,13 +158,18 @@ namespace PingCastle.Cloud.Common
             get
             {
                 if (_generator != null)
+                {
                     return _generator.SessionComment;
+                }
+
                 return null;
             }
             set
             {
                 if (_generator != null)
+                {
                     _generator.SessionComment = value;
+                }
             }
         }
 
@@ -144,7 +177,9 @@ namespace PingCastle.Cloud.Common
         public static HttpClient GetHttpClient()
         {
             if (_cachedHttpClient != null)
+            {
                 return _cachedHttpClient;
+            }
 
             HttpMessageHandler handler = new HttpClientHandler()
             {

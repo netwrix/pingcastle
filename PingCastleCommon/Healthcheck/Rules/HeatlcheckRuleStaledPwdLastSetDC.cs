@@ -33,7 +33,10 @@ namespace PingCastle.Healthcheck.Rules
                         {
                             var test = riverbed.SamAccountName;
                             if (test.EndsWith("$"))
+                            {
                                 test = test.Substring(0, test.Length - 1);
+                            }
+
                             if (string.Equals(test, dc.DCName, StringComparison.OrdinalIgnoreCase))
                             {
                                 isException = true;
@@ -41,12 +44,14 @@ namespace PingCastle.Healthcheck.Rules
                             }
                         }
                     }
+
                     if (!isException)
                     {
                         AddRawDetail(dc.DCName, dc.PwdLastSet == DateTime.MinValue ? "Never" : dc.PwdLastSet.ToString("u"));
                     }
                 }
             }
+
             return null;
         }
     }

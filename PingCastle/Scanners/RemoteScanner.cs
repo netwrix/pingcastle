@@ -25,11 +25,18 @@ namespace PingCastle.Scanners
 
         private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
 
-        public override string Name { get { return "remote"; } }
-        public override string Description { get { return "Check if a remote desktop solution is installed on the computer."; } }
+        public override string Name
+        {
+            get { return "remote"; }
+        }
 
-        static Dictionary<string, string> RemoteReference = new Dictionary<string, string>{
+        public override string Description
+        {
+            get { return "Check if a remote desktop solution is installed on the computer."; }
+        }
 
+        static Dictionary<string, string> RemoteReference = new Dictionary<string, string>
+        {
             {"AeroadminService" , "Aero Admin"},
             {"AnyDesk" , "AnyDesk"},
             {"AmmyyAdmin" , "Ammyy Admin"},
@@ -71,8 +78,10 @@ namespace PingCastle.Scanners
         {
             var state = base.QueryForAdditionalParameterInInteractiveMode();
             if (state != DisplayState.Run)
-                return state; 
-            
+            {
+                return state;
+            }
+
             string input = null;
             customService.Clear();
             do
@@ -94,7 +103,8 @@ Or just press enter to use the default.";
                 {
                     break;
                 }
-            } while (true);
+            }
+            while (true);
             return DisplayState.Run;
         }
 
@@ -114,6 +124,7 @@ Or just press enter to use the default.";
                 sb.Append("\tUnable to connect\tPingCastle couldn't connect to the computer. The error was 0x" + ret.ToString("x"));
                 return sb.ToString();
             }
+
             var names = new NativeMethods.UNICODE_STRING[RemoteReference.Count + customService.Count];
             try
             {
@@ -124,12 +135,14 @@ Or just press enter to use the default.";
                     names[i].Initialize("NT Service\\" + entry.Key);
                     i++;
                 }
+
                 foreach (var entry in customService)
                 {
                     names[i] = new NativeMethods.UNICODE_STRING();
                     names[i].Initialize("NT Service\\" + entry);
                     i++;
                 }
+
                 IntPtr ReferencedDomains, Sids;
                 ret = NativeMethods.LsaLookupNames(PolicyHandle, names.Length, names, out ReferencedDomains, out Sids);
                 if (ret == 0xC0000073) //STATUS_NONE_MAPPED
@@ -138,6 +151,7 @@ Or just press enter to use the default.";
                     sb.Append("\tNo known service found\tIf you think that the information is incorrect, please contact PingCastle support to add the antivirus in the checked list.");
                     return sb.ToString();
                 }
+
                 if (ret != 0 && ret != 0x00000107) // ignore STATUS_SOME_NOT_MAPPED
                 {
                     Trace.WriteLine("LsaLookupNames 0x" + ret.ToString("x"));
@@ -145,6 +159,7 @@ Or just press enter to use the default.";
                     sb.Append("\tUnable to lookup\tPingCastle couldn't translate the SID to the computer. The error was 0x" + ret.ToString("x"));
                     return sb.ToString();
                 }
+
                 try
                 {
                     var domainList = (NativeMethods.LSA_REFERENCED_DOMAIN_LIST)Marshal.PtrToStructure(ReferencedDomains, typeof(NativeMethods.LSA_REFERENCED_DOMAIN_LIST));
@@ -152,6 +167,7 @@ Or just press enter to use the default.";
                     {
                         var trustInfo = (NativeMethods.LSA_TRUST_INFORMATION)Marshal.PtrToStructure(domainList.Domains, typeof(NativeMethods.LSA_TRUST_INFORMATION));
                     }
+
                     NativeMethods.LSA_TRANSLATED_SID[] translated;
                     MarshalUnmananagedArray2Struct<NativeMethods.LSA_TRANSLATED_SID>(Sids, names.Length, out translated);
 
@@ -165,14 +181,17 @@ Or just press enter to use the default.";
                             {
                                 sb.Append("\r\n");
                             }
+
                             sb.Append(computer);
                             sb.Append("\t");
                             sb.Append(entry.Key);
                             sb.Append("\t");
                             sb.Append(entry.Value);
                         }
+
                         i++;
                     }
+
                     foreach (var entry in customService)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
@@ -180,6 +199,7 @@ Or just press enter to use the default.";
                         {
                             sb.Append("\r\n");
                         }
+
                         sb.Append(computer);
                         sb.Append("\t");
                         sb.Append(entry);
@@ -202,6 +222,7 @@ Or just press enter to use the default.";
                     names[k].Dispose();
                 }
             }
+
             return sb.ToString();
         }
 

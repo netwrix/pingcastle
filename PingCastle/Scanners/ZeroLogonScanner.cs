@@ -11,8 +11,15 @@ namespace PingCastle.Scanners
         {
         }
 
-        public override string Name { get { return "zerologon"; } }
-        public override string Description { get { return "Test for the ZeroLogon vulnerability. Important: the tester must be inside the domain. Trusts cannot be used."; } }
+        public override string Name
+        {
+            get { return "zerologon"; }
+        }
+
+        public override string Description
+        {
+            get { return "Test for the ZeroLogon vulnerability. Important: the tester must be inside the domain. Trusts cannot be used."; }
+        }
 
         override protected string GetCsvHeader()
         {
@@ -45,6 +52,7 @@ namespace PingCastle.Scanners
                 {
                     return computer + "\t" + "Error 1: " + r.ToString("x");
                 }
+
                 r = I_NetServerAuthenticate2(computer, dcname + "$", ServerSecureChannel, dcname, ref Input, out LazyOutput, ref NegotiateFlags);
                 if (r == 0)
                 {
@@ -55,6 +63,7 @@ namespace PingCastle.Scanners
                     return computer + "\t" + "Error 3: " + r.ToString("x");
                 }
             }
+
             return computer + "\t" + "Error 2: " + r.ToString("x");
         }
 
@@ -69,6 +78,5 @@ namespace PingCastle.Scanners
         internal static extern int I_NetServerReqChallenge(string domain, string computer, ref NETLOGON_CREDENTIAL ClientChallenge, out NETLOGON_CREDENTIAL ServerChallenge);
         [DllImport("netapi32.dll", CharSet = CharSet.Unicode)]
         internal static extern int I_NetServerAuthenticate2(string domain, string account, int SecureChannelType, string computername, ref NETLOGON_CREDENTIAL ClientCredential, out NETLOGON_CREDENTIAL ServerCredential, ref int NegotiateFlags);
-
     }
 }

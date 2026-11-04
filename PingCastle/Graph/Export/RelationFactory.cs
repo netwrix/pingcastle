@@ -7,6 +7,7 @@
 using PingCastle.ADWS;
 using PingCastle.Graph.Database;
 using PingCastle.misc;
+using PingCastleCommon.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,7 +19,6 @@ using System.Text.RegularExpressions;
 
 namespace PingCastle.Graph.Export
 {
-
     public interface IRelationFactory
     {
         void AnalyzeADObject(ADItem aditem);
@@ -31,7 +31,6 @@ namespace PingCastle.Graph.Export
 
     public class RelationFactory : IRelationFactory
     {
-
         public IDataStorage Storage { get; set; }
         public ADDomainInfo DomainInfo { get; set; }
         public IADConnection adws { get; set; }
@@ -39,28 +38,35 @@ namespace PingCastle.Graph.Export
         private List<string> Files = new List<string>();
         private List<string> GPO = new List<string>();
 
-        public RelationFactory(IDataStorage storage, ADDomainInfo domainInfo, IADConnection connection)
+        private readonly IDictionary<string, string> remoteDomainHosts;
+
+        public RelationFactory(IDataStorage storage, ADDomainInfo domainInfo, IADConnection connection, IDictionary<string, string> remoteDomainHosts = null)
         {
             Storage = storage;
             DomainInfo = domainInfo;
             adws = connection;
+            this.remoteDomainHosts = remoteDomainHosts ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
-        public static KeyValuePair<Guid, RelationType>[] GuidsControlExtendedRights = new KeyValuePair<Guid, RelationType>[] {
+        public static KeyValuePair<Guid, RelationType>[] GuidsControlExtendedRights = new KeyValuePair<Guid, RelationType>[]
+        {
                     new KeyValuePair<Guid, RelationType>(new Guid("00299570-246d-11d0-a768-00aa006e0529"), RelationType.EXT_RIGHT_FORCE_CHANGE_PWD),
                     new KeyValuePair<Guid, RelationType>(new Guid("1131f6ad-9c07-11d1-f79f-00c04fc2dcd2"), RelationType.EXT_RIGHT_REPLICATION_GET_CHANGES_ALL),
                 };
 
-        public static KeyValuePair<Guid, RelationType>[] GuidsControlValidatedWrites = new KeyValuePair<Guid, RelationType>[] {
+        public static KeyValuePair<Guid, RelationType>[] GuidsControlValidatedWrites = new KeyValuePair<Guid, RelationType>[]
+        {
                         new KeyValuePair<Guid, RelationType>(new Guid("bc0ac240-79a9-11d0-9020-00c04fc2d4cf"),RelationType.WRITE_PROPSET_MEMBERSHIP),
                     };
 
-        public static KeyValuePair<Guid, RelationType>[] GuidsControlProperties = new KeyValuePair<Guid, RelationType>[] {
+        public static KeyValuePair<Guid, RelationType>[] GuidsControlProperties = new KeyValuePair<Guid, RelationType>[]
+        {
                         new KeyValuePair<Guid, RelationType>(new Guid("bf9679c0-0de6-11d0-a285-00aa003049e2"),RelationType.WRITE_PROP_MEMBER),
                         new KeyValuePair<Guid, RelationType>(new Guid("f30e3bbe-9ff0-11d1-b603-0000f80367c1"),RelationType.WRITE_PROP_GPLINK),
                         new KeyValuePair<Guid, RelationType>(new Guid("f30e3bc1-9ff0-11d0-b603-0000f80367c1"),RelationType.WRITE_PROP_GPC_FILE_SYS_PATH),
                     };
-        public static KeyValuePair<Guid, RelationType>[] GuidsControlPropertiesSets = new KeyValuePair<Guid, RelationType>[] {
+        public static KeyValuePair<Guid, RelationType>[] GuidsControlPropertiesSets = new KeyValuePair<Guid, RelationType>[]
+        {
                         new KeyValuePair<Guid, RelationType>(new Guid("bf9679c0-0de6-11d0-a285-00aa003049e2"),RelationType.VAL_WRITE_SELF_MEMBERSHIP),
                     };
 
@@ -70,11 +76,19 @@ namespace PingCastle.Graph.Export
         {
             var lapsAnalyzer = new PingCastle.Healthcheck.LAPSAnalyzer(adws);
             if (lapsAnalyzer.LegacyLAPSSchemaId != Guid.Empty)
+            {
                 GuidsReadProperties.Add(new KeyValuePair<Guid, RelationType>(lapsAnalyzer.LegacyLAPSSchemaId, RelationType.READ_PROP_MS_MCS_ADMPWD));
+            }
+
             if (lapsAnalyzer.MsLAPSSchemaId != Guid.Empty)
+            {
                 GuidsReadProperties.Add(new KeyValuePair<Guid, RelationType>(lapsAnalyzer.MsLAPSSchemaId, RelationType.READ_PROP_MS_LAPS_PASSWORD));
+            }
+
             if (lapsAnalyzer.MsLAPSEncryptedSchemaId != Guid.Empty)
+            {
                 GuidsReadProperties.Add(new KeyValuePair<Guid, RelationType>(lapsAnalyzer.MsLAPSEncryptedSchemaId, RelationType.READ_PROP_MS_LAPS_ENCRYPTED_PASSWORD));
+            }
         }
 
         // mapping from msDS-AllowedToDelegateTo
@@ -98,10 +112,14 @@ namespace PingCastle.Graph.Export
                     return;
                 }
             }
+
             Trace.WriteLine("Working on " + aditem.DistinguishedName);
             Storage.InsertNode(aditem);
             if (String.Equals(aditem.Class, "foreignsecurityprincipal", StringComparison.OrdinalIgnoreCase))
+            {
                 return;
+            }
+
             // membership, security descriptor, ...
             AddADRelation(aditem);
             // GPO, script
@@ -127,6 +145,7 @@ namespace PingCastle.Graph.Export
                 string file = SanitizeFileName(aditem.ScriptPath, "scripts");
                 Storage.InsertRelation(file, MappingType.FileName, aditem.DistinguishedName, MappingType.DistinguishedName, RelationType.scriptPath);
             }
+
             if (!String.IsNullOrEmpty(aditem.GPCFileSysPath))
             {
                 string file = SanitizeFileName(aditem.GPCFileSysPath, "Policies");
@@ -141,6 +160,7 @@ namespace PingCastle.Graph.Export
                 string parentcontainer = GetContainerDN(aditem.DistinguishedName);
                 Storage.InsertRelation(parentcontainer, MappingType.DistinguishedName, aditem.DistinguishedName, MappingType.DistinguishedName, RelationType.container_hierarchy);
             }
+
             if (aditem.Member != null)
             {
                 foreach (string member in aditem.Member)
@@ -148,6 +168,7 @@ namespace PingCastle.Graph.Export
                     Storage.InsertRelation(member, MappingType.DistinguishedName, aditem.DistinguishedName, MappingType.DistinguishedName, RelationType.group_member);
                 }
             }
+
             if (aditem.PrimaryGroupID > 0)
             {
                 // don't link users with Domain User or Domain Computers ! It will build a complicated graph else
@@ -156,10 +177,12 @@ namespace PingCastle.Graph.Export
                     Storage.InsertRelation(aditem.DistinguishedName, MappingType.DistinguishedName, DomainInfo.DomainSid + "-" + aditem.PrimaryGroupID, MappingType.Sid, RelationType.primary_group_member);
                 }
             }
+
             if (aditem.NTSecurityDescriptor != null)
             {
                 InsertSecurityDescriptorRelation(aditem);
             }
+
             if (delegations != null)
             {
                 List<string> sidDelegated = new List<string>();
@@ -168,17 +191,23 @@ namespace PingCastle.Graph.Export
                     foreach (var item in delegations[aditem.DNSHostName])
                     {
                         if (!sidDelegated.Contains(item))
+                        {
                             sidDelegated.Add(item);
+                        }
                     }
                 }
+
                 if (!string.IsNullOrEmpty(aditem.SAMAccountName) && delegations.ContainsKey(aditem.SAMAccountName.Replace("$", "")))
                 {
                     foreach (var item in delegations[aditem.SAMAccountName.Replace("$", "")])
                     {
                         if (!sidDelegated.Contains(item))
+                        {
                             sidDelegated.Add(item);
+                        }
                     }
                 }
+
                 foreach (var item in sidDelegated)
                 {
                     if (protocolTransitionSid.Contains(item))
@@ -191,14 +220,17 @@ namespace PingCastle.Graph.Export
                     }
                 }
             }
+
             if (aditem.msDSAllowedToActOnBehalfOfOtherIdentity != null)
             {
                 InsertDelegationRelation(aditem);
             }
+
             if (!String.IsNullOrEmpty(aditem.GPLink))
             {
                 InsertGPORelation(aditem);
             }
+
             if (aditem.SIDHistory != null)
             {
                 foreach (SecurityIdentifier sidHistory in aditem.SIDHistory)
@@ -224,6 +256,7 @@ namespace PingCastle.Graph.Export
             {
                 relationToAdd[targetsid] = new List<RelationType>();
             }
+
             if (!relationToAdd[targetsid].Contains(relationType))
             {
                 relationToAdd[targetsid].Add(relationType);
@@ -240,7 +273,6 @@ namespace PingCastle.Graph.Export
 
         private void InsertSecurityDescriptorRelation(ADItem aditem)
         {
-
             ActiveDirectorySecurity sd = aditem.NTSecurityDescriptor;
             Storage.InsertRelation(sd.GetOwner(typeof(SecurityIdentifier)).Value, MappingType.Sid, aditem.DistinguishedName, MappingType.DistinguishedName, RelationType.AD_OWNER);
             // relations can be duplicated - will slow down import 
@@ -250,7 +282,9 @@ namespace PingCastle.Graph.Export
             {
                 // ignore audit / denied ace
                 if (accessrule.AccessControlType != AccessControlType.Allow)
+                {
                     continue;
+                }
 
                 RelationType restrictedObject = RelationType.container_hierarchy;
 
@@ -262,6 +296,7 @@ namespace PingCastle.Graph.Export
                         continue;
                     }
                 }
+
                 if ((accessrule.ObjectFlags & ObjectAceFlags.InheritedObjectAceTypePresent) != 0)
                 {
                     restrictedObject = GetRestrictedToRelation(accessrule.InheritedObjectType.ToString().ToLowerInvariant());
@@ -286,18 +321,21 @@ namespace PingCastle.Graph.Export
                         IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.GEN_RIGHT_WRITE);
                         set = true;
                     }
+
                     // ADS_RIGHT_WRITE_DAC
                     if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.WriteDacl))
                     {
                         IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.ADS_RIGHT_WRITE_DAC);
                         set = true;
                     }
+
                     // ADS_RIGHT_WRITE_OWNER
                     if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.WriteOwner))
                     {
                         IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.ADS_RIGHT_WRITE_OWNER);
                         set = true;
                     }
+
                     if (accessrule.ObjectFlags == ObjectAceFlags.None)
                     {
                         // ADS_RIGHT_DS_CONTROL_ACCESS
@@ -306,12 +344,14 @@ namespace PingCastle.Graph.Export
                             IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.EXT_RIGHT_ALL);
                             set = true;
                         }
+
                         // ADS_RIGHT_DS_SELF
                         if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.Self))
                         {
                             IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.VAL_WRITE_ALL);
                             set = true;
                         }
+
                         // ADS_RIGHT_DS_WRITE_PROP
                         if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.WriteProperty))
                         {
@@ -333,6 +373,7 @@ namespace PingCastle.Graph.Export
                                 }
                             }
                         }
+
                         // ADS_RIGHT_DS_SELF
                         if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.Self))
                         {
@@ -345,6 +386,7 @@ namespace PingCastle.Graph.Export
                                 }
                             }
                         }
+
                         // ADS_RIGHT_DS_WRITE_PROP
                         if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.WriteProperty))
                         {
@@ -356,6 +398,7 @@ namespace PingCastle.Graph.Export
                                     set = true;
                                 }
                             }
+
                             foreach (KeyValuePair<Guid, RelationType> controlpropertyset in GuidsControlPropertiesSets)
                             {
                                 if (controlpropertyset.Key == accessrule.ObjectType)
@@ -365,6 +408,7 @@ namespace PingCastle.Graph.Export
                                 }
                             }
                         }
+
                         if (IsRightSetinAccessRule(accessrule, ActiveDirectoryRights.ReadProperty))
                         {
                             foreach (KeyValuePair<Guid, RelationType> controlproperty in GuidsReadProperties)
@@ -378,11 +422,13 @@ namespace PingCastle.Graph.Export
                         }
                     }
                 }
+
                 if (set && restrictedObject != RelationType.container_hierarchy && relationToAdd.ContainsKey(accessrule.IdentityReference.Value))
                 {
                     IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, restrictedObject);
                 }
             }
+
             foreach (string target in relationToAdd.Keys)
             {
                 foreach (RelationType link in relationToAdd[target])
@@ -433,7 +479,10 @@ namespace PingCastle.Graph.Export
         {
             Match m = re.Match(dn);
             if (!m.Success)
+            {
                 return String.Empty;
+            }
+
             return m.Groups[2].Value;
         }
 
@@ -452,6 +501,7 @@ namespace PingCastle.Graph.Export
                     Trace.WriteLine("Unable to parse the url: " + fileName);
                     return;
                 }
+
                 if (!uri.IsUnc)
                 {
                     Trace.WriteLine("File " + fileName + " is not a unc path");
@@ -467,6 +517,14 @@ namespace PingCastle.Graph.Export
                     uri = builder.Uri;
                     Trace.WriteLine("Change " + fileName + " by " + uri.LocalPath);
                 }
+                else if (remoteDomainHosts.TryGetValue(uri.Host, out string remoteHost) && !string.IsNullOrEmpty(remoteHost))
+                {
+                    UriBuilder builder = new UriBuilder(uri);
+                    builder.Host = remoteHost;
+                    uri = builder.Uri;
+                    Trace.WriteLine("Change " + fileName.SanitizeForLog() + " by " + uri.LocalPath.SanitizeForLog());
+                }
+
                 string alternativeFilepath = uri.LocalPath;
 
                 FileSystemSecurity fss = null;
@@ -479,6 +537,7 @@ namespace PingCastle.Graph.Export
                 {
                     fss = adws.FileConnection.GetFileSecurity(alternativeFilepath);
                 }
+
                 InsertFileDescriptorRelation(fileName, fss, false, null, fileName, MappingType.FileName);
             }
             catch (UnauthorizedAccessException)
@@ -500,7 +559,10 @@ namespace PingCastle.Graph.Export
             {
                 // analyse SD of files in directory
                 if (!adws.FileConnection.DirectoryExists(gpoPath))
+                {
                     return;
+                }
+
                 // is the subdirectory an inheritage ?
                 InsertFileDescriptorRelation(gpoPath, adws.FileConnection.GetDirectorySecurity(gpoPath), false, null, gpoPath, MappingType.GPODirectory);
 
@@ -510,12 +572,15 @@ namespace PingCastle.Graph.Export
                     {
                         AnalyzeGPOItem(adws, gpoPath, applyTo, "Scripts\\" + scriptconfig, "Configuration file defining login/logoff scripts", AnalyzeLoginLogoffScript);
                     }
+
                     if (string.Equals(applyTo, "Machine"))
                     {
                         AnalyzeGPOItem(adws, gpoPath, applyTo, "Microsoft\\Windows nt\\SecEdit\\GptTmpl.inf", "Configuration file defining local privileges", AnalyseGPTINI);
                     }
+
                     AnalyzeGPOItem(adws, gpoPath, applyTo, "Registry.pol", "Configuration file whose settings are copied to the registry", null);
                 }
+
                 // TODO: msi !!!
             }
             catch (UnauthorizedAccessException)
@@ -538,7 +603,6 @@ namespace PingCastle.Graph.Export
             string path = adws.FileConnection.PathCombine(adws.FileConnection.PathCombine(gpoPath, applyTo), artefactPath);
             try
             {
-
                 var PathFragment = artefactPath.Split(new char[] { '\\', '/' });
                 string dirpath = adws.FileConnection.PathCombine(gpoPath, applyTo);
                 Dictionary<string, List<RelationType>> relationToAdd = null;
@@ -568,12 +632,18 @@ namespace PingCastle.Graph.Export
                             break;
                         }
                     }
+
                     var o = AnalyzeFileSecurityDescriptor(dirpath, fs, true);
                     if (relationToAdd == null)
+                    {
                         relationToAdd = o;
+                    }
                     else
+                    {
                         relationToAdd = CombineSDAnalysis(relationToAdd, o);
+                    }
                 }
+
                 if (relationToAdd != null)
                 {
                     foreach (string target in relationToAdd.Keys)
@@ -589,7 +659,6 @@ namespace PingCastle.Graph.Export
 
                 if (adws.FileConnection.FileExists(path))
                 {
-
                     Storage.InsertFileNode(path, artefactDescription);
                     Storage.InsertRelation(path, MappingType.FileName, gpoPath, MappingType.GPODirectory, RelationType.container_hierarchy);
                     if (processGPOItem != null)
@@ -660,6 +729,7 @@ namespace PingCastle.Graph.Export
                         {
                             break;
                         }
+
                         AnalyzeScript(configPath, logonscript[i + "cmdline"], (string.Equals(applyTo, "Machine", StringComparison.InvariantCultureIgnoreCase) ? RelationType.Startup_Script : RelationType.Logon_Script));
                     }
 
@@ -669,6 +739,7 @@ namespace PingCastle.Graph.Export
                         {
                             break;
                         }
+
                         AnalyzeScript(configPath, logoffscript[i + "cmdline"], (string.Equals(applyTo, "Machine", StringComparison.InvariantCultureIgnoreCase) ? RelationType.ShutdownScript : RelationType.Logoff_Script));
                     }
                 }
@@ -678,9 +749,15 @@ namespace PingCastle.Graph.Export
         private void AnalyzeScript(string filenode, string script, RelationType relationType)
         {
             if (!script.Contains("\\"))
+            {
                 return;
+            }
+
             if (!script.StartsWith("\\\\"))
+            {
                 return;
+            }
+
             try
             {
                 Storage.InsertFileNode(script);
@@ -699,7 +776,8 @@ namespace PingCastle.Graph.Export
 
         private void AnalyseGPTINI(string gpoPath, string applyTo, string artefactPath)
         {
-            RelationType[] privileges = new RelationType[] {
+            RelationType[] privileges = new RelationType[]
+            {
                 RelationType.SeBackupPrivilege,
                 RelationType.SeCreateTokenPrivilege,
                 RelationType.SeDebugPrivilege,
@@ -730,18 +808,23 @@ namespace PingCastle.Graph.Export
                                         {
                                             // ignore empty privilege assignment
                                             if (String.IsNullOrEmpty(user))
+                                            {
                                                 continue;
+                                            }
+
                                             // ignore well known sid
                                             //
                                             if (user.StartsWith("*S-1-5-32-", StringComparison.InvariantCultureIgnoreCase))
                                             {
                                                 continue;
                                             }
+
                                             // Local system
                                             if (user.StartsWith("*S-1-5-18", StringComparison.InvariantCultureIgnoreCase))
                                             {
                                                 continue;
                                             }
+
                                             if (user.StartsWith("*S-1", StringComparison.InvariantCultureIgnoreCase))
                                             {
                                                 Storage.InsertRelation(user.Substring(1), MappingType.Sid, gpoPath, MappingType.FileName, privilege);
@@ -768,10 +851,16 @@ namespace PingCastle.Graph.Export
             foreach (RegistryPolRecord record in reader.SearchRecord(@"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run"))
             {
                 if (record.Value == "**delvals.")
+                {
                     continue;
+                }
+
                 string filename = Encoding.Unicode.GetString(record.ByteValue).Trim();
                 if (string.IsNullOrEmpty(filename))
+                {
                     continue;
+                }
+
                 filename = filename.Replace("\0", string.Empty);
                 // this is bad, I'm assuming that the file name doesn't contain any space which is wrong.
                 // but a real command line parsing will bring more anomalies.
@@ -802,6 +891,7 @@ namespace PingCastle.Graph.Export
                     }
                 }
             }
+
             return newRelation;
         }
 
@@ -811,19 +901,29 @@ namespace PingCastle.Graph.Export
             foreach (var key in input1.Keys)
             {
                 if (!relationToAdd.ContainsKey(key))
+                {
                     relationToAdd[key] = new List<RelationType>();
+                }
+
                 relationToAdd[key].AddRange(input1[key]);
             }
+
             foreach (var key in input2.Keys)
             {
                 if (!relationToAdd.ContainsKey(key))
+                {
                     relationToAdd[key] = new List<RelationType>();
+                }
+
                 foreach (var t in input2[key])
                 {
                     if (!relationToAdd[key].Contains(t))
+                    {
                         relationToAdd[key].Add(t);
+                    }
                 }
             }
+
             return relationToAdd;
         }
 
@@ -836,10 +936,14 @@ namespace PingCastle.Graph.Export
             {
                 // ignore audit / denied ace
                 if (accessrule.AccessControlType != AccessControlType.Allow)
+                {
                     continue;
+                }
 
                 if (skipInherited && accessrule.IsInherited)
+                {
                     continue;
+                }
 
                 // GEN_RIGHT_ALL
                 if (IsRightSetinAccessRule(accessrule, FileSystemRights.FullControl))
@@ -853,21 +957,25 @@ namespace PingCastle.Graph.Export
                     {
                         IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.GEN_RIGHT_WRITE);
                     }
+
                     // STAND_RIGHT_WRITE_DAC
                     if (IsRightSetinAccessRule(accessrule, FileSystemRights.ChangePermissions))
                     {
                         IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.STAND_RIGHT_WRITE_DAC);
                     }
+
                     // STAND_RIGHT_WRITE_OWNER
                     if (IsRightSetinAccessRule(accessrule, FileSystemRights.TakeOwnership))
                     {
                         IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.STAND_RIGHT_WRITE_OWNER);
                     }
+
                     // FILE_WRITEDATA_ADDFILE
                     if (IsRightSetinAccessRule(accessrule, FileSystemRights.WriteData))
                     {
                         IncludeRelationInDictionary(relationToAdd, accessrule.IdentityReference.Value, RelationType.FS_RIGHT_WRITEDATA_ADDFILE);
                     }
+
                     // FILE_APPENDDATA_ADDSUBDIR
                     if (IsRightSetinAccessRule(accessrule, FileSystemRights.AppendData))
                     {
@@ -875,6 +983,7 @@ namespace PingCastle.Graph.Export
                     }
                 }
             }
+
             return relationToAdd;
         }
 
@@ -888,5 +997,4 @@ namespace PingCastle.Graph.Export
             return (accessrule.FileSystemRights & right) == right;
         }
     }
-
 }

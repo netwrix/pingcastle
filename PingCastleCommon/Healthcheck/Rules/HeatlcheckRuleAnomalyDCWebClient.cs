@@ -24,6 +24,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(DC.DCName);
                 }
             }
+
             return null;
         }
     }

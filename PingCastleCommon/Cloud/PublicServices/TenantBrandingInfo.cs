@@ -35,7 +35,6 @@ namespace PingCastle.Cloud.PublicServices
         public TenantBrandingInfoLayoutTemplateConfig LayoutTemplateConfig { get; set; }
         [DataMember]
         public TenantBrandingInfoCustomizationFiles CustomizationFiles { get; set; }
-
     }
 
     [DataContractAttribute]
@@ -61,7 +60,6 @@ namespace PingCastle.Cloud.PublicServices
         public bool hideTOU { get; set; }
         [DataMember]
         public bool hidePrivacy { get; set; }
-
     }
 
     [DataContractAttribute]
@@ -71,7 +69,6 @@ namespace PingCastle.Cloud.PublicServices
         public TenantBrandingInfoCustomizationFilesStrings strings { get; set; }
         [DataMember]
         public string customCssUrl { get; set; }
-
     }
 
     [DataContractAttribute]
@@ -85,6 +82,5 @@ namespace PingCastle.Cloud.PublicServices
         public string authenticatorNudgeScreen { get; set; }
         [DataMember]
         public string conditionalAccess { get; set; }
-
     }
 }

@@ -27,15 +27,18 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         continue;
                     }
+
                     var refGPO = healthcheckData.GPOInfoDic[policy.GPOId];
                     if (refGPO.IsDisabled)
                     {
                         continue;
                     }
+
                     if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
                     {
                         continue;
                     }
+
                     foreach (GPPSecurityPolicyProperty property in policy.Properties)
                     {
                         if (string.Equals(property.Property, "SrvsvcSessionInfo", StringComparison.OrdinalIgnoreCase))
@@ -45,8 +48,12 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             if (!found)
+            {
                 return 1;
+            }
+
             return 0;
         }
     }

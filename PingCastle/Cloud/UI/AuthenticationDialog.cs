@@ -115,7 +115,9 @@ namespace PingCastle.Cloud.UI
                     // interaction_required
                     _ => new PingCastleCloudException(
                         $"Unable to authenticate ({result.Error}) : {result.ErrorDescription}")
-                };
+                }
+
+;
             }
 
             var service = AzureServiceAttribute.GetAzureServiceAttribute<T>();

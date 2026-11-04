@@ -24,6 +24,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(u.Name);
                 }
             }
+
             return healthcheckData.UnixPasswordUsersCount;
         }
     }

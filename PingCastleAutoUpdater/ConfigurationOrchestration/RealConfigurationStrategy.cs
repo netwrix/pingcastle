@@ -134,7 +134,13 @@ public class RealConfigurationStrategy : ConfigurationStrategyBase
             // Clean up temp files
             if (File.Exists(tempConvertedJsonPath))
             {
-                try { File.Delete(tempConvertedJsonPath); } catch { }
+                try
+                {
+                    File.Delete(tempConvertedJsonPath);
+                }
+                catch
+                {
+                }
             }
 
             // Backup the old XML config file since it's been migrated
@@ -187,7 +193,13 @@ public class RealConfigurationStrategy : ConfigurationStrategyBase
             // Clean up temporary JSON backup
             if (tempJsonBackupPath != null && File.Exists(tempJsonBackupPath))
             {
-                try { File.Delete(tempJsonBackupPath); } catch { }
+                try
+                {
+                    File.Delete(tempJsonBackupPath);
+                }
+                catch
+                {
+                }
             }
         }
     }
@@ -621,7 +633,13 @@ public class RealConfigurationStrategy : ConfigurationStrategyBase
                     {
                         Console.WriteLine($"Warning: Could not replace in-use file '{entryFullName}': {ex.Message}");
                         // Clean up temp file
-                        try { File.Delete(tempFileName); } catch { }
+                        try
+                        {
+                            File.Delete(tempFileName);
+                        }
+                        catch
+                        {
+                        }
                     }
 
                     return;
@@ -634,4 +652,4 @@ public class RealConfigurationStrategy : ConfigurationStrategyBase
             }
         }
     }
-    }
+}

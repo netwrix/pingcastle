@@ -44,9 +44,15 @@ namespace PingCastle.Graph.Database
             get
             {
                 if (!string.IsNullOrEmpty(FileName))
+                {
                     return FileName;
+                }
+
                 if (string.IsNullOrEmpty(Dn))
+                {
                     return Sid;
+                }
+
                 return Dn;
             }
         }

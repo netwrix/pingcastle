@@ -32,6 +32,7 @@ namespace PingCastle.Healthcheck.Rules
                             skip = true;
                             break;
                         }
+
                         if (trust.KnownDomains != null)
                         {
                             foreach (HealthCheckTrustDomainInfoData kd in trust.KnownDomains)
@@ -43,15 +44,20 @@ namespace PingCastle.Healthcheck.Rules
                                 }
                             }
                         }
+
                         if (skip)
+                        {
                             break;
+                        }
                     }
                 }
+
                 if (!skip && TrustAnalyzer.GetTGTDelegation(trust) == "Yes")
                 {
                     AddRawDetail(trust.TrustPartner);
                 }
             }
+
             return null;
         }
     }

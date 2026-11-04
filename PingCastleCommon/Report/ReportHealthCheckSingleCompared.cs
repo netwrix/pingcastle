@@ -6,7 +6,9 @@ namespace PingCastle.Report
     {
         HealthcheckData[] Reports;
 
-        public ReportHealthCheckSingleCompared(ADHealthCheckingLicense license) : base(license) { }
+        public ReportHealthCheckSingleCompared(ADHealthCheckingLicense license) : base(license)
+        {
+        }
 
         public string GenerateRawContent(HealthcheckData[] reports)
         {

@@ -92,6 +92,7 @@
             }
             set => _customerNotice = value;
         }
+
         public string Edition
         {
             get
@@ -245,6 +246,7 @@
                                     _licensedUserCount = BitConverter.ToInt32(data, 0);
                                     break;
                             }
+
                             ms2.Write(BitConverter.GetBytes(infoType), 0, 4);
                             ms2.Write(BitConverter.GetBytes(data.Length), 0, 4);
                             ms2.Write(data, 0, data.Length);
@@ -301,6 +303,7 @@
                                     DomainNumberLimit = BitConverter.ToInt32(data, 0);
                                     break;
                             }
+
                             ms2.Write(BitConverter.GetBytes(infoType), 0, 4);
                             ms2.Write(BitConverter.GetBytes(data.Length), 0, 4);
                             ms2.Write(data, 0, data.Length);
@@ -363,6 +366,7 @@
                     {
                         throw new Exception("Invalid signature");
                     }
+
                     Trace.WriteLine("signature ok");
                 }
             }
@@ -438,6 +442,7 @@
                 {
                     //Custom disposing here.
                 }
+
                 _disposed = true;
             }
         }
@@ -508,7 +513,7 @@
                 throw new PingCastleException("License has not been verified. Call Verify() first.");
             }
 
-            if(_compiledDomainPatterns.Count == 0)
+            if (_compiledDomainPatterns.Count == 0)
             {
                 InitializeDomainPatterns();
             }

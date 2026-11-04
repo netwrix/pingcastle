@@ -3,7 +3,6 @@ using System.Net;
 
 namespace PingCastle.Data
 {
-
     public class PingCastleAnalyzerParameters
     {
         public bool IsPrivilegedMode { get; set; }

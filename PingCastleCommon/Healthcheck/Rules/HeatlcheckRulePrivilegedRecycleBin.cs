@@ -21,6 +21,7 @@ namespace PingCastle.Healthcheck.Rules
             {
                 return 0;
             }
+
             return 1;
         }
     }

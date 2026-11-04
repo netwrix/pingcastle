@@ -19,7 +19,7 @@ namespace PingCastle.ADWS
             this.domainInfo = domainInfo;
             Init();
         }
-        
+
         static NetworkCredential Credential;
         ADDomainInfo domainInfo;
         object lockThread = new object();
@@ -33,11 +33,13 @@ namespace PingCastle.ADWS
             {
                 throw new ApplicationException("Unable to run smbc_new_context");
             }
+
             var smbContext = smbc_init_context(context);
             if (smbContext == IntPtr.Zero)
             {
                 throw new ApplicationException("Unable to run smbc_init_context");
             }
+
             context = smbContext;
         }
 
@@ -65,18 +67,25 @@ namespace PingCastle.ADWS
         string ConvertPath(string path)
         {
             if (path.StartsWith("smb://", StringComparison.OrdinalIgnoreCase))
+            {
                 return path;
+            }
+
             if (!path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
             {
                 throw new ApplicationException("Unable to parse the path 1");
             }
+
             if (domainInfo != null && path.StartsWith("\\\\" + domainInfo.DomainName + "\\"))
             {
                 path = "\\\\" + domainInfo.DnsHostName + "\\" + path.Substring(domainInfo.DomainName.Length + 3);
             }
+
             int slash = path.IndexOf('\\', 2);
             if (slash < 0)
+            {
                 throw new ApplicationException("Unable to parse the path 2");
+            }
 
             return "smb://" + path.Substring(2, slash - 2) + "//" + path.Substring(slash + 1).Replace('\\', '/');
         }
@@ -91,6 +100,7 @@ namespace PingCastle.ADWS
                 {
                     return false;
                 }
+
                 smbc_closedir(fd);
                 return true;
             }
@@ -114,6 +124,7 @@ namespace PingCastle.ADWS
                     var access_mask = Convert.ToUInt32(part2[2], 16);
                     ds.AddAccessRule(new FileSystemAccessRule(new SecurityIdentifier(part[0]), (FileSystemRights)access_mask, (AccessControlType)type));
                 }
+
                 return ds;
             }
         }
@@ -136,6 +147,7 @@ namespace PingCastle.ADWS
                     var access_mask = Convert.ToUInt32(part2[2], 16);
                     fs.AddAccessRule(new FileSystemAccessRule(new SecurityIdentifier(part[0]), (FileSystemRights)access_mask, (AccessControlType)type));
                 }
+
                 return fs;
             }
         }
@@ -147,6 +159,7 @@ namespace PingCastle.ADWS
             {
                 throw new LinuxFileConnectionException(size, path);
             }
+
             var output = Marshal.AllocHGlobal(size);
             try
             {
@@ -155,6 +168,7 @@ namespace PingCastle.ADWS
                 {
                     throw new LinuxFileConnectionException(ret, path);
                 }
+
                 return Marshal.PtrToStringAnsi(output);
             }
             finally
@@ -170,7 +184,7 @@ namespace PingCastle.ADWS
                 return GetSubNodes(path, smbc_entity.SMBC_DIR);
             }
         }
-        
+
         List<string> GetSubNodes(string path, smbc_entity type)
         {
             var output = new List<string>();
@@ -183,25 +197,34 @@ namespace PingCastle.ADWS
                 {
                     throw new LinuxFileConnectionException(fd, path);
                 }
+
                 return output;
             }
+
             IntPtr cursor;
-            while((cursor = smbc_readdir(fd)) != IntPtr.Zero)
+            while ((cursor = smbc_readdir(fd)) != IntPtr.Zero)
             {
                 var b = new IntPtr(cursor.ToInt64() + Marshal.OffsetOf(typeof(smbc_dirent), "name").ToInt64());
-                var dirent = (smbc_dirent) Marshal.PtrToStructure(cursor, typeof(smbc_dirent));
+                var dirent = (smbc_dirent)Marshal.PtrToStructure(cursor, typeof(smbc_dirent));
                 var name = Marshal.PtrToStringAnsi(b, dirent.namelen);
                 if (name == "." || name == "..")
+                {
                     continue;
+                }
 
                 if (dirent.smbc_type == type)
                 {
                     if (path.EndsWith("\\"))
+                    {
                         output.Add(path + name);
+                    }
                     else
+                    {
                         output.Add(path + "\\" + name);
+                    }
                 }
             }
+
             smbc_closedir(fd);
             return output;
         }
@@ -216,6 +239,7 @@ namespace PingCastle.ADWS
                 {
                     return false;
                 }
+
                 smbc_closedir(fd);
                 return true;
             }
@@ -231,6 +255,7 @@ namespace PingCastle.ADWS
                 {
                     return false;
                 }
+
                 smbc_closedir(fd);
                 return true;
             }
@@ -238,7 +263,7 @@ namespace PingCastle.ADWS
 
         public System.IO.Stream GetFileStream(string path)
         {
-            lock(lockThread)
+            lock (lockThread)
             {
                 Trace.WriteLine("Linux GetFileStream " + path);
                 var fd = smbc_open(ConvertPath(path), 0, 0);
@@ -246,6 +271,7 @@ namespace PingCastle.ADWS
                 {
                     throw new LinuxFileConnectionException(fd, path);
                 }
+
                 return new LinuxFileStream(fd);
             }
         }
@@ -268,6 +294,7 @@ namespace PingCastle.ADWS
                     {
                         throw new LinuxFileConnectionException(ret, path);
                     }
+
                     long i = Marshal.ReadInt64(ptr, 88);
                     return new System.DateTime(1970, 1, 1).AddSeconds(i);
                 }
@@ -281,7 +308,10 @@ namespace PingCastle.ADWS
         public string PathCombine(string path1, string path2)
         {
             if (path1.EndsWith("\\"))
+            {
                 return path1 + path2;
+            }
+
             return path1 + "\\" + path2;
         }
 
@@ -327,7 +357,10 @@ namespace PingCastle.ADWS
         {
             // include null string terminator
             byte[] buffer = Encoding.ASCII.GetBytes(str + "\0");
-            if (buffer.Length >= maxLen) return; // buffer is not big enough
+            if (buffer.Length >= maxLen)
+            {
+                return; // buffer is not big enough
+            }
 
             Marshal.Copy(buffer, 0, dest, buffer.Length);
         }
@@ -348,7 +381,7 @@ namespace PingCastle.ADWS
 
         #region pinvoke
         internal const string SmbLibrary = "libPingCastlesmb";
-        
+
         [DllImport(SmbLibrary, CharSet = CharSet.Ansi)]
         static extern IntPtr smbc_new_context();
 
@@ -366,10 +399,10 @@ namespace PingCastle.ADWS
 
         [DllImport(SmbLibrary, CharSet = CharSet.Ansi)]
         static extern int smbc_init(AuthenticationCallbackDelegate fn, int debug);
-        
+
         [DllImport(SmbLibrary, CharSet = CharSet.Ansi)]
         static extern int smbc_open(string furl, int flags, int mode);
-        
+
         [DllImport(SmbLibrary, CharSet = CharSet.Ansi)]
         static extern int smbc_read(int fd, IntPtr buf, IntPtr bufsize);
 
@@ -378,46 +411,49 @@ namespace PingCastle.ADWS
 
         [DllImport(SmbLibrary, CharSet = CharSet.Ansi)]
         static extern int smbc_opendir(string durl);
-        
+
         [DllImport(SmbLibrary, CharSet = CharSet.Ansi)]
         static extern int smbc_closedir(int dh);
 
-        enum smbc_entity 
+        enum smbc_entity
         {
-            SMBC_WORKGROUP=1,
-	        SMBC_SERVER=2,
-	        SMBC_FILE_SHARE=3,
-	        SMBC_PRINTER_SHARE=4,
-	        SMBC_COMMS_SHARE=5,
-	        SMBC_IPC_SHARE=6,
-	        SMBC_DIR=7,
-	        SMBC_FILE=8,
-	        SMBC_LINK=9
+            SMBC_WORKGROUP = 1,
+            SMBC_SERVER = 2,
+            SMBC_FILE_SHARE = 3,
+            SMBC_PRINTER_SHARE = 4,
+            SMBC_COMMS_SHARE = 5,
+            SMBC_IPC_SHARE = 6,
+            SMBC_DIR = 7,
+            SMBC_FILE = 8,
+            SMBC_LINK = 9
         }
-        [StructLayout(LayoutKind.Sequential, CharSet= CharSet.Ansi)]
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         struct smbc_dirent
         {
-	        /** Type of entity.
+            /** Type of entity.
              */
             public smbc_entity smbc_type;
-	        /** Length of this smbc_dirent in bytes
+            /** Length of this smbc_dirent in bytes
 	         */
             public uint dirlen;
-	        /** The length of the comment string in bytes (does not include
+            /** The length of the comment string in bytes (does not include
 	         *  null terminator)
 	         */
             public uint commentlen;
-	        /** Points to the null terminated comment string
+            /** Points to the null terminated comment string
 	         */
             public IntPtr comment;
-	        /** The length of the name string in bytes (does not include
+            /** The length of the name string in bytes (does not include
 	         *  null terminator)
 	         */
             public int namelen;
-	        /** Points to the null terminated name string
+            /** Points to the null terminated name string
 	         */
             public char name;
-        };
+        }
+
+;
 
         [DllImport(SmbLibrary, CharSet = CharSet.Ansi)]
         static extern IntPtr smbc_readdir(int dh);
@@ -569,11 +605,12 @@ namespace PingCastle.ADWS
             {
                 CloseTheHandle();
             }
+
             base.Dispose(disposing);
         }
     }
 
-    internal class LinuxFileConnectionException: Win32Exception
+    internal class LinuxFileConnectionException : Win32Exception
     {
         public LinuxFileConnectionException(int error, string file)
             : base(map_nt_error_from_unix(error), file + " : " + error + " " + map_nt_error_from_unix(error))

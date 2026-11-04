@@ -13,54 +13,50 @@
 
     public sealed class AntivirusScanner : ScannerBase
     {
-        public override string Name { get { return "antivirus"; } }
-        public override string Description { get { return "Check for computers without known antivirus installed. It is used to detect unprotected computers but may also report computers with unknown antivirus."; } }
+        public override string Name
+        {
+            get { return "antivirus"; }
+        }
+
+        public override string Description
+        {
+            get { return "Check for computers without known antivirus installed. It is used to detect unprotected computers but may also report computers with unknown antivirus."; }
+        }
 
         static Dictionary<string, string> AVReference = new Dictionary<string, string>
         {
             {"avast! Antivirus", "Avast"},
             {"aswBcc", "Avast"},
             {"Avast Business Console Client Antivirus Service", "Avast"},
-
             {"epag", "Bitdefender Endpoint Agent"},
             {"EPIntegrationService", "Bitdefender Endpoint Integration Service"},
             {"EPProtectedService", "Bitdefender Endpoint Protected Service"},
             {"epredline", "Bitdefender Endpoint Redline Services"},
             {"EPSecurityService", "Bitdefender Endpoint Security Service"},
             {"EPUpdateService", "Bitdefender Endpoint Update Service"},
-
             {"CiscoAMP", "Cisco Secure endpoint"},
-
             {"CSFalconService", "CrowdStrike Falcon Sensor Service"},
-
             {"CylanceSvc", "Cylance"},
-
             {"CynetLauncher", "Cynet Launcher Service"},
-
             {"ekm", "ESET"},
             {"epfw", "ESET"},
             {"epfwlwf", "ESET"},
             {"epfwwfp" , "ESET"},
             {"EraAgentSvc", "ESET"},
-
             {"xagt" , "FireEye Endpoint Agent"},
-
             {"fgprocsvc" , "ForeScout Remote Inspection Service"},
             {"SecureConnector" , "ForeScout SecureConnector Service"},
-
             {"fsdevcon", "F-Secure"},
             {"FSDFWD", "F-Secure"},
             {"F-Secure Network Request Broker", "F-Secure"},
             {"FSMA", "F-Secure"},
             {"FSORSPClient", "F-Secure"},
-
             {"klif", "Kasperksky"},
             {"klim", "Kasperksky"},
             {"kltdi", "Kasperksky"},
             {"kavfsslp", "Kasperksky"},
             {"KAVFSGT", "Kasperksky"},
             {"KAVFS", "Kasperksky"},
-
             {"enterceptagent", "MacAfee"},
             {"macmnsvc", "MacAfee Agent Common Services"},
             {"masvc", "MacAfee Agent Service"},
@@ -70,7 +66,6 @@
             {"mfemms", "MacAfee Service Controller"},
             {"mfevtp", "MacAfee Validation Trust Protection Service"},
             {"mfewc", "MacAfee Endpoint Security Web Control Service"},
-
             {"cyverak", "PaloAlto Traps KernelDriver"},
             {"cyvrmtgn", "PaloAlto Traps KernelDriver"},
             {"cyvrfsfd", "PaloAlto Traps FileSystemDriver"},
@@ -78,12 +73,10 @@
             {"CyveraService", "PaloAlto Traps"},
             {"tlaservice", "PaloAlto Traps Local Analysis Service"},
             {"twdservice", "PaloAlto Traps Watchdog Service"},
-
             {"SentinelAgent", "SentinelOne"},
             {"SentinelHelperService", "SentinelOne"},
             {"SentinelStaticEngine ", "SentinelIbe Static Service"},
             {"LogProcessorService ", "SentinelOne Agent Log Processing Service"},
-
             {"sophosssp", "Sophos"},
             {"Sophos Agent", "Sophos"},
             {"Sophos AutoUpdate Service", "Sophos"},
@@ -98,23 +91,18 @@
             {"Sophos System Protection Service", "Sophos"},
             {"Sophos Web Control Service", "Sophos"},
             {"sophossps", "Sophos"},
-
             {"SepMasterService" , "Symantec Endpoint Protection"},
             {"SNAC" , "Symantec Network Access Control"},
             {"Symantec System Recovery" , "Symantec System Recovery"},
             {"Smcinst", "Symantec Connect"},
             {"SmcService", "Symantec Connect"},
-
             {"Sysmon", "Sysmon"},
-
             {"AMSP", "Trend"},
             {"tmcomm", "Trend"},
             {"tmactmon", "Trend"},
             {"tmevtmgr", "Trend"},
             {"ntrtscan", "Trend Micro Worry Free Business"},
-
             {"WRSVC", "Webroot"},
-
             {"WinDefend", "Microsoft Defender Antivirus Service (formerly Windows Defender Antivirus Service)"},
             {"Sense", "Microsoft Defender for Endpoint Service (formerly Windows Defender Advanced Threat Protection Service)"},
             {"WdNisSvc", "Microsoft Defender Antivirus Network Inspection Service (formerly Windows Defender Antivirus Network Inspection Service)"},
@@ -123,7 +111,7 @@
         private readonly List<string> _customService = new List<string>();
 
         public AntivirusScanner(IIdentityProvider identityProvider)
-            :base(identityProvider)
+            : base(identityProvider)
         {
         }
 
@@ -152,7 +140,9 @@
 
             var state = base.QueryForAdditionalParameterInInteractiveMode();
             if (state != DisplayState.Run)
+            {
                 return state;
+            }
 
             // If we haven't got the list of custom services, ask the user.
             if (_customService.Count == 0)
@@ -178,8 +168,10 @@ Or just press enter to use the default.";
                     {
                         break;
                     }
-                } while (true);
+                }
+                while (true);
             }
+
             return DisplayState.Run;
         }
 
@@ -199,6 +191,7 @@ Or just press enter to use the default.";
                 sb.Append("\tUnable to connect\tPingCastle couldn't connect to the computer. The error was 0x" + ret.ToString("x"));
                 return sb.ToString();
             }
+
             var names = new NativeMethods.UNICODE_STRING[AVReference.Count + _customService.Count];
             try
             {
@@ -215,6 +208,7 @@ Or just press enter to use the default.";
                     sb.Append("\tNo known service found\tIf you think that the information is incorrect, please contact PingCastle support to add the antivirus in the checked list.");
                     return sb.ToString();
                 }
+
                 if (ret != 0 && ret != 0x00000107) // ignore STATUS_SOME_NOT_MAPPED
                 {
                     Trace.WriteLine("LsaLookupNames 0x" + ret.ToString("x"));
@@ -246,23 +240,25 @@ Or just press enter to use the default.";
                     names[k].Dispose();
                 }
             }
+
             return sb.ToString();
         }
 
         private static void OutputEntriesToTabDelimitedStringBuilder(StringBuilder sb, List<AntivirusEntry> avEntries)
         {
-           foreach(var entry in avEntries)
-           {
-               if (sb.Length != 0)
-               {
-                   sb.Append("\r\n");
-               }
-               sb.Append(entry.Computer);
-               sb.Append("\t");
-               sb.Append(entry.ServiceName);
-               sb.Append("\t");
-               sb.Append(entry.Description);
-           }
+            foreach (var entry in avEntries)
+            {
+                if (sb.Length != 0)
+                {
+                    sb.Append("\r\n");
+                }
+
+                sb.Append(entry.Computer);
+                sb.Append("\t");
+                sb.Append(entry.ServiceName);
+                sb.Append("\t");
+                sb.Append(entry.Description);
+            }
         }
 
         private List<AntivirusEntry> ProcessResultToList(
@@ -284,8 +280,10 @@ Or just press enter to use the default.";
                         Description = entry.Value
                     });
                 }
+
                 i++;
             }
+
             foreach (var entry in _customService)
             {
                 if (translated[i].DomainIndex >= 0)
@@ -297,6 +295,7 @@ Or just press enter to use the default.";
                         Description = "Custom Search"
                     });
                 }
+
                 i++;
             }
 
@@ -312,6 +311,7 @@ Or just press enter to use the default.";
                 names[i].Initialize("NT Service\\" + entry.Key);
                 i++;
             }
+
             foreach (var entry in _customService)
             {
                 names[i] = new NativeMethods.UNICODE_STRING();
@@ -337,7 +337,7 @@ Or just press enter to use the default.";
     {
         public string Computer { get; set; }
         [DisplayName("Service Found")]
-        public string  ServiceName { get; set; }
+        public string ServiceName { get; set; }
         public string Description { get; set; }
     }
 }

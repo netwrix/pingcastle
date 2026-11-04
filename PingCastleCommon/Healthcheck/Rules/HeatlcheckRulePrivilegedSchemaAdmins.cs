@@ -19,7 +19,7 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            foreach (HealthCheckGroupData group in healthcheckData.PrivilegedGroups)
+            foreach (HealthCheckGroupData group in healthcheckData.PrivilegedGroups ?? [])
             {
                 if (group.GroupName == GraphObjectReference.SchemaAdministrators)
                 {
@@ -29,6 +29,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return 0;
         }
     }

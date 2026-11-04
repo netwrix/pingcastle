@@ -16,22 +16,28 @@ namespace PingCastle.ADWS
         public override string ToString()
         {
             if (bv_len == 0)
+            {
                 return "Empty";
+            }
+
             if (bv_len < 5000)
             {
                 byte[] managedArray = new byte[bv_len];
                 Marshal.Copy(bv_val, managedArray, 0, bv_len);
                 return BitConverter.ToString(managedArray);
             }
+
             return base.ToString();
         }
 
         public string GetString()
         {
             if (bv_val == IntPtr.Zero)
+            {
                 return null;
-            return Marshal.PtrToStringAuto(bv_val, bv_len);
+            }
 
+            return Marshal.PtrToStringAuto(bv_val, bv_len);
         }
 
         public byte[] GetByteArray()
@@ -44,7 +50,6 @@ namespace PingCastle.ADWS
 
     public class LinuxConnection : ADConnection
     {
-
         private ConnectionHandle connection { get; set; }
 
         public override void Enumerate(string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope)
@@ -65,8 +70,12 @@ namespace PingCastle.ADWS
                 Trace.WriteLine("LDAP Error -7 (Bad search filter) - ignored");
                 return;
             }
+
             if (r != 0)
+            {
                 throw new LDAPException(r);
+            }
+
             try
             {
                 var entry = ldap_count_entries(connection, result);
@@ -78,6 +87,7 @@ namespace PingCastle.ADWS
                     {
                         data[prop] = GetValueBin(j, prop);
                     }
+
                     ResolveRangedAttributes(j, data);
                     var aditem = ADItem.Create(data);
                     callback(aditem);
@@ -93,13 +103,25 @@ namespace PingCastle.ADWS
         LDAPScope StringToScope(string scope)
         {
             if (string.Equals(scope, "OneLevel", StringComparison.OrdinalIgnoreCase))
+            {
                 return LDAPScope.LDAP_SCOPE_ONELEVEL;
+            }
+
             if (string.Equals(scope, "Base", StringComparison.OrdinalIgnoreCase))
+            {
                 return LDAPScope.LDAP_SCOPE_BASE;
+            }
+
             if (string.Equals(scope, "Children", StringComparison.OrdinalIgnoreCase))
+            {
                 return LDAPScope.LDAP_SCOPE_CHILDREN;
+            }
+
             if (string.Equals(scope, "SubTree", StringComparison.OrdinalIgnoreCase))
+            {
                 return LDAPScope.LDAP_SCOPE_SUBTREE;
+            }
+
             throw new NotImplementedException("scope is: " + scope);
         }
 
@@ -109,7 +131,10 @@ namespace PingCastle.ADWS
             int version = 3;
             int r = ldap_set_option(connection, 0x11, ref version);
             if (r != 0)
+            {
                 throw new LDAPException(r);
+            }
+
             var control = new ldapcontrol();
             control.ldctl_oid = Marshal.StringToHGlobalAnsi("1.2.840.113556.1.4.801");
             control.ldctl_iscritical = 1;
@@ -118,10 +143,10 @@ namespace PingCastle.ADWS
             control.ldctl_value.bv_val = Marshal.AllocHGlobal(control.ldctl_value.bv_len);
             Marshal.Copy(new byte[] { 0x30, 0x84, 0x00, 0x00, 0x00, 0x03, 0x02, 0x01, 0x07 }, 0, control.ldctl_value.bv_val, control.ldctl_value.bv_len);
 
-            var c= Marshal.AllocHGlobal(Marshal.SizeOf(typeof(ldapcontrol)));
+            var c = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(ldapcontrol)));
 
             Marshal.StructureToPtr(control, c, true);
-            var i = new IntPtr[2] {c, IntPtr.Zero};
+            var i = new IntPtr[2] { c, IntPtr.Zero };
             try
             {
                 r = ldap_set_option(connection, 0x12, i);
@@ -129,19 +154,33 @@ namespace PingCastle.ADWS
             finally
             {
                 if (control.ldctl_oid != IntPtr.Zero)
+                {
                     Marshal.FreeHGlobal(control.ldctl_oid);
+                }
+
                 if (control.ldctl_value.bv_val != IntPtr.Zero)
+                {
                     Marshal.FreeHGlobal(control.ldctl_value.bv_val);
+                }
+
                 if (c != IntPtr.Zero)
+                {
                     Marshal.FreeHGlobal(c);
+                }
             }
+
             if (r != 0)
+            {
                 throw new LDAPException(r);
+            }
+
             r = ldap_simple_bind(connection, (string.IsNullOrEmpty(Credential.Domain) ? null : Credential.Domain + "\\") + Credential.UserName, Credential.Password);
             if (r != 0)
+            {
                 throw new LDAPException(r);
-            Trace.WriteLine("Connection OK");
+            }
 
+            Trace.WriteLine("Connection OK");
         }
 
         protected override ADDomainInfo GetDomainInfoInternal()
@@ -149,7 +188,10 @@ namespace PingCastle.ADWS
             IntPtr result;
             var r = ldap_search_s(connection, "", LDAPScope.LDAP_SCOPE_BASE, "(objectclass=*)", null, false, out result);
             if (r != 0)
+            {
                 throw new LDAPException(r);
+            }
+
             try
             {
                 ADDomainInfo info = new ADDomainInfo();
@@ -157,9 +199,15 @@ namespace PingCastle.ADWS
                 info.ConfigurationNamingContext = GetValue(result, "configurationNamingContext");
                 info.DnsHostName = GetValue(result, "dnsHostName");
                 if (!string.IsNullOrEmpty(GetValue(result, "domainFunctionality")))
+                {
                     info.DomainFunctionality = int.Parse(GetValue(result, "domainFunctionality"));
+                }
+
                 if (!string.IsNullOrEmpty(GetValue(result, "forestFunctionality")))
+                {
                     info.ForestFunctionality = int.Parse(GetValue(result, "forestFunctionality"));
+                }
+
                 info.NetBIOSName = GetValue(result, "netBIOSName");
                 info.RootDomainNamingContext = GetValue(result, "rootDomainNamingContext");
                 info.SchemaNamingContext = GetValue(result, "schemaNamingContext");
@@ -172,6 +220,7 @@ namespace PingCastle.ADWS
                         Trace.WriteLine(version);
                     }
                 }
+
                 Trace.WriteLine("supportedControl: ");
                 var supportedControl = GetValues(result, "supportedControl");
                 if (supportedControl != null)
@@ -181,6 +230,7 @@ namespace PingCastle.ADWS
                         Trace.WriteLine(control);
                     }
                 }
+
                 Trace.WriteLine("namingContexts: ");
                 info.NamingContexts = new List<string>();
                 foreach (var nc in GetValues(result, "namingContexts"))
@@ -188,6 +238,7 @@ namespace PingCastle.ADWS
                     Trace.WriteLine(nc);
                     info.NamingContexts.Add(nc);
                 }
+
                 return info;
             }
             finally
@@ -204,9 +255,13 @@ namespace PingCastle.ADWS
                 // no value for this attribute
                 return null;
             }
+
             var p = Marshal.ReadIntPtr(o);
             if (p == IntPtr.Zero)
+            {
                 return null;
+            }
+
             var m = Marshal.PtrToStringAnsi(p);
             return m;
         }
@@ -219,6 +274,7 @@ namespace PingCastle.ADWS
                 // no value for this attribute
                 return null;
             }
+
             var len = ldap_count_values(o);
 
             var output = new berval[len];
@@ -229,11 +285,14 @@ namespace PingCastle.ADWS
                 var q = Marshal.ReadIntPtr(p);
 
                 if (q == IntPtr.Zero)
+                {
                     return null;
+                }
 
                 var r = (berval)Marshal.PtrToStructure(q, typeof(berval));
                 output[i] = r;
             }
+
             return output;
         }
 
@@ -245,12 +304,14 @@ namespace PingCastle.ADWS
                 // no value for this attribute
                 return null;
             }
+
             var output = new List<string>();
             for (IntPtr p, o1 = o; (p = Marshal.ReadIntPtr(o1)) != IntPtr.Zero; o1 = new IntPtr(o1.ToInt64() + IntPtr.Size))
             {
                 var m = Marshal.PtrToStringAnsi(p);
                 output.Add(m);
             }
+
             return output;
         }
 
@@ -270,6 +331,7 @@ namespace PingCastle.ADWS
             {
                 return;
             }
+
             string dn = Marshal.PtrToStringAnsi(dnPtr);
             ldap_memfree(dnPtr);
 
@@ -283,6 +345,7 @@ namespace PingCastle.ADWS
                 {
                     attrNames.Add(name);
                 }
+
                 attr = ldap_next_attribute(connection, entry, ber);
             }
 
@@ -372,11 +435,14 @@ namespace PingCastle.ADWS
                                         done = true;
                                     }
                                 }
+
                                 found = true;
                                 break;
                             }
+
                             rAttr = ldap_next_attribute(connection, rangeResult, rBer);
                         }
+
                         if (!found)
                         {
                             done = true;
@@ -396,14 +462,20 @@ namespace PingCastle.ADWS
         public override string ConvertSIDToName(string sidstring, out string referencedDomain)
         {
             if (sidResolver == null)
+            {
                 sidResolver = new LinuxSidResolver(Credential, Server);
+            }
+
             return sidResolver.ConvertSIDToName(sidstring, out referencedDomain);
         }
 
         public override System.Security.Principal.SecurityIdentifier ConvertNameToSID(string nameToResolve)
         {
             if (sidResolver == null)
+            {
                 sidResolver = new LinuxSidResolver(Credential, Server);
+            }
+
             return sidResolver.ConvertNameToSid(nameToResolve);
         }
 
@@ -413,7 +485,10 @@ namespace PingCastle.ADWS
             get
             {
                 if (fileConnection == null)
+                {
                     fileConnection = new LinuxFileConnection(this.Credential, domainInfo);
+                }
+
                 return fileConnection;
             }
         }
@@ -492,11 +567,12 @@ namespace PingCastle.ADWS
         internal static extern int ldap_set_option(ConnectionHandle ldapHandle, int option, ref int invalue);
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-        internal struct ldapcontrol {
+        internal struct ldapcontrol
+        {
             public IntPtr ldctl_oid;
             public berval ldctl_value;
             public byte ldctl_iscritical;
-        } 
+        }
 
         [DllImport(LdapLibrary, EntryPoint = "ldap_set_option", CharSet = CharSet.Ansi)]
         internal static extern int ldap_set_option(ConnectionHandle ldapHandle, int option, IntPtr[] alue);
@@ -549,8 +625,6 @@ namespace PingCastle.ADWS
 
         public override void ThreadInitialization()
         {
-            
         }
     }
-
 }

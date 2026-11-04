@@ -22,7 +22,10 @@ namespace PingCastle.Healthcheck.Rules
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.ControlPaths == null)
+            {
                 return 0;
+            }
+
             int max = 0;
             foreach (var analysis in healthcheckData.ControlPaths.Data)
             {
@@ -33,12 +36,14 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         max = analysis.NumberOfIndirectMembers;
                     }
+
                     if (analysis.NumberOfIndirectMembers > 20)
                     {
                         AddRawDetail(analysis.Description, analysis.NumberOfIndirectMembers);
                     }
                 }
             }
+
             return max;
         }
     }

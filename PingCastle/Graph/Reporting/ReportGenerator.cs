@@ -33,9 +33,9 @@ namespace PingCastle.Graph.Reporting
         private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
         private List<HealthcheckAccountDetailData> _honeyPotList;
 
-        public void PerformAnalyze(HealthcheckData data, ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters)
+        public void PerformAnalyze(HealthcheckData data, ADDomainInfo domainInfo, ADWebService adws, PingCastleAnalyzerParameters parameters, IDictionary<string, string> remoteDomainHosts = null)
         {
-            ExportDataFromActiveDirectoryLive export = new ExportDataFromActiveDirectoryLive(domainInfo, adws, parameters.Credential);
+            ExportDataFromActiveDirectoryLive export = new ExportDataFromActiveDirectoryLive(domainInfo, adws, parameters.Credential, remoteDomainHosts);
             var ObjectReference = export.ExportData(parameters.AdditionalNamesForDelegationAnalysis);
             storage = export.Storage;
             _honeyPotList = data.ListHoneyPot;
@@ -70,6 +70,7 @@ namespace PingCastle.Graph.Reporting
                     }
                 }
             }
+
             foreach (HealthCheckGroupMemberData member in allMembers.Values)
             {
                 healthcheckData.AllPrivilegedMembers.Add(member);
@@ -84,6 +85,7 @@ namespace PingCastle.Graph.Reporting
                 Trace.WriteLine("Domain controller not found in graph ?!");
                 return;
             }
+
             Dictionary<int, Node> chartNodes = new Dictionary<int, Node>();
             List<int> directUsers = new List<int>();
             List<int> directComputers = new List<int>();
@@ -122,7 +124,10 @@ namespace PingCastle.Graph.Reporting
                 if (dc.DistinguishedName == DC.Name)
                 {
                     if (dc.Delegations == null)
+                    {
                         dc.Delegations = new List<HealthcheckDomainControllerDelegation>();
+                    }
+
                     dc.Delegations.Add(new HealthcheckDomainControllerDelegation()
                     {
                         Delegate = Delegate.Shortname,
@@ -132,6 +137,7 @@ namespace PingCastle.Graph.Reporting
                     return;
                 }
             }
+
             Trace.WriteLine("Delegation was not resolved to DC (" + DC.Name + "-" + Delegate.Shortname + ")");
         }
 
@@ -143,6 +149,7 @@ namespace PingCastle.Graph.Reporting
                 Trace.WriteLine("Protected Users not found ?!");
                 return;
             }
+
             Dictionary<int, Node> chartNodes = new Dictionary<int, Node>();
             List<int> directUsers = new List<int>();
             List<int> directComputers = new List<int>();
@@ -155,6 +162,7 @@ namespace PingCastle.Graph.Reporting
             {
                 dn.Add(chartNodes[u].Dn, chartNodes[u]);
             }
+
             foreach (var u in directComputers)
             {
                 dn.Add(chartNodes[u].Dn, chartNodes[u]);
@@ -171,6 +179,7 @@ namespace PingCastle.Graph.Reporting
                     }
                 }
             }
+
             foreach (var user in data.AllPrivilegedMembers)
             {
                 if (dn.ContainsKey(user.DistinguishedName))
@@ -179,6 +188,7 @@ namespace PingCastle.Graph.Reporting
                     match.Add(user.DistinguishedName);
                 }
             }
+
             // build protect users
             data.ProtectedUsersNotPrivileged = new HealthCheckGroupData();
             data.ProtectedUsersNotPrivileged.Members = new List<HealthCheckGroupMemberData>();
@@ -201,6 +211,7 @@ namespace PingCastle.Graph.Reporting
                     ProduceReportFile(adws, domainInfo, data, typology, obj.Risk, obj.Description, obj.Name);
                 }
             }
+
             data.ControlPaths.Data.Sort(
                 (SingleCompromiseGraphData a, SingleCompromiseGraphData b)
                 =>
@@ -226,13 +237,17 @@ namespace PingCastle.Graph.Reporting
                         reference[d.Sid].Netbios = d.Netbios;
                         reference[d.Sid].Sid = d.Sid;
                     }
+
                     var gdData = reference[d.Sid];
                     CompromiseGraphDependancyDetailData detail = null;
                     foreach (var a in gdData.Details)
                     {
                         if (a.Typology == sg.Typology)
+                        {
                             detail = a;
+                        }
                     }
+
                     if (detail == null)
                     {
                         detail = new CompromiseGraphDependancyDetailData()
@@ -242,6 +257,7 @@ namespace PingCastle.Graph.Reporting
                         };
                         reference[d.Sid].Details.Add(detail);
                     }
+
                     detail.NumberOfGroupImpacted++;
                     foreach (var item in d.Items)
                     {
@@ -249,13 +265,18 @@ namespace PingCastle.Graph.Reporting
                         {
                             detail.Items.Add(item.Sid);
                             if (item.Name.Contains("\\"))
+                            {
                                 detail.NumberOfResolvedItems++;
+                            }
                             else
+                            {
                                 detail.NumberOfUnresolvedItems++;
+                            }
                         }
                     }
                 }
             }
+
             data.Dependancies = new List<CompromiseGraphDependancyData>(reference.Values);
             data.Dependancies.Sort((CompromiseGraphDependancyData a, CompromiseGraphDependancyData b)
                 =>
@@ -282,25 +303,32 @@ namespace PingCastle.Graph.Reporting
                 {
                     analysis = reference[sg.ObjectRisk];
                 }
+
                 analysis.NumberOfObjectsScreened++;
                 if (sg.CriticalObjectFound)
                 {
                     analysis.CriticalObjectFound = true;
                 }
+
                 if (sg.IndirectMembers != null && sg.IndirectMembers.Count > 0)
                 {
                     if (analysis.MaximumIndirectNumber < sg.IndirectMembers.Count)
+                    {
                         analysis.MaximumIndirectNumber = sg.IndirectMembers.Count;
+                    }
+
                     analysis.NumberOfObjectsWithIndirect++;
                     if (sg.DirectUserMembers != null && sg.DirectUserMembers.Count > 0)
                     {
                         int ratio = 100 * sg.IndirectMembers.Count / sg.DirectUserMembers.Count;
                         if (ratio > analysis.MaximumDirectIndirectRatio)
+                        {
                             analysis.MaximumDirectIndirectRatio = ratio;
+                        }
                     }
                 }
-
             }
+
             data.AnomalyAnalysis = new List<CompromiseGraphAnomalyAnalysisData>();
             data.AnomalyAnalysis.AddRange(reference.Values);
             data.AnomalyAnalysis.Sort(
@@ -325,11 +353,15 @@ namespace PingCastle.Graph.Reporting
                     Trace.WriteLine("root node not found");
                     // do not display error message for schema admin and enterprise admins which are missing on child domains
                     if (typology == CompromiseGraphDataTypology.PrivilegedAccount && (name.EndsWith("-519") || name.EndsWith("-518") || name.EndsWith("-498") || name.Equals("S-1-5-32-557")))
+                    {
                         return;
+                    }
+
                     Trace.WriteLine("Id not found for name=" + name);
                     _ui.DisplayMessage("The report " + description + " starting from " + name + " couldn't be built because the object wasn't found");
                     return;
                 }
+
                 Dictionary<int, Node> chartNodes = new Dictionary<int, Node>();
                 List<int> directUsers = new List<int>();
                 List<int> directComputers = new List<int>();
@@ -355,6 +387,7 @@ namespace PingCastle.Graph.Reporting
                         BuildPrivilegeData(adws, hcdata, singleCompromiseData, storage.RetrieveNode(rootNodeId), directUsers, directComputers);
                     }
                 }
+
                 Trace.WriteLine("Build indirect members");
                 BuildIndirectMembers(singleCompromiseData);
                 Trace.WriteLine("Build dependancies");
@@ -382,9 +415,15 @@ namespace PingCastle.Graph.Reporting
                 {
                     // ignore deleted accounts
                     if (node.Sid.StartsWith(domainInfo.DomainSid.Value + "-"))
+                    {
                         continue;
+                    }
+
                     if (node.Sid.Contains("\0") || node.Sid.Contains("CNF:"))
+                    {
                         continue;
+                    }
+
                     SingleCompromiseGraphDependancyData data;
                     SecurityIdentifier sid;
                     try
@@ -395,9 +434,13 @@ namespace PingCastle.Graph.Reporting
                     {
                         continue;
                     }
+
                     var domainSid = sid.AccountDomainSid;
                     if (domainSid == null)
+                    {
                         continue;
+                    }
+
                     if (!reference.ContainsKey(domainSid))
                     {
                         data = new SingleCompromiseGraphDependancyData();
@@ -412,24 +455,28 @@ namespace PingCastle.Graph.Reporting
                                 break;
                             }
                         }
+
                         data.Items = new List<SingleCompromiseGraphDependancyMemberData>();
                     }
                     else
                     {
                         data = reference[domainSid];
                     }
+
                     if (node.Shortname.Contains("\\"))
                     {
                         if (String.IsNullOrEmpty(data.Netbios))
                         {
                             data.Netbios = node.Shortname.Split('\\')[0];
                         }
+
                         data.NumberOfResolvedItems++;
                     }
                     else
                     {
                         data.NumberOfUnresolvedItems++;
                     }
+
                     data.Items.Add(new SingleCompromiseGraphDependancyMemberData()
                     {
                         Name = node.Shortname,
@@ -438,6 +485,7 @@ namespace PingCastle.Graph.Reporting
                     );
                 }
             }
+
             singleCompromiseData.Dependancies = new List<SingleCompromiseGraphDependancyData>(reference.Values);
             singleCompromiseData.Dependancies.Sort(
                 (SingleCompromiseGraphDependancyData a, SingleCompromiseGraphDependancyData b)
@@ -466,6 +514,7 @@ namespace PingCastle.Graph.Reporting
                     }
                 }
             }
+
             singleCompromiseData.NumberOfDeletedObjects = singleCompromiseData.DeletedObjects.Count;
         }
 
@@ -481,6 +530,7 @@ namespace PingCastle.Graph.Reporting
                     singleCompromiseData.DirectUserMembers.Add(user);
                 }
             }
+
             singleCompromiseData.NumberOfDirectUserMembers = singleCompromiseData.DirectUserMembers.Count;
         }
 
@@ -493,6 +543,7 @@ namespace PingCastle.Graph.Reporting
                 var user = BuildMembersComputer(node.ADItem);
                 singleCompromiseData.DirectComputerMembers.Add(user);
             }
+
             singleCompromiseData.NumberOfDirectComputerMembers = singleCompromiseData.DirectComputerMembers.Count;
         }
 
@@ -504,11 +555,13 @@ namespace PingCastle.Graph.Reporting
                 var node = storage.RetrieveNode(id);
                 items.Add(node);
             }
+
             foreach (var id in directNodes2)
             {
                 var node = storage.RetrieveNode(id);
                 items.Add(node);
             }
+
             var groupData = AnalyzeGroupData(adws, singleCompromiseData.Description, rootNode, items);
             hcdata.PrivilegedGroups.Add(groupData);
         }
@@ -546,6 +599,7 @@ namespace PingCastle.Graph.Reporting
                 var member = BuildMemberDetail(adws, data, x);
                 data.Members.Add(member);
             }
+
             return data;
         }
 
@@ -569,8 +623,11 @@ namespace PingCastle.Graph.Reporting
                 {
                     member.Name = node.Name;
                 }
+
                 if (string.IsNullOrEmpty(member.DistinguishedName))
+                {
                     member.DistinguishedName = node.Shortname;
+                }
             }
             else if (!IsNodeTypeAUserNode(node.Type))
             {
@@ -589,8 +646,11 @@ namespace PingCastle.Graph.Reporting
                 {
                     member.Name = node.Name;
                 }
+
                 if (string.IsNullOrEmpty(member.DistinguishedName))
+                {
                     member.DistinguishedName = node.Shortname;
+                }
             }
             else
             {
@@ -607,7 +667,9 @@ namespace PingCastle.Graph.Reporting
                 member.ManagedPasswordInterval = x.msDSManagedPasswordInterval;
 
                 if (x.IsAccountDisabled())
+                {
                     data.NumberOfMemberDisabled++;
+                }
                 else
                 {
                     data.NumberOfMemberEnabled++;
@@ -619,31 +681,41 @@ namespace PingCastle.Graph.Reporting
                         member.IsActive = true;
                     }
                     else
+                    {
                         data.NumberOfMemberInactive++;
+                    }
+
                     if (x.ServicePrincipalName != null && x.ServicePrincipalName.Length > 0)
                     {
                         member.IsService = true;
                         member.ServicePrincipalNames = new List<string>(x.ServicePrincipalName);
                         data.NumberOfServiceAccount++;
                     }
+
                     if (x.IsAccountLockedOut())
                     {
                         member.IsLocked = true;
                         data.NumberOfMemberLocked++;
                     }
+
                     if (x.IsPasswordNeverExpires())
                     {
                         data.NumberOfMemberPwdNeverExpires++;
                         member.DoesPwdNeverExpires = true;
                     }
+
                     if (x.IsPasswordNotRequired())
+                    {
                         data.NumberOfMemberPwdNotRequired++;
+                    }
+
                     // this account is sensitive and cannot be delegated
                     if (!x.IsNotDelegated())
                     {
                         data.NumberOfMemberCanBeDelegated++;
                         member.CanBeDelegated = true;
                     }
+
                     if (x.IsSmartcardRequired())
                     {
                         data.NumberOfSmartCardRequired++;
@@ -663,11 +735,13 @@ namespace PingCastle.Graph.Reporting
             {
                 map[link.Source] = link.Target;
             }
+
             var reference = new Dictionary<int, SingleCompromiseGraphNodeData>();
             foreach (var node in singleCompromiseData.Nodes)
             {
                 reference[node.Id] = node;
             }
+
             foreach (var node in singleCompromiseData.Nodes)
             {
                 if ((node.IsTypeAUser && node.Suspicious) || node.Critical)
@@ -676,6 +750,7 @@ namespace PingCastle.Graph.Reporting
                     singleCompromiseData.IndirectMembers.Add(user);
                 }
             }
+
             singleCompromiseData.NumberOfIndirectMembers = singleCompromiseData.IndirectMembers.Count;
         }
 
@@ -685,7 +760,10 @@ namespace PingCastle.Graph.Reporting
             member.Name = node.ShortName;
             member.Distance = node.Distance;
             if (node.ADItem != null && node.ADItem.ObjectSid != null)
+            {
                 member.Sid = node.ADItem.ObjectSid.Value;
+            }
+
             int id = node.Id;
             var currentNode = node;
             var path = new List<string>();
@@ -699,13 +777,17 @@ namespace PingCastle.Graph.Reporting
                     currentNode = reference[id];
                 }
                 else
+                {
                     id = -1;
+                }
             }
+
             if (id >= 0)
             {
                 path.Add(currentNode.ShortName);
                 member.AuthorizedObject = currentNode.ShortName;
             }
+
             if (path.Count > 4)
             {
                 member.Path = path[0] + "->" + path[1] + "->...->" + path[path.Count - 2] + "->" + path[path.Count - 1];
@@ -714,6 +796,7 @@ namespace PingCastle.Graph.Reporting
             {
                 member.Path = string.Join("->", path.ToArray());
             }
+
             return member;
         }
 
@@ -732,33 +815,40 @@ namespace PingCastle.Graph.Reporting
                 {
                     member.IsActive = true;
                 }
+
                 if (x.ServicePrincipalName != null && x.ServicePrincipalName.Length > 0)
                 {
                     member.IsService = true;
                     member.SPN = new List<string>(x.ServicePrincipalName);
                 }
+
                 if (x.IsAccountLockedOut())
                 {
                     member.IsLocked = true;
                 }
+
                 if (x.IsPasswordNeverExpires())
                 {
                     member.DoesPwdNeverExpires = true;
                 }
+
                 if (x.IsPasswordNotRequired())
                 {
                     member.IsPwdNotRequired = true;
                 }
+
                 // this account is sensitive and cannot be delegated
                 if (!x.IsNotDelegated())
                 {
                     member.CanBeDelegated = true;
                 }
+
                 if (x.IsSmartcardRequired())
                 {
                     member.SmartCardRequired = true;
                 }
             }
+
             return member;
         }
 
@@ -776,20 +866,24 @@ namespace PingCastle.Graph.Reporting
                 {
                     member.IsActive = true;
                 }
+
                 if (x.ServicePrincipalName != null && x.ServicePrincipalName.Length > 0)
                 {
                     member.SPN = new List<string>(x.ServicePrincipalName);
                 }
+
                 if (x.IsAccountLockedOut())
                 {
                     member.IsLocked = true;
                 }
+
                 // this account is sensitive and cannot be delegated
                 if (!x.IsNotDelegated())
                 {
                     member.CanBeDelegated = true;
                 }
             }
+
             return member;
         }
 
@@ -820,10 +914,12 @@ namespace PingCastle.Graph.Reporting
                         }
                     }
                 }
+
                 if (idtoadd.Count == 0)
                 {
                     break;
                 }
+
                 distance++;
                 foreach (int nodeid in idtoadd)
                 {
@@ -881,6 +977,7 @@ namespace PingCastle.Graph.Reporting
             {
                 return;
             }
+
             knownNodeAfterThis.Add(rootNodeId, rootNode);
             tree[distance++] = new List<int>() { rootNodeId };
             // add a defensive programming check to avoid infinite distance
@@ -897,6 +994,7 @@ namespace PingCastle.Graph.Reporting
                         {
                             links[link.FromId] = new List<Relation>();
                         }
+
                         links[link.FromId].Add(link);
 
                         var node = storage.RetrieveNode(link.ToId);
@@ -904,29 +1002,38 @@ namespace PingCastle.Graph.Reporting
                         {
                             tree[distance].Add(link.ToId);
                         }
+
                         node.Distance = distance;
                         if (!knownNodeAfterThis.ContainsKey(link.ToId))
                         {
                             knownNodeAfterThis.Add(link.ToId, node);
                             output.Add(link.ToId);
                         }
+
                         if (IsNodeTypeAComputerNode(node.Type))
                         {
                             if (!directComputersNodes.Contains(link.ToId))
+                            {
                                 directComputersNodes.Add(link.ToId);
+                            }
                         }
                         else if (IsNodeTypeAUserNode(node.Type))
                         {
                             if (!directUserNodes.Contains(link.ToId))
+                            {
                                 directUserNodes.Add(link.ToId);
+                            }
                         }
                         else if (string.Equals(node.Type, "foreignSecurityPrincipal", StringComparison.OrdinalIgnoreCase) || string.Equals(node.Type, "unknown", StringComparison.OrdinalIgnoreCase))
                         {
                             if (!directUserNodes.Contains(link.ToId))
+                            {
                                 directUserNodes.Add(link.ToId);
+                            }
                         }
                     }
                 }
+
                 distance++;
                 input.Clear();
                 input.AddRange(output);
@@ -946,6 +1053,7 @@ namespace PingCastle.Graph.Reporting
                     {
                         output[link.FromId] = new List<Relation>();
                     }
+
                     if (!knownNodeAfterThis.ContainsKey(link.ToId))
                     {
                         output[link.FromId].Add(link);
@@ -953,20 +1061,25 @@ namespace PingCastle.Graph.Reporting
                         var node = storage.RetrieveNode(link.ToId);
                         knownNodeAfterThis.Add(link.ToId, node);
                         if (!IsStopNode(node))
+                        {
                             input.Add(link.ToId);
+                        }
                     }
                 }
+
                 if (knownNodeAfterThis.Count > MaxNodes)
                 {
                     Trace.WriteLine("The report reached the maximum of nodes allowed (" + knownNodeAfterThis.Count + " versus MaxNodes=" + MaxNodes + ")");
                     return 0;
                 }
+
                 if (depth > MaxDepth)
                 {
                     Trace.WriteLine("The report reached the maximum of depth allowed (" + depth + " versus MaxDepth=" + MaxDepth + ")");
                     return 0;
                 }
             }
+
             return data.Count;
         }
 
@@ -1009,6 +1122,7 @@ namespace PingCastle.Graph.Reporting
                 {
                     break;
                 }
+
                 depth++;
             }
 
@@ -1023,6 +1137,7 @@ namespace PingCastle.Graph.Reporting
             {
                 return true;
             }
+
             return false;
         }
 
@@ -1036,6 +1151,7 @@ namespace PingCastle.Graph.Reporting
                     stopNodes.Add(obj.Name);
                 }
             }
+
             // avoid additional explore of domain users & domain computers
             // (if there are members defined explicitely instead of using the primarygroup as usual)
             stopNodes.Add(domainSid + "-513");
@@ -1061,7 +1177,10 @@ namespace PingCastle.Graph.Reporting
                         int nodeExplored = nodesToExplore[0];
                         nodesToExplore.Remove(nodeExplored);
                         if (nodesExplored.Contains(nodeExplored))
+                        {
                             continue;
+                        }
+
                         nodesExplored.Add(nodeExplored);
                         if (nodes[nodeExplored].Type != "container"
                             && nodes[nodeExplored].Type != "configuration"
@@ -1073,6 +1192,7 @@ namespace PingCastle.Graph.Reporting
                                 Trace.WriteLine("Stopped because suspicious node found:" + nodes[nodeExplored].Name);
                                 break;
                             }
+
                             foreach (int key in links.Keys)
                             {
                                 List<Relation> relations = links[key];
@@ -1090,18 +1210,21 @@ namespace PingCastle.Graph.Reporting
                             }
                         }
                     }
+
                     if (FileOnly)
                     {
                         Trace.WriteLine("Removing GPO file node for " + node.Name);
                         foreach (int id in nodesExplored)
                         {
                             if (!nodesToRemove.Contains(id) && node.Id != id && nodes[id].Type == "file")
+                            {
                                 nodesToRemove.Add(id);
+                            }
                         }
                     }
-
                 }
             }
+
             // the list of Node to remove is:nodesExplored
             foreach (int nodeToRemove in nodesToRemove)
             {
@@ -1120,11 +1243,13 @@ namespace PingCastle.Graph.Reporting
                             relations.RemoveAt(i);
                         }
                     }
+
                     if (relations.Count == 0)
                     {
                         entryToRemoveInDictionnary.Add(key);
                     }
                 }
+
                 foreach (int key in entryToRemoveInDictionnary)
                 {
                     links.Remove(key);
@@ -1163,13 +1288,17 @@ namespace PingCastle.Graph.Reporting
             foreach (Node node in nodes.Values)
             {
                 if (node.Id == rootNodeId)
+                {
                     continue;
+                }
+
                 bool exception = false;
                 // authenticated users is allowed for PreWin2000 group
                 if (string.Equals(rootNode.Sid, "S-1-5-32-554", StringComparison.OrdinalIgnoreCase) && string.Equals(node.Sid, "S-1-5-11", StringComparison.OrdinalIgnoreCase))
                 {
                     exception = true;
                 }
+
                 data.Nodes.Add(new SingleCompromiseGraphNodeData()
                 {
                     Id = nodenumber,
@@ -1182,9 +1311,13 @@ namespace PingCastle.Graph.Reporting
                     ADItem = node.ADItem,
                 });
                 if (!exception && node.EveryoneLikeGroup)
+                {
                     data.CriticalObjectFound = true;
+                }
+
                 idconversiontable[node.Id] = nodenumber++;
             }
+
             // END OF NODES
 
             Trace.WriteLine("check links");
@@ -1198,6 +1331,7 @@ namespace PingCastle.Graph.Reporting
                     {
                         Trace.WriteLine("Inconsistancy: node missing: Id=" + detail.ToId);
                     }
+
                     if (!idconversiontable.ContainsKey(detail.FromId))
                     {
                         Trace.WriteLine("Inconsistancy: node missing: Id=" + detail.FromId);
@@ -1222,6 +1356,7 @@ namespace PingCastle.Graph.Reporting
                     });
                 }
             }
+
             // END OF LINKS
             return data;
         }

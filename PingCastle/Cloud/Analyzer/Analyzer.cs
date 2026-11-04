@@ -73,12 +73,15 @@ namespace PingCastle.Cloud.Analyzer
                         data.OnPremiseDomainSid = string.Join("-", sidpart);
                     }
                 }
+
                 // just in case the tenant name cannot be retrieved from domain analysis
                 if (!string.IsNullOrEmpty(jwt.unique_name))
                 {
                     var sp = jwt.unique_name.Split('@');
                     if (sp.Length > 1)
+                    {
                         data.TenantName = sp[1];
+                    }
                 }
 
                 await RunTaskAsync("DNS Domains", AnalyzeDNSDomains);
@@ -93,6 +96,7 @@ namespace PingCastle.Cloud.Analyzer
 
                     data.Region = openId?.tenant_region_scope;
                 }
+
                 await RunTaskAsync("Company Info", AnalyzeCompanyInfo);
                 if (!data.UsersPermissionToReadOtherUsersEnabled)
                 {
@@ -152,6 +156,7 @@ namespace PingCastle.Cloud.Analyzer
                 Trace.TraceError(ex.ToString());
                 ShowLastError(display, ex);
             }
+
             HttpClientHelper.LogComment = null;
         }
 
@@ -169,6 +174,7 @@ namespace PingCastle.Cloud.Analyzer
                 Trace.TraceError(ex.ToString());
                 ShowLastError(display, ex);
             }
+
             HttpClientHelper.LogComment = null;
         }
 
@@ -187,6 +193,7 @@ namespace PingCastle.Cloud.Analyzer
                 Trace.TraceError(ex.ToString());
                 ShowLastError(display, ex);
             }
+
             HttpClientHelper.LogComment = null;
 
             return default;
@@ -201,6 +208,7 @@ namespace PingCastle.Cloud.Analyzer
                 lastMessage = e.Message;
                 e = e.InnerException;
             }
+
             DisplayAdvancementWarning("Exception when doing " + display);
             DisplayAdvancementWarning(lastMessage);
             DisplayAdvancementWarning("Continuing");
@@ -218,6 +226,7 @@ namespace PingCastle.Cloud.Analyzer
             {
                 allTasks.Add(Task.Run(() => AddApplicationData(graph, permissions, appRolesCache, applications, sp)));
             }
+
             DisplayAdvancement($"{allTasks.Count} applications found");
             await Task.WhenAll(allTasks);
 
@@ -253,7 +262,10 @@ namespace PingCastle.Cloud.Analyzer
                 foreach (var scope in permission.Scope.Split(' '))
                 {
                     if (string.IsNullOrEmpty(scope))
+                    {
                         continue;
+                    }
+
                     appData.DelegatedPermissions.Add(new HealthCheckCloudDataApplicationOAuth2PermissionGrant()
                     {
                         permission = scope,
@@ -312,7 +324,10 @@ namespace PingCastle.Cloud.Analyzer
 
         private string GetDirectoryObjectDisplayName(DirectoryObject directoryObject)
         {
-            if (directoryObject == null) return null;
+            if (directoryObject == null)
+            {
+                return null;
+            }
 
             return directoryObject switch
             {
@@ -322,7 +337,7 @@ namespace PingCastle.Cloud.Analyzer
                 AdministrativeUnit adminUnit => adminUnit.DisplayName,
                 Device device => device.DisplayName,
                 Organization org => org.DisplayName,
-                ServicePrincipal sp => sp.DisplayName, 
+                ServicePrincipal sp => sp.DisplayName,
                 OrgContact contact => contact.DisplayName
             };
         }
@@ -361,17 +376,19 @@ namespace PingCastle.Cloud.Analyzer
                             CountryCode = value.countryCode,
                             Domains = value.domains,
                         });
-
                     }
                 }
+
                 if (string.IsNullOrEmpty(data.TenantName))
                 {
                     var x1 = p.responses[0].content.value
                         .Where(x => x.tenantId == data.TenantId).FirstOrDefault();
                     if (x1.domains != null)
+                    {
                         data.TenantName = x1.domains
                             .Where(x => x.EndsWith(".onmicrosoft.com") && !x.EndsWith(".mail.onmicrosoft.com"))
                             .FirstOrDefault();
+                    }
                 }
             }
         }
@@ -395,7 +412,10 @@ namespace PingCastle.Cloud.Analyzer
             if (authorizationPolicy != null)
             {
                 if (authorizationPolicy.GuestUserRoleId.HasValue)
+                {
                     data.PolicyGuestUserRoleId = authorizationPolicy.GuestUserRoleId.Value.ToString();
+                }
+
                 data.PolicyAllowEmailVerifiedUsersToJoinOrganization = authorizationPolicy.AllowEmailVerifiedUsersToJoinOrganization;
             }
         }
@@ -426,7 +446,7 @@ namespace PingCastle.Cloud.Analyzer
                             {
                                 Name = ipLoc.DisplayName,
                                 Definition = cidrAddress,
-                                Type = "CIDR", 
+                                Type = "CIDR",
                                 Trusted = ipLoc.IsTrusted ?? false,
                                 ApplyToUnknownCountry = false // Not applicable to IP
                             });
@@ -457,14 +477,19 @@ namespace PingCastle.Cloud.Analyzer
         {
             var cta = await graph.GetCrossTenantAccessPolicyAsync();
             if (cta == null)
+            {
                 return;
+            }
 
             var lastModified = await graph.GetPolicyLastModificationDate(cta.Id);
 
             data.CrossTenantPolicies = new List<HealthCheckCloudDataCrossTenantPolicy>();
             await foreach (var partner in graph.GetPartnerCrossTenantAccessPoliciesAsync())
             {
-                if (string.IsNullOrEmpty(partner?.TenantId)) continue; 
+                if (string.IsNullOrEmpty(partner?.TenantId))
+                {
+                    continue;
+                }
 
                 var b2bIn = partner.B2bCollaborationInbound;
                 var b2bOut = partner.B2bCollaborationOutbound;
@@ -474,7 +499,7 @@ namespace PingCastle.Cloud.Analyzer
                 var ctp = new HealthCheckCloudDataCrossTenantPolicy()
                 {
                     TenantId = partner.TenantId,
-                    lastModified = lastModified?.ToString(), 
+                    lastModified = lastModified?.ToString(),
                     AllowB2BFrom = IsAllowAccess(b2bIn?.UsersAndGroups?.AccessType),
                     AllowB2BTo = IsAllowAccess(b2bOut?.UsersAndGroups?.AccessType),
                     AllowNativeFederationFrom = IsAllowAccess(dcIn?.UsersAndGroups?.AccessType),
@@ -506,7 +531,10 @@ namespace PingCastle.Cloud.Analyzer
                         if (!string.IsNullOrWhiteSpace(delegation.principalId))
                         {
                             if (!appPermissionsToComplete.ContainsKey(delegation.principalId))
+                            {
                                 appPermissionsToComplete[delegation.principalId] = new List<HealthCheckCloudDataApplicationOAuth2PermissionGrant>();
+                            }
+
                             appPermissionsToComplete[delegation.principalId].Add(delegation);
                         }
                     }
@@ -537,6 +565,7 @@ namespace PingCastle.Cloud.Analyzer
                         member.PasswordNeverExpires = user.PasswordPolicies?.ToString().Contains("DisablePasswordExpiration") ?? false;
                         member.HasImmutableId = user.OnPremisesImmutableId != null;
                     }
+
                     if (appPermissionsToComplete.TryGetValue(user.Id, out var permissions))
                     {
                         foreach (var permission in permissions)
@@ -555,9 +584,13 @@ namespace PingCastle.Cloud.Analyzer
                     {
                         string domain = user.UserPrincipalName.Substring(index2 + 1, index - index2 - 1).ToLowerInvariant();
                         if (!ForeignDomainsGuest.ContainsKey(domain))
+                        {
                             ForeignDomainsGuest[domain] = 0;
+                        }
+
                         ForeignDomainsGuest[domain]++;
                     }
+
                     if (user.ExternalUserState == "PendingAcceptance")
                     {
                         if (DateTimeOffset.TryParse(user.ExternalUserStateChangeDateTime, out var userStateChangedOn) && userStateChangedOn.UtcDateTime.AddMonths(1) < now)
@@ -585,7 +618,10 @@ namespace PingCastle.Cloud.Analyzer
                         {
                             string domain = user.UserPrincipalName.Substring(index2 + 1, index - index2 - 1).ToLowerInvariant();
                             if (!ForeignDomainsMember.ContainsKey(domain))
+                            {
                                 ForeignDomainsMember[domain] = 0;
+                            }
+
                             ForeignDomainsMember[domain]++;
                         }
                     }
@@ -612,6 +648,7 @@ namespace PingCastle.Cloud.Analyzer
                 d.GuestsCount = ForeignDomainsGuest[domain];
                 fd[domain] = d;
             }
+
             foreach (var domain in ForeignDomainsMember.Keys)
             {
                 if (!fd.ContainsKey(domain))
@@ -619,10 +656,11 @@ namespace PingCastle.Cloud.Analyzer
                     fd[domain] = new HealthCheckCloudDataForeignDomains();
                     fd[domain].Domain = domain;
                 }
+
                 fd[domain].MemberCount = ForeignDomainsMember[domain];
             }
-            data.ForeignDomains = new List<HealthCheckCloudDataForeignDomains>(fd.Values);
 
+            data.ForeignDomains = new List<HealthCheckCloudDataForeignDomains>(fd.Values);
         }
 
         private async Task<IReadOnlyDictionary<string, HealthCheckCloudDataRoleMember>> AnalyzeAdminRoles()
@@ -654,7 +692,7 @@ namespace PingCastle.Cloud.Analyzer
 
             await Task.WhenAll(tasks);
 
-            AddUnassignedRoles(templatesById.Values.Where(t=> !assignedTemplatesIds.ContainsKey(t.Id)), allRoles);
+            AddUnassignedRoles(templatesById.Values.Where(t => !assignedTemplatesIds.ContainsKey(t.Id)), allRoles);
 
             data.Roles = new List<HealthCheckCloudDataRole>(allRoles);
 
@@ -761,23 +799,33 @@ namespace PingCastle.Cloud.Analyzer
         private async Task<string> CalculateOverallProvisioningStatus(IGraphApiClient api, string memberId)
         {
             var licenses = await api.GetUserLicensesAsync(memberId);
-            var provisionedPlans = licenses?.SelectMany(l=> l.ServicePlans);
+            var provisionedPlans = licenses?.SelectMany(l => l.ServicePlans);
 
             if (provisionedPlans == null || !provisionedPlans.Any())
+            {
                 return "None";
+            }
 
             if (provisionedPlans.Any(sp => sp.ProvisioningStatus == "Error"))
+            {
                 return "Error";
+            }
 
             if (provisionedPlans.Any(sp => sp.ProvisioningStatus == "PendingProvisioning" ||
-                                       sp.ProvisioningStatus == "PendingActivation"))
+                                           sp.ProvisioningStatus == "PendingActivation"))
+            {
                 return "PendingProvisioning";
+            }
 
             if (provisionedPlans.All(sp => sp.ProvisioningStatus == "Success"))
+            {
                 return "Success";
+            }
 
             if (provisionedPlans.All(sp => sp.ProvisioningStatus == "Disabled"))
+            {
                 return "Disabled";
+            }
 
             return "Unknown"; // statuses are mixed
         }
@@ -817,7 +865,7 @@ namespace PingCastle.Cloud.Analyzer
                         Name = d.Id,
                         RootDomain = d.RootDomain?.Id,
                         Status = isVerified ? "Verified" : "Unverified",
-                        VerificationMethod = isVerified && isRecordsExists ? $"DnsRecord: {string.Join(",", dnsRecords.Select(r=> r.SupportedService).Distinct())}" : "",
+                        VerificationMethod = isVerified && isRecordsExists ? $"DnsRecord: {string.Join(",", dnsRecords.Select(r => r.SupportedService).Distinct())}" : "",
                     });
                 }
             }
@@ -840,11 +888,20 @@ namespace PingCastle.Cloud.Analyzer
             data.ProvisionCountryLetterCode = ci.CountryLetterCode;
             data.ProvisionInitialDomain = ci.VerifiedDomains.First(d => d.IsInitial.GetValueOrDefault()).Name;
             if (ci.OnPremisesLastSyncDateTime.HasValue)
+            {
                 data.ProvisionLastDirSyncTime = ci.OnPremisesLastSyncDateTime.Value.UtcDateTime;
+            }
+
             if (ci.OnPremisesLastPasswordSyncDateTime.HasValue)
+            {
                 data.ProvisionLastPasswordSyncTime = ci.OnPremisesLastPasswordSyncDateTime.Value.UtcDateTime;
+            }
+
             if (ap.AllowedToUseSSPR.HasValue)
+            {
                 data.ProvisionSelfServePasswordResetEnabled = ap.AllowedToUseSSPR.Value;
+            }
+
             data.ProvisionTechnicalNotificationEmails = ci.TechnicalNotificationMails;
             data.ProvisionMarketingNotificationEmails = ci.MarketingNotificationEmails;
             data.ProvisionSecurityComplianceNotificationEmails = ci.SecurityComplianceNotificationMails;
@@ -855,10 +912,14 @@ namespace PingCastle.Cloud.Analyzer
                 data.ProvisionDirSyncClientVersion = onPremSync.Configuration.SynchronizationClientVersion;
                 data.ProvisionDirSyncServiceAccount = onPremSync.Configuration.CurrentExportData.ServiceAccount;
             }
+
             data.ProvisionDirectorySynchronizationStatus = ci.OnPremisesSyncEnabled.GetValueOrDefault() ? "Enabled" : "Disabled";
             data.ProvisionPasswordSynchronizationEnabled = onPremSync.Features.PasswordSyncEnabled;
             if (ci.CreatedDateTime.HasValue)
+            {
                 data.TenantCreation = ci.CreatedDateTime.Value.UtcDateTime;
+            }
+
             data.UsersPermissionToCreateGroupsEnabled = ap.DefaultUserRolePermissions.AllowedToCreateSecurityGroups.Value;
             data.UsersPermissionToCreateLOBAppsEnabled = ap.DefaultUserRolePermissions.AllowedToCreateApps.Value;
             data.UsersPermissionToReadOtherUsersEnabled = ap.DefaultUserRolePermissions.AllowedToReadOtherUsers.Value;
@@ -868,7 +929,10 @@ namespace PingCastle.Cloud.Analyzer
         private void AnalyseForeignDomains()
         {
             if (data.ForeignDomains == null)
+            {
                 return;
+            }
+
             DisplayAdvancement(data.ForeignDomains.Count + " domain(s) to process");
             Parallel.ForEach(data.ForeignDomains, new ParallelOptions { MaxDegreeOfParallelism = MaxParallel }, (domain) =>
             {
@@ -887,6 +951,7 @@ namespace PingCastle.Cloud.Analyzer
                 }
             });
         }
+
         private void AnalyzeOutlookOnline()
         {
             var o365 = new O365Api(credential);

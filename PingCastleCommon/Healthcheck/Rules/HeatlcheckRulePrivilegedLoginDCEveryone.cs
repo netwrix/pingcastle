@@ -45,6 +45,7 @@ namespace PingCastle.Healthcheck.Rules
                                     break;
                                 }
                             }
+
                             if (appliedToDC)
                             {
                                 // check if privilege is part of dangerous privilege
@@ -56,11 +57,13 @@ namespace PingCastle.Healthcheck.Rules
                                     }
                                 }
                             }
+
                             break;
                         }
                     }
                 }
             }
+
             return null;
         }
     }

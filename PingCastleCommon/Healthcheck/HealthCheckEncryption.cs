@@ -30,6 +30,7 @@ namespace PingCastle.Healthcheck
                         RSAKeyExtensions.FromXmlStringDotNetCore2(RSA, keyinfo.PublicKey);
                         return RSA;
                     }
+
                     if (!String.IsNullOrEmpty(keyinfo.PrivateKey))
                     {
                         RSACryptoServiceProvider RSA = new RSACryptoServiceProvider();
@@ -37,6 +38,7 @@ namespace PingCastle.Healthcheck
                         return RSA;
                     }
                 }
+
                 throw new PingCastleException("No encryption key set in config file");
             }
             else
@@ -47,15 +49,23 @@ namespace PingCastle.Healthcheck
                     {
                         RSACryptoServiceProvider RSA = new RSACryptoServiceProvider();
                         if (!String.IsNullOrEmpty(keyinfo.PublicKey))
+                        {
                             RSAKeyExtensions.FromXmlStringDotNetCore2(RSA, keyinfo.PublicKey);
+                        }
                         else if (!String.IsNullOrEmpty(keyinfo.PrivateKey))
+                        {
                             RSAKeyExtensions.FromXmlStringDotNetCore2(RSA, keyinfo.PrivateKey);
+                        }
                         else
+                        {
                             throw new PingCastleException(@"The container """ + EncryptionKey + @""" does not contain a public or a private key");
+                        }
+
                         return RSA;
                     }
                 }
             }
+
             throw new PingCastleException("Encryption key not found (name:" + EncryptionKey + ")");
         }
 
@@ -113,6 +123,7 @@ namespace PingCastle.Healthcheck
                 Trace.WriteLine("No encryption setting found in config file");
                 return output;
             }
+
             foreach (KeySettings keyinfo in settings.RSAKeys)
             {
                 if (!String.IsNullOrEmpty(keyinfo.PrivateKey))
@@ -127,16 +138,17 @@ namespace PingCastle.Healthcheck
                     {
                         throw new PingCastleException("Unable to load the key \"" + keyinfo.Name + "\"", ex);
                     }
+
                     output.Add(RSA);
                 }
             }
+
             return output;
         }
     }
 
     internal static class RSAKeyExtensions
     {
-
         #region XML
 
         public static void FromXmlStringDotNetCore2(RSA rsa, string xmlString)

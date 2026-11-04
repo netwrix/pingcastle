@@ -33,6 +33,7 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     Trace.WriteLine("Non DSA key detected in certificate");
                 }
+
                 if (key != null)
                 {
                     foreach (X509Extension extension in cert.Extensions)
@@ -44,11 +45,13 @@ namespace PingCastle.Healthcheck.Rules
                             {
                                 AddRawDetail(data.Source, cert.Subject);
                             }
+
                             break;
                         }
                     }
                 }
             }
+
             return null;
         }
     }

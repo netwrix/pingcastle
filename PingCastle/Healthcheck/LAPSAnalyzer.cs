@@ -8,7 +8,6 @@ namespace PingCastle.Healthcheck
     {
         public LAPSAnalyzer(IADConnection adws)
         {
-
             LegacyLAPSInstalled = DateTime.MaxValue;
             MsLAPSInstalled = DateTime.MaxValue;
 
@@ -59,19 +58,33 @@ namespace PingCastle.Healthcheck
         public int MsLAPSEncryptedIntId { get; private set; }
         public Guid MsLAPSEncryptedSchemaId { get; set; }
 
-        public bool LAPSInstalled { get { return LegacyLAPSInstalled < DateTime.MaxValue || MsLAPSInstalled < DateTime.MaxValue; } }
+        public bool LAPSInstalled
+        {
+            get { return LegacyLAPSInstalled < DateTime.MaxValue || MsLAPSInstalled < DateTime.MaxValue; }
+        }
 
         public List<Guid> LAPSSchemaGuid
         {
             get
             {
                 var l = new List<Guid>();
-                if (LegacyLAPSSchemaId != Guid.Empty) l.Add(LegacyLAPSSchemaId);
-                if (MsLAPSSchemaId != Guid.Empty) l.Add(MsLAPSSchemaId);
-                if (MsLAPSEncryptedSchemaId != Guid.Empty) l.Add(MsLAPSEncryptedSchemaId);
+                if (LegacyLAPSSchemaId != Guid.Empty)
+                {
+                    l.Add(LegacyLAPSSchemaId);
+                }
+
+                if (MsLAPSSchemaId != Guid.Empty)
+                {
+                    l.Add(MsLAPSSchemaId);
+                }
+
+                if (MsLAPSEncryptedSchemaId != Guid.Empty)
+                {
+                    l.Add(MsLAPSEncryptedSchemaId);
+                }
+
                 return l;
             }
         }
-
     }
 }

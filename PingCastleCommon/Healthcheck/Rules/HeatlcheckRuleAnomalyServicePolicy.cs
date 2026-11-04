@@ -17,9 +17,9 @@ namespace PingCastle.Healthcheck.Rules
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             bool servicePolicy = false;
-            foreach (GPPSecurityPolicy policy in healthcheckData.GPPPasswordPolicy)
+            foreach (GPPSecurityPolicy policy in healthcheckData.GPPPasswordPolicy ?? [])
             {
-                foreach (GPPSecurityPolicyProperty property in policy.Properties)
+                foreach (GPPSecurityPolicyProperty property in policy.Properties ?? [])
                 {
                     if (property.Property == "MinimumPasswordLength")
                     {
@@ -31,6 +31,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return (servicePolicy ? 0 : 1);
         }
     }

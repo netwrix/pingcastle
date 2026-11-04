@@ -18,8 +18,15 @@ namespace PingCastle.Scanners
         {
         }
 
-        public override string Name { get { return "spooler"; } }
-        public override string Description { get { return "Check if the spooler service is remotely active. The spooler can be abused to get computer tokens when unconstrained delegations are exploited."; } }
+        public override string Name
+        {
+            get { return "spooler"; }
+        }
+
+        public override string Description
+        {
+            get { return "Check if the spooler service is remotely active. The spooler can be abused to get computer tokens when unconstrained delegations are exploited."; }
+        }
 
         override protected string GetCsvHeader()
         {
@@ -53,8 +60,11 @@ namespace PingCastle.Scanners
             finally
             {
                 if (hHandle != IntPtr.Zero)
+                {
                     test.RpcClosePrinter(ref hHandle);
+                }
             }
+
             return false;
         }
     }

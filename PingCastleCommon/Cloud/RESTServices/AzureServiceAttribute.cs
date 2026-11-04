@@ -17,6 +17,7 @@ namespace PingCastle.Cloud.RESTServices.Azure
             this.Resource = Resource;
             this.RedirectUri = RedirectUri;
         }
+
         public Guid ClientID { get; set; }
         public string Resource { get; set; }
         public string RedirectUri { get; set; }
@@ -25,9 +26,11 @@ namespace PingCastle.Cloud.RESTServices.Azure
         {
             AzureServiceAttribute[] attrs = (AzureServiceAttribute[])typeof(T).GetCustomAttributes(typeof(AzureServiceAttribute));
             if (attrs.Length > 0)
+            {
                 return attrs[0];
+            }
+
             throw new ApplicationException("no service attribute found");
         }
     }
-
 }

@@ -23,16 +23,21 @@ namespace PingCastle.Healthcheck.Rules
             {
                 return 0;
             }
+
             var gpo = new Dictionary<IGPOReference, List<string>>();
             foreach (GPPRightAssignment right in healthcheckData.GPPRightAssignment)
             {
                 if (right.Privilege == "SeMachineAccountPrivilege")
                 {
                     if (!gpo.ContainsKey(right))
+                    {
                         gpo[right] = new List<string>();
+                    }
+
                     gpo[right].Add(right.User);
                 }
             }
+
             var o = ApplyGPOPrority2(healthcheckData, gpo);
 
             bool found = false;
@@ -59,6 +64,7 @@ namespace PingCastle.Healthcheck.Rules
                 Trace.WriteLine("Defined in no GPO so default AD settings");
                 return healthcheckData.MachineAccountQuota;
             }
+
             return 0;
         }
     }

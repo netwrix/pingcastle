@@ -26,6 +26,7 @@ namespace PingCastle.Bot
             {
                 throw new Win32Exception();
             }
+
             return new FileStream(new Microsoft.Win32.SafeHandles.SafeFileHandle(p, true), FileAccess.ReadWrite);
         }
     }

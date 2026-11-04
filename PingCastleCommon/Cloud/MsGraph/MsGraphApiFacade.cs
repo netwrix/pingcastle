@@ -43,7 +43,8 @@ namespace PingCastle.Cloud
         {
             var partnersPage = await _client.Policies.CrossTenantAccessPolicy.Partners.GetAsync(config =>
             {
-                config.QueryParameters.Select = new[] {
+                config.QueryParameters.Select = new[]
+                {
                     "tenantId",
                     "b2bCollaborationInbound",
                     "b2bCollaborationOutbound",
@@ -71,7 +72,7 @@ namespace PingCastle.Cloud
             var filter = $"targetResources/any(c:c/id eq '{policyId}') and result eq 'success' and category eq 'Policy'";
             return await GetLastModificationDateFromAuditLogsAsync(filter);
         }
-        
+
         public async IAsyncEnumerable<NamedLocation> GetNamedLocationsAsync()
         {
             var locationsPage = await _client.Identity.ConditionalAccess.NamedLocations.GetAsync();
@@ -157,12 +158,12 @@ namespace PingCastle.Cloud
             }
             while (users?.OdataNextLink != null &&
                     (users = await _client.Groups[groupId].TransitiveMembers.WithUrl(users.OdataNextLink).GetAsync()) != null);
-
         }
 
         public async IAsyncEnumerable<User> GetAllUsersAsync(IEnumerable<string> selectProperties = null, string filter = null)
         {
-            var defaultProps = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+            var defaultProps = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
                 "id",
                 "userPrincipalName",
                 "userType",
@@ -176,7 +177,10 @@ namespace PingCastle.Cloud
 
             if (selectProperties != null)
             {
-                foreach (var prop in selectProperties) defaultProps.Add(prop);
+                foreach (var prop in selectProperties)
+                {
+                    defaultProps.Add(prop);
+                }
             }
 
             var usersPage = await _client.Users.GetAsync(config =>
@@ -205,7 +209,7 @@ namespace PingCastle.Cloud
         {
             var membershipPage = await _client.Users[userId].MemberOf.GetAsync(config =>
             {
-                config.QueryParameters.Select = new[] { "id", "displayName", "roleTemplateId" }; 
+                config.QueryParameters.Select = new[] { "id", "displayName", "roleTemplateId" };
             });
 
             do
@@ -316,7 +320,8 @@ namespace PingCastle.Cloud
         {
             var servicePrincipalsPage = await _client.ServicePrincipals.GetAsync(config =>
             {
-                config.QueryParameters.Select = new[] {
+                config.QueryParameters.Select = new[]
+                {
                     "id", "appId", "displayName", "appOwnerOrganizationId"
                 };
             });
@@ -339,7 +344,8 @@ namespace PingCastle.Cloud
         {
             var grantsPage = await _client.Oauth2PermissionGrants.GetAsync(config =>
             {
-                config.QueryParameters.Select = new[] {
+                config.QueryParameters.Select = new[]
+                {
                     "id", "clientId", "consentType", "principalId", "resourceId", "scope", "expiryTime"
                 };
             });
@@ -380,7 +386,8 @@ namespace PingCastle.Cloud
         {
             var assignmentsPage = await _client.ServicePrincipals[servicePrincipalId].AppRoleAssignments.GetAsync(config =>
             {
-                config.QueryParameters.Select = new[] {
+                config.QueryParameters.Select = new[]
+                {
                 "id", "appRoleId", "principalType", "resourceDisplayName", "resourceId"
                 };
             });

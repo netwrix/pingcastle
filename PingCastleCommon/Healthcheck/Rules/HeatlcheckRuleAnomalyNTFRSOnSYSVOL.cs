@@ -32,10 +32,13 @@ namespace PingCastle.Healthcheck.Rules
                         case "Windows 2016":
                             continue;
                     }
+
                     return 1;
                 }
+
                 return 2;
             }
+
             return 0;
         }
     }

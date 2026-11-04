@@ -19,6 +19,5 @@ namespace PingCastle.Cloud.Rules
             // disable the rule since MS changed the rule logic
             return null;
         }
-
     }
 }

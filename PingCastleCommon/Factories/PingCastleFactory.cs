@@ -124,6 +124,7 @@ namespace PingCastle.Factories
                             throw;
                         }
                     }
+
                     return scanner;
                 }
             }
@@ -172,6 +173,7 @@ namespace PingCastle.Factories
                                 throw;
                             }
                         }
+
                         break;
                     }
                 }
@@ -292,6 +294,7 @@ namespace PingCastle.Factories
             {
                 return "*ad_hc_*.xml";
             }
+
             throw new NotImplementedException("No file pattern known for type " + typeof(T));
         }
     }

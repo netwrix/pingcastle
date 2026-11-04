@@ -7,11 +7,15 @@ namespace PingCastle.Cloud.Data
     {
         public string TenantName { get; set; }
         public string TenantID { get; set; }
-        public bool IsComplete { get { return TenantID != null && TenantName != null; } }
+        public bool IsComplete
+        {
+            get { return TenantID != null && TenantName != null; }
+        }
 
         private AzureADKey()
         {
         }
+
         public static AzureADKey Create(string TenantName, string TenantID)
         {
             var key = new AzureADKey(TenantName, TenantID);
@@ -24,6 +28,7 @@ namespace PingCastle.Cloud.Data
             {
                 TenantName = tenantName.ToLowerInvariant();
             }
+
             if (!string.IsNullOrEmpty(tenantID))
             {
                 Guid guid;
@@ -32,6 +37,7 @@ namespace PingCastle.Cloud.Data
                     Trace.WriteLine("Unable to parse the TenantID " + tenantID);
                     throw new PingCastleException("Unable to parse the TenantID \"" + tenantID + "\" - it should be a guid");
                 }
+
                 TenantID = tenantID;
             }
         }

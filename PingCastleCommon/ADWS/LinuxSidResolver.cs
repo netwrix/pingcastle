@@ -109,7 +109,10 @@ namespace PingCastle.ADWS
         public LinuxSidResolver(NetworkCredential credential, string remoteserver)
         {
             if (credential == null)
+            {
                 throw new NotImplementedException("Credential required");
+            }
+
             memoryContext = _talloc_stackframe("PingCastle");
             this.credential = credential;
             this.remoteserver = remoteserver;
@@ -145,28 +148,31 @@ namespace PingCastle.ADWS
             {
                 lp_set_cmdline("log level", LinuxSidResolverSettings.LogLevel);
             }
+
             lp_set_cmdline("client ipc signing", "required");
             var r = ConnectWithFull();
             if (r != 0)
             {
                 throw new Win32Exception(r, "Unable to ConnectWithFull");
             }
+
             r = cli_rpc_pipe_open_noauth(connectionHandle, ndr_table_lsarpc, out rpcHandle);
             if (r != 0)
             {
                 throw new Win32Exception(r, "Unable to cli_rpc_pipe_open_noauth");
             }
+
             r = rpccli_lsa_open_policy(rpcHandle, memoryContext, true, (uint)(1L << 25), ref policy);
             if (r != 0)
             {
                 throw new Win32Exception(r, "Unable to rpccli_lsa_open_policy");
             }
+
             Trace.WriteLine(@"ConnectToLsa OK");
         }
 
         private void DisconnectFromLsa()
         {
-
             connectionHandle.Close();
         }
 
@@ -175,7 +181,9 @@ namespace PingCastle.ADWS
             lock (lockobject)
             {
                 if (rpcHandle == IntPtr.Zero)
+                {
                     ConnectToLsa();
+                }
 
                 referencedDomain = null;
                 var sids = new byte[SECURITY_MAX_SID_SIZE * 1];
@@ -193,6 +201,7 @@ namespace PingCastle.ADWS
                     Trace.WriteLine(@"Error " + status + " when translating " + sidstring + " on " + remoteserver);
                     return sidstring;
                 }
+
                 var domains1 = Marshal.ReadIntPtr(domainsIntPtr.DangerousGetHandle());
                 referencedDomain = Marshal.PtrToStringAnsi(domains1);
 
@@ -204,9 +213,13 @@ namespace PingCastle.ADWS
                 typesIntPtr.Close();
 
                 if (String.IsNullOrEmpty(referencedDomain))
+                {
                     return name;
+                }
                 else
+                {
                     return referencedDomain + "\\" + name;
+                }
             }
         }
 
@@ -215,7 +228,10 @@ namespace PingCastle.ADWS
             lock (lockobject)
             {
                 if (rpcHandle == IntPtr.Zero)
+                {
                     ConnectToLsa();
+                }
+
                 SambaTallocHandle domainsIntPtr;
                 SambaTallocHandle sidsIntPtr;
                 SambaTallocHandle typesIntPtr;
@@ -227,6 +243,7 @@ namespace PingCastle.ADWS
                     Trace.WriteLine(@"Error " + status + " when translating " + nameToResolve + " on " + remoteserver);
                     return null;
                 }
+
                 var domains1 = Marshal.ReadIntPtr(domainsIntPtr.DangerousGetHandle());
                 var referencedDomain = Marshal.PtrToStringAnsi(domains1);
                 var sid = new SecurityIdentifier(sidsIntPtr.DangerousGetHandle());
@@ -240,7 +257,9 @@ namespace PingCastle.ADWS
         public void Dispose()
         {
             if (rpcHandle != IntPtr.Zero)
+            {
                 DisconnectFromLsa();
+            }
         }
     }
 
@@ -265,7 +284,6 @@ namespace PingCastle.ADWS
 
     internal class SambaConnectionHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
-        
         public SambaConnectionHandle()
             : base(true)
         {

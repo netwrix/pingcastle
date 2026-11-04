@@ -12,8 +12,12 @@ internal class WindowsDisplaySupportMessageService : IDisplaySupportMessageServi
         var license = LicenseCache.Instance.GetLicense();
         var isBasicLicense = license?.IsBasic() ?? true;
         if (isBasicLicense)
+        {
             _ui.DisplayError("Please visit https://github.com/netwrix/pingcastle/issues to log an issue with the following details so the problem can be fixed");
+        }
         else
+        {
             _ui.DisplayError("Please contact Netwrix support via the support portal (https://www.netwrix.com/support.html) with the following details so the problem can be fixed");
+        }
     }
 }

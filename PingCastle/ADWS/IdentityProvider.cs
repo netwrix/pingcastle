@@ -38,6 +38,7 @@ internal class IdentityProvider : IIdentityProvider
                 szDomain = remoteserver;
             }
         }
+
         Trace.WriteLine("Preparing to login with login = " + credential.UserName.SanitizeForLog() + " domain = " + szDomain.SanitizeForLog() + " remoteserver = " + remoteserver.SanitizeForLog());
 
         // Try INTERACTIVE logon first for Kerberos support (same-domain scenarios)
@@ -74,6 +75,7 @@ internal class IdentityProvider : IIdentityProvider
             referencedDomain = tempDomain;
             return result;
         }
+
         return _nativeMethods.ConvertSIDToName(sidstring, server, out referencedDomain);
     }
 }

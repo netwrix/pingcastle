@@ -24,6 +24,7 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     continue;
                 }
+
                 if (trust.msDSSupportedEncryptionTypes == 0)
                 {
                     AddRawDetail(trust.TrustPartner, "Not Configured");
@@ -33,6 +34,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(trust.TrustPartner, "AES not enabled");
                 }
             }
+
             return null;
         }
     }

@@ -29,7 +29,6 @@ namespace PingCastle.Rules
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public class RuleNotPartiallyRecomputableAttribute : Attribute
     {
-        
     }
 
     public interface IRuleMaturity
@@ -62,6 +61,7 @@ namespace PingCastle.Rules
                 {
                     _version = new Version(Major, Minor, Build, Revision);
                 }
+
                 return _version;
             }
         }
@@ -79,7 +79,9 @@ namespace PingCastle.Rules
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     public class RuleComputationAttribute : Attribute
     {
-        public RuleComputationAttribute() { }
+        public RuleComputationAttribute()
+        {
+        }
 
         public RuleComputationAttribute(RuleComputationType ComputationType, int Score, int Threshold = 0, int Order = 1)
         {
@@ -104,15 +106,20 @@ namespace PingCastle.Rules
                         points = Score;
                         return true;
                     }
+
                     return false;
                 case RuleComputationType.PerDiscoverWithAMinimumOf:
                     if (value > 0)
                     {
                         points = value * Score;
                         if (points < Threshold)
+                        {
                             points = Threshold;
+                        }
+
                         return true;
                     }
+
                     return false;
                 case RuleComputationType.PerDiscover:
                     if (value > 0)
@@ -120,6 +127,7 @@ namespace PingCastle.Rules
                         points = value * Score;
                         return true;
                     }
+
                     return false;
                 case RuleComputationType.TriggerOnThreshold:
                     if (value >= Threshold)
@@ -127,6 +135,7 @@ namespace PingCastle.Rules
                         points = Score;
                         return true;
                     }
+
                     return false;
                 case RuleComputationType.TriggerIfLessThan:
                     if (value < Threshold)
@@ -134,6 +143,7 @@ namespace PingCastle.Rules
                         points = Score;
                         return true;
                     }
+
                     return false;
                 default:
                     throw new NotImplementedException();
@@ -144,7 +154,7 @@ namespace PingCastle.Rules
         {
             StringBuilder sb = new StringBuilder();
             bool first = true;
-            foreach(var rule in RuleComputation)
+            foreach (var rule in RuleComputation)
             {
                 if (first)
                 {
@@ -154,6 +164,7 @@ namespace PingCastle.Rules
                 {
                     sb.Append("\r\nthen ");
                 }
+
                 switch (rule.ComputationType)
                 {
                     case RuleComputationType.TriggerOnThreshold:
@@ -171,6 +182,7 @@ namespace PingCastle.Rules
                         {
                             sb.Append("Informative rule (0 point)");
                         }
+
                         break;
                     case RuleComputationType.PerDiscover:
                         sb.Append(rule.Score);
@@ -189,6 +201,7 @@ namespace PingCastle.Rules
                         break;
                 }
             }
+
             return sb.ToString();
         }
     }
@@ -199,6 +212,7 @@ namespace PingCastle.Rules
         {
             get; set;
         }
+
         public virtual string Label
         {
             get; set;
@@ -222,6 +236,7 @@ namespace PingCastle.Rules
             {
                 return Label;
             }
+
             StringBuilder sb = new StringBuilder();
             sb.Append("<a href=\"");
             sb.Append(URL);
@@ -232,6 +247,7 @@ namespace PingCastle.Rules
                 sb.Append(Country.ToUpperInvariant());
                 sb.Append("]");
             }
+
             sb.Append(Label);
             sb.Append("</a>");
             return sb.ToString();
@@ -279,7 +295,10 @@ namespace PingCastle.Rules
             }
         }
 
-        public override string Label { get { return "STIG " + ID + (!String.IsNullOrEmpty(Title) ? " - " + Title : null); } }
+        public override string Label
+        {
+            get { return "STIG " + ID + (!String.IsNullOrEmpty(Title) ? " - " + Title : null); }
+        }
     }
 
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
@@ -305,7 +324,10 @@ namespace PingCastle.Rules
             }
         }
 
-        public override string Label { get { return "ANSSI - Recommandations de sécurité relatives à Active Directory - " + ID + (!String.IsNullOrEmpty(Location) ? " [" + Location + "]" : null); } }
+        public override string Label
+        {
+            get { return "ANSSI - Recommandations de sécurité relatives à Active Directory - " + ID + (!String.IsNullOrEmpty(Location) ? " [" + Location + "]" : null); }
+        }
     }
 
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
@@ -326,14 +348,23 @@ namespace PingCastle.Rules
             {
                 string path = "https://www.cert.ssi.gouv.fr/actualite/";
                 if (ID.Contains("-ALE-"))
+                {
                     path = "https://www.cert.ssi.gouv.fr/alerte/";
+                }
+
                 if (ID.Contains("-INF-"))
+                {
                     path = "https://www.cert.ssi.gouv.fr/information/";
+                }
+
                 return path + ID + (!String.IsNullOrEmpty(Section) ? "/#" + Section : null);
             }
         }
 
-        public override string Label { get { return "ANSSI " + ID; } }
+        public override string Label
+        {
+            get { return "ANSSI " + ID; }
+        }
     }
 
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
@@ -477,6 +508,8 @@ namespace PingCastle.Rules
         SystemServices,
         [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.Persistence, "T1098", "Account Manipulation")]
         AccountManipulation,
+        [MitreAttackTechniqueAttribute(MitreAttackMainTechnique.CredentialAccess, "T1649", "Steal or Forge Authentication Certificates")]
+        StealorForgeAuthenticationCertificates,
     }
 
     public class MitreAttackTechniqueAttribute : Attribute
@@ -629,7 +662,6 @@ namespace PingCastle.Rules
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public class RuleMitreAttackMitigationAttribute : RuleFrameworkReference
     {
-
         public RuleMitreAttackMitigationAttribute(MitreAttackMitigation mitigation)
         {
             var memInfo = typeof(MitreAttackMitigation).GetMember(mitigation.ToString());

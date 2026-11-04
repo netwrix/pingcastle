@@ -26,6 +26,7 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     continue;
                 }
+
                 if (dc.LastComputerLogonDate < DateTime.Now.AddDays(-45))
                 {
                     bool isException = false;
@@ -35,7 +36,10 @@ namespace PingCastle.Healthcheck.Rules
                         {
                             var test = riverbed.SamAccountName;
                             if (test.EndsWith("$"))
+                            {
                                 test = test.Substring(0, test.Length - 1);
+                            }
+
                             if (string.Equals(test, dc.DCName, StringComparison.OrdinalIgnoreCase))
                             {
                                 isException = true;
@@ -43,12 +47,14 @@ namespace PingCastle.Healthcheck.Rules
                             }
                         }
                     }
+
                     if (!isException)
                     {
                         AddRawDetail(dc.DCName, dc.LastComputerLogonDate.ToString("u"));
                     }
                 }
             }
+
             return null;
         }
     }

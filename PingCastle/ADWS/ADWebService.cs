@@ -16,7 +16,6 @@ namespace PingCastle.ADWS
 {
     public class ADWebService : IADWebService
     {
-
         private readonly IWindowsNativeMethods _nativeMethods;
         private readonly IIdentityProvider _identityProvider;
 
@@ -45,7 +44,13 @@ namespace PingCastle.ADWS
                     ConnectionType = ADConnectionType.ADWSThenLDAP;
                 }
             }
+
             EstablishConnection();
+        }
+
+        public ADWebService CreateForServer(string server)
+        {
+            return new ADWebService(server, Port, Credential, _identityProvider, _nativeMethods);
         }
 
         public static ADConnectionType ConnectionType { get; set; }
@@ -96,11 +101,13 @@ namespace PingCastle.ADWS
                                 COMException ex3 = (COMException)ex2;
                                 Trace.WriteLine("COMException: " + ex3.ErrorCode);
                             }
+
                             Trace.WriteLine(ex2.StackTrace);
                             Trace.WriteLine("Throwing ADWS Exception again");
                             ThrowActiveDirectoryServerDownException(ex.Message);
                         }
                     }
+
                     break;
                 case ADConnectionType.LDAPThenADWS:
                     try
@@ -127,6 +134,7 @@ namespace PingCastle.ADWS
                             ThrowActiveDirectoryServerDownException(ex.Message);
                         }
                     }
+
                     break;
                 case ADConnectionType.Unix:
                     Trace.WriteLine("Trying Linux connection");
@@ -156,6 +164,7 @@ namespace PingCastle.ADWS
                 Trace.WriteLine("Unable to load ADWS - .Net 2 only ? (" + ex.Message + ")");
                 throw new ApplicationException("Unable to load ADWS connection", ex);
             }
+
             Trace.WriteLine("Trying ADWS connection");
             adwsConnection.EstablishConnection();
             Trace.WriteLine("ADWS connection successful");
@@ -188,7 +197,10 @@ namespace PingCastle.ADWS
             get
             {
                 if (connection != null)
+                {
                     return connection.GetDomainInfo();
+                }
+
                 return null;
             }
         }
@@ -206,9 +218,11 @@ namespace PingCastle.ADWS
                 output.Add(new OUExploration(OU, "SubTree", 1));
                 return output;
             }
+
             List<string> OUToExplore = new List<string>();
             OUToExplore.Add(OU);
-            string[] properties = new string[] {
+            string[] properties = new string[]
+            {
                         "distinguishedname",
             };
             List<string> futureOuToExplore = null;
@@ -226,14 +240,16 @@ namespace PingCastle.ADWS
                         }
                         , "OneLevel"
                         );
-
                 }
+
                 OUToExplore = futureOuToExplore;
             }
+
             foreach (string ou in futureOuToExplore)
             {
                 output.Add(new OUExploration(ou, "SubTree", NumberOfDepthForSplit));
             }
+
             output.Sort();
             return output;
         }
@@ -251,7 +267,10 @@ namespace PingCastle.ADWS
         public void Enumerate(IADWebService.Action preambleWithReentry, string distinguishedName, string filter, string[] properties, WorkOnReturnedObjectByADWS callback, string scope)
         {
             if (preambleWithReentry != null)
+            {
                 preambleWithReentry();
+            }
+
             try
             {
                 connection.Enumerate(distinguishedName, filter, properties, callback, scope);
@@ -261,12 +280,17 @@ namespace PingCastle.ADWS
                 Trace.WriteLine("Exception: " + ex.Message);
                 Trace.WriteLine("StackTrace: " + ex.StackTrace);
                 if (fallBackConnection == null)
+                {
                     throw;
+                }
 
                 _ui.DisplayWarning("The AD query failed. Using the alternative protocol (" + fallBackConnection.GetType().Name + ")");
 
                 if (preambleWithReentry != null)
+                {
                     preambleWithReentry();
+                }
+
                 fallBackConnection.Enumerate(distinguishedName, filter, properties, callback, scope);
             }
         }

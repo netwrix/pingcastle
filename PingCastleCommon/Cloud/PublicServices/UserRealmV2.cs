@@ -30,5 +30,4 @@ namespace PingCastle.Cloud.PublicServices
         [DataMember]
         public string cloud_instance_name { get; set; }
     }
-
 }

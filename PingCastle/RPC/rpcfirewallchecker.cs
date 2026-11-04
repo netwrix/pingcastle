@@ -9,7 +9,6 @@ namespace PingCastle.RPC
 {
     public class RpcFirewallChecker : rpcapi
     {
-        
         int maxOpNum;
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -27,6 +26,7 @@ namespace PingCastle.RPC
                     var v = new byte[] { 0x00, 0x48, 0x00, 0x00, 0x00, 0x00, i, 0x00, 0x08, 0x00, 0x32, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x0a, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
                     Array.Copy(v, 0, MIDL_ProcFormatString, 30 * i, v.Length);
                 }
+
                 MIDL_TypeFormatString = new byte[3];
                 InitializeStub(interfaceId, MIDL_ProcFormatString, MIDL_TypeFormatString, "\\pipe\\" + pipe, majorVersion, minorVersion);
             }
@@ -38,6 +38,7 @@ namespace PingCastle.RPC
                     var v = new byte[] { 0x00, 0x48, 0x00, 0x00, 0x00, 0x00, i, 0x00, 0x04, 0x00, 0x32, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x08, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
                     Array.Copy(v, 0, MIDL_ProcFormatString, 28 * i, v.Length);
                 }
+
                 MIDL_TypeFormatString = new byte[3];
                 InitializeStub(interfaceId, MIDL_ProcFormatString, MIDL_TypeFormatString, "\\pipe\\" + pipe, majorVersion, minorVersion);
             }
@@ -54,12 +55,17 @@ namespace PingCastle.RPC
             IntPtr result = IntPtr.Zero;
             IntPtr binding = IntPtr.Zero;
             if (opnum >= maxOpNum)
+            {
                 throw new ApplicationException("opnum above limit");
+            }
+
             try
             {
                 var res = BindUsingPipe(server, out binding, credential);
                 if (res != 0)
+                {
                     return res;
+                }
 
                 if (IntPtr.Size == 8)
                 {
@@ -80,8 +86,11 @@ namespace PingCastle.RPC
             finally
             {
                 if (binding != IntPtr.Zero)
+                {
                     Unbind(IntPtr.Zero, binding);
+                }
             }
+
             return result.ToInt32();
         }
 
@@ -98,11 +107,12 @@ namespace PingCastle.RPC
             {
                 var expectedError = CheckRPCOpnum(interfaceId, pipe, majorVersion, minorVersion, function.Value, server, credential);
                 if (expectedError == 1783)
+                {
                     output.Add(function.Key);
+                }
             }
 
             return output;
         }
-
     }
 }

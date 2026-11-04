@@ -93,7 +93,10 @@ namespace PingCastle.Report
                 {
                     int c = ReportHelper.GetEnumDescription(a.Model).CompareTo(ReportHelper.GetEnumDescription(b.Model));
                     if (c == 0)
+                    {
                         c = a.Title.CompareTo(b.Title);
+                    }
+
                     return c;
                 }
             );
@@ -108,9 +111,11 @@ namespace PingCastle.Report
                         m = rule.Model;
                         data.Add(new KeyValuePair<RiskModelCategory, List<RuleBase<HealthcheckData>>>(rule.Model, new List<RuleBase<HealthcheckData>>()));
                     }
+
                     data[data.Count - 1].Value.Add(rule);
                 }
             }
+
             Add(@"
 		<div class=""row""><div class=""col-lg-12"">
 		<p>Each line represents a rule. Click on a rule to expand it and show the details of it.
@@ -136,6 +141,7 @@ namespace PingCastle.Report
 		</p>
 ");
                 }
+
                 GenerateAccordion("rules" + d.Key.ToString(), () =>
                 {
                     foreach (var rule in d.Value)
@@ -169,6 +175,7 @@ namespace PingCastle.Report
             {
                 riskmodel[category] = new List<RiskModelCategory>();
             }
+
             for (int j = 0; j < 4; j++)
             {
                 for (int i = 0; ; i++)
@@ -179,9 +186,12 @@ namespace PingCastle.Report
                         riskmodel[(RiskRuleCategory)j].Add((RiskModelCategory)id);
                     }
                     else
+                    {
                         break;
+                    }
                 }
             }
+
             foreach (RiskRuleCategory category in Enum.GetValues(typeof(RiskRuleCategory)))
             {
                 riskmodel[category].Sort(
@@ -190,6 +200,7 @@ namespace PingCastle.Report
                                             return string.Compare(ReportHelper.GetEnumDescription(a), ReportHelper.GetEnumDescription(b));
                                         });
             }
+
             for (int i = 0; ; i++)
             {
                 string line = "<tr>";
@@ -212,6 +223,7 @@ namespace PingCastle.Report
                                 rulematched.Add(rule);
                             }
                         }
+
                         string tdclass = "";
                         tdclass = "model_good";
                         string modelstring = ReportHelper.GetEnumDescription(model);
@@ -226,19 +238,28 @@ namespace PingCastle.Report
                         {
                             tooltipdetail += "<li>" + ReportHelper.Encode(rule.Title) + "</li><br>";
                         }
+
                         line += "<td class=\"model_cell " + tdclass + "\"><div class=\"div_model\" placement=\"auto\" data-bs-toggle=\"popover\" title=\"" +
                             tooltip + "\" data-bs-html=\"true\" data-bs-content=\"" +
                             "<p>" + _resourceManager.GetString(model.ToString() + "_Detail") + "</p>" + (String.IsNullOrEmpty(tooltipdetail) ? "No rule matched" : "<p><ul>" + tooltipdetail + "</ul></p>") + "\"><span class=\"small\">" + modelstring + "</span></div></td>";
                     }
                     else
+                    {
                         line += "<td class=\"model_empty_cell\"></td>";
+                    }
                 }
+
                 line += "</tr>";
                 if (HasValue)
+                {
                     Add(line);
+                }
                 else
+                {
                     break;
+                }
             }
+
             Add(@"
 					</tbody>
 				</table>
@@ -253,16 +274,21 @@ namespace PingCastle.Report
             string prefix = string.Empty;
             frameworks = hcrule.GetType().GetCustomAttributes(typeof(RuleMitreAttackMitigationAttribute), true);
             if (frameworks != null && frameworks.Length > 0)
+            {
                 prefix += "[M]";
+            }
+
             frameworks = hcrule.GetType().GetCustomAttributes(typeof(RuleMitreAttackTechniqueAttribute), true);
             if (frameworks != null && frameworks.Length > 0)
+            {
                 prefix += "[T]";
+            }
 
             GenerateAccordionDetail("rules" + safeRuleId, "rules" + category.ToString(), prefix + hcrule.Title + " (" + hcrule.RiskId + ")", null,
                 () =>
                 {
                     Add("<h3>");
-                    
+
                     Add(hcrule.Title);
                     Add("</h3>\r\n<strong>Rule ID:</strong><p class=\"text-justify\">");
                     Add(hcrule.RiskId);
@@ -282,6 +308,7 @@ namespace PingCastle.Report
                         Add(model.Version.ToString());
                         Add(@"</p>");
                     }
+
                     Add("<strong>Points:</strong><p>");
                     Add(NewLineToBR(hcrule.GetComputationModelString()));
                     Add("</p>\r\n");
@@ -318,6 +345,7 @@ namespace PingCastle.Report
                     covered++;
                 }
             }
+
             AddParagraph("Number of rules covered: " + covered);
             AddParagraph("Number of rules not covered: " + notcovered);
             AddParagraph("<h3>Techniques</h3>");
@@ -334,16 +362,21 @@ namespace PingCastle.Report
             {
                 object[] frameworks = rule.GetType().GetCustomAttributes(typeof(RuleMitreAttackTechniqueAttribute), true);
                 if (frameworks == null || frameworks.Length == 0)
+                {
                     notcovered++;
+                }
+
                 foreach (RuleMitreAttackTechniqueAttribute f in frameworks)
                 {
                     if (!reference.ContainsKey(f))
                     {
                         reference[f] = new List<RuleBase<HealthcheckData>>();
                     }
+
                     reference[f].Add(rule);
                 }
             }
+
             Add("<p>Number of Mitre rules matched: ");
             Add(reference.Count);
             Add("</p>");
@@ -363,7 +396,10 @@ namespace PingCastle.Report
                 foreach (var l in keys)
                 {
                     if (l.MainTechnique != mainTechnique)
+                    {
                         continue;
+                    }
+
                     Add("<p><a href=");
                     Add(((RuleFrameworkReference)l).URL);
                     Add(">");
@@ -380,6 +416,7 @@ namespace PingCastle.Report
                     }
                 }
             }
+
             Add("</div>");
             Add("</div>");
         }
@@ -392,16 +429,21 @@ namespace PingCastle.Report
             {
                 object[] frameworks = rule.GetType().GetCustomAttributes(typeof(RuleMitreAttackMitigationAttribute), true);
                 if (frameworks == null || frameworks.Length == 0)
+                {
                     notcovered++;
+                }
+
                 foreach (RuleMitreAttackMitigationAttribute f in frameworks)
                 {
                     if (!reference.ContainsKey(f))
                     {
                         reference[f] = new List<RuleBase<HealthcheckData>>();
                     }
+
                     reference[f].Add(rule);
                 }
             }
+
             Add("<p>Number of Mitre rules matched: ");
             Add(reference.Count);
             Add("</p>");
@@ -413,7 +455,7 @@ namespace PingCastle.Report
             Add("<div class='col-lg-12'>");
 
             var keys = new List<RuleMitreAttackMitigationAttribute>(reference.Keys);
-            keys.Sort( (RuleMitreAttackMitigationAttribute a, RuleMitreAttackMitigationAttribute b) => { return string.Compare(a.Label, b.Label);});
+            keys.Sort((RuleMitreAttackMitigationAttribute a, RuleMitreAttackMitigationAttribute b) => { return string.Compare(a.Label, b.Label); });
             foreach (var l in keys)
             {
                 Add("<p><a href=");
@@ -431,6 +473,7 @@ namespace PingCastle.Report
                     Add("</span>");
                 }
             }
+
             Add("</div>");
             Add("</div>");
         }
@@ -458,10 +501,15 @@ namespace PingCastle.Report
             public void Add(RuleDurANSSIAttribute rule, List<RuleBase<HealthcheckData>> data)
             {
                 if (!Levels.Contains(rule.Level))
+                {
                     Levels.Add(rule.Level);
+                }
+
                 PCRules.AddRange(data);
                 if (MinLevel > rule.Level)
+                {
                     MinLevel = rule.Level;
+                }
             }
         }
 
@@ -478,6 +526,7 @@ namespace PingCastle.Report
                     {
                         reference[f] = new List<RuleBase<HealthcheckData>>();
                     }
+
                     reference[f].Add(rule);
                 }
             }
@@ -502,7 +551,10 @@ namespace PingCastle.Report
                 {
                     int c = a.MinLevel.CompareTo(b.MinLevel);
                     if (c != 0)
+                    {
                         return c;
+                    }
+
                     return string.CompareOrdinal(a.Label, b.Label);
                 });
 
@@ -513,10 +565,15 @@ namespace PingCastle.Report
             foreach (var r in regroup)
             {
                 if (!count.ContainsKey(r.MinLevel))
+                {
                     count[r.MinLevel] = 1;
+                }
                 else
+                {
                     count[r.MinLevel]++;
+                }
             }
+
             Add("<div class='row'>");
             Add("<div class='col-lg-12'>");
 
@@ -531,6 +588,7 @@ namespace PingCastle.Report
                 Add(count[l]);
                 Add("</p>");
             }
+
             Add("</div>");
             Add("</div>");
             foreach (var r in regroup)
@@ -547,6 +605,7 @@ namespace PingCastle.Report
                     Add(l);
                     Add("</span>");
                 }
+
                 Add(r.Label);
                 Add(" (<a href=\"https://www.cert.ssi.gouv.fr/uploads/ad_checklist.html#vuln_");
                 Add(r.ID);
@@ -565,6 +624,7 @@ namespace PingCastle.Report
                     Add(r.ID);
                     Add("</span>");
                 }
+
                 Add("</p>");
                 Add("</div>");
                 Add("</div>");
@@ -578,6 +638,7 @@ namespace PingCastle.Report
                     Add(l.RiskId);
                     Add("</span>");
                 }
+
                 Add("</p>");
                 Add("</div>");
                 Add("</div>");

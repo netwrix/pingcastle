@@ -43,9 +43,12 @@ namespace PingCastle.Exports
                     {
                         var p2 = p.Name.Substring("Number".Length);
                         if (!string.IsNullOrEmpty(p2))
+                        {
                             output.Add(p2);
+                        }
                     }
                 }
+
                 return output;
             }
 
@@ -54,7 +57,10 @@ namespace PingCastle.Exports
             public void AddWithoutDetail(string property)
             {
                 if (string.IsNullOrEmpty(property))
+                {
                     return;
+                }
+
                 PropertiesSet.Add(property);
             }
 

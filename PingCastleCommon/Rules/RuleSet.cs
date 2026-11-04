@@ -30,7 +30,7 @@ namespace PingCastle.Rules
             {
                 if (_cachedRules == null || _cachedRules.Count == 0)
                 {
-                    lock(_lock)
+                    lock (_lock)
                     {
                         if (_cachedRules == null || _cachedRules.Count == 0)
                         {
@@ -38,6 +38,7 @@ namespace PingCastle.Rules
                         }
                     }
                 }
+
                 return _cachedRules.Values;
             }
         }
@@ -125,6 +126,7 @@ namespace PingCastle.Rules
                     {
                         rule = Activator.CreateInstance(type) as RuleBase<T>;
                     }
+
                     if (rule is not null)
                     {
                         // Overwrite if duplicate RiskId
@@ -162,7 +164,7 @@ namespace PingCastle.Rules
                                     return a.GetExportedTypes();
                                 }
                                 catch
-                                { 
+                                {
                                     return Array.Empty<Type>();
                                 }
                             })
@@ -194,6 +196,7 @@ namespace PingCastle.Rules
                             Trace.WriteLine("Rule computation does not match an existing ID (" + riskId + ")");
                             continue;
                         }
+
                         if (rule.Computations != null)
                         {
                             matchedRule.RuleComputation.Clear();
@@ -202,6 +205,7 @@ namespace PingCastle.Rules
                                 matchedRule.RuleComputation.Add(c.GetAttribute());
                             }
                         }
+
                         if (rule.MaturityLevel != 0)
                         {
                             matchedRule.MaturityLevel = rule.MaturityLevel;
@@ -211,7 +215,6 @@ namespace PingCastle.Rules
             }
             catch (Exception ex)
             {
-
                 UserInterfaceFactory.GetUserInterface().DisplayMessage("An error occured while loading custom rules: " + ex.Message);
                 Trace.WriteLine("Unable to load custom rules");
                 var e = ex;
@@ -258,6 +261,7 @@ namespace PingCastle.Rules
                     {
                         supportService.DisplaySupportMessage();
                     }
+
                     _ui.DisplayMessage("Message: " + ex.Message);
                     Trace.WriteLine("Message: " + ex.Message);
                     _ui.DisplayStackTrace("StackTrace: " + ex.StackTrace);
@@ -268,8 +272,8 @@ namespace PingCastle.Rules
                         Trace.WriteLine("Inner StackTrace: " + ex.InnerException.StackTrace);
                     }
                 }
-
             }
+
             Trace.WriteLine("Risk rule run stopped");
             ReComputeTotals(data, output.ConvertAll(x => (IRuleScore)x));
             return output;
@@ -306,23 +310,39 @@ namespace PingCastle.Rules
                         data.TrustScore += rule.Points;
                         break;
                 }
+
                 var hcrule = RuleSet<T>.GetRuleFromID(rule.RiskId);
                 if (hcrule != null)
                 {
                     int level = hcrule.MaturityLevel;
                     if (level > 0 && level < data.MaturityLevel)
+                    {
                         data.MaturityLevel = level;
+                    }
                 }
             }
+
             // limit to 100
             if (data.StaleObjectsScore > 100)
+            {
                 data.StaleObjectsScore = 100;
+            }
+
             if (data.PrivilegedGroupScore > 100)
+            {
                 data.PrivilegedGroupScore = 100;
+            }
+
             if (data.TrustScore > 100)
+            {
                 data.TrustScore = 100;
+            }
+
             if (data.AnomalyScore > 100)
+            {
                 data.AnomalyScore = 100;
+            }
+
             // max of all scores
             data.GlobalScore = Math.Max(data.StaleObjectsScore,
                                             Math.Max(data.PrivilegedGroupScore,
@@ -335,8 +355,12 @@ namespace PingCastle.Rules
             {
                 ReloadRules();
             }
+
             if (_cachedRules.ContainsKey(ruleid))
+            {
                 return _cachedRules[ruleid].Title;
+            }
+
             return String.Empty;
         }
 
@@ -346,8 +370,12 @@ namespace PingCastle.Rules
             {
                 ReloadRules();
             }
+
             if (_cachedRules.ContainsKey(ruleid))
+            {
                 return _cachedRules[ruleid];
+            }
+
             return null;
         }
     }

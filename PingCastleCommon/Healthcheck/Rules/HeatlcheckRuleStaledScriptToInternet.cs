@@ -19,15 +19,15 @@ namespace PingCastle.Healthcheck.Rules
     [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
     public class HeatlcheckRuleStaledScriptToInternet : RuleBase<HealthcheckData>
     {
+        public static readonly IReadOnlyList<string> MonitoredPrograms = new[] { "wscript.exe", "mshta.exe", "cscript.exe", "conhost.exe", "runScriptHelper.exe" };
+
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            var fwRules = new Dictionary<string, List<GPPFireWallRule>>() { 
-                { "wscript.exe", null },
-                { "mshta.exe", null },
-                { "cscript.exe", null },
-                { "conhost.exe", null },
-                { "runScriptHelper.exe", null },
-            };
+            var fwRules = new Dictionary<string, List<GPPFireWallRule>>();
+            foreach (var monitored in MonitoredPrograms)
+            {
+                fwRules[monitored] = null;
+            }
 
             // assign all rules to programs to block
             if (healthcheckData.GPPFirewallRules != null)
@@ -35,25 +35,35 @@ namespace PingCastle.Healthcheck.Rules
                 foreach (var rule in healthcheckData.GPPFirewallRules)
                 {
                     string program = null;
-                    foreach (var f in fwRules.Keys)
+                    foreach (var f in MonitoredPrograms)
                     {
                         if (string.IsNullOrEmpty(rule.App))
+                        {
                             continue;
+                        }
+
                         if (string.Equals(rule.App, f, System.StringComparison.OrdinalIgnoreCase) || rule.App.EndsWith("\\" + f, System.StringComparison.OrdinalIgnoreCase))
                         {
                             program = f;
                             break;
                         }
                     }
+
                     if (program == null)
+                    {
                         continue;
+                    }
+
                     if (fwRules[program] == null)
+                    {
                         fwRules[program] = new List<GPPFireWallRule>();
+                    }
+
                     fwRules[program].Add(rule);
                 }
             }
 
-            foreach (var program in fwRules.Keys)
+            foreach (var program in MonitoredPrograms)
             {
                 var rules = fwRules[program];
                 if (rules == null)
@@ -67,21 +77,37 @@ namespace PingCastle.Healthcheck.Rules
                     foreach (var rule in rules)
                     {
                         if (!rule.Active)
+                        {
                             continue;
+                        }
+
                         if (!string.Equals(rule.Action, "Block", System.StringComparison.OrdinalIgnoreCase))
+                        {
                             continue;
+                        }
+
                         if (rule.RA4 == null && rule.RA6 == null)
+                        {
                             rule.RA4 = new List<string>() { "0.0.0.0-255.255.255.255" };
+                        }
+
                         if (!string.Equals(rule.Direction, "Out", System.StringComparison.OrdinalIgnoreCase))
+                        {
                             continue;
+                        }
+
                         if (rule.RA4 != null)
+                        {
                             RA4.AddRange(rule.RA4);
+                        }
                     }
+
                     if (RA4.Count == 0)
                     {
                         AddRawDetail(program, "Firewall rules found but not in application");
                         continue;
                     }
+
                     string Reason = CheckCompliance(RA4);
                     if (!string.IsNullOrEmpty(Reason))
                     {
@@ -151,7 +177,9 @@ namespace PingCastle.Healthcheck.Rules
             {
                 return "However certain IP like 0.0.0.0 remain uncovered by any rules.";
             }
-            var localNets = new List<Subnet>{
+
+            var localNets = new List<Subnet>
+            {
                 new Subnet(IPAddress.Parse("10.0.0.0"), 8),
                 new Subnet(IPAddress.Parse("172.16.0.0"), 12),
                 new Subnet(IPAddress.Parse("192.168.0.0"), 16),
@@ -164,7 +192,10 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     var nextIP = GetNextIPAddress(net.EndAddress);
                     if (IPAddress.IsLoopback(nextIP))
+                    {
                         continue;
+                    }
+
                     //  if covered by another range => ok
                     bool thisIsOk = false;
                     foreach (var net2 in subnetsIPV4)
@@ -175,8 +206,11 @@ namespace PingCastle.Healthcheck.Rules
                             break;
                         }
                     }
+
                     if (thisIsOk)
+                    {
                         continue;
+                    }
 
                     //  if local network => ok
                     foreach (var net2 in localNets)
@@ -187,8 +221,11 @@ namespace PingCastle.Healthcheck.Rules
                             break;
                         }
                     }
+
                     if (thisIsOk)
+                    {
                         continue;
+                    }
 
                     //  else, not covered
                     return "However certain IP like " + nextIP + " remain uncovered by any rules.";
@@ -199,6 +236,7 @@ namespace PingCastle.Healthcheck.Rules
                     continue;
                 }
             }
+
             // ensure also that the next IP of local networks are covered
             foreach (var net in localNets)
             {
@@ -210,15 +248,18 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         thisIsOk = true;
                         break;
-
                     }
                 }
+
                 if (thisIsOk)
+                {
                     continue;
+                }
 
                 //  else, not covered
                 return "However certain IP like " + nextIP + " (the next IP after " + net + ") remain uncovered by any rules.";
             }
+
             return null;
         }
 
@@ -231,14 +272,20 @@ namespace PingCastle.Healthcheck.Rules
             for (int i = existingBytes.Length - 1; i >= 0; i--)
             {
                 existingBytes[i]++;
-                if (existingBytes[i] != 0) break; // No overflow
-                if (i == 0) throw new InvalidOperationException(); // Overflow occurred
+                if (existingBytes[i] != 0)
+                {
+                    break; // No overflow
+                }
+
+                if (i == 0)
+                {
+                    throw new InvalidOperationException(); // Overflow occurred
+                }
             }
 
             // Create the next IP address
             IPAddress nextIpAddress = new IPAddress(existingBytes);
             return nextIpAddress;
         }
-
     }
 }

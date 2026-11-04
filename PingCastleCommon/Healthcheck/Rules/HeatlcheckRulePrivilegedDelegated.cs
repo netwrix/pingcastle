@@ -27,12 +27,16 @@ namespace PingCastle.Healthcheck.Rules
                         foreach (var account in healthcheckData.ListHoneyPot)
                         {
                             if (account == null)
+                            {
                                 continue;
+                            }
+
                             if (account.Name == member.Name || account.Name + "$" == member.Name)
                             {
                                 trap = true;
                                 break;
                             }
+
                             if (account.DistinguishedName == member.DistinguishedName)
                             {
                                 trap = true;
@@ -40,11 +44,16 @@ namespace PingCastle.Healthcheck.Rules
                             }
                         }
                     }
+
                     if (trap)
+                    {
                         continue;
+                    }
 
                     if (string.Equals(member.Class, "msDS-GroupManagedServiceAccount", System.StringComparison.OrdinalIgnoreCase))
+                    {
                         continue;
+                    }
 
                     if (healthcheckData.SchemaVersion < 69)
                     {
@@ -56,6 +65,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

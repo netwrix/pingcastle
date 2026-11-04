@@ -1,5 +1,4 @@
-﻿
-namespace PingCastle
+﻿namespace PingCastle
 {
     using System;
     using System.Diagnostics;
@@ -38,7 +37,7 @@ namespace PingCastle
         /// <summary>
         /// Register the type of IUserInterface to use
         /// </summary>
-        public static void RegisterUserInterfaceType<T>() where T: IUserInterface
+        public static void RegisterUserInterfaceType<T>() where T : IUserInterface
         {
             _menuType = typeof(T);
         }

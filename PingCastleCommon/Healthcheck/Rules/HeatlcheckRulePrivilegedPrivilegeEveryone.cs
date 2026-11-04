@@ -37,7 +37,10 @@ namespace PingCastle.Healthcheck.Rules
             foreach (var privilege in healthcheckData.GPPRightAssignment)
             {
                 if (!dangerousPrivileges.Contains(privilege.Privilege))
+                {
                     continue;
+                }
+
                 if (privilege.User == GraphObjectReference.AuthenticatedUsers || privilege.User == GraphObjectReference.Everyone || privilege.User == GraphObjectReference.DomainUsers
                     || privilege.User == GraphObjectReference.DomainComputers || privilege.User == GraphObjectReference.Users
                     || privilege.User == GraphObjectReference.Anonymous)
@@ -45,6 +48,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(privilege.GPOName, privilege.User, privilege.Privilege);
                 }
             }
+
             return null;
         }
     }

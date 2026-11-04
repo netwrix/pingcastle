@@ -116,7 +116,10 @@ namespace PingCastle.Report
         public static string Encode(string stringToencode)
         {
             // could have use HttpUtility.HtmlEncode but not dotnet core compliant
-            if (string.IsNullOrEmpty(stringToencode)) return stringToencode;
+            if (string.IsNullOrEmpty(stringToencode))
+            {
+                return stringToencode;
+            }
 
             string returnString = stringToencode;
 
@@ -148,11 +151,15 @@ namespace PingCastle.Report
         public static string EscapeJsonString(string src)
         {
             if (String.IsNullOrEmpty(src))
+            {
                 return String.Empty;
+            }
+
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
             int start = 0;
             for (int i = 0; i < src.Length; i++)
+            {
                 if (NeedEscape(src, i))
                 {
                     sb.Append(src, start, i - start);
@@ -171,8 +178,11 @@ namespace PingCastle.Report
                             sb.Append(((int)src[i]).ToString("x04"));
                             break;
                     }
+
                     start = i + 1;
                 }
+            }
+
             sb.Append(src, start, src.Length - start);
             return sb.ToString();
         }

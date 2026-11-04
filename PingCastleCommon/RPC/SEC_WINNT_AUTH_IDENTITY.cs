@@ -15,5 +15,7 @@ namespace PingCastle.RPC
         public string Password;
         public int PasswordLength;
         public int Flags;
-    };
+    }
+
+;
 }

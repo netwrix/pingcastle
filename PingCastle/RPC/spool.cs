@@ -61,7 +61,9 @@ namespace PingCastle.RPC
             UInt32 Reserved2;
             UInt32 Count;
             IntPtr pFields;
-        };
+        }
+
+;
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct RPC_V2_NOTIFY_OPTIONS
@@ -71,7 +73,9 @@ namespace PingCastle.RPC
             UInt32 Count;
             /* [unique][size_is] */
             RPC_V2_NOTIFY_OPTIONS_TYPE pTypes;
-        };
+        }
+
+;
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         public Int32 RpcOpenPrinter(string pPrinterName, out IntPtr pHandle, string pDatatype, ref DEVMODE_CONTAINER pDevModeContainer, Int32 AccessRequired)
@@ -115,10 +119,16 @@ namespace PingCastle.RPC
             finally
             {
                 if (intptrPrinterName != IntPtr.Zero)
+                {
                     Marshal.FreeHGlobal(intptrPrinterName);
+                }
+
                 if (intptrDatatype != IntPtr.Zero)
+                {
                     Marshal.FreeHGlobal(intptrDatatype);
+                }
             }
+
             return (int)result.ToInt64();
         }
 
@@ -155,6 +165,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("RpcClosePrinter failed 0x" + Marshal.GetExceptionCode().ToString("x"));
                 return Marshal.GetExceptionCode();
             }
+
             return (int)result.ToInt64();
         }
 
@@ -195,8 +206,11 @@ namespace PingCastle.RPC
             finally
             {
                 if (intptrLocalMachine != IntPtr.Zero)
+                {
                     Marshal.FreeHGlobal(intptrLocalMachine);
+                }
             }
+
             return (int)result.ToInt64();
         }
     }

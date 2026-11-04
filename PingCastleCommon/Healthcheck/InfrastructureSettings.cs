@@ -43,6 +43,7 @@ namespace PingCastle.Healthcheck
                     throw new ApplicationException("Could not load infrastructure options. Please check the appsettings.json file.");
                 }
             }
+
             return cachedSettings;
         }
 

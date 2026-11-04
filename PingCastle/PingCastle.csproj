@@ -18,7 +18,9 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 	<PublishSingleFile>true</PublishSingleFile>
 	<SelfContained>true</SelfContained>
-	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	<RuntimeIdentifier Condition="'$(RuntimeIdentifier)'=='' and '$(PINGCASTLE_RUNTIME_IDENTIFIER)'!=''">$(PINGCASTLE_RUNTIME_IDENTIFIER)</RuntimeIdentifier>
+	<RuntimeIdentifier Condition="'$(RuntimeIdentifier)'=='' and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)'=='Arm64'">win-arm64</RuntimeIdentifier>
+	<RuntimeIdentifier Condition="'$(RuntimeIdentifier)'==''">win-x64</RuntimeIdentifier>
 	<UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
@@ -51,7 +53,6 @@
   <ItemGroup>
     <PackageReference Include="System.DirectoryServices.Protocols" />
     <PackageReference Include="System.Management" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" />
   </ItemGroup>
 
   <!-- Azure & Graph -->
@@ -87,7 +88,6 @@
   <!-- Core Utilities -->
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" />
-    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Std.UriTemplate" />
   </ItemGroup>
 
@@ -104,7 +104,6 @@
   <!-- Advanced System Packages -->
   <ItemGroup>
     <PackageReference Include="System.Memory.Data" />
-    <PackageReference Include="System.Net.Http.WinHttpHandler" />
   </ItemGroup>
 
   <!-- Build Tools -->

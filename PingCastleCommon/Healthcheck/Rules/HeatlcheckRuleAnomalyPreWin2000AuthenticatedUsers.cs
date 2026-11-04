@@ -11,7 +11,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("A-PreWin2000AuthenticatedUsers", RiskRuleCategory.Anomalies, RiskModelCategory.Reconnaissance)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
     [RuleMaturityLevel(5)]
-    [RuleIntroducedIn(2,9,3)]
+    [RuleIntroducedIn(2, 9, 3)]
     [RuleMitreAttackTechnique(MitreAttackTechnique.ExploitationofRemoteServices)]
     public class HeatlcheckRuleAnomalyPreWin2000AuthenticatedUsers : RuleBase<HealthcheckData>
     {
@@ -21,6 +21,7 @@ namespace PingCastle.Healthcheck.Rules
             {
                 return 1;
             }
+
             return 0;
         }
     }

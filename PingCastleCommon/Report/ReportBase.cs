@@ -25,7 +25,6 @@ using System.Text.RegularExpressions;
 
 public abstract class ReportBase
 {
-
     protected StringBuilder sb = new StringBuilder();
     public delegate bool HasDomainAmbigousNameDelegate(DomainKey domainKey);
     protected string ReportID;
@@ -60,16 +59,18 @@ public abstract class ReportBase
         TabDelegate = tabDelegate;
     }
 
-    private List<string> CSSToAdd = new List<string> {
+    private List<string> CSSToAdd = new List<string>
+    {
         TemplateManager.LoadBootstrapCss(),
         TemplateManager.LoadBootstrapTableCss(),
         TemplateManager.LoadReportBaseCss(),
         TemplateManager.LoadFontAwesomeCss()
     };
 
-    private List<string> JSToAdd = new List<string> { 
-        TemplateManager.LoadJqueryJs(), 
-        TemplateManager.LoadPopperJs(), 
+    private List<string> JSToAdd = new List<string>
+    {
+        TemplateManager.LoadJqueryJs(),
+        TemplateManager.LoadPopperJs(),
         TemplateManager.LoadBootstrapJs(),
         TemplateManager.LoadBootstrapTableJs(),
         TemplateManager.LoadReportBaseJs()
@@ -109,6 +110,7 @@ public abstract class ReportBase
         {
             File.WriteAllText(filename, html);
         }
+
         return html;
     }
 
@@ -135,17 +137,22 @@ public abstract class ReportBase
     private void GenerateCspMeta()
     {
         if (NoCspHeader)
+        {
             return;
+        }
+
         Add(@"<meta http-equiv=""Content-Security-Policy"" content=""default-src 'self'; script-src ");
         foreach (var script in JSToAdd)
         {
             ComputeCSPHash(script);
         }
+
         Add(@" 'unsafe-inline'; style-src ");
         foreach (var css in CSSToAdd)
         {
             ComputeCSPHash(css);
         }
+
         Add(@" 'unsafe-inline'; object-src 'none'; base-uri https://www.pingcastle.com ; img-src data: https://www.pingcastle.com;""/>");
     }
 
@@ -163,18 +170,21 @@ public abstract class ReportBase
     protected void AddStyle(string style)
     {
         if (!CSSToAdd.Contains(style))
+        {
             CSSToAdd.Add(style);
+        }
     }
 
     protected void AddScript(string script)
     {
         if (!JSToAdd.Contains(script))
+        {
             JSToAdd.Add(script);
+        }
     }
 
     protected virtual void Hook(StringBuilder sbHtml)
     {
-
     }
 
     protected void AddLink(string link)
@@ -245,6 +255,7 @@ public abstract class ReportBase
     {
         sb.Append(date.ToString("u"));
     }
+
     protected void DescribeBegin()
     {
         Add(@"<dl class='row'>");
@@ -259,6 +270,7 @@ public abstract class ReportBase
             Add(id);
             Add("'");
         }
+
         Add(">");
         AddEncoded(label);
         Add("</dt>");
@@ -273,6 +285,7 @@ public abstract class ReportBase
             Add(id);
             Add("'");
         }
+
         Add(">");
         AddEncoded(value);
         Add("</dd>");
@@ -311,18 +324,21 @@ public abstract class ReportBase
         {
             Add(@""" data-toggle=""table"" data-pagination=""true"" data-search=""true"" data-show-export=""true"" data-page-list=""[10,25,50,100,200,All]""");
         }
+
         if (!string.IsNullOrEmpty(id))
         {
             Add(" id=\"");
             AddEncoded(id);
             Add("\"");
         }
+
         if (!string.IsNullOrEmpty(ariaLabel))
         {
             Add(" aria-label=\"");
             AddEncoded(ariaLabel);
             Add("\"");
         }
+
         Add(@">
 					<thead>
 					<tr>");
@@ -353,6 +369,7 @@ public abstract class ReportBase
         {
             Add("<tfoot></tfoot>");
         }
+
         Add(@"
 				</table>
 			</div>
@@ -377,17 +394,19 @@ public abstract class ReportBase
         {
             Add(@" data-bs-template=""<div class='tooltip' role='tooltip'><div class='tooltip-arrow'></div><div class='tooltip-inner tooltip-wide'></div></div>"" ");
         }
+
         if (html)
         {
             Add(@" data-bs-html=""true"" ");
         }
+
         Add(@" title="""" data-bs-original-title=""");
     }
 
     protected void AddEndTooltip()
     {
         Add(@"""></i>");
-    }    
+    }
 
     protected void AddHeaderText(string text, string tooltip, bool widetooltip, bool html = false)
     {
@@ -401,7 +420,8 @@ public abstract class ReportBase
         bool widetooltip = false,
         bool html = false,
         string datafield = null,
-        string dataformatter = null
+        string dataformatter = null,
+        string datasorter = null
     )
     {
         Add(@"<th  data-sortable=""true"" ");
@@ -411,24 +431,35 @@ public abstract class ReportBase
             Add(rowspan);
             Add(@"""");
         }
+
         if (colspan != 0)
         {
             Add(@" colspan=""");
             Add(colspan);
             Add(@"""");
         }
+
         if (!string.IsNullOrEmpty(datafield))
         {
             Add(" data-field='");
             Add(datafield);
             Add("'");
         }
+
         if (!string.IsNullOrEmpty(dataformatter))
         {
             Add(" data-formatter='");
             Add(dataformatter);
             Add("'");
         }
+
+        if (!string.IsNullOrEmpty(datasorter))
+        {
+            Add(" data-sorter='");
+            Add(datasorter);
+            Add("'");
+        }
+
         Add(@">");
         AddEncoded(text);
         if (!string.IsNullOrEmpty(tooltip))
@@ -438,6 +469,7 @@ public abstract class ReportBase
             Add(tooltip);
             AddEndTooltip();
         }
+
         Add("</th>");
     }
 
@@ -445,19 +477,33 @@ public abstract class ReportBase
     {
         Add("<td class='text'>");
         if (footerMode)
+        {
             Add("<b>");
+        }
+
         if (highlight)
         {
             if (IsGood)
+            {
                 Add("<span class=\"ticked\">");
+            }
             else
+            {
                 Add("<span class=\"unticked\">");
+            }
         }
+
         AddEncoded(text);
         if (highlight)
+        {
             Add("</span>");
+        }
+
         if (footerMode)
+        {
             Add("</b>");
+        }
+
         Add(@"</td>");
     }
 
@@ -465,10 +511,16 @@ public abstract class ReportBase
     {
         Add(@"<td class='text text-nowrap'>");
         if (footerMode)
+        {
             Add("<b>");
+        }
+
         Add(text);
         if (footerMode)
+        {
             Add("</b>");
+        }
+
         Add(@"</td>");
     }
 
@@ -476,10 +528,16 @@ public abstract class ReportBase
     {
         Add(@"<td class='text text-nowrap'>");
         if (footerMode)
+        {
             Add("<b>");
+        }
+
         Add(text);
         if (footerMode)
+        {
             Add("</b>");
+        }
+
         Add(@"</td>");
     }
 
@@ -506,6 +564,7 @@ public abstract class ReportBase
         {
             Add("score_below25");
         }
+
         Add("'>");
         Add(num);
         Add(@"</td>");
@@ -515,13 +574,20 @@ public abstract class ReportBase
     {
         Add("<td class='num'>");
         if (footerMode)
+        {
             Add("<b>");
+        }
+
         if (!(HideIfZero && num == 0))
         {
             Add(num);
         }
+
         if (footerMode)
+        {
             Add("</b>");
+        }
+
         Add(@"</td>");
     }
 
@@ -529,13 +595,24 @@ public abstract class ReportBase
     {
         Add("<td>");
         if (footerMode)
+        {
             Add("<b>");
+        }
+
         if (date == DateTime.MinValue)
+        {
             Add("Not set");
+        }
         else
+        {
             Add(date);
+        }
+
         if (footerMode)
+        {
             Add("</b>");
+        }
+
         Add(@"</td>");
     }
 
@@ -567,6 +644,7 @@ public abstract class ReportBase
         {
             Add(" modal-full-screen");
         }
+
         Add(@""" id=""");
         Add(id);
         Add(@""" tabindex=""-1"" role=""dialog"" aria-hidden=""true"">
@@ -579,12 +657,14 @@ public abstract class ReportBase
         {
             Add(" modal-full-screen-dialog");
         }
+
         Add(@""" role=""dialog"">
 		<div class=""modal-content");
         if (modalType == ShowModalType.FullScreen)
         {
             Add(" modal-full-screen-content");
         }
+
         Add(@""">
 			<div class=""modal-header"">
 				<h4 class=""modal-title"">");
@@ -597,6 +677,7 @@ public abstract class ReportBase
         {
             Add(" modal-full-screen-body");
         }
+
         Add(@""">
 ");
     }
@@ -610,6 +691,7 @@ public abstract class ReportBase
         {
             Add(" modal-full-screen-footer");
         }
+
         Add(@""">
 				<button type=""button"" class=""btn btn-primary"" data-bs-dismiss=""modal"">Close</button>
 			</div>
@@ -643,11 +725,19 @@ public abstract class ReportBase
                 if (brandSettings != null)
                 {
                     if (!string.IsNullOrEmpty(brandSettings.BrandLogo))
+                    {
                         brandLogo = brandSettings.BrandLogo;
+                    }
+
                     if (!string.IsNullOrEmpty(brandSettings.BrandCss))
+                    {
                         AddStyle(brandSettings.BrandCss);
+                    }
+
                     if (!string.IsNullOrEmpty(brandSettings.BrandJs))
+                    {
                         AddScript(brandSettings.BrandJs);
+                    }
                 }
             }
             catch (Exception)
@@ -677,9 +767,14 @@ public abstract class ReportBase
 					<a class=""nav-link p-3"" href=""#"" role=""button"">
 ");
         if (String.IsNullOrEmpty(domain))
+        {
             Add(title);
+        }
         else
+        {
             Add(domain);
+        }
+
         Add(@"</a>
 				</li>
 				<li class=""nav-item"">
@@ -740,20 +835,29 @@ public abstract class ReportBase
         foreach (char c in input.ToUpperInvariant())
         {
             if (!d.ContainsKey(c))
+            {
                 continue;
+            }
+
             var t = d[c];
             var v = Convert.ToString(t.Key, 2);
             if (t.Value > v.Length)
+            {
                 o += new string('0', t.Value - v.Length) + v;
+            }
             else
+            {
                 o += v.Substring(v.Length - t.Value, t.Value);
+            }
         }
+
         o += Convert.ToString(0x80, 2);
         byte[] bytes = new byte[o.Length / 8 + 1];
         for (int i = 0; i < bytes.Length - 1; ++i)
         {
             bytes[i] = Convert.ToByte(o.Substring(8 * i, 8), 2);
         }
+
         bytes[bytes.Length - 1] = (byte)(seed % 256);
         return Convert.ToBase64String(bytes).Replace("=", "");
     }
@@ -793,6 +897,7 @@ public abstract class ReportBase
 <li><a href=""https://fontawesome.com/"">Font-Awesome</a> licensed under the <a href=""https://tldrlegal.com/license/mit-license"">MIT license</a></li>
 </ul>");
     }
+
     protected void GenerateAbout(string aboutString)
     {
         Add(@"
@@ -863,6 +968,7 @@ public abstract class ReportBase
         {
             AddAnchor(section);
         }
+
         Add(@"
 		<div class=""row""><div class=""col-lg-12 mt-2"">
 			<h2 class=""sub-section"">");
@@ -891,7 +997,6 @@ public abstract class ReportBase
         Add(accordion);
         Add(@" end -->
 ");
-
     }
 
     protected void GenerateAccordionDetailForDetail(string id, string dataParent, string title, int itemCount, GenerateContentDelegate content, string tooltip = null)
@@ -914,7 +1019,7 @@ public abstract class ReportBase
         AddAnchor("anchor" + id);
         Add(@"
       <span class=""card-title mb-0"">
-        <button class=""btn btn-link"" data-bs-toggle=""collapse"" data-bs-target=""#");
+        <span class=""btn btn-link accordion-title"" role=""button"" tabindex=""0"" data-bs-toggle=""collapse"" data-bs-target=""#");
         Add(id);
         Add(@""" aria-expanded=""false"" aria-controls=""");
         Add(id);
@@ -927,14 +1032,16 @@ public abstract class ReportBase
             Add(tooltip);
             AddEndTooltip();
         }
+
         Add(@"
-        </button>
+        </span>
       </span>
 ");
         if (header != null)
         {
             header();
         }
+
         Add(@"
     </div>
 
@@ -971,7 +1078,10 @@ public abstract class ReportBase
         Add(id);
         Add(@""" class=""nav-link ");
         if (isActive)
+        {
             Add(@"active");
+        }
+
         Add(@""" role=""tab"" data-bs-toggle=""tab""");
         Add(@" id=""bs-");
         Add(id);
@@ -991,7 +1101,10 @@ public abstract class ReportBase
         Add(@" -->
 <div class=""tab-pane");
         if (isActive)
+        {
             Add(" active");
+        }
+
         Add(@""" id=""");
         Add(id);
         Add(@""">
@@ -1007,6 +1120,7 @@ public abstract class ReportBase
         {
             Add(TabDelegate(title));
         }
+
         generateContent();
         Add(@"
 			</div>
@@ -1024,15 +1138,25 @@ public abstract class ReportBase
         if (ios1 > 0 && ios2 > 0)
         {
             if (ios1 > ios2)
+            {
                 return 1;
+            }
             else if (ios1 < ios2)
+            {
                 return -1;
+            }
+
             return 0;
         }
         else if (ios1 > 0)
+        {
             return -1;
+        }
         else if (ios2 > 0)
+        {
             return 1;
+        }
+
         return String.Compare(os1, os2);
     }
 
@@ -1075,6 +1199,7 @@ public abstract class ReportBase
             case "OperatingSystem not set":
                 return 16;
         }
+
         return 100;
     }
 
@@ -1086,51 +1211,77 @@ public abstract class ReportBase
         // ex: 10.0 (18362)
         Regex re = new Regex("(?<major>\\d+).(?<minor>\\d+)( \\((?<release>\\d+)\\))?");
         if (osVersion == null || string.IsNullOrEmpty(osVersion.OSVersion))
+        {
             return "Error";
+        }
+
         var m = re.Match(osVersion.OSVersion);
         if (!m.Success)
+        {
             return "Unknown (" + osVersion.OSVersion + (osVersion.IsServer ? " (Server)" : null) + ")";
+        }
+
         int major = int.Parse(m.Groups["major"].Value);
         int minor = int.Parse(m.Groups["minor"].Value);
         int release = 0;
         if (!string.IsNullOrEmpty(m.Groups["release"].Value))
+        {
             release = int.Parse(m.Groups["release"].Value);
+        }
+
         if (osVersion.IsServer)
         {
             if (major == 3)
             {
                 return "Windows NT 3.51 Server";
             }
+
             if (major == 4)
             {
                 return "Windows NT 4.0 Server";
             }
+
             if (major == 5)
             {
                 if (minor == 0)
                 {
                     return "Windows 2000 Server";
                 }
+
                 if (minor == 1)
                 {
                     return "Windows Server 2003";
                 }
+
                 if (minor == 2)
                 {
                     return "Windows Server 2003 SP2";
                 }
             }
+
             if (major == 6)
             {
                 if (minor == 0)
+                {
                     return "Windows Server 2008";
+                }
+
                 if (minor == 1)
+                {
                     return "Windows Server 2008 R2";
+                }
+
                 if (minor == 2)
+                {
                     return "Windows Server 2012";
+                }
+
                 if (minor == 3)
+                {
                     return "Windows Server 2012 R2";
+                }
             }
+
             if (major == 10)
             {
                 if (minor == 0)
@@ -1158,30 +1309,53 @@ public abstract class ReportBase
             {
                 return "Windows NT 3.51 Workstation";
             }
+
             if (major == 4)
             {
                 return "Windows NT 4.0 Workstation";
             }
+
             if (major == 5)
             {
                 if (minor == 0)
+                {
                     return "Windows 2000";
+                }
+
                 if (minor == 1)
+                {
                     return "Windows XP";
+                }
+
                 if (minor == 2)
+                {
                     return "Windows XP 64-Bit Edition";
+                }
             }
+
             if (major == 6)
             {
                 if (minor == 0)
+                {
                     return "Windows Vista";
+                }
+
                 if (minor == 1)
+                {
                     return "Windows 7";
+                }
+
                 if (minor == 2)
+                {
                     return "Windows 8";
+                }
+
                 if (minor == 3)
+                {
                     return "Windows 8.1";
+                }
             }
+
             if (major == 10 && minor == 0)
             {
                 string w;
@@ -1221,9 +1395,11 @@ public abstract class ReportBase
                             w = "Windows 10 (Build " + release + ")"; break;
                         }
                 }
+
                 return w + (osVersion.IsIOT ? " IOT" : null) + (osVersion.IsLTSC ? " (LTSC)" : null);
             }
         }
+
         return "Unknown (" + osVersion.OSVersion + (osVersion.IsServer ? " (Server)" : null) + ")";
     }
 
@@ -1240,6 +1416,7 @@ public abstract class ReportBase
                         Add("<td><span class=\"unticked\">False</span></td>");
                         return;
                     }
+
                     if (propertyName == "ClearTextPassword"
                         || propertyName == "ScreenSaveActive" || propertyName == "ScreenSaverIsSecure")
                     {
@@ -1247,11 +1424,13 @@ public abstract class ReportBase
                         return;
                     }
                 }
+
                 if (property.Value == -1 && propertyName == "MaximumPasswordAge")
                 {
                     Add("<td><span class=\"unticked\">Never expires</span></td>");
                     return;
                 }
+
                 if (property.Value == 1)
                 {
                     if (propertyName == "ClearTextPassword")
@@ -1259,6 +1438,7 @@ public abstract class ReportBase
                         Add("<td><span class=\"unticked\">True</span></td>");
                         return;
                     }
+
                     if (propertyName == "PasswordComplexity"
                         || propertyName == "ScreenSaveActive" || propertyName == "ScreenSaverIsSecure")
                     {
@@ -1266,6 +1446,7 @@ public abstract class ReportBase
                         return;
                     }
                 }
+
                 if (propertyName == "MinimumPasswordLength")
                 {
                     if (property.Value < 8)
@@ -1274,6 +1455,7 @@ public abstract class ReportBase
                         return;
                     }
                 }
+
                 if (propertyName == "MinimumPasswordAge")
                 {
                     if (property.Value == 0)
@@ -1281,14 +1463,17 @@ public abstract class ReportBase
                         Add("<td><span class=\"unticked\">0 day</span></td>");
                         return;
                     }
+
                     AddCellText(property.Value + " day(s)");
                     return;
                 }
+
                 if (propertyName == "MaximumPasswordAge")
                 {
                     AddCellText(property.Value + " day(s)");
                     return;
                 }
+
                 if (propertyName == "ResetLockoutCount" || propertyName == "LockoutDuration")
                 {
                     if (property.Value <= 0)
@@ -1296,13 +1481,16 @@ public abstract class ReportBase
                         AddCellText("Infinite");
                         return;
                     }
+
                     AddCellText(property.Value + " minute(s)");
                     return;
                 }
+
                 AddCellNum(property.Value);
                 return;
             }
         }
+
         AddCellText("Not Set");
     }
 
@@ -1371,6 +1559,7 @@ public abstract class ReportBase
                 {
                     Add(@"<span class=""unticked"">LLMNR Enabled</span>");
                 }
+
                 break;
             case "lmcompatibilitylevel":
                 if (value == 0)
@@ -1397,6 +1586,7 @@ public abstract class ReportBase
                 {
                     Add("Send NTLMv2 response only. Refuse LM & NTLM");
                 }
+
                 break;
             case "ldapclientintegrity":
                 if (value == 0)
@@ -1407,6 +1597,7 @@ public abstract class ReportBase
                 {
                     Add(value);
                 }
+
                 break;
             case "srvsvcsessioninfo":
             case "enablemodulelogging":
@@ -1421,6 +1612,7 @@ public abstract class ReportBase
                 {
                     Add(@"<span class=""ticked"">Enabled</span>");
                 }
+
                 break;
             case "msv1_0\\restrictsendingntlmtraffic":
                 if (value == 0)
@@ -1435,6 +1627,7 @@ public abstract class ReportBase
                 {
                     Add(@"<span class=""ticked"">Deny All</span>");
                 }
+
                 break;
             case "supportedencryptiontypes":
                 Add(SupportedEncryptionTypeToString(value));
@@ -1448,8 +1641,10 @@ public abstract class ReportBase
                 {
                     Add(@"<span class=""unticked"">Enabled</span>");
                 }
+
                 break;
         }
+
         Add("</td>");
     }
 
@@ -1461,26 +1656,32 @@ public abstract class ReportBase
         {
             algs.Add(@"<span class=""unticked"">DES-CBC-CRC</span>");
         }
+
         if ((msDSSupportedEncryptionTypes & 2) != 0)
         {
             algs.Add(@"<span class=""unticked"">DES-CBC-MD5</span>");
         }
+
         if ((msDSSupportedEncryptionTypes & 4) != 0)
         {
             algs.Add("RC4-HMAC");
         }
+
         if ((msDSSupportedEncryptionTypes & 8) != 0)
         {
             algs.Add(@"<span class=""ticked"">AES128-CTS-HMAC-SHA1-96</span>");
         }
+
         if ((msDSSupportedEncryptionTypes & 16) != 0)
         {
             algs.Add(@"<span class=""ticked"">AES256-CTS-HMAC-SHA1-96</span>");
         }
+
         if ((msDSSupportedEncryptionTypes & ~(1 + 2 + 4 + 8 + 16)) != 0)
         {
             algs.Add(@"Future encryption");
         }
+
         return string.Join(", ", algs.ToArray());
     }
 
@@ -1523,38 +1724,53 @@ public abstract class ReportBase
         if (String.IsNullOrEmpty(label))
         {
             if (!String.IsNullOrEmpty(key.DomainNetBIOS))
+            {
                 label = key.DomainNetBIOS;
+            }
             else
+            {
                 label = key.DomainSID;
+            }
         }
+
         if (GetUrlCallbackDomain == null)
+        {
             return label;
+        }
+
         string htmlData = GetUrlCallbackDomain(key, label, risk);
         if (String.IsNullOrEmpty(htmlData))
+        {
             return label;
+        }
+
         return htmlData;
     }
 
     protected string NewLineToBR(string data)
     {
         if (String.IsNullOrEmpty(data))
+        {
             return data;
+        }
+
         return data.Replace("\r\n", "<br>\r\n");
     }
 
     void AddPath(double radius, double startAngle, double endAngle, string idx, string tooltip = null, string fill = null)
     {
-
         var isCircle = (endAngle - startAngle) == 360;
 
         if (isCircle)
         {
             endAngle--;
         }
+
         var start = polarToCartesian(radius, startAngle);
         var end = polarToCartesian(radius, endAngle);
         var largeArcFlag = endAngle - startAngle <= 180 ? 0 : 1;
-        var d = new List<string> {
+        var d = new List<string>
+        {
             "M", start.Item1.ToString(), start.Item2.ToString(),
             "A", radius.ToString(), radius.ToString(), 0.ToString(), largeArcFlag.ToString(), 1.ToString(), end.Item1.ToString(), end.Item2.ToString()
         };
@@ -1565,10 +1781,14 @@ public abstract class ReportBase
         }
         else
         {
-            d.AddRange(new string[]{"L", radius.ToString(), radius.ToString(),
+            d.AddRange(new string[]
+            {
+                "L", radius.ToString(), radius.ToString(),
                 "L", start.Item1.ToString(), start.Item2.ToString(),
-                "Z" });
+                "Z"
+            });
         }
+
         Add("<path d=\"");
         Add(string.Join(" ", d.ToArray()));
         Add("\" ");
@@ -1578,20 +1798,24 @@ public abstract class ReportBase
             Add(idx);
             Add("\"");
         }
+
         if (!string.IsNullOrEmpty(fill))
         {
             Add(" fill=\"");
             Add(fill);
             Add("\"");
         }
+
         if (!string.IsNullOrEmpty(tooltip))
         {
             Add(" data-bs-toggle=\"tooltip\" title=\"");
             AddEncoded(tooltip);
             Add("\"");
         }
+
         Add("/>");
     }
+
     Tuple<int, int> polarToCartesian(double radius, double angleInDegrees)
     {
         var radians = (angleInDegrees - 90) * Math.PI / 180;
@@ -1616,7 +1840,9 @@ public abstract class ReportBase
         Add(width + "\" ><g class='sectors'>");
 
         if (total == 0)
+        {
             total = vals.Sum();
+        }
 
         int previousto = 0;
         int t = 0;
@@ -1637,10 +1863,16 @@ public abstract class ReportBase
             AddPath(radius, from, to, null, tooltip: tooltip, fill: GetColor(i, vals.Count));
             t += val;
         }
+
         if (t < total)
+        {
             AddPath(radius, previousto, previousto + ((double)(total - t) / total) * 360, "empty");
+        }
+
         if (total == 0)
+        {
             AddPath(radius, 0, 360, "empty");
+        }
 
         Add("</g></svg>");
     }
@@ -1671,7 +1903,10 @@ public abstract class ReportBase
         foreach (var inputDetail in input)
         {
             if (inputDetail.Value == null)
+            {
                 continue;
+            }
+
             var data = new SortedDictionary<int, DistributionItem>();
             global[inputDetail.Key] = data;
 
@@ -1680,16 +1915,21 @@ public abstract class ReportBase
             {
                 data.Add(entry.HigherBound, entry);
                 if (highest < entry.HigherBound)
+                {
                     highest = entry.HigherBound;
+                }
             }
 
             // add missing data
             for (int i = 0; i < division; i++)
             {
                 if (!data.ContainsKey(i))
+                {
                     data[i] = new DistributionItem { HigherBound = i, Value = 0 };
+                }
             }
         }
+
         // determine max Y
 
         int max = 0;
@@ -1697,26 +1937,44 @@ public abstract class ReportBase
         {
             int value = global.Select(x => x.Value[i].Value).Max();
             if (value > max)
+            {
                 max = value;
+            }
         }
 
         // adjust max Y
         if (max > 10000)
+        {
             max = 10000;
+        }
         else if (max >= 5000)
+        {
             max = 10000;
+        }
         else if (max >= 1000)
+        {
             max = 5000;
+        }
         else if (max >= 500)
+        {
             max = 1000;
+        }
         else if (max >= 100)
+        {
             max = 500;
+        }
         else if (max >= 50)
+        {
             max = 100;
+        }
         else if (max >= 10)
+        {
             max = 50;
+        }
         else
+        {
             max = 10;
+        }
 
         // draw chart
         Add(@"<div id='pdwdistchart");
@@ -1732,10 +1990,12 @@ public abstract class ReportBase
             Add(@"<g class=""tick"" opacity=""1"" transform=""translate(" + v.ToString(nfi) + @",30)""><line stroke=""#000"" y2=""0""></line><text fill=""#000"" y=""3"" dy="".15em"" dx=""-.8em"" transform=""rotate(-65)"">" +
                 (i * 30) + "-" + ((i + 1) * 30) + @" days</text></g>");
         }
+
         {
             double v = 13.06 + (division) * horizontalStep;
             Add(@"<g class=""tick"" opacity=""1"" transform=""translate(" + v.ToString(nfi) + @",30)""><line stroke=""#000"" y2=""0""></line><text fill=""#000"" y=""3"" dy="".15em"" dx=""-.8em"" transform=""rotate(-65)"">Other</text></g>");
         }
+
         Add(@"</g>");
         // vertical scale
         Add(@"<g fill=""none"" font-size=""10"" font-family=""sans-serif"" text-anchor=""end"">");
@@ -1746,6 +2006,7 @@ public abstract class ReportBase
             Add(@"<g class=""tick"" opacity=""1"" transform=""translate(0," + v.ToString(nfi) + @")""><line stroke=""#000"" x2=""-6""></line><text fill=""#000"" x=""-9"" dy=""0.32em"">" +
                 (max / 5 * i) + @"</text></g>");
         }
+
         Add(@"</g>");
         // bars
         double cumulatedSize = 0;
@@ -1759,16 +2020,28 @@ public abstract class ReportBase
                 double v = 3.28 + horizontalStep * (i);
                 int value = 0;
                 if (global[serie].ContainsKey(i))
+                {
                     value = global[serie][i].Value;
+                }
+
                 double size = 290 * value / max;
-                if (size > 290) size = 290;
+                if (size > 290)
+                {
+                    size = 290;
+                }
 
                 double w = horizontalStep - 3;
                 string tooltip = value.ToString();
                 if (!string.IsNullOrEmpty(global[serie][i].toolTip))
+                {
                     tooltip = global[serie][i].toolTip;
+                }
+
                 if (!single)
+                {
                     tooltip = serie + ": " + tooltip;
+                }
+
                 Add(@"<rect class=""bar"" fill=""");
                 Add(GetColor(serieindex++, global.Count));
                 Add(@""" x=""" + v.ToString(nfi) + @""" width=""" + w.ToString(nfi) + @""" y=""" + (290 - size - cumulatedSize).ToString(nfi) + @""" height=""" + (size).ToString(nfi) + @""" data-bs-toggle=""tooltip"" title=""");
@@ -1777,6 +2050,7 @@ public abstract class ReportBase
                 cumulatedSize += size;
             }
         }
+
         // last item (because max X may be restricted, as missing data here)
         cumulatedSize = 0;
         var otherValues = new Dictionary<string, int>();
@@ -1787,8 +2061,11 @@ public abstract class ReportBase
             for (int i = division; i <= highest; i++)
             {
                 if (global[serie].ContainsKey(i))
+                {
                     other += global[serie][i].Value;
+                }
             }
+
             otherValues[serie] = other;
             cumulatedSize += other;
         }
@@ -1806,21 +2083,31 @@ public abstract class ReportBase
             double v = 3.28 + horizontalStep * (division);
             int value = otherValues[serie];
             double size = 290 * value / max / ratio;
-            if (size > 290) size = 290;
+            if (size > 290)
+            {
+                size = 290;
+            }
+
             double w = horizontalStep - 3;
             string tooltip = string.Empty;
 
             foreach (var t in global[serie].Keys)
             {
                 if (t > division && !string.IsNullOrEmpty(global[serie][t].toolTip))
+                {
                     tooltip += global[serie][t].toolTip + "\r\n";
+                }
             }
 
             if (string.IsNullOrEmpty(tooltip))
+            {
                 tooltip += value.ToString();
+            }
 
             if (!single)
+            {
                 tooltip = serie + ": " + tooltip;
+            }
 
             Add(@"<rect class=""bar"" fill=""");
             Add(GetColor(i1++, global.Count));
@@ -1829,10 +2116,12 @@ public abstract class ReportBase
             Add(@"""></rect>");
             cumulatedSize += size;
         }
+
         Add(@"</g></svg></div>");
     }
 
-    static string[] colors = new string[] { 
+    static string[] colors = new string[]
+    {
         "#ff0029",
         "#377eb8",
         "#66a61e",
@@ -1876,7 +2165,10 @@ public abstract class ReportBase
     string GetColor(int index, int NumberOfKeys)
     {
         if (NumberOfKeys == 1)
+        {
             return "#77A9E3";
+        }
+
         return colors[index % colors.Length];
     }
 }

@@ -20,8 +20,15 @@ namespace PingCastle.Scanners
         {
         }
 
-        public override string Name { get { return "oxidbindings"; } }
-        public override string Description { get { return "List all IP of the computer via the Oxid Resolver (part of DCOM). No authentication. Used to find other networks such as the one used for administration."; } }
+        public override string Name
+        {
+            get { return "oxidbindings"; }
+        }
+
+        public override string Description
+        {
+            get { return "List all IP of the computer via the Oxid Resolver (part of DCOM). No authentication. Used to find other networks such as the one used for administration."; }
+        }
 
         override protected string GetCsvHeader()
         {
@@ -47,12 +54,16 @@ namespace PingCastle.Scanners
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     if (sb.Length != 0)
+                    {
                         sb.Append("\r\n");
+                    }
+
                     sb.Append(computer);
                     sb.Append("\t");
                     sb.Append(binding);
                 }
             }
+
             return sb.ToString();
         }
 
@@ -63,8 +74,8 @@ namespace PingCastle.Scanners
             {
                 UserInterfaceFactory.GetUserInterface().DisplayMessage(value);
             }
+
             Trace.WriteLine(value);
         }
     }
-
 }

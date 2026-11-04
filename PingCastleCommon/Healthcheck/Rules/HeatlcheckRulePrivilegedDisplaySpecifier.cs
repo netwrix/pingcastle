@@ -25,17 +25,27 @@ namespace PingCastle.Healthcheck.Rules
                 foreach (var entry in healthcheckData.DisplaySpecifier)
                 {
                     if (string.IsNullOrEmpty(entry.AdminContextMenu))
+                    {
                         continue;
+                    }
+
                     var e = entry.AdminContextMenu.Split(',');
                     if (e.Length < 3)
+                    {
                         continue;
+                    }
+
                     var path = e[2].Trim();
 
                     if (!path.Contains("\\\\"))
+                    {
                         continue;
+                    }
 
                     if (path.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && path.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+                    {
                         path = path.Substring(1, path.Length - 2);
+                    }
 
                     if (!path.StartsWith("\\\\" + healthcheckData.DomainFQDN + "\\sysvol\\", StringComparison.OrdinalIgnoreCase) &&
                         !path.StartsWith("\\\\" + healthcheckData.ForestFQDN + "\\sysvol\\", StringComparison.OrdinalIgnoreCase))
@@ -44,6 +54,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
 
@@ -57,12 +68,14 @@ namespace PingCastle.Healthcheck.Rules
                     Trace.WriteLine("Unable to parse the url: " + uristring);
                     return null;
                 }
+
                 // important, to avoid an exception in uri.IsUnc
                 if (!uri.IsAbsoluteUri)
                 {
                     Trace.WriteLine("The url is not absolute: " + uristring);
                     return null;
                 }
+
                 // try to find url matching server.domain.fqdn
                 if (uri.IsUnc && uri.Host.Contains("."))
                 {
@@ -79,9 +92,11 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         return null;
                     }
+
                     return server;
                 }
             }
+
             return null;
         }
     }

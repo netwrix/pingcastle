@@ -12,7 +12,6 @@ namespace PingCastle.Healthcheck
 {
     public class PingCastleReportHistoryCollection<T> : ICollection<T> where T : IPingCastleReport
     {
-
         Dictionary<string, Dictionary<DateTime, T>> data { get; set; }
 
         public PingCastleReportHistoryCollection()
@@ -28,6 +27,7 @@ namespace PingCastle.Healthcheck
             {
                 data[sid] = new Dictionary<DateTime, T>();
             }
+
             data[sid][item.GenerationDate] = item;
         }
 
@@ -60,6 +60,7 @@ namespace PingCastle.Healthcheck
                 {
                     count += value.Count;
                 }
+
                 return count;
             }
         }
@@ -73,10 +74,16 @@ namespace PingCastle.Healthcheck
         {
             var sid = item.Domain.DomainSID;
             if (!data.ContainsKey(sid))
+            {
                 return false;
+            }
+
             var value = data[sid];
             if (!value.ContainsKey(item.GenerationDate))
+            {
                 return false;
+            }
+
             value.Remove(item.GenerationDate);
             return true;
         }
@@ -100,10 +107,14 @@ namespace PingCastle.Healthcheck
                 foreach (var date in data[sid].Keys)
                 {
                     if (maxDate < date)
+                    {
                         maxDate = date;
+                    }
                 }
+
                 output.Add(data[sid][maxDate]);
             }
+
             output.EnrichInformation();
             return output;
         }
@@ -118,6 +129,7 @@ namespace PingCastle.Healthcheck
                     output.Add(new KeyValuePair<string, DateTime>(sid, date));
                 }
             }
+
             return output;
         }
 
@@ -135,11 +147,17 @@ namespace PingCastle.Healthcheck
                 foreach (var date in data[sid].Keys)
                 {
                     if (date > min && date <= dateToIssueReport)
+                    {
                         min = date;
+                    }
                 }
+
                 if (min != DateTime.MinValue)
+                {
                     output.Add(data[sid][min]);
+                }
             }
+
             output.EnrichInformation();
             return output;
         }
@@ -154,9 +172,12 @@ namespace PingCastle.Healthcheck
                     foreach (var date in data[sid].Keys)
                     {
                         if (date < min)
+                        {
                             min = date;
+                        }
                     }
                 }
+
                 return min;
             }
         }
@@ -171,9 +192,12 @@ namespace PingCastle.Healthcheck
                     foreach (var date in data[sid].Keys)
                     {
                         if (date > max)
+                        {
                             max = date;
+                        }
                     }
                 }
+
                 return max;
             }
         }

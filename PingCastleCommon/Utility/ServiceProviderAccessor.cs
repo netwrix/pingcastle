@@ -34,6 +34,7 @@ namespace PingCastle
                 {
                     Trace.WriteLine($"Warning: Service {typeof(T).Name} {serviceName} is null - DI container returned no instance");
                 }
+
                 return service;
             }
             catch (Exception ex)

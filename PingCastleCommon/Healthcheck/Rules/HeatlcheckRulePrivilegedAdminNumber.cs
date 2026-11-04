@@ -18,18 +18,26 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            if (healthcheckData.UserAccountData.NumberActive <= 100)
+            if ((healthcheckData.UserAccountData?.NumberActive ?? 0) <= 100)
+            {
                 return 0;
-            if (healthcheckData.AllPrivilegedMembers.Count == 0)
+            }
+
+            if (healthcheckData.AllPrivilegedMembers == null || healthcheckData.AllPrivilegedMembers.Count == 0)
+            {
                 return 0;
+            }
+
             if ((healthcheckData.AllPrivilegedMembers.Count * 100 / healthcheckData.UserAccountData.NumberActive) > 10)
             {
                 return healthcheckData.AllPrivilegedMembers.Count;
             }
+
             if (healthcheckData.AllPrivilegedMembers.Count > 50)
             {
                 return healthcheckData.AllPrivilegedMembers.Count;
             }
+
             return 0;
         }
     }

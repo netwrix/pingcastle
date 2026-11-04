@@ -27,14 +27,19 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     Trace.WriteLine("File:" + file.FileName);
                     if (!data.ContainsKey(domain))
+                    {
                         data[domain] = new List<KeyValuePair<string, string>>();
+                    }
+
                     data[domain].Add(new KeyValuePair<string, string>(file.GPOName, file.FileName));
                 }
             }
+
             foreach (var domain in data.Keys)
             {
                 AddRawDetail(domain, string.Join(",", data[domain].ConvertAll(k => k.Key).ToArray()), string.Join(",", data[domain].ConvertAll(k => k.Value).ToArray()));
             }
+
             return null;
         }
     }

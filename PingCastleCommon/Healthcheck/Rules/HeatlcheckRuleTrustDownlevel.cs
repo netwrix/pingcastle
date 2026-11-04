@@ -24,6 +24,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(trust.TrustPartner);
                 }
             }
+
             return null;
         }
     }

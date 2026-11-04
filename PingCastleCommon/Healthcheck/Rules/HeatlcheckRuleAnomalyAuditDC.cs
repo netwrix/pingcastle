@@ -35,7 +35,10 @@ namespace PingCastle.Healthcheck.Rules
             {
                 Why = why;
                 if (string.IsNullOrEmpty(Why))
+                {
                     Why = "To be defined";
+                }
+
                 Description = description;
                 Success = success;
                 Failure = failure;
@@ -45,9 +48,15 @@ namespace PingCastle.Healthcheck.Rules
             internal void ReportGPOAuditSimple(int value)
             {
                 if (value == 1 || value == 3)
+                {
                     CheckSuccess = true;
+                }
+
                 if (value == 2 || value == 3)
+                {
                     CheckFailure = true;
+                }
+
                 if (value == 4)
                 {
                     CheckExcludeFailure = true;
@@ -60,17 +69,29 @@ namespace PingCastle.Healthcheck.Rules
                 if (Success)
                 {
                     if (!CheckSuccess)
+                    {
                         return "No GPO check for audit success";
+                    }
+
                     if (CheckSuccess && CheckExcludeSuccess)
+                    {
                         return "A GPO check for success but another excludes auditing success";
+                    }
                 }
+
                 if (Failure)
                 {
                     if (!CheckFailure)
+                    {
                         return "No GPO check for audit failure";
+                    }
+
                     if (CheckFailure && CheckExcludeFailure)
+                    {
                         return "A GPO check for failure but another excludes auditing failure";
+                    }
                 }
+
                 return null;
             }
         }
@@ -84,6 +105,7 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     Trace.WriteLine($"A-AuditDC: duplicate DC distinguished name encountered: {dc.DistinguishedName.SanitizeForLog()}");
                 }
+
                 auditToHavePerDC[dc.DistinguishedName] =
                     new Dictionary<string, RequiredSimple>(StringComparer.OrdinalIgnoreCase)
                     {
@@ -119,6 +141,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             if (healthcheckData.GPOAuditAdvanced != null)
             {
                 foreach (var a in healthcheckData.GPOAuditAdvanced)
@@ -135,6 +158,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             foreach (var dc in healthcheckData.DomainControllers)
             {
                 foreach (var audit in auditToHavePerDC[dc.DistinguishedName].Values)
@@ -146,6 +170,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
 
@@ -162,6 +187,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return false;
         }
     }

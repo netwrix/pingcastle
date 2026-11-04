@@ -34,8 +34,8 @@ namespace PingCastle.Data
                         Trace.WriteLine("File " + filename + " ignored because generation date " + data.GenerationDate.ToString("u") + " is after the consolidation date " + maxfiltervalue.ToString("u"));
                         continue;
                     }
-                    output.Add(data);
 
+                    output.Add(data);
                 }
                 catch (Exception ex)
                 {
@@ -44,6 +44,7 @@ namespace PingCastle.Data
                     Trace.WriteLine(ex.StackTrace);
                 }
             }
+
             ui.DisplayMessage("Reports loaded: " + output.Count + " - on a total of " + files + " valid files");
             output.EnrichInformation();
             return output;
@@ -67,8 +68,8 @@ namespace PingCastle.Data
                         Trace.WriteLine("File " + filename + " ignored because generation date " + data.GenerationDate.ToString("u") + " is after the consolidation date " + maxfiltervalue.ToString("u"));
                         continue;
                     }
-                    output.Add(data);
 
+                    output.Add(data);
                 }
                 catch (Exception ex)
                 {
@@ -77,6 +78,7 @@ namespace PingCastle.Data
                     Trace.WriteLine(ex.StackTrace);
                 }
             }
+
             ui.DisplayMessage("Reports loaded: " + output.Count + " - on a total of " + files + " valid files");
             return output;
         }
@@ -91,6 +93,7 @@ namespace PingCastle.Data
                 HealthcheckData demoreport = TransformReportToDemo(rotKey, data);
                 output.Add(demoreport);
             }
+
             return output;
         }
 
@@ -111,11 +114,14 @@ namespace PingCastle.Data
                             di.DnsName = TransformFQDNToDemo(rotKey, di.DnsName);
                             di.ForestName = TransformFQDNToDemo(rotKey, di.ForestName);
                             if (!String.IsNullOrEmpty(di.NetbiosName))
+                            {
                                 di.NetbiosName = TransformFQDNToDemo(rotKey, di.NetbiosName.ToLowerInvariant());
+                            }
                         }
                     }
                 }
             }
+
             if (healthcheckData.ReachableDomains != null)
             {
                 foreach (var di in healthcheckData.ReachableDomains)
@@ -130,16 +136,21 @@ namespace PingCastle.Data
                         di.NetbiosName = TransformFQDNToDemo(rotKey, di.NetbiosName.ToLowerInvariant());
                         di.DnsName = TransformFQDNToDemo(rotKey, di.DnsName);
                     }
+
                     di.ForestName = TransformFQDNToDemo(rotKey, di.ForestName);
                 }
             }
+
             return healthcheckData;
         }
 
         public static string TransformFQDNToDemo(string rotKey, string source)
         {
             if (String.IsNullOrEmpty(source))
+            {
                 return null;
+            }
+
             StringBuilder sb = new StringBuilder(source.Length);
             source = source.ToLowerInvariant();
             for (int i = 0; i < source.Length; i++)
@@ -148,7 +159,11 @@ namespace PingCastle.Data
                 if (c >= 97 && c <= 122)
                 {
                     int j = c + rotKey[source.Length - 1 - i] - 97;
-                    if (j > 122) j -= 26;
+                    if (j > 122)
+                    {
+                        j -= 26;
+                    }
+
                     sb.Append((char)j);
                 }
                 else
@@ -156,13 +171,17 @@ namespace PingCastle.Data
                     sb.Append(c);
                 }
             }
+
             return sb.ToString();
         }
 
         public static string TransformNameToDemo(string rotKey, string source)
         {
             if (String.IsNullOrEmpty(source))
+            {
                 return null;
+            }
+
             StringBuilder sb = new StringBuilder(source.Length);
             source = source.ToLowerInvariant();
             for (int i = 0; i < source.Length; i++)
@@ -171,7 +190,11 @@ namespace PingCastle.Data
                 if (c >= 97 && c <= 122)
                 {
                     int j = c + rotKey[i] - 97;
-                    if (j > 122) j -= 26;
+                    if (j > 122)
+                    {
+                        j -= 26;
+                    }
+
                     sb.Append((char)j);
                 }
                 else
@@ -179,6 +202,7 @@ namespace PingCastle.Data
                     sb.Append(c);
                 }
             }
+
             return sb.ToString();
         }
 
@@ -188,9 +212,11 @@ namespace PingCastle.Data
             var randomString = new StringBuilder();
             var random = new Random();
             for (int i = 0; i < 100; i++)
+            {
                 randomString.Append(refstring[random.Next(refstring.Length)]);
+            }
+
             return randomString.ToString();
         }
-
     }
 }

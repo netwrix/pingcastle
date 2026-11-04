@@ -186,6 +186,7 @@ namespace PingCastle
                     {
                         Directory.CreateDirectory(fi.DirectoryName);
                     }
+
                     Stream stream = File.Open(filename, FileMode.Create, FileAccess.Write, FileShare.Read);
                     StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
@@ -198,6 +199,7 @@ namespace PingCastle
                         WriteInRed("argument for --api-endpoint is mandatory");
                         ExitCodes.MissingApiEndpointArgument.Exit();
                     }
+
                     settings.apiEndpoint = args[++i];
 
                     if (!Uri.TryCreate(settings.apiEndpoint, UriKind.Absolute, out _))
@@ -213,6 +215,7 @@ namespace PingCastle
                         WriteInRed("argument for --api-key is mandatory");
                         ExitCodes.MissingApiKeyArgument.Exit();
                     }
+
                     settings.apiKey = args[++i];
                 }
                 else if (args[i] == "--api-key-file")
@@ -222,6 +225,7 @@ namespace PingCastle
                         WriteInRed("argument for --api-key-file is mandatory");
                         ExitCodes.MissingApiKeyFileArgument.Exit();
                     }
+
                     settings.apiKey = ReadApiKeyFromFile(args[++i]);
                 }
             }
@@ -259,6 +263,7 @@ namespace PingCastle
                     Console.WriteLine("=============================================================================");
                     Console.ReadKey();
                 }
+
                 ExitCodes.Success.Exit();
             }
 
@@ -344,6 +349,7 @@ namespace PingCastle
                     ExitCodes.UnknownErrorSeeConsole.Exit();
                 }
             }
+
             tasks.CompleteTasks();
         }
 
@@ -359,6 +365,7 @@ namespace PingCastle
                     Console.WriteLine("=============================================================================");
                     Console.ReadKey();
                 }
+
                 return false;
             }
 
@@ -435,9 +442,15 @@ namespace PingCastle
         private void LoadCustomRules(Tasks tasks)
         {
             if (string.Equals(tasks.License.Edition, "Auditor", StringComparison.OrdinalIgnoreCase))
+            {
                 return;
+            }
+
             if (tasks.License.IsBasic())
+            {
                 return;
+            }
+
             PingCastle.Rules.RuleSet<HealthcheckData>.LoadCustomRules();
         }
 
@@ -462,7 +475,6 @@ namespace PingCastle
                         Trace.WriteLine(ex.InnerException.Message);
                         Trace.WriteLine(ex.InnerException.StackTrace);
                     }
-
                 }
             }
 
@@ -487,7 +499,6 @@ namespace PingCastle
                         Trace.WriteLine(ex.InnerException.StackTrace);
                     }
                 }
-
             }
 
             // fault back to the default license:
@@ -502,6 +513,7 @@ namespace PingCastle
             {
                 throw new PingCastleException("Unable to load the license from the .config file and the license embedded in PingCastle is not valid. Check that all files have been copied in the same directory and that you have a valid license");
             }
+
             return _serialNumber;
         }
 
@@ -520,7 +532,9 @@ namespace PingCastle
             if (args.Length == 0)
             {
                 if (!RunInteractiveMode())
+                {
                     return false;
+                }
             }
             else
             {
@@ -539,6 +553,7 @@ namespace PingCastle
                                 WriteInRed("argument for --bot is mandatory");
                                 return false;
                             }
+
                             settings.botPipe = args[++i];
                             requestedActions.Add(PossibleTasks.Bot);
                             break;
@@ -551,6 +566,7 @@ namespace PingCastle
                                 WriteInRed("argument for --clientid is mandatory");
                                 return false;
                             }
+
                             settings.SetClientId(args[++i]);
                             break;
                         case "--center-on":
@@ -559,6 +575,7 @@ namespace PingCastle
                                 WriteInRed("argument for --center-on is mandatory");
                                 return false;
                             }
+
                             settings.CenterDomainForSimpliedGraph = args[++i];
                             break;
                         case "--datefile":
@@ -587,6 +604,7 @@ namespace PingCastle
                                 WriteInRed("argument for --foreigndomain is mandatory");
                                 return false;
                             }
+
                             ForeignUsersScanner.EnumInboundSid = args[++i];
                             break;
                         case "--explore-trust":
@@ -601,6 +619,7 @@ namespace PingCastle
                                 WriteInRed("argument for --explore-exception is mandatory");
                                 return false;
                             }
+
                             settings.DomainToNotExplore = new List<string>(args[++i].Split(','));
                             break;
                         case "--export":
@@ -609,6 +628,7 @@ namespace PingCastle
                                 WriteInRed("argument for --export is mandatory");
                                 return false;
                             }
+
                             {
                                 var exports = PingCastleFactory.GetAllExport();
                                 string exportname = args[++i];
@@ -620,15 +640,20 @@ namespace PingCastle
                                     foreach (string name in allexports)
                                     {
                                         if (list != null)
+                                        {
                                             list += ",";
+                                        }
+
                                         list += name;
                                     }
-                                    WriteInRed("Unsupported exportname - available scanners are:" + list);
 
+                                    WriteInRed("Unsupported exportname - available scanners are:" + list);
                                 }
+
                                 settings.Export = exports[exportname];
                                 requestedActions.Add(PossibleTasks.Export);
                             }
+
                             break;
                         case "--filter-date":
                             if (i + 1 >= args.Length)
@@ -636,12 +661,14 @@ namespace PingCastle
                                 WriteInRed("argument for --filter-date is mandatory");
                                 return false;
                             }
+
                             DateTime date;
                             if (!DateTime.TryParse(args[++i], out date))
                             {
                                 WriteInRed("Unable to parse the date \"" + args[i] + "\" - try entering 2016-01-01");
                                 return false;
                             }
+
                             settings.FilterReportDate = date;
                             break;
                         case "--regen-report":
@@ -651,6 +678,7 @@ namespace PingCastle
                                 WriteInRed("argument for --regen-report is mandatory");
                                 return false;
                             }
+
                             settings.InputFile = args[++i];
                             break;
                         case "--generate-fake-reports":
@@ -689,6 +717,7 @@ namespace PingCastle
                                 WriteInRed("argument for --level is mandatory");
                                 return false;
                             }
+
                             try
                             {
                                 tasks.ExportLevel = (PingCastleReportDataExportLevel)Enum.Parse(typeof(PingCastleReportDataExportLevel), args[++i]);
@@ -698,6 +727,7 @@ namespace PingCastle
                                 WriteInRed("Unable to parse the level [" + args[i] + "] to one of the predefined value (" + String.Join(",", Enum.GetNames(typeof(PingCastleReportDataExportLevel))) + ")");
                                 return false;
                             }
+
                             break;
                         case "--license":
                         case "--api-endpoint":
@@ -717,6 +747,7 @@ namespace PingCastle
                                 WriteInRed("argument for -log-samba is mandatory");
                                 return false;
                             }
+
                             LinuxSidResolverSettings.LogLevel = args[++i];
                             break;
                         case "--max-nodes":
@@ -731,6 +762,7 @@ namespace PingCastle
                                 WriteInRed("argument for --max-nodes is not a valid value (typically: 1000)");
                                 return false;
                             }
+
                             ReportGenerator.MaxNodes = maxNodes;
                             break;
                         case "--max-depth":
@@ -745,6 +777,7 @@ namespace PingCastle
                                 WriteInRed("argument for --max-depth is not a valid value (typically: 30)");
                                 return false;
                             }
+
                             ReportGenerator.MaxDepth = maxDepth;
                             break;
                         case "--no-enum-limit":
@@ -759,6 +792,7 @@ namespace PingCastle
                                 WriteInRed("argument for --node is mandatory");
                                 return false;
                             }
+
                             tasks.NodesToInvestigate = new List<string>(Regex.Split(args[++i], @"(?<!(?<!\\)*\\)\,"));
                             break;
                         case "--nodes":
@@ -776,6 +810,7 @@ namespace PingCastle
                                 WriteInRed("argument for --notifyMail is mandatory");
                                 return false;
                             }
+
                             settings.mailNotification = args[++i];
                             break;
                         case "--nslimit":
@@ -784,11 +819,13 @@ namespace PingCastle
                                 WriteInRed("argument for --nslimit is mandatory");
                                 return false;
                             }
+
                             if (!int.TryParse(args[++i], out NullSessionScanner.NullSessionEnumerationLimit))
                             {
                                 WriteInRed("argument for --nslimit is not a valid value (typically: 5)");
                                 return false;
                             }
+
                             break;
                         case "--out":
                             if (i + 1 >= args.Length)
@@ -796,6 +833,7 @@ namespace PingCastle
                                 WriteInRed("argument for --out is mandatory");
                                 return false;
                             }
+
                             i++;
                             // argument processed at the beginning of the program
                             break;
@@ -805,11 +843,13 @@ namespace PingCastle
                                 WriteInRed("argument for --pagesize is mandatory");
                                 return false;
                             }
+
                             if (!int.TryParse(args[++i], out LDAPConnection.PageSize))
                             {
                                 WriteInRed("argument for --pagesize is not a valid value (typically: 500)");
                                 return false;
                             }
+
                             break;
                         case "--p12-file":
                             if (i + 1 >= args.Length)
@@ -817,6 +857,7 @@ namespace PingCastle
                                 WriteInRed("argument for --p12-file is mandatory");
                                 return false;
                             }
+
                             settings.SetP12File(FilesValidator.CheckPathTraversal(args[++i]));
                             break;
                         case "--p12-pass":
@@ -825,6 +866,7 @@ namespace PingCastle
                                 WriteInRed("argument for --p12-pass is mandatory");
                                 return false;
                             }
+
                             settings.SetP12Pass(FilesValidator.CheckPathTraversal(args[++i]));
                             break;
                         case "--password":
@@ -833,10 +875,14 @@ namespace PingCastle
                                 WriteInRed("argument for --password is mandatory");
                                 return false;
                             }
+
                             var p = args[++i];
                             settings.Password = new System.Security.SecureString();
                             foreach (var c in p.ToCharArray())
+                            {
                                 settings.Password.AppendChar(c);
+                            }
+
                             break;
                         case "--port":
                             if (i + 1 >= args.Length)
@@ -844,12 +890,14 @@ namespace PingCastle
                                 WriteInRed("argument for --port is mandatory");
                                 return false;
                             }
+
                             int port;
                             if (!int.TryParse(args[++i], out port))
                             {
                                 WriteInRed("argument for --port is not a valid value (typically: 9389)");
                                 return false;
                             }
+
                             settings.Port = port;
                             break;
                         case "--private-key":
@@ -858,6 +906,7 @@ namespace PingCastle
                                 WriteInRed("argument for --private-key is mandatory");
                                 return false;
                             }
+
                             settings.SetPrivateKey(FilesValidator.CheckPathTraversal(args[++i]));
                             break;
                         case "--protocol":
@@ -866,6 +915,7 @@ namespace PingCastle
                                 WriteInRed("argument for --protocol is mandatory");
                                 return false;
                             }
+
                             try
                             {
                                 ADWebService.ConnectionType = (ADConnectionType)Enum.Parse(typeof(ADConnectionType), args[++i]);
@@ -876,6 +926,7 @@ namespace PingCastle
                                 WriteInRed("Unable to parse the protocol [" + args[i] + "] to one of the predefined value (" + String.Join(",", Enum.GetNames(typeof(ADConnectionType))) + ")");
                                 return false;
                             }
+
                             break;
                         case "--quota":
                             if (i + 1 >= args.Length)
@@ -889,6 +940,7 @@ namespace PingCastle
                                 WriteInRed("argument for --quota is not a valid value (typically: 500)");
                                 return false;
                             }
+
                             ADConnection.RecordPerSeconds = quota;
                             break;
                         case "--reachable":
@@ -914,12 +966,17 @@ namespace PingCastle
                                 foreach (string name in allscanners)
                                 {
                                     if (list != null)
+                                    {
                                         list += ",";
+                                    }
+
                                     list += name;
                                 }
+
                                 WriteInRed("Unsupported scannername - available scanners are:" + list);
                                 return false;
                             }
+
                             settings.Scanner = scanners[scannername];
                             requestedActions.Add(PossibleTasks.Scanner);
                             break;
@@ -945,6 +1002,7 @@ namespace PingCastle
                                 WriteInRed("argument for --scmode-file is mandatory");
                                 return false;
                             }
+
                             settings.InputFile = args[++i];
                             break;
                         case "--sendxmlTo":
@@ -954,6 +1012,7 @@ namespace PingCastle
                                 WriteInRed("argument for --sendXmlTo is mandatory");
                                 return false;
                             }
+
                             settings.sendXmlTo = args[++i];
                             break;
                         case "--sendhtmlto":
@@ -963,6 +1022,7 @@ namespace PingCastle
                                 WriteInRed("argument for --sendHtmlTo is mandatory");
                                 return false;
                             }
+
                             settings.sendHtmlTo = args[++i];
                             break;
                         case "--sendallto":
@@ -972,6 +1032,7 @@ namespace PingCastle
                                 WriteInRed("argument for --sendAllTo is mandatory");
                                 return false;
                             }
+
                             settings.sendAllTo = args[++i];
                             break;
                         case "--server":
@@ -980,6 +1041,7 @@ namespace PingCastle
                                 WriteInRed("argument for --server is mandatory");
                                 return false;
                             }
+
                             settings.Server = args[++i];
                             break;
                         case "--services":
@@ -987,12 +1049,19 @@ namespace PingCastle
                             {
                                 return false;
                             }
+
                             break;
                         case "--skip-null-session":
                             HealthcheckAnalyzer.SkipNullSession = true;
                             break;
                         case "--skip-dc-rpc":
                             HealthcheckAnalyzer.SkipRPC = true;
+                            break;
+                        case "--skip-ldap-signing":
+                            HealthcheckAnalyzer.SkipLdapSigning = true;
+                            break;
+                        case "--skip-gpo-forest-lookup":
+                            HealthcheckAnalyzer.SkipGpoForestLookup = true;
                             break;
                         case "--reload-report":
                         case "--slim-report":
@@ -1002,6 +1071,7 @@ namespace PingCastle
                                 WriteInRed("argument for --slim-report is mandatory");
                                 return false;
                             }
+
                             settings.InputFile = args[++i];
                             break;
                         case "--smtplogin":
@@ -1010,6 +1080,7 @@ namespace PingCastle
                                 WriteInRed("argument for --smtplogin is mandatory");
                                 return false;
                             }
+
                             settings.smtpLogin = args[++i];
                             break;
                         case "--smtppass":
@@ -1018,6 +1089,7 @@ namespace PingCastle
                                 WriteInRed("argument for --smtppass is mandatory");
                                 return false;
                             }
+
                             settings.smtpPassword = args[++i];
                             break;
                         case "--smtptls":
@@ -1029,6 +1101,7 @@ namespace PingCastle
                                 WriteInRed("argument for --tenantid is mandatory");
                                 return false;
                             }
+
                             settings.SetTenantId(args[++i]);
                             break;
                         case "--thumbprint":
@@ -1037,6 +1110,7 @@ namespace PingCastle
                                 WriteInRed("argument for --thumbprint is mandatory");
                                 return false;
                             }
+
                             settings.SetThumbprint(args[++i]);
                             break;
                         case "--upload-all-reports":
@@ -1048,6 +1122,7 @@ namespace PingCastle
                                 WriteInRed("argument for --user is mandatory");
                                 return false;
                             }
+
                             i++;
                             if (args[i].Contains("\\"))
                             {
@@ -1065,6 +1140,7 @@ namespace PingCastle
                                     Console.ResetColor();
                                 }
                             }
+
                             break;
                         case "--use-prt":
                             settings.SetUsePrt(true);
@@ -1075,6 +1151,7 @@ namespace PingCastle
                                 WriteInRed("argument for --webdirectory is mandatory");
                                 return false;
                             }
+
                             settings.sharepointdirectory = args[++i];
                             break;
                         case "--webuser":
@@ -1083,6 +1160,7 @@ namespace PingCastle
                                 WriteInRed("argument for --webuser is mandatory");
                                 return false;
                             }
+
                             settings.sharepointuser = args[++i];
                             break;
                         case "--webpassword":
@@ -1091,6 +1169,7 @@ namespace PingCastle
                                 WriteInRed("argument for --webpassword is mandatory");
                                 return false;
                             }
+
                             settings.sharepointpassword = args[++i];
                             break;
                         case "--xmls":
@@ -1099,6 +1178,7 @@ namespace PingCastle
                                 WriteInRed("argument for --xmls is mandatory");
                                 return false;
                             }
+
                             settings.InputDirectory = args[++i];
                             break;
                         default:
@@ -1107,19 +1187,23 @@ namespace PingCastle
                             return false;
                     }
                 }
+
                 Trace.WriteLine("After parsing arguments");
             }
+
             if (requestedActions.Count == 0 && !delayedInteractiveMode)
             {
                 WriteInRed("You must choose at least one value among --healthcheck --entraid --hc-conso --advanced-export --advanced-report --nullsession --carto");
                 DisplayHelp();
                 return false;
             }
+
             Trace.WriteLine("Things to do OK");
             if (delayedInteractiveMode)
             {
                 RunInteractiveMode();
             }
+
             foreach (var action in requestedActions)
             {
                 if (requiredSettings.ContainsKey(action))
@@ -1150,6 +1234,7 @@ namespace PingCastle
                     }
                 }
             }
+
             return true;
         }
 
@@ -1200,6 +1285,7 @@ namespace PingCastle
 
                             state = DisplayMainMenu();
                         }
+
                         break;
                     case DisplayState.ScannerMenu:
                         state = settings.DisplayScannerMenu();
@@ -1226,8 +1312,10 @@ namespace PingCastle
                             Console.WriteLine("No implementation of state " + state);
                             state = DisplayState.Exit;
                         }
+
                         break;
                 }
+
                 if (state == DisplayState.Exit)
                 {
                     var currentState = states.Pop();
@@ -1236,20 +1324,25 @@ namespace PingCastle
                     {
                         break;
                     }
+
                     // If we're exiting from the main menu, exit the application completely
                     if (currentState == DisplayState.MainMenu)
                     {
                         return false;
                     }
+
                     // Otherwise go back to previous menu if available
                     if (states.Count > 0)
+                    {
                         state = states.Peek();
+                    }
                 }
                 else
                 {
                     states.Push(state);
                 }
             }
+
             return (states.Count > 0);
         }
 
@@ -1257,7 +1350,8 @@ namespace PingCastle
         {
             requestedActions.Clear();
 
-            List<MenuItem> choices = new List<MenuItem>() {
+            List<MenuItem> choices = new List<MenuItem>()
+            {
                 new MenuItem("healthcheck","Score the risk of a domain", "This is the main functionality of PingCastle. In a matter of minutes, it produces a report which will give you an overview of your Active Directory security. This report can be generated on other domains by using the existing trust links."),
                 new MenuItem("entraid","Score the risk of Entra ID", "This is the main functionality of PingCastle. In a matter of minutes, it produces a report which will give you an overview of your EntraID security."),
                 new MenuItem("conso","Aggregate multiple reports into a single one", "With many healthcheck reports, you can get a single report for a whole scope. Maps will be generated."),
@@ -1271,7 +1365,9 @@ namespace PingCastle
             _userInterface.Information = "Using interactive mode.\r\nDo not forget that there are other command line switches like --help that you can use";
             int choice = _userInterface.SelectMenu(choices);
             if (choice == 0)
+            {
                 return DisplayState.Exit;
+            }
 
             string whattodo = choices[choice - 1].Choice;
             switch (whattodo)
@@ -1302,7 +1398,8 @@ namespace PingCastle
 
         DisplayState DisplayAdvancedMenu()
         {
-            List<MenuItem> choices = new List<MenuItem>() {
+            List<MenuItem> choices = new List<MenuItem>()
+            {
                 new MenuItem("protocol","Change the protocol used to query the AD (LDAP, ADWS, ...)"),
                 new MenuItem("hcrules","Generate a report containing all rules applied by PingCastle"),
                 new MenuItem("generatekey","Generate RSA keys used to encrypt and decrypt reports"),
@@ -1316,7 +1413,9 @@ namespace PingCastle
             _userInterface.Title = "What do you want to do?";
             int choice = _userInterface.SelectMenu(choices);
             if (choice == 0)
+            {
                 return DisplayState.Exit;
+            }
 
             string whattodo = choices[choice - 1].Choice;
             switch (whattodo)
@@ -1338,7 +1437,10 @@ namespace PingCastle
                     return DisplayState.Exit;
                 case "log":
                     if (Trace.Listeners.Count <= 1)
+                    {
                         Logging.EnableLogFile();
+                    }
+
                     return DisplayState.Exit;
                 case "noenumlimit":
                     ReportHealthCheckSingle.MaxNumberUsersInHtmlReport = int.MaxValue;
@@ -1355,15 +1457,16 @@ namespace PingCastle
                                 LicenseCache.Instance.StoreLicense(tasks.License);
                             }
                         }
-
                     }
+
                     return DisplayState.Exit;
             }
         }
 
         DisplayState DisplayProtocolMenu()
         {
-            List<MenuItem> choices = new List<MenuItem>() {
+            List<MenuItem> choices = new List<MenuItem>()
+            {
                 new MenuItem("ADWSThenLDAP","default: ADWS then if failed, LDAP"),
                 new MenuItem("ADWSOnly","use only ADWS"),
                 new MenuItem("LDAPOnly","use only LDAP"),
@@ -1376,11 +1479,16 @@ namespace PingCastle
             for (int i = 0; i < choices.Count; i++)
             {
                 if (choices[i].Choice == ADWebService.ConnectionType.ToString())
+                {
                     defaultChoice = 1 + i;
+                }
             }
+
             int choice = _userInterface.SelectMenu(choices, defaultChoice);
             if (choice == 0)
+            {
                 return DisplayState.Exit;
+            }
 
             string whattodo = choices[choice - 1].Choice;
             ADWebService.ConnectionType = (ADConnectionType)Enum.Parse(typeof(ADConnectionType), whattodo);
@@ -1438,6 +1546,8 @@ namespace PingCastle
             Console.WriteLine("    --smtptls         : enable TLS/SSL in SMTP if used on other port than 465 and 587");
             Console.WriteLine("    --skip-null-session: do not test for null session");
             Console.WriteLine("    --skip-dc-rpc     : do not test for rpc on DC");
+            Console.WriteLine("    --skip-ldap-signing: do not test for ldap signing requirement (plain ldap on port 389)");
+            Console.WriteLine("    --skip-gpo-forest-lookup: do not resolve GPOs linked from other domains (parent/forest root)");
             Console.WriteLine("    --webdirectory <dir>: upload the xml report to a webdav server");
             Console.WriteLine("    --webuser <user>  : optional user and password");
             Console.WriteLine("    --webpassword <password>");
@@ -1480,6 +1590,7 @@ namespace PingCastle
                 Console.ResetColor();
                 Console.WriteLine(iscanner.Description);
             }
+
             Console.WriteLine("  options for scanners:");
             Console.WriteLine("    --scmode-all      : scan all computers (default)");
             Console.WriteLine("    --scmode-single   : force scanner to check one single computer");
@@ -1506,6 +1617,7 @@ namespace PingCastle
                 Console.ResetColor();
                 Console.WriteLine(iexport.Description);
             }
+
             Console.WriteLine("");
             Console.WriteLine("Common options when connecting to Entra ID");
             Console.WriteLine("     --tenantid xx: specify the tenant id to use. Requiered for cert auth");
@@ -1558,7 +1670,6 @@ namespace PingCastle
             Environment.Exit((int)exitCode);
         }
     }
-
 }
 
 

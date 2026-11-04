@@ -21,8 +21,15 @@ namespace PingCastle.Scanners
             _nativeMethods = nativeMethods;
         }
 
-        public override string Name { get { return "startup"; } }
-        public override string Description { get { return "Get the last startup date of a computer. Can be used to determine if latest patches have been applied."; } }
+        public override string Name
+        {
+            get { return "startup"; }
+        }
+
+        public override string Description
+        {
+            get { return "Get the last startup date of a computer. Can be used to determine if latest patches have been applied."; }
+        }
 
         override protected string GetCsvHeader()
         {
@@ -37,6 +44,7 @@ namespace PingCastle.Scanners
             {
                 return computer + "\t" + startup.ToString("yyyy-MM-dd HH:mm:ss");
             }
+
             return null;
         }
     }

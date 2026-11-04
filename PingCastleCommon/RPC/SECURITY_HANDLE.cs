@@ -12,5 +12,7 @@ namespace PingCastle.RPC
         {
             LowPart = HighPart = IntPtr.Zero;
         }
-    };
+    }
+
+;
 }

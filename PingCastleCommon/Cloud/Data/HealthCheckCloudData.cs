@@ -58,6 +58,7 @@ namespace PingCastle.Cloud.Data
         public string permission { get; set; }
         public string principalType { get; set; }
     }
+
     [DebuggerDisplay("{displayName} {roleTemplateId}")]
     public class HealthCheckCloudDataApplicationMemberOf
     {
@@ -104,7 +105,6 @@ namespace PingCastle.Cloud.Data
     [DebuggerDisplay("{Domain} {TenantID} {Region}")]
     public class HealthCheckCloudDataForeignDomains
     {
-
         public string Domain { get; set; }
 
         public int GuestsCount { get; set; }
@@ -119,7 +119,6 @@ namespace PingCastle.Cloud.Data
     [DebuggerDisplay("{Name} {Type} {Definition}")]
     public class HealthCheckCloudDataNetworkPolicy
     {
-
         public string Name { get; set; }
 
         public string Type { get; set; }
@@ -133,7 +132,6 @@ namespace PingCastle.Cloud.Data
     [DebuggerDisplay("{TenantId}")]
     public class HealthCheckCloudDataCrossTenantPolicy
     {
-
         public string TenantId { get; set; }
 
         public string lastModified { get; set; }
@@ -144,7 +142,6 @@ namespace PingCastle.Cloud.Data
         public bool? AllowB2BTo { get; set; }
 
         public bool? AllowNativeFederationTo { get; set; }
-
     }
 
     [DebuggerDisplay("{TenantID} {Name} {CountryCode}")]
@@ -164,7 +161,6 @@ namespace PingCastle.Cloud.Data
     [DebuggerDisplay("{ObjectId} {EmailAddress} {DisplayName}")]
     public class HealthCheckCloudDataRoleMember
     {
-
         public string ObjectId { get; set; }
 
         public string EmailAddress { get; set; }
@@ -194,7 +190,6 @@ namespace PingCastle.Cloud.Data
     [DebuggerDisplay("{ObjectId} {Name} {Description}")]
     public class HealthCheckCloudDataRole
     {
-
         public Guid? ObjectId { get; set; }
 
         public bool? IsSystem { get; set; }
@@ -241,9 +236,9 @@ namespace PingCastle.Cloud.Data
 
         public List<string> MitreMitigationIds { get; set; } = new List<string>();
     }
+
     public class HealthCheckCloudData : JsonSerialization<HealthCheckCloudData>, IRiskEvaluation
     {
-
         public DateTime GenerationDate { get; set; }
 
         public string EngineVersion { get; set; }
@@ -278,9 +273,13 @@ namespace PingCastle.Cloud.Data
             if (RiskRules != null)
             {
                 foreach (var r in RiskRules)
+                {
                     integrityBase.Add(r.RiskId.Replace("-", "").Replace(".", ""));
+                }
+
                 integrityBase.Sort();
             }
+
             using (var hash = SHA256.Create())
             {
                 string s = string.Join(",", integrityBase.ToArray());
@@ -375,12 +374,12 @@ namespace PingCastle.Cloud.Data
 
         public bool? AzureADConnectDirSyncConfigured { get; set; }
         public bool? AzureADConnectDirSyncEnabled { get; set; }
-        public int   AzureADConnectFederatedDomainCount { get; set; }
-        public int?   AzureADConnectNumberOfHoursFromLastSync { get; set; }
+        public int AzureADConnectFederatedDomainCount { get; set; }
+        public int? AzureADConnectNumberOfHoursFromLastSync { get; set; }
         public bool? AzureADConnectPassThroughAuthenticationEnabled { get; set; }
         public bool? AzureADConnectSeamlessSingleSignOnEnabled { get; set; }
-        public int   AzureADConnectVerifiedCustomDomainCount { get; set; }
-        public int   AzureADConnectVerifiedDomainCount { get; set; }
+        public int AzureADConnectVerifiedCustomDomainCount { get; set; }
+        public int AzureADConnectVerifiedDomainCount { get; set; }
 
         public string OnPremiseDomainSid { get; set; }
         public List<HealthCheckCloudDataApplication> Applications { get; set; }
@@ -404,9 +403,18 @@ namespace PingCastle.Cloud.Data
         public int MaturityLevel { get; set; }
         public List<HealthCheckCloudDataRiskRule> RiskRules { get; set; }
 
+        /// <summary>
+        /// Gets or sets the endpoints whose results were cut short while the data was retrieved, so the report is
+        /// based on incomplete data. Empty or null when the data is complete.
+        /// </summary>
+        public List<string> TruncatedEndpoints { get; set; } = new List<string>();
+
         [IgnoreDataMember]
         [XmlIgnore]
         [JsonIgnore]
-        public IList<IRuleScore> AllRiskRules { get { return RiskRules.ConvertAll(x => { return (IRuleScore)x; }); } }
+        public IList<IRuleScore> AllRiskRules
+        {
+            get { return RiskRules.ConvertAll(x => { return (IRuleScore)x; }); }
+        }
     }
 }

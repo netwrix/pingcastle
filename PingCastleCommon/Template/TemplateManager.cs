@@ -14,7 +14,6 @@ namespace PingCastle.template
 {
     public class TemplateManager
     {
-
         private static string LoadTemplate(string resourceName)
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -31,7 +30,7 @@ namespace PingCastle.template
                     Trace.WriteLine("Available resources:");
                     foreach (var name in assembly.GetManifestResourceNames())
                     {
-                            Trace.WriteLine("  " + name);
+                        Trace.WriteLine("  " + name);
                     }
                 }
 
@@ -39,7 +38,7 @@ namespace PingCastle.template
                 reader = new StreamReader(gzip);
                 html = reader.ReadToEnd();
             }
-            catch(Exception)
+            catch (Exception)
             {
                 Trace.WriteLine("Unable to load " + resourceName);
                 throw;
@@ -47,8 +46,11 @@ namespace PingCastle.template
             finally
             {
                 if (reader != null)
+                {
                     reader.Dispose();
+                }
             }
+
             return html;
         }
 

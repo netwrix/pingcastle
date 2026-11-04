@@ -8,7 +8,6 @@ using System.ComponentModel;
 
 namespace PingCastle.Rules
 {
-
     public enum RiskModelCategory
     {
         Unknown = 0,

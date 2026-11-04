@@ -17,5 +17,7 @@ namespace PingCastle.RPC
             Buffer = buffer;
             BufferType = bufferType;
         }
-    };
+    }
+
+;
 }

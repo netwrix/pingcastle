@@ -48,7 +48,6 @@ public struct SMB2_SessionSetupResponse
     public UInt16 SecurityBufferOffset;
     [FieldOffset(6)]
     public UInt16 SecurityBufferLength;
-
 }
 
 /// <summary>

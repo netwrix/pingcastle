@@ -20,8 +20,11 @@ namespace PingCastle.Healthcheck.Rules
             foreach (var dc in healthcheckData.DomainControllers)
             {
                 if (dc.ChannelBindingDisabled)
+                {
                     AddRawDetail(dc.DCName);
+                }
             }
+
             return null;
         }
     }

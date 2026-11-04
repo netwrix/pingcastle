@@ -14,7 +14,6 @@ namespace PingCastle.RPC
 {
     public abstract class rpcapi
     {
-
         private byte[] MIDL_ProcFormatString;
         private byte[] MIDL_TypeFormatString;
         private GCHandle procString;
@@ -233,15 +232,18 @@ namespace PingCastle.RPC
             if (res != 0)
             {
                 if (binding != IntPtr.Zero)
+                {
                     Unbind(IntPtrserver, binding);
+                }
+
                 return IntPtr.Zero;
             }
+
             return binding;
         }
 
         protected Int32 BindUsingPipe(string server, out IntPtr binding, NetworkCredential credential = null)
         {
-            
             IntPtr bindingstring = IntPtr.Zero;
             binding = IntPtr.Zero;
             Int32 status;
@@ -253,6 +255,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("RpcStringBindingCompose failed with status 0x" + status.ToString("x"));
                 return status;
             }
+
             status = NativeMethods.RpcBindingFromStringBinding(Marshal.PtrToStringUni(bindingstring), out binding);
             NativeMethods.RpcBindingFree(ref bindingstring);
             if (status != 0)
@@ -260,6 +263,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("RpcBindingFromStringBinding failed with status 0x" + status.ToString("x"));
                 return status;
             }
+
             if (UseNullSession)
             {
                 // note: windows xp doesn't support user or domain = "" => return 0xE
@@ -313,11 +317,13 @@ namespace PingCastle.RPC
             {
                 status = NativeMethods.RpcBindingSetAuthInfo(binding, null, 0, 0xFFFFFFFF, IntPtr.Zero, 0xFFFFFFFF);
             }
+
             status = NativeMethods.RpcBindingSetOption(binding, 12, RPCTimeOut);
             if (status != 0)
             {
                 Trace.WriteLine("RpcBindingSetOption failed with status 0x" + status.ToString("x"));
             }
+
             Trace.WriteLine("binding ok (handle=" + binding + ")");
             return 0;
         }
@@ -329,6 +335,7 @@ namespace PingCastle.RPC
             {
                 s.Append(i);
             }
+
             return s.ToString();
         }
 
@@ -340,11 +347,16 @@ namespace PingCastle.RPC
 
             status = NativeMethods.RpcStringBindingCompose(null, "ncacn_ip_tcp", server, "135", null, out bindingstring);
             if (status != 0)
+            {
                 return status;
+            }
+
             status = NativeMethods.RpcBindingFromStringBinding(Marshal.PtrToStringUni(bindingstring), out binding);
             NativeMethods.RpcBindingFree(ref bindingstring);
             if (status != 0)
+            {
                 return status;
+            }
 
             status = NativeMethods.RpcBindingSetAuthInfo(binding, null, 1, 0, IntPtr.Zero, 0);
             if (status != 0)
@@ -355,10 +367,12 @@ namespace PingCastle.RPC
 
             status = NativeMethods.RpcBindingSetOption(binding, 12, RPCTimeOut);
             if (status != 0)
+            {
                 return status;
+            }
 
             status = NativeMethods.RpcEpResolveBinding(binding, rpcClientInterface);
-            
+
             return status;
         }
 
@@ -386,7 +400,6 @@ namespace PingCastle.RPC
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         protected IntPtr CallNdrClientCall2x86(int offset, params IntPtr[] args)
         {
-
             GCHandle stackhandle = GCHandle.Alloc(args, GCHandleType.Pinned);
             IntPtr result;
             try
@@ -397,8 +410,8 @@ namespace PingCastle.RPC
             {
                 stackhandle.Free();
             }
+
             return result;
         }
-
     }
 }

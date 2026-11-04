@@ -234,11 +234,13 @@ namespace PingCastleAutoUpdater.ConfigurationMerge
                         {
                             MergeOnlyNewFields(targetObj, sourceObj);
                         }
+
                         // Both are arrays - merge arrays (add missing items from source)
                         else if (targetValue is JsonArray targetArray && sourceValue is JsonArray sourceArray)
                         {
                             MergeArrays(targetArray, sourceArray);
                         }
+
                         // Target is null - take source value (add missing default)
                         else if (targetValue is null)
                         {
@@ -291,18 +293,21 @@ namespace PingCastleAutoUpdater.ConfigurationMerge
                         {
                             MergeObjects(targetObj, sourceObj);
                         }
+
                         // Both are arrays - merge arrays (add missing items from source)
                         else if (targetValue is JsonArray targetArray && sourceValue is JsonArray sourceArray)
                         {
                             MergeArrays(targetArray, sourceArray);
                             _mergedProperties.Add(propertyName);
                         }
+
                         // Target is null - take source value (add new default)
                         else if (targetValue is null)
                         {
                             target[propertyName] = CloneJsonNode(sourceValue);
                             _newProperties.Add(propertyName);
                         }
+
                         // Target is empty string and source has a real value - take source value
                         else if (targetValue is JsonValue targetScalar &&
                                  sourceValue is JsonValue sourceScalar &&
@@ -347,7 +352,9 @@ namespace PingCastleAutoUpdater.ConfigurationMerge
         private void MergeArrays(JsonArray targetArray, JsonArray sourceArray)
         {
             if (sourceArray == null || sourceArray.Count == 0)
+            {
                 return;
+            }
 
             // Iterate through source items
             foreach (var sourceItem in sourceArray)

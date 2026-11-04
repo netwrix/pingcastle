@@ -25,9 +25,11 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         AddRawDetail(healthcheckData.UserAccountData.ListPwdNotRequired[i].DistinguishedName);
                     }
+
                     return null;
                 }
             }
+
             return healthcheckData.UserAccountData.NumberPwdNotRequired;
         }
     }

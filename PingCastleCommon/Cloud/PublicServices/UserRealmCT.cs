@@ -63,6 +63,5 @@ namespace PingCastle.Cloud.PublicServices
         public List<TenantBrandingInfo> UserTenantBranding { get; set; }
         [DataMember]
         public int DomainType { get; set; }
-        
     }
 }

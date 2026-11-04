@@ -26,6 +26,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
+window.addEventListener('mousedown', function (e) {
+    var title = e.target.closest ? e.target.closest('.accordion-title') : null;
+    if (title && e.button === 0) {
+        title.removeAttribute('tabindex');
+        window.addEventListener('mouseup', function () {
+            setTimeout(function () { title.setAttribute('tabindex', '0'); }, 0);
+        }, { once: true, capture: true });
+    }
+}, true);
+
+window.addEventListener('click', function (e) {
+    var title = e.target.closest ? e.target.closest('.accordion-title') : null;
+    var sel = window.getSelection();
+    if (title && e.isTrusted && sel.toString() !== '' && title.contains(sel.anchorNode)) {
+        e.stopPropagation();
+        e.preventDefault();
+    }
+}, true);
+
+document.addEventListener('keydown', function (e) {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('accordion-title')) {
+        e.preventDefault();
+        e.target.click();
+    }
+});
+
 $('#optionWideScreen').change(function () {
     if (this.checked) {
         $('.container').addClass("container-fluid").removeClass("container");

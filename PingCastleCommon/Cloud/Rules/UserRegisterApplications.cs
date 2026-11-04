@@ -20,8 +20,8 @@ namespace PingCastle.Cloud.Rules
             {
                 AddRawDetail("true");
             }
+
             return null;
         }
-
     }
 }

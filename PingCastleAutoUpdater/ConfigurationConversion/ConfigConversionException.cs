@@ -7,8 +7,13 @@ namespace PingCastleAutoUpdater.ConfigurationConversion
     /// </summary>
     public class ConfigConversionException : Exception
     {
-        public ConfigConversionException(string message) : base(message) { }
+        public ConfigConversionException(string message) : base(message)
+        {
+        }
+
         public ConfigConversionException(string message, Exception innerException)
-            : base(message, innerException) { }
+            : base(message, innerException)
+        {
+        }
     }
 }

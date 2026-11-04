@@ -33,7 +33,10 @@ namespace PingCastle.Data
         public override string ToString()
         {
             if (_mask >= 0)
+            {
                 return StartAddress.ToString() + "/" + _mask;
+            }
+
             return StartAddress.ToString() + "-" + EndAddress.ToString();
         }
 
@@ -47,19 +50,31 @@ namespace PingCastle.Data
                     remainingMask -= 8;
                     continue;
                 }
+
                 if (remainingMask == 0)
                 {
                     if (setBits)
+                    {
                         address[i] = 0xFF;
+                    }
                     else
+                    {
                         address[i] = 0;
+                    }
+
                     continue;
                 }
+
                 byte mask = (byte)(0xFF00 >> remainingMask);
                 if (setBits)
+                {
                     address[i] = (byte)((address[i] & mask) + ~mask);
+                }
                 else
+                {
                     address[i] = (byte)(address[i] & mask);
+                }
+
                 remainingMask = 0;
             }
         }
@@ -68,16 +83,24 @@ namespace PingCastle.Data
         {
             byte[] ipAddressBytes = ipaddress.GetAddressBytes();
             if (ipAddressBytes.Length != _startAddress.Length)
+            {
                 return false;
+            }
+
             if (_mask >= 0)
             {
                 ApplyBitMask(ipAddressBytes);
                 for (int i = 0; i < _startAddress.Length; i++)
                 {
-                    if (ipAddressBytes[i] != _startAddress[i]) return false;
+                    if (ipAddressBytes[i] != _startAddress[i])
+                    {
+                        return false;
+                    }
                 }
+
                 return true;
             }
+
             return CompareIPAddresses(StartAddress, ipaddress) <= 0 && CompareIPAddresses(ipaddress, EndAddress) <= 0;
         }
 
@@ -93,8 +116,15 @@ namespace PingCastle.Data
 
             for (int i = 0; i < ip1Bytes.Length; i++)
             {
-                if (ip1Bytes[i] < ip2Bytes[i]) return -1;
-                if (ip1Bytes[i] > ip2Bytes[i]) return 1;
+                if (ip1Bytes[i] < ip2Bytes[i])
+                {
+                    return -1;
+                }
+
+                if (ip1Bytes[i] > ip2Bytes[i])
+                {
+                    return 1;
+                }
             }
 
             return 0;
@@ -109,11 +139,13 @@ namespace PingCastle.Data
             {
                 return new Subnet(lowIP, bits);
             }
+
             parts = subnet.Split('-');
             if (parts.Length == 2 && IPAddress.TryParse(parts[0], out lowIP) && IPAddress.TryParse(parts[1], out highIP) && lowIP.AddressFamily == highIP.AddressFamily)
             {
                 return new Subnet(lowIP, highIP);
             }
+
             throw new ArgumentException("invalid subnet: " + subnet);
         }
     }

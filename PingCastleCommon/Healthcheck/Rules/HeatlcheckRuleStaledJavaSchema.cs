@@ -12,7 +12,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleComputation(RuleComputationType.TriggerOnPresence, 0)]
     [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
     [RuleMaturityLevel(3)]
-    [RuleIntroducedIn(2,10,1)]
+    [RuleIntroducedIn(2, 10, 1)]
     public class HeatlcheckRuleStaledJavaSchema : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
@@ -21,6 +21,7 @@ namespace PingCastle.Healthcheck.Rules
             {
                 return 1;
             }
+
             return 0;
         }
     }

@@ -20,8 +20,11 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            if (healthcheckData.DomainFunctionalLevel < 3)
+            if (healthcheckData.DomainFunctionalLevel < 3
+                || healthcheckData.DeniedRODCPasswordReplicationGroup is null)
+            {
                 return 0;
+            }
 
             var mandatoryDN = new Dictionary<string, string>();
 
@@ -40,12 +43,16 @@ namespace PingCastle.Healthcheck.Rules
             foreach (var member in healthcheckData.DeniedRODCPasswordReplicationGroup)
             {
                 if (mandatoryDN.ContainsKey(member))
+                {
                     mandatoryDN.Remove(member);
+                }
             }
+
             foreach (var missing in mandatoryDN.Values)
             {
                 AddRawDetail(missing);
             }
+
             return null;
         }
     }

@@ -27,13 +27,17 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         continue;
                     }
+
                     if (InfrastructureSettings != null && InfrastructureSettings.Riverbeds != null)
                     {
                         foreach (var riverbed in InfrastructureSettings.Riverbeds)
                         {
                             var test = riverbed.SamAccountName;
                             if (test.EndsWith("$"))
+                            {
                                 test = test.Substring(0, test.Length - 1);
+                            }
+
                             if (string.Equals(test, dc.DCName, StringComparison.OrdinalIgnoreCase))
                             {
                                 isException = true;
@@ -41,12 +45,14 @@ namespace PingCastle.Healthcheck.Rules
                             }
                         }
                     }
+
                     if (!isException)
                     {
                         AddRawDetail(dc.DCName, dc.RegistrationProblem);
                     }
                 }
             }
+
             return null;
         }
     }

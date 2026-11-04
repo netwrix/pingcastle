@@ -57,6 +57,7 @@
                     throw new ApplicationException("Could not load Encryption settings");
                 }
             }
+
             return cachedSettings;
         }
 

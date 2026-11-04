@@ -42,6 +42,7 @@ namespace PingCastle.Exports
                         "whenCreated",
                         "objectClass",
                         "userAccountControl",
+                        "Enabled",
                         "Active (6 Months)",
                         "OperatingSystem",
                         "OperatingSystemVersion",
@@ -76,6 +77,7 @@ namespace PingCastle.Exports
                             x.WhenCreated.ToString("u"),
                             x.Class,
                             x.UserAccountControl.ToString(),
+                            x.IsAccountEnabled().ToString(),
                             IsActiveInLast6Months(x) ? "True" : "False",
                             x.OperatingSystem,
                             x.OperatingSystemVersion,
@@ -124,7 +126,9 @@ namespace PingCastle.Exports
                 foreach (var sp in x.ServicePrincipalName)
                 {
                     if (sp.StartsWith("MSClusterVirtualServer/"))
+                    {
                         return true;
+                    }
                 }
             }
 
@@ -154,6 +158,7 @@ namespace PingCastle.Exports
                 var dd = x.ReplPropertyMetaData[lapsAnalyzer.MsLAPSEncryptedIntId];
                 return dd.LastOriginatingChange.ToString("u");
             }
+
             return string.Empty;
         }
     }

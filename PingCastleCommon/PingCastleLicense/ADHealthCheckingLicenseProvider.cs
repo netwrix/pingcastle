@@ -9,7 +9,6 @@ using System.ComponentModel;
 
 namespace PingCastle
 {
-
     public interface IPingCastleLicenseInfo
     {
         string GetSerialNumber();
@@ -17,7 +16,6 @@ namespace PingCastle
 
     public class ADHealthCheckingLicenseProvider : LicenseProvider
     {
-
         #region Public Methods
 
         /// <summary>

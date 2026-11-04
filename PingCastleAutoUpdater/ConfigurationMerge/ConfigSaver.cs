@@ -11,6 +11,7 @@ namespace PingCastleAutoUpdater.ConfigurationMerge
             {
                 throw new ArgumentNullException(nameof(config));
             }
+
             if (path == null)
             {
                 throw new ArgumentNullException(nameof(path));

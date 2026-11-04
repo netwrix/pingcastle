@@ -14,7 +14,9 @@
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.CertificateTemplates == null)
+            {
                 return null;
+            }
 
             var trustedCAsThumbprints = healthcheckData.TrustedCertificates
                .Where(c => c.Store == "NTLMStore" && c.Certificate?.Length > 0)
@@ -38,7 +40,9 @@
             }
 
             if (!healthcheckData.IsPrivilegedMode)
+            {
                 AddNotice();
+            }
 
             var extraDetailIndex = 0;
             foreach (var ct in healthcheckData.CertificateTemplates)
@@ -47,7 +51,9 @@
                 {
                     var caCertificate = caCertificates[caName];
                     if (!trustedCAsThumbprints.Contains(caCertificate?.Thumbprint))
+                    {
                         continue;
+                    }
 
                     var ca = allCAs[caName];
 
@@ -100,13 +106,19 @@
            .AddTextItem("Hostname", ca.Name);
 
             if (ca.LowPrivelegedEnrollPrincipals != null)
+            {
                 detail.AddListItem("Enrollment rights", ca.LowPrivelegedEnrollPrincipals);
+            }
 
             if (ca.LowPrivelegedManagerPrincipals != null)
+            {
                 detail.AddListItem("CA Managers", ca.LowPrivelegedManagerPrincipals);
+            }
 
             if (ca.EnrollmentRestrictions != null)
+            {
                 detail.AddTextItem("Enrollment Restrictions", ca.EnrollmentRestrictions);
+            }
 
             return detail;
         }

@@ -34,6 +34,7 @@ namespace PingCastle.Healthcheck.Rules
                             }
                         }
                     }
+
                     if (!string.IsNullOrEmpty(gpo.WSUSserverAlternate))
                     {
                         Uri uri;
@@ -46,6 +47,7 @@ namespace PingCastle.Healthcheck.Rules
                         }
                     }
                 }
+
                 if (foundHttp)
                 {
                     foreach (var gpo in healthcheckData.GPOWSUS)
@@ -63,6 +65,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

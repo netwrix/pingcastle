@@ -17,12 +17,18 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            if (healthcheckData.DomainFunctionalLevel < 3)
+            if (healthcheckData.DomainFunctionalLevel < 3
+                || healthcheckData.AllowedRODCPasswordReplicationGroup is null
+                || healthcheckData.AllowedRODCPasswordReplicationGroup.Count == 0)
+            {
                 return 0;
+            }
+
             foreach (var member in healthcheckData.AllowedRODCPasswordReplicationGroup)
             {
                 AddRawDetail(member);
             }
+
             return null;
         }
     }

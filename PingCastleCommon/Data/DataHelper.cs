@@ -26,7 +26,10 @@ namespace PingCastle.Data
         // important: class to save xml string as UTF8 instead of UTF16
         private sealed class Utf8StringWriter : StringWriter
         {
-            public override Encoding Encoding { get { return Encoding.UTF8; } }
+            public override Encoding Encoding
+            {
+                get { return Encoding.UTF8; }
+            }
         }
 
         public static string SaveAsXml(T data, string filename, bool EncryptReport)
@@ -43,6 +46,7 @@ namespace PingCastle.Data
                     {
                         File.WriteAllText(filename, xml);
                     }
+
                     return xml;
                 }
                 else
@@ -55,7 +59,6 @@ namespace PingCastle.Data
                 Trace.WriteLine("Error when saving " + filename + " error: " + ex.Message);
                 throw;
             }
-
         }
 
         private static string SaveAsXmlClearText(T data, string filename)
@@ -65,6 +68,7 @@ namespace PingCastle.Data
             {
                 File.WriteAllText(filename, xml);
             }
+
             return xml;
         }
 
@@ -77,6 +81,7 @@ namespace PingCastle.Data
                 xmlDoc.Save(wr);
                 xml = wr.ToString();
             }
+
             return xml;
         }
 
@@ -91,6 +96,7 @@ namespace PingCastle.Data
             {
                 xs.Serialize(wr2, data);
             }
+
             return xmlDoc;
         }
 
@@ -139,6 +145,7 @@ namespace PingCastle.Data
                 {
                     File.WriteAllText(filename, json, Encoding.UTF8);
                 }
+
                 return json;
             }
             catch (Exception ex)
@@ -175,7 +182,10 @@ namespace PingCastle.Data
             XmlSerializer xs = new XmlSerializer(typeof(T));
             T data = (T)xs.Deserialize(new XmlNodeReader(xmlDoc));
             if (typeof(T).IsAssignableFrom(typeof(HealthcheckData)))
+            {
                 CheckForHCDataUnknownModel((HealthcheckData)Convert.ChangeType(data, typeof(HealthcheckData)));
+            }
+
             data.CheckIntegrity();
             return data;
         }
@@ -204,10 +214,14 @@ namespace PingCastle.Data
                     throw new PingCastleDataException(filenameForDebug, "Unable to parse the xml (" + ex2.Message + ")");
                 }
             }
+
             if (xmlDoc.DocumentElement.Name == "EncryptedData")
             {
                 if (Keys == null || Keys.Count == 0)
+                {
                     throw new PingCastleDataException(filenameForDebug, "The report is encrypted and no decryption key is configured.");
+                }
+
                 decipher(filenameForDebug, xmlDoc, Keys);
             }
 
@@ -231,6 +245,7 @@ namespace PingCastle.Data
                     }
                 }
             }
+
             if (data.MaturityLevel == 0)
             {
                 data.MaturityLevel = 5;
@@ -241,9 +256,12 @@ namespace PingCastle.Data
                     {
                         continue;
                     }
+
                     int level = hcrule.MaturityLevel;
                     if (level > 0 && level < data.MaturityLevel)
+                    {
                         data.MaturityLevel = level;
+                    }
                 }
             }
         }
@@ -272,10 +290,10 @@ namespace PingCastle.Data
                     Trace.WriteLine("When decoding the document - trying next key: " + ex.Message);
                 }
             }
+
             Trace.WriteLine("The program tried to use " + keyid + " keys");
             throw new PingCastleDataException(filename, "Unable to find a key in the configuration which can decrypt the document");
         }
-
     }
 
     [Serializable]
@@ -308,7 +326,9 @@ namespace PingCastle.Data
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             if (info == null)
+            {
                 throw new ArgumentNullException("info");
+            }
 
             info.AddValue("Report", ReportName);
             base.GetObjectData(info, context);

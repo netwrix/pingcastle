@@ -10,7 +10,6 @@ using System.ComponentModel;
 
 namespace PingCastle.Graph.Database
 {
-
     [AttributeUsage(AttributeTargets.Field, Inherited = false)]
     public class RelationAppliesToAttribute : Attribute
     {
@@ -20,6 +19,7 @@ namespace PingCastle.Graph.Database
             AppliesTo = new List<string>();
             AppliesTo.Add(className);
         }
+
         public RelationAppliesToAttribute(params string[] classes)
         {
             AppliesTo = new List<string>();
@@ -142,6 +142,5 @@ namespace PingCastle.Graph.Database
         RestrictedToMsaOrGmsa,
         [Description("The permission described above is restricted to GPO.")]
         RestrictedToGpo,
-        
     }
 }

@@ -34,6 +34,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             foreach (var dc in healthcheckData.DomainControllers)
             {
                 if (dc.IP != null)
@@ -42,7 +43,10 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         var ipaddress = IPAddress.Parse(ip);
                         if (ipaddress.IsIPv6LinkLocal || ipaddress.IsIPv6Multicast || ipaddress.IsIPv6SiteLocal)
+                        {
                             continue;
+                        }
+
                         bool found = false;
                         foreach (var subnet in subnets)
                         {
@@ -52,6 +56,7 @@ namespace PingCastle.Healthcheck.Rules
                                 break;
                             }
                         }
+
                         if (!found)
                         {
                             AddRawDetail(dc.DCName, ip);
@@ -59,6 +64,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

@@ -141,7 +141,8 @@ namespace PingCastle.Report
                             });
                         }
                         catch (Exception)
-                        { }
+                        {
+                        }
                     }
                 }
             }
@@ -160,13 +161,22 @@ namespace PingCastle.Report
                 foreach (var dc in report.DomainControllers)
                 {
                     if (dc.IP == null)
+                    {
                         continue;
+                    }
+
                     foreach (string ip in dc.IP)
                     {
                         if (!IPAddress.TryParse(ip, out var i))
+                        {
                             continue;
+                        }
+
                         if (i.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
+                        {
                             continue;
+                        }
+
                         data.DomainControllers.Add(new NetworkMapDCItem()
                         {
                             Name = dc.DCName,
@@ -268,6 +278,7 @@ Each square represent a network. It can be used to detect non occupied space or 
 </div>");
                 }
             }
+
             AddLine(@"</div></div></div>");
         }
 
@@ -392,7 +403,10 @@ Each square represent a network. It can be used to detect non occupied space or 
             foreach (var view in data.Views)
             {
                 if (id != 0)
+                {
                     Add(",");
+                }
+
                 AddLine("{");
                 Add(@" ""id"": ");
                 Add(id++);
@@ -411,16 +425,21 @@ Each square represent a network. It can be used to detect non occupied space or 
                 AddLine();
                 AddLine("}");
             }
+
             AddLine("]");
             AddLine(@"</script>");
             AddLine(@"<script type=""application/json"" data-pingcastle-selector=""Network"">");
             AddLine(@"[");
             id = 0;
             foreach (var key in data.NetworkRange.Keys)
+            {
                 foreach (var subnet in data.NetworkRange[key])
                 {
                     if (id++ != 0)
+                    {
                         Add(",");
+                    }
+
                     AddLine("{");
                     Add(@" ""source"": """);
                     AddJsonEncoded(subnet.Source);
@@ -437,18 +456,21 @@ Each square represent a network. It can be used to detect non occupied space or 
                         AddJsonEncoded(subnet.Description);
                         AddLine(@""",");
                     }
+
                     if (!String.IsNullOrEmpty(subnet.Location))
                     {
                         Add(@" ""location"": """);
                         AddJsonEncoded(subnet.Location);
                         AddLine(@""",");
                     }
+
                     if (!String.IsNullOrEmpty(subnet.DomainFQDN))
                     {
                         Add(@" ""domainFQDN"": """);
                         AddJsonEncoded(subnet.DomainFQDN);
                         AddLine(@""",");
                     }
+
                     Add(@" ""start"": ");
                     Add(AddressToLong(subnet.Network.StartAddress));
                     AddLine(",");
@@ -457,6 +479,8 @@ Each square represent a network. It can be used to detect non occupied space or 
                     AddLine();
                     AddLine("}");
                 }
+            }
+
             AddLine(@"]");
             AddLine(@"</script>");
             AddLine(@"<script type=""application/json"" data-pingcastle-selector=""DC"">");
@@ -465,7 +489,10 @@ Each square represent a network. It can be used to detect non occupied space or 
             foreach (var dc in data.DomainControllers)
             {
                 if (id != 0)
+                {
                     Add(",");
+                }
+
                 AddLine("{");
                 Add(@" ""id"": ");
                 Add(id++);
@@ -483,6 +510,7 @@ Each square represent a network. It can be used to detect non occupied space or 
                 Add(AddressToLong(dc.Ip));
                 AddLine("}");
             }
+
             AddLine("]");
             AddLine(@"</script>");
         }

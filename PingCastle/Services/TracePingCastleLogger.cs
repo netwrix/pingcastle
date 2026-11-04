@@ -67,15 +67,25 @@ namespace PingCastle.Services
                     break;
                 case LogLevel.Error:
                     if (exception != null)
+                    {
                         Error(message, exception);
+                    }
                     else
+                    {
                         Error(message);
+                    }
+
                     break;
                 case LogLevel.Critical:
                     if (exception != null)
+                    {
                         Critical(message, exception);
+                    }
                     else
+                    {
                         Critical(message);
+                    }
+
                     break;
             }
         }
@@ -89,7 +99,9 @@ namespace PingCastle.Services
         /// </summary>
         private class EmptyDisposable : IDisposable
         {
-            public void Dispose() { }
+            public void Dispose()
+            {
+            }
         }
     }
 }

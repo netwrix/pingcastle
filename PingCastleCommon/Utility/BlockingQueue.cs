@@ -34,11 +34,20 @@ namespace PingCastle.Utility
         {
             lock (_Key)
             {
-                while (!_Quit && _Queue.Count >= _Size) Monitor.Wait(_Key);
-                if (_Quit) return false;
+                while (!_Quit && _Queue.Count >= _Size)
+                {
+                    Monitor.Wait(_Key);
+                }
+
+                if (_Quit)
+                {
+                    return false;
+                }
+
                 _Queue.Enqueue(t);
                 Monitor.PulseAll(_Key);
             }
+
             return true;
         }
 
@@ -47,11 +56,20 @@ namespace PingCastle.Utility
             t = default(T);
             lock (_Key)
             {
-                while (!_Quit && _Queue.Count == 0) Monitor.Wait(_Key);
-                if (_Queue.Count == 0) return false;
+                while (!_Quit && _Queue.Count == 0)
+                {
+                    Monitor.Wait(_Key);
+                }
+
+                if (_Queue.Count == 0)
+                {
+                    return false;
+                }
+
                 t = _Queue.Dequeue();
                 Monitor.PulseAll(_Key);
             }
+
             return true;
         }
     }

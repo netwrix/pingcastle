@@ -6,8 +6,8 @@ namespace PingCastle.Healthcheck
     [Flags]
     public enum CertificationAuthorityRights : uint
     {
-        ManageCA = 1,               
-        ManageCertificates = 2,     
+        ManageCA = 1,
+        ManageCertificates = 2,
         Auditor = 4,
         Operator = 8,
         Read = 256,

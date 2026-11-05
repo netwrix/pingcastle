@@ -26,6 +26,7 @@ namespace PingCastle.Healthcheck.Rules
                     return os.NumberOfOccurence;
                 }
             }
+
             return 0;
         }
     }

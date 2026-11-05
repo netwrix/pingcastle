@@ -145,8 +145,8 @@ namespace PingCastle.Cloud.Credentials
                 {
                     throw new CryptographicException(Marshal.GetLastWin32Error());
                 }
-                return new X509Certificate2(pccert_context);
 
+                return new X509Certificate2(pccert_context);
             }
             finally
             {
@@ -170,13 +170,13 @@ namespace PingCastle.Cloud.Credentials
 
         static byte[] Encode(string data)
         {
-            
             uint cbEncoded = 0;
             byte[] bData;
             if (!CertStrToName(X509_ASN_ENCODING, data, CERT_X500_NAME_STR, IntPtr.Zero, null, ref cbEncoded, null))
             {
                 throw new CryptographicException(Marshal.GetLastWin32Error());
             }
+
             bData = new byte[cbEncoded];
             if (!CertStrToName(X509_ASN_ENCODING, data, CERT_X500_NAME_STR, IntPtr.Zero, bData, ref cbEncoded, null))
             {
@@ -185,6 +185,5 @@ namespace PingCastle.Cloud.Credentials
 
             return (bData);
         }
-
     }
 }

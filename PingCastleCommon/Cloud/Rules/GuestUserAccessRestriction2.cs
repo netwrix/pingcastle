@@ -21,8 +21,8 @@ namespace PingCastle.Cloud.Rules
             {
                 AddRawDetail(healthCheckCloudData.PolicyGuestUserRoleId);
             }
+
             return null;
         }
-
     }
 }

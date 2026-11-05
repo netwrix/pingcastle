@@ -19,7 +19,10 @@ namespace PingCastle.Report
     public class ReportHealthCheckConsolidation : ReportRiskControls<HealthcheckData>
     {
         private PingCastleReportCollection<HealthcheckData> Report;
-        public ReportHealthCheckConsolidation(ADHealthCheckingLicense license) : base(license) { }
+        public ReportHealthCheckConsolidation(ADHealthCheckingLicense license) : base(license)
+        {
+        }
+
         public string GenerateReportFile(PingCastleReportCollection<HealthcheckData> report, ADHealthCheckingLicense license, string filename)
         {
             Report = report;
@@ -145,7 +148,10 @@ namespace PingCastle.Report
                 AddBeginTable("Rules consolidation");
                 AddHeaderText("Domain");
                 if (AdditionInfoDelegate != null)
+                {
                     AddHeaderText("Domain Info");
+                }
+
                 AddHeaderText("Category");
                 AddHeaderText("Rule");
                 AddHeaderText("Score");
@@ -155,17 +161,24 @@ namespace PingCastle.Report
                 {
                     AddHeaderText("Action plan");
                 }
+
                 AddBeginTableData();
                 foreach (HealthcheckData data in Report)
                 {
                     if (ActionPlanOrchestratorConsolidation != null)
+                    {
                         ActionPlanOrchestratorConsolidation.LoadDomain(data);
+                    }
+
                     foreach (HealthcheckRiskRule rule in data.RiskRules)
                     {
                         AddBeginRow();
                         AddPrintDomain(data.Domain, risk: rule.RiskId);
                         if (AdditionInfoDelegate != null)
+                        {
                             AddCellText(AdditionInfoDelegate(data.Domain));
+                        }
+
                         AddCellText(ReportHelper.GetEnumDescription(rule.Category));
                         if (_license.IsBasic())
                         {
@@ -183,9 +196,11 @@ namespace PingCastle.Report
                                 Add(hcrule.MaturityLevel);
                                 Add("</span> ");
                             }
+
                             AddEncoded(rule.RiskId);
                             Add("</td>");
                         }
+
                         AddCellNum(rule.Points);
                         AddCellText(RuleSet<HealthcheckData>.GetRuleDescription(rule.RiskId));
                         AddCellText(rule.Rationale);
@@ -197,11 +212,14 @@ namespace PingCastle.Report
                             {
                                 ActionPlanOrchestratorConsolidation.GenerateMainActionPlan(sb, rule, hcrule);
                             }
+
                             Add("</td>");
                         }
+
                         AddEndRow();
                     }
                 }
+
                 AddEndTable();
             });
         }
@@ -219,6 +237,7 @@ namespace PingCastle.Report
                 sumScore += data.GlobalScore;
                 AllScores.Add(data.GlobalScore);
             }
+
             if (num > 0)
             {
                 AllScores.Sort();
@@ -232,11 +251,13 @@ namespace PingCastle.Report
                     var secondValue = AllScores[(AllScores.Count / 2)];
                     medianscore = (firstValue + secondValue) / 2;
                 }
+
                 if (AllScores.Count % 2 == 1)
                 {
                     medianscore = AllScores[(AllScores.Count / 2)];
                 }
             }
+
             GenerateSection("Indicators", () =>
             {
                 Add(@"
@@ -259,6 +280,7 @@ namespace PingCastle.Report
                 {
                     rules.AddRange(data.RiskRules);
                 }
+
                 GenerateRiskModelPanel(rules, Report.Count);
             });
             GenerateIndicatorsTable();
@@ -268,11 +290,13 @@ namespace PingCastle.Report
         {
             GenerateSection("Score detail", () =>
             {
-
                 AddBeginTable("Indicators list");
                 AddHeaderText("Domain");
                 if (AdditionInfoDelegate != null)
+                {
                     AddHeaderText("Domain Info");
+                }
+
                 AddHeaderText("Domain Risk Level");
                 AddHeaderText("Maturity Level");
                 AddHeaderText("Stale objects");
@@ -286,7 +310,10 @@ namespace PingCastle.Report
                     AddBeginRow();
                     AddPrintDomain(data.Domain);
                     if (AdditionInfoDelegate != null)
+                    {
                         AddCellText(AdditionInfoDelegate(data.Domain));
+                    }
+
                     AddCellNumScore(data.GlobalScore);
                     Add("<td class='num'>");
                     Add("<span class='badge grade-");
@@ -302,6 +329,7 @@ namespace PingCastle.Report
                     AddCellDate(data.GenerationDate);
                     AddEndRow();
                 }
+
                 AddEndTable();
             });
         }
@@ -315,7 +343,10 @@ namespace PingCastle.Report
                 AddBeginTable("Domain information");
                 AddHeaderText("Domain");
                 if (AdditionInfoDelegate != null)
+                {
                     AddHeaderText("Domain Info");
+                }
+
                 AddHeaderText("Netbios Name");
                 AddHeaderText("Domain Functional Level");
                 AddHeaderText("Forest Functional Level");
@@ -331,7 +362,10 @@ namespace PingCastle.Report
                     AddBeginRow();
                     AddPrintDomain(data.Domain);
                     if (AdditionInfoDelegate != null)
+                    {
                         AddCellText(AdditionInfoDelegate(data.Domain));
+                    }
+
                     AddCellText(data.NetBIOSName);
                     AddCellText(ReportHelper.DecodeDomainFunctionalLevel(data.DomainFunctionalLevel));
                     AddCellText(ReportHelper.DecodeForestFunctionalLevel(data.ForestFunctionalLevel));
@@ -342,6 +376,7 @@ namespace PingCastle.Report
                     AddCellText(ReportHelper.GetSchemaVersion(data.SchemaVersion));
                     AddEndRow();
                 }
+
                 AddEndTable(() =>
                 {
                     AddCellText("Total");
@@ -381,9 +416,9 @@ namespace PingCastle.Report
                         AddEndRow();
                     }
                 }
+
                 AddEndTable();
             });
-
         }
         #endregion domain information
 
@@ -413,7 +448,10 @@ namespace PingCastle.Report
                 foreach (HealthcheckData data in Report)
                 {
                     if (data.UserAccountData == null)
+                    {
                         continue;
+                    }
+
                     total.Add(data.UserAccountData);
                     AddEndRow();
                     AddPrintDomain(data.Domain);
@@ -433,6 +471,7 @@ namespace PingCastle.Report
                     AddCellNum(data.UserAccountData.NumberReversibleEncryption);
                     AddEndRow();
                 }
+
                 AddEndTable(() =>
                 {
                     AddCellText("Total");
@@ -477,7 +516,10 @@ namespace PingCastle.Report
                 foreach (HealthcheckData data in Report)
                 {
                     if (data.ComputerAccountData == null)
+                    {
                         continue;
+                    }
+
                     total.Add(data.ComputerAccountData);
                     AddBeginRow();
                     AddPrintDomain(data.Domain);
@@ -493,6 +535,7 @@ namespace PingCastle.Report
                     AddCellNum(data.ComputerAccountData.NumberReversibleEncryption);
                     AddEndRow();
                 }
+
                 AddEndTable(() =>
                 {
                     AddCellText("Total");
@@ -533,7 +576,10 @@ namespace PingCastle.Report
                 foreach (HealthcheckData data in Report)
                 {
                     if (data.DomainControllers == null)
+                    {
                         continue;
+                    }
+
                     foreach (var dc in data.DomainControllers)
                     {
                         AddBeginRow();
@@ -541,7 +587,7 @@ namespace PingCastle.Report
                         AddCellText(dc.DCName);
                         AddCellText(dc.OperatingSystem);
                         AddCellText((dc.CreationDate == DateTime.MinValue ? "Unknown" : dc.CreationDate.ToString("u")));
-                        AddCellText((dc.StartupTime == DateTime.MinValue ? (dc.LastComputerLogonDate.AddDays(60) < DateTime.Now ? "Inactive?" : "Unknown") : (dc.StartupTime.AddMonths(6) < DateTime.Now ? dc.StartupTime.ToString("u"): dc.StartupTime.ToString("u"))));
+                        AddCellText((dc.StartupTime == DateTime.MinValue ? (dc.LastComputerLogonDate.AddDays(60) < DateTime.Now ? "Inactive?" : "Unknown") : (dc.StartupTime.AddMonths(6) < DateTime.Now ? dc.StartupTime.ToString("u") : dc.StartupTime.ToString("u"))));
                         AddCellText((dc.StartupTime == DateTime.MinValue ? "" : (DateTime.Now.Subtract(dc.StartupTime)).Days.ToString("D3") + " days"));
                         AddCellText((String.IsNullOrEmpty(dc.OwnerName) ? dc.OwnerSID : dc.OwnerName));
                         AddCellText((dc.HasNullSession ? "YES" : "NO"), true, !dc.HasNullSession);
@@ -555,6 +601,7 @@ namespace PingCastle.Report
                         {
                             AddCellText("Not available");
                         }
+
                         if (data.version >= new Version(2, 7))
                         {
                             Add(@"<Td>");
@@ -562,15 +609,18 @@ namespace PingCastle.Report
                             {
                                 Add(string.Join(",<br>", dc.FSMO.ConvertAll(x => ReportHelper.Encode(x)).ToArray()));
                             }
+
                             Add("</Td>");
                         }
                         else
                         {
                             AddCellText("Not available");
                         }
+
                         AddEndRow();
                     }
                 }
+
                 AddEndTable();
             });
         }
@@ -589,19 +639,26 @@ namespace PingCastle.Report
                         if (OSToInt(os.OperatingSystem) > 0)
                         {
                             if (!AllOS.Contains(os.OperatingSystem))
+                            {
                                 AllOS.Add(os.OperatingSystem);
+                            }
                         }
                         else
                         {
                             // consolidate all other OS
                             if (!SpecificOK.ContainsKey(os.OperatingSystem))
+                            {
                                 SpecificOK[os.OperatingSystem] = os.NumberOfOccurence;
+                            }
                             else
+                            {
                                 SpecificOK[os.OperatingSystem] += os.NumberOfOccurence;
+                            }
                         }
                     }
                 }
             }
+
             AllOS.Sort(OrderOS);
             GenerateSection("Operating systems statistics", () =>
             {
@@ -612,6 +669,7 @@ namespace PingCastle.Report
                 {
                     AddHeaderText(os);
                 }
+
                 AddBeginTableData();
                 // maybe not the most perfomant algorithm (n^4) but there is only a few domains to consolidate
                 foreach (HealthcheckData data in Report)
@@ -632,6 +690,7 @@ namespace PingCastle.Report
                                 }
                             }
                         }
+
                         if (numberOfOccurence < 0)
                         {
                             AddCellText(null);
@@ -641,8 +700,10 @@ namespace PingCastle.Report
                             AddCellNum(numberOfOccurence, true);
                         }
                     }
+
                     AddEndRow();
                 }
+
                 AddEndTable(() =>
                 {
                     AddCellText("Total");
@@ -663,6 +724,7 @@ namespace PingCastle.Report
                                 }
                             }
                         }
+
                         AddCellNum(total);
                     }
                 });
@@ -679,6 +741,7 @@ namespace PingCastle.Report
                         AddCellNum(SpecificOK[os]);
                         AddEndRow();
                     }
+
                     AddEndTable();
                 }
             });
@@ -695,10 +758,13 @@ namespace PingCastle.Report
                     {
                         var o = GetOSVersionString(os);
                         if (!AllOS.Contains(o))
+                        {
                             AllOS.Add(o);
+                        }
                     }
                 }
             }
+
             AllOS.Sort();
             GenerateSection("Operating systems statistics", () =>
             {
@@ -709,6 +775,7 @@ namespace PingCastle.Report
                 {
                     AddHeaderText(os);
                 }
+
                 AddBeginTableData();
                 // maybe not the most perfomant algorithm (n^4) but there is only a few domains to consolidate
                 foreach (HealthcheckData data in Report)
@@ -729,6 +796,7 @@ namespace PingCastle.Report
                                 }
                             }
                         }
+
                         if (numberOfOccurence < 0)
                         {
                             AddCellText(null);
@@ -738,8 +806,10 @@ namespace PingCastle.Report
                             AddCellNum(numberOfOccurence, true);
                         }
                     }
+
                     AddEndRow();
                 }
+
                 AddEndTable(() =>
                 {
                     AddCellText("Total");
@@ -760,6 +830,7 @@ namespace PingCastle.Report
                                 }
                             }
                         }
+
                         AddCellNum(total);
                     }
                 });
@@ -806,9 +877,11 @@ namespace PingCastle.Report
                         {
                             AddCellText("N/A");
                         }
+
                         AddEndRow();
                     }
                 }
+
                 AddEndTable();
             });
         }
@@ -833,6 +906,7 @@ namespace PingCastle.Report
                     AddHeaderText(ReportHelper.GetEnumDescription(objectRisk), colspan: 4);
                     numRisk++;
                 }
+
                 AddEndRow();
                 AddBeginRow();
                 for (int i = 0; i < numRisk; i++)
@@ -842,11 +916,15 @@ namespace PingCastle.Report
                     AddHeaderText(@"Max number of indirect numbers", "Indicates the maximum on all objects of the number of users having indirect access to the object.");
                     AddHeaderText(@"Max ratio", "Indicates in percentage the value of (number of indirect users / number of direct users) if at least one direct users exists. Else the value is zero.");
                 }
+
                 AddBeginTableData();
                 foreach (var data in Report)
                 {
                     if (data.ControlPaths == null)
+                    {
                         continue;
+                    }
+
                     AddBeginRow();
                     AddPrintDomain(data.Domain);
                     foreach (var objectRisk in (CompromiseGraphDataObjectRisk[])Enum.GetValues(typeof(CompromiseGraphDataObjectRisk)))
@@ -857,7 +935,10 @@ namespace PingCastle.Report
                             foreach (var analysis in data.ControlPaths.AnomalyAnalysis)
                             {
                                 if (analysis.ObjectRisk != objectRisk)
+                                {
                                     continue;
+                                }
+
                                 found = true;
                                 AddCellText(analysis.CriticalObjectFound ? "YES" : "NO", true, !analysis.CriticalObjectFound);
                                 AddCellNum(analysis.NumberOfObjectsWithIndirect);
@@ -866,6 +947,7 @@ namespace PingCastle.Report
                                 break;
                             }
                         }
+
                         if (!found)
                         {
                             AddCellText("");
@@ -874,8 +956,10 @@ namespace PingCastle.Report
                             AddCellNum(0, true);
                         }
                     }
+
                     AddEndRow();
                 }
+
                 AddEndTable();
             });
         }
@@ -894,6 +978,7 @@ namespace PingCastle.Report
                     AddHeaderText(ReportHelper.GetEnumDescription(typology), colspan: 3);
                     numTypology++;
                 }
+
                 AddEndRow();
                 AddBeginRow();
                 for (int i = 0; i < numTypology; i++)
@@ -902,11 +987,14 @@ namespace PingCastle.Report
                     AddHeaderText("Resolved", "Number of unique SID (account, group, computer, ...) resolved");
                     AddHeaderText("Unresolved", "Number of unique SID (account, group, computer, ...) NOT resolved meaning that the underlying object may have been removed");
                 }
+
                 AddBeginTableData();
                 foreach (var data in Report)
                 {
                     if (data.ControlPaths == null)
+                    {
                         continue;
+                    }
 
                     if (data.ControlPaths != null && data.ControlPaths.Dependancies != null)
                     {
@@ -921,13 +1009,17 @@ namespace PingCastle.Report
                                 foreach (var item in dependancy.Details)
                                 {
                                     if (item.Typology != typology)
+                                    {
                                         continue;
+                                    }
+
                                     found = true;
                                     AddCellNum(item.NumberOfGroupImpacted);
                                     AddCellNum(item.NumberOfResolvedItems);
                                     AddCellNum(item.NumberOfUnresolvedItems);
                                     break;
                                 }
+
                                 if (!found)
                                 {
                                     AddCellNum(0, true);
@@ -935,10 +1027,12 @@ namespace PingCastle.Report
                                     AddCellNum(0, true);
                                 }
                             }
+
                             AddEndRow();
                         }
                     }
                 }
+
                 AddEndTable();
             });
         }
@@ -963,9 +1057,11 @@ namespace PingCastle.Report
                 AddBeginTableData();
                 foreach (HealthcheckData data in Report)
                 {
-
                     if (!knowndomains.Contains(data.DomainFQDN))
+                    {
                         knowndomains.Add(data.DomainFQDN);
+                    }
+
                     data.Trusts.Sort(
                         (HealthCheckTrustData a, HealthCheckTrustData b)
                         =>
@@ -977,7 +1073,10 @@ namespace PingCastle.Report
                     foreach (HealthCheckTrustData trust in data.Trusts)
                     {
                         if (!knowndomains.Contains(trust.TrustPartner))
+                        {
                             knowndomains.Add(trust.TrustPartner);
+                        }
+
                         AddBeginRow();
                         AddPrintDomain(data.Domain);
                         AddPrintDomain(trust.Domain);
@@ -991,6 +1090,7 @@ namespace PingCastle.Report
                         AddEndRow();
                     }
                 }
+
                 AddEndTable();
             });
             GenerateSection("Other discovered domains", () =>
@@ -1007,7 +1107,10 @@ namespace PingCastle.Report
                     foreach (HealthCheckTrustData trust in data.Trusts)
                     {
                         if (trust.KnownDomains == null)
+                        {
                             continue;
+                        }
+
                         trust.KnownDomains.Sort((HealthCheckTrustDomainInfoData a, HealthCheckTrustDomainInfoData b)
                             =>
                         {
@@ -1017,7 +1120,10 @@ namespace PingCastle.Report
                         foreach (HealthCheckTrustDomainInfoData di in trust.KnownDomains)
                         {
                             if (knowndomains.Contains(di.DnsName))
+                            {
                                 continue;
+                            }
+
                             knowndomains.Add(di.DnsName);
                             AddBeginRow();
                             AddPrintDomain(data.Domain);
@@ -1029,6 +1135,7 @@ namespace PingCastle.Report
                         }
                     }
                 }
+
                 foreach (HealthcheckData data in Report)
                 {
                     if (data.ReachableDomains != null)
@@ -1036,7 +1143,10 @@ namespace PingCastle.Report
                         foreach (HealthCheckTrustDomainInfoData di in data.ReachableDomains)
                         {
                             if (knowndomains.Contains(di.DnsName))
+                            {
                                 continue;
+                            }
+
                             knowndomains.Add(di.DnsName);
                             AddBeginRow();
                             AddPrintDomain(data.Domain);
@@ -1065,12 +1175,14 @@ namespace PingCastle.Report
                     {
                         sidmap.Add(data.DomainFQDN, data.DomainSid);
                     }
+
                     foreach (HealthCheckTrustData trust in data.Trusts)
                     {
                         if (!sidmap.ContainsKey(trust.TrustPartner) && !String.IsNullOrEmpty(trust.SID))
                         {
                             sidmap.Add(trust.TrustPartner, trust.SID);
                         }
+
                         foreach (HealthCheckTrustDomainInfoData di in trust.KnownDomains)
                         {
                             if (!sidmap.ContainsKey(di.DnsName) && !String.IsNullOrEmpty(di.Sid))
@@ -1079,8 +1191,8 @@ namespace PingCastle.Report
                             }
                         }
                     }
-
                 }
+
                 foreach (HealthcheckData data in Report)
                 {
                     if (data.ReachableDomains != null)
@@ -1094,6 +1206,7 @@ namespace PingCastle.Report
                         }
                     }
                 }
+
                 foreach (string domain in sidmap.Keys)
                 {
                     AddBeginRow();
@@ -1101,6 +1214,7 @@ namespace PingCastle.Report
                     AddCellText(sidmap[domain]);
                     AddEndRow();
                 }
+
                 AddEndTable();
             });
         }
@@ -1111,7 +1225,6 @@ namespace PingCastle.Report
         {
             GenerateSection("List of anomalies", () =>
             {
-
                 AddBeginTable("List of anomalies");
                 AddHeaderText("Domain");
                 AddHeaderText("Krbtgt");
@@ -1133,6 +1246,7 @@ namespace PingCastle.Report
                     AddCellText((data.NewLAPSInstalled == DateTime.MaxValue ? "Never" : (data.NewLAPSInstalled == DateTime.MinValue ? "Not checked" : data.NewLAPSInstalled.ToString("u"))));
                     AddEndRow();
                 }
+
                 AddEndTable();
             });
         }
@@ -1177,6 +1291,7 @@ namespace PingCastle.Report
                         {
                             AddHeaderText((i * 30) + "-" + ((i + 1) * 30) + " days");
                         }
+
                         AddHeaderText("Other");
                         AddBeginTableData();
                         foreach (HealthcheckData data in Report)
@@ -1190,10 +1305,12 @@ namespace PingCastle.Report
                                     var v = data.PasswordDistribution.Where(x => x.HigherBound == i).FirstOrDefault();
                                     AddCellNum(v == null ? 0 : v.Value);
                                 }
+
                                 AddCellNum(data.PasswordDistribution.Where(x => x.HigherBound >= 36).Select(x => x.Value).Sum());
                                 AddEndRow();
                             }
                         }
+
                         AddEndTable();
                     }
                 });
@@ -1236,6 +1353,7 @@ namespace PingCastle.Report
                         }
                     }
                 }
+
                 AddEndTable();
             });
             GenerateSection("Screensaver policies", () =>
@@ -1265,6 +1383,7 @@ namespace PingCastle.Report
                         }
                     }
                 }
+
                 AddEndTable();
             });
             GenerateSection("Security settings", () =>
@@ -1295,6 +1414,7 @@ namespace PingCastle.Report
                         }
                     }
                 }
+
                 AddEndTable();
             });
         }
@@ -1329,6 +1449,7 @@ namespace PingCastle.Report
                         AddEndRow();
                     }
                 }
+
                 AddEndTable();
             });
         }
@@ -1345,10 +1466,16 @@ namespace PingCastle.Report
         {
             string label = PrintDomainLabel(key);
             if (GetUrlCallbackDomain == null)
+            {
                 return label;
+            }
+
             string htmlData = GetUrlCallbackDomain(key, label, risk);
             if (String.IsNullOrEmpty(htmlData))
+            {
                 return label;
+            }
+
             return htmlData;
         }
 
@@ -1357,16 +1484,30 @@ namespace PingCastle.Report
             if (HasDomainAmbigousName != null)
             {
                 if (HasDomainAmbigousName(key))
+                {
                     return key.ToString();
+                }
             }
             else if (Report.HasDomainAmbigiousName(key))
+            {
                 return key.ToString();
+            }
+
             if (!string.IsNullOrEmpty(key.DomainName))
+            {
                 return key.DomainName;
+            }
+
             if (!string.IsNullOrEmpty(key.DomainNetBIOS))
+            {
                 return "NetBIOS: " + key.DomainNetBIOS;
+            }
+
             if (!string.IsNullOrEmpty(key.DomainSID))
+            {
                 return "SID: " + key.DomainSID;
+            }
+
             return "Error please contact the support";
         }
     }

@@ -20,7 +20,10 @@ namespace PingCastle.Healthcheck.Rules
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.GPOHardenedPath == null)
+            {
                 return null;
+            }
+
             bool netlogon = false;
             bool sysvol = false;
             foreach (var policy in healthcheckData.GPOHardenedPath)
@@ -29,15 +32,18 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     continue;
                 }
+
                 if (healthcheckData.GPOInfoDic == null || !healthcheckData.GPOInfoDic.ContainsKey(policy.GPOId))
                 {
                     continue;
                 }
+
                 var refGPO = healthcheckData.GPOInfoDic[policy.GPOId];
                 if (refGPO.IsDisabled)
                 {
                     continue;
                 }
+
                 if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
                 {
                     continue;
@@ -73,30 +79,41 @@ namespace PingCastle.Healthcheck.Rules
                         }
                     }
                 }
+
                 if (anomaly)
                 {
                     AddRawDetail(policy.GPOName, policy.Key, GetString(policy.RequireIntegrity), GetString(policy.RequireMutualAuthentication), GetString(policy.RequirePrivacy));
                 }
             }
+
             if (!netlogon)
             {
                 AddRawDetail("No GPO Found", "NETLOGON", "Not Set", "Not Set", "Not Set");
             }
+
             if (!sysvol)
             {
                 AddRawDetail("No GPO Found", "SYSVOL", "Not Set", "Not Set", "Not Set");
             }
+
             return null;
         }
 
         private static string GetString(bool? data)
         {
             if (data == null)
+            {
                 return "Not Set";
+            }
+
             if ((bool)data)
+            {
                 return "Enabled";
+            }
             else
+            {
                 return "Disabled";
+            }
         }
     }
 }

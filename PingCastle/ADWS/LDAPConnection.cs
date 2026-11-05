@@ -33,6 +33,7 @@ namespace PingCastle.ADWS
             Port = port;
             Credential = credential;
         }
+
         public static int PageSize = 500;
         private readonly IUserInterface _userIo = UserInterfaceFactory.GetUserInterface();
 
@@ -90,14 +91,17 @@ namespace PingCastle.ADWS
                         }
                     }
                 }
+
                 Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "]Calling FindAll");
                 var iterator = clsDS.FindAll().GetEnumerator();
-                while(true)
+                while (true)
                 {
                     try
                     {
                         if (!iterator.MoveNext())
+                        {
                             break;
+                        }
                     }
                     catch (DirectoryServicesCOMException ex)
                     {
@@ -111,6 +115,7 @@ namespace PingCastle.ADWS
                                 Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] No more results");
                                 break;
                             }
+
                             _userIo.DisplayMessage("[" + DateTime.Now.ToLongTimeString() + "] More results found");
                             Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] More results found");
                         }
@@ -119,7 +124,8 @@ namespace PingCastle.ADWS
                             throw;
                         }
                     }
-                    var sr = (SearchResult) iterator.Current;
+
+                    var sr = (SearchResult)iterator.Current;
                     ADItem aditem = null;
                     try
                     {
@@ -146,8 +152,10 @@ namespace PingCastle.ADWS
                             throw;
                         }
                     }
+
                     numberOfObjectAlreadyExtracted++;
                 }
+
                 Trace.WriteLine("[" + DateTime.Now.ToLongTimeString() + "]Enumeration successful");
             }
             catch (DirectoryServicesCOMException ex)
@@ -162,26 +170,31 @@ namespace PingCastle.ADWS
                     Trace.WriteLine("Translating DirectoryServicesCOMException to UnauthorizedAccessException");
                     throw new UnauthorizedAccessException(ex.Message);
                 }
+
                 if (ex.ErrorCode == -2147016656)
                 {
                     // no such object
                     Trace.WriteLine(ex.Message);
                     return;
                 }
+
                 if (ex.ErrorCode == unchecked((int)0x8007200A))
                 {
                     Trace.WriteLine("LDAP server is not operational or unreachable (0x8007200A)");
                     throw new SocketException(10061); // Connection refused — caught as SocketException upstream
                 }
+
                 if (ex.ErrorCode == unchecked((int)0x8007054B))
                 {
                     Trace.WriteLine("Specified domain does not exist or could not be contacted (0x8007054B)");
                     throw new SocketException(10061);
                 }
+
                 if (ex.ExtendedError == 234)
                 {
                     Trace.WriteLine("Server returned 'more results available' at outer level — possible heavy load or large result set");
                 }
+
                 Trace.WriteLine($"Unhandled DirectoryServicesCOMException ErrorCode=0x{unchecked((uint)ex.ErrorCode):X8} — re-throwing");
                 throw;
             }
@@ -206,6 +219,7 @@ namespace PingCastle.ADWS
                 {
                     rootDse = new DirectoryEntry(@"LDAP://" + Server + (Port == 0 ? null : ":" + Port) + "/RootDSE", Credential.UserName, Credential.Password, AuthenticationTypes.ServerBind | AuthenticationTypes.Secure | (Port == 636 ? AuthenticationTypes.SecureSocketsLayer : 0));
                 }
+
                 // force the connection to the LDAP server via an access to the "properties" property
                 Trace.WriteLine("rootDse property count: " + rootDse.Properties.Count);
             }
@@ -218,6 +232,7 @@ namespace PingCastle.ADWS
                     {
                         EnsureLDAPSIsWorking();
                     }
+
                     if (Credential == null)
                     {
                         rootDse = new DirectoryEntry(@"LDAP://" + Server + (Port == 0 ? null : ":" + Port) + "/RootDSE", null, null, AuthenticationTypes.Secure | (Port == 636 ? AuthenticationTypes.SecureSocketsLayer : 0));
@@ -232,6 +247,7 @@ namespace PingCastle.ADWS
                     throw;
                 }
             }
+
             return ADDomainInfo.Create(rootDse);
         }
 
@@ -256,7 +272,8 @@ namespace PingCastle.ADWS
                                 _userIo.DisplayMessage("Certificate:  " + CACert.Subject);
                                 _userIo.DisplayMessage("Expires: " + CACert.GetExpirationDateString());
                             }
-                            return true; 
+
+                            return true;
                         }
                              , null))
                 {
@@ -278,6 +295,7 @@ namespace PingCastle.ADWS
                 GetDomainInfo();
                 return;
             }
+
             Trace.WriteLine("Locating a DC");
             try
             {
@@ -289,6 +307,7 @@ namespace PingCastle.ADWS
                 GetDomainInfo();
                 return;
             }
+
             for (int i = 0; i < 2; i++)
             {
                 try
@@ -318,11 +337,14 @@ namespace PingCastle.ADWS
                         throw;
                     }
                 }
+
                 if (i > 0)
+                {
                     Server = DomainLocator.GetDC(Server, false, true);
+                }
             }
         }
-     
+
         public override SecurityIdentifier ConvertNameToSID(string nameToResolve)
         {
             return _nativeMethods.GetSidFromDomainName(Server, nameToResolve);
@@ -334,7 +356,10 @@ namespace PingCastle.ADWS
             get
             {
                 if (fileConnection == null)
+                {
                     fileConnection = new WindowsFileConnection(this.Credential, Server);
+                }
+
                 return fileConnection;
             }
         }
@@ -412,6 +437,7 @@ namespace PingCastle.ADWS
                         {
                             continue;
                         }
+
                         if (propName.Length > attributeName.Length && propName[attributeName.Length] != ';')
                         {
                             continue;
@@ -446,15 +472,18 @@ namespace PingCastle.ADWS
                                 done = true;
                             }
                         }
+
                         found = true;
                         break;
                     }
+
                     if (!found)
                     {
                         done = true;
                     }
                 }
             }
+
             return allValues;
         }
 

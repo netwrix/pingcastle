@@ -22,10 +22,14 @@ namespace PingCastle.Healthcheck.Rules
                 foreach (var zone in healthcheckData.DnsZones)
                 {
                     if (!zone.ZoneTransfert)
+                    {
                         continue;
+                    }
+
                     AddRawDetail(zone.name);
                 }
             }
+
             return null;
         }
     }

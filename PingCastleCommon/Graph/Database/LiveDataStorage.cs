@@ -72,7 +72,6 @@ namespace PingCastle.Graph.Database
         void Initialize(ADDomainInfo domainInfo, IADConnection adws);
 
         void InsertRelationOnHold();
-
     }
 
     public class LiveDataStorage : IDataStorage
@@ -104,6 +103,7 @@ namespace PingCastle.Graph.Database
             public MappingType typeSlave;
             public RelationType relationType;
         }
+
         List<RelationOnHold> relationsOnHold;
 
         public LiveDataStorage()
@@ -156,7 +156,6 @@ namespace PingCastle.Graph.Database
                     KnownPGId.AddRange(PGIdToInvestigate);
                     PGIdToInvestigate.Clear();
                     return output;
-
             }
         }
 
@@ -179,11 +178,15 @@ namespace PingCastle.Graph.Database
         public int InsertUnknowNode(string name)
         {
             if (string.IsNullOrEmpty(name))
+            {
                 return -1;
+            }
+
             if (name.Contains(",CN=ForeignSecurityPrincipals,DC="))
             {
                 return InsertUnknownSidNode(name.Substring(3, name.IndexOf(',') - 3), name);
             }
+
             Node node = new Node();
             node.Type = "unknown";
             node.Dn = name;
@@ -191,10 +194,15 @@ namespace PingCastle.Graph.Database
                 Regex re = new Regex(@"^(?:OU|CN)=(?<cn>.+?)(?<!\\),(?<ou>(?:(?:OU|CN).+?(?<!\\),)*(?<dc>DC.+?))$");
                 Match m = re.Match(name);
                 if (!m.Success)
+                {
                     node.Shortname = "<none>";
+                }
                 else
+                {
                     node.Shortname = m.Groups[1].Value;
+                }
             }
+
             return CreateNode(node);
         }
 
@@ -202,6 +210,7 @@ namespace PingCastle.Graph.Database
         {
             return InsertFileNode(name, null);
         }
+
         public int InsertFileNode(string name, string description)
         {
             Node node = new Node();
@@ -213,9 +222,14 @@ namespace PingCastle.Graph.Database
                 {
                     start = name.LastIndexOf('\\');
                     if (start == -1)
+                    {
                         start = 0;
+                    }
                     else
+                    {
                         start++;
+                    }
+
                     node.Shortname = name.Substring(start);
                 }
             }
@@ -223,6 +237,7 @@ namespace PingCastle.Graph.Database
             {
                 node.Shortname = description;
             }
+
             node.FileName = name;
             return CreateNode(node);
         }
@@ -236,11 +251,17 @@ namespace PingCastle.Graph.Database
             {
                 start = name.LastIndexOf('\\');
                 if (start == -1)
+                {
                     start = 0;
+                }
                 else
+                {
                     start++;
+                }
+
                 node.Shortname = name.Substring(start);
             }
+
             node.FileName = name;
             return CreateNode(node);
         }
@@ -282,18 +303,28 @@ namespace PingCastle.Graph.Database
                     {
                         EveryoneLikeGroup = true;
                     }
+
                     if (Sid.Contains("\0"))
+                    {
                         Sid = Sid.Split('\0')[0];
+                    }
+
                     ntaccount = adws.ConvertSIDToName(Sid, out referencedDomain);
                     if (ntaccount == Sid)
                     {
                         if (string.IsNullOrEmpty(referencedDomain))
+                        {
                             ntaccount = Sid;
+                        }
                         else
+                        {
                             ntaccount = referencedDomain + "\\" + Sid;
+                        }
                     }
+
                     break;
             }
+
             Node node = new Node();
             node.Type = "foreignsecurityprincipal";
             node.Shortname = ntaccount;
@@ -310,6 +341,7 @@ namespace PingCastle.Graph.Database
             {
                 return InsertUnknownSidNode(aditem.ObjectSid.Value);
             }
+
             Node node = new Node();
             node.Type = aditem.Class.ToLowerInvariant();
             node.Dn = aditem.DistinguishedName;
@@ -318,6 +350,7 @@ namespace PingCastle.Graph.Database
             {
                 node.EveryoneLikeGroup = true;
             }
+
             node.Shortname = aditem.DisplayName;
             node.ADItem = aditem;
             // reentrance from previous if
@@ -325,15 +358,21 @@ namespace PingCastle.Graph.Database
             {
                 node.Shortname = aditem.Name;
             }
+
             if (string.IsNullOrEmpty(node.Shortname))
             {
                 Regex re = new Regex(@"^(?:OU|CN)=(?<cn>.+?)(?<!\\),(?<ou>(?:(?:OU|CN).+?(?<!\\),)*(?<dc>DC.+?))$");
                 Match m = re.Match(aditem.DistinguishedName);
                 if (!m.Success)
+                {
                     node.Shortname = "<none>";
+                }
                 else
+                {
                     node.Shortname = m.Groups[1].Value;
+                }
             }
+
             if (string.Equals(node.Type, "unknown", StringComparison.OrdinalIgnoreCase))
             {
                 if (node.Dn.Contains(",CN=ForeignSecurityPrincipals,DC="))
@@ -341,11 +380,13 @@ namespace PingCastle.Graph.Database
                     node.Type = "foreignsecurityprincipal";
                     node.Sid = node.Dn.Substring(3, node.Dn.IndexOf(',') - 3);
                     if (node.Sid.Contains("\0"))
+                    {
                         node.Sid = node.Sid.Split('\0')[0];
+                    }
                 }
             }
-            return CreateNode(node);
 
+            return CreateNode(node);
         }
 
         int CreateNode(Node node)
@@ -360,16 +401,19 @@ namespace PingCastle.Graph.Database
                     Trace.WriteLine("DN already present");
                     return nodesByDN[node.Dn.ToLowerInvariant()].Id;
                 }
+
                 if (!string.IsNullOrEmpty(node.Sid) && nodesBySID.ContainsKey(node.Sid.ToLowerInvariant()))
                 {
                     Trace.WriteLine("SID already present");
                     return nodesBySID[node.Sid.ToLowerInvariant()].Id;
                 }
+
                 if (!string.IsNullOrEmpty(node.FileName) && node.Type != "gpodirectory" && (nodesByFilename.ContainsKey(node.FileName.ToLowerInvariant())))
                 {
                     Trace.WriteLine("FileName already present");
                     return nodesByFilename[node.FileName.ToLowerInvariant()].Id;
                 }
+
                 if (!string.IsNullOrEmpty(node.FileName) && node.Type == "gpodirectory" && (nodesGPOByFilename.ContainsKey(node.FileName.ToLowerInvariant())))
                 {
                     Trace.WriteLine("FileName already present");
@@ -387,27 +431,38 @@ namespace PingCastle.Graph.Database
                         {
                             nodesByFilename.Add(node.FileName.ToLowerInvariant(), node);
                             if (FilesToInvestigate.Contains(node.FileName.ToLowerInvariant()))
+                            {
                                 FilesToInvestigate.Remove(node.FileName.ToLowerInvariant());
+                            }
                         }
                         else
                         {
                             nodesGPOByFilename.Add(node.FileName.ToLowerInvariant(), node);
                             if (GPOToInvestigate.Contains(node.FileName.ToLowerInvariant()))
+                            {
                                 GPOToInvestigate.Remove(node.FileName.ToLowerInvariant());
+                            }
                         }
                     }
                 }
+
                 if (!string.IsNullOrEmpty(node.Dn))
                 {
                     nodesByDN.Add(node.Dn.ToLowerInvariant(), node);
                     if (CNToInvestigate.Contains(node.Dn.ToLowerInvariant()))
+                    {
                         CNToInvestigate.Remove(node.Dn.ToLowerInvariant());
+                    }
                 }
+
                 if (!string.IsNullOrEmpty(node.Sid))
                 {
                     nodesBySID.Add(node.Sid.ToLowerInvariant(), node);
                     if (SIDToInvestigate.Contains(node.Sid.ToUpperInvariant()))
+                    {
                         SIDToInvestigate.Remove(node.Sid.ToUpperInvariant());
+                    }
+
                     // handle primary group id
                     if (node.Type == "group")
                     {
@@ -422,6 +477,7 @@ namespace PingCastle.Graph.Database
                         }
                     }
                 }
+
                 return index++;
             }
         }
@@ -454,30 +510,52 @@ namespace PingCastle.Graph.Database
                 {
                     case MappingType.DistinguishedName:
                         if (!nodesByDN.ContainsKey(mapping.ToLowerInvariant()))
+                        {
                             if (!CNToInvestigate.Contains(mapping.ToLowerInvariant()))
+                            {
                                 CNToInvestigate.Add(mapping.ToLowerInvariant());
+                            }
+                        }
+
                         break;
                     case MappingType.Sid:
                         if (mapping.StartsWith("S-1-5-32-", StringComparison.InvariantCultureIgnoreCase) || mapping.StartsWith(databaseInformation["DomainSid"]))
+                        {
                             if (!nodesBySID.ContainsKey(mapping.ToLowerInvariant()))
+                            {
                                 if (!SIDToInvestigate.Contains(mapping.ToUpperInvariant()))
+                                {
                                     SIDToInvestigate.Add(mapping.ToUpperInvariant());
+                                }
+                            }
+                        }
+
                         break;
                     case MappingType.FileName:
                         if (mapping.StartsWith("\\\\"))
                         {
                             if (!nodesByFilename.ContainsKey(mapping.ToLowerInvariant()))
+                            {
                                 if (!FilesToInvestigate.Contains(mapping.ToLowerInvariant()))
+                                {
                                     FilesToInvestigate.Add(mapping.ToLowerInvariant());
+                                }
+                            }
                         }
+
                         break;
                     case MappingType.GPODirectory:
                         if (mapping.StartsWith("\\\\"))
                         {
                             if (!nodesGPOByFilename.ContainsKey(mapping.ToLowerInvariant()))
+                            {
                                 if (!GPOToInvestigate.Contains(mapping.ToLowerInvariant()))
+                                {
                                     GPOToInvestigate.Add(mapping.ToLowerInvariant());
+                                }
+                            }
                         }
+
                         break;
                 }
             }
@@ -497,6 +575,7 @@ namespace PingCastle.Graph.Database
                     throw;
                 }
             }
+
             relationsOnHold.Clear();
         }
 
@@ -524,6 +603,7 @@ namespace PingCastle.Graph.Database
                     masteridx = InsertUnknowNode(mappingMaster);
                 }
             }
+
             if (slaveidx == -1)
             {
                 if (typeSlave == MappingType.Sid)
@@ -542,8 +622,8 @@ namespace PingCastle.Graph.Database
                 {
                     slaveidx = InsertUnknowNode(mappingSlave);
                 }
-
             }
+
             if (slaveidx != -1 && masteridx != -1 && slaveidx != masteridx)
             {
                 int hintId = (int)relationType;
@@ -552,6 +632,7 @@ namespace PingCastle.Graph.Database
                 {
                     relations.Add(slaveidx, new Dictionary<int, Relation>());
                 }
+
                 Dictionary<int, Relation> half = relations[slaveidx];
                 if (!half.ContainsKey(masteridx))
                 {
@@ -564,6 +645,7 @@ namespace PingCastle.Graph.Database
                 {
                     relation = relations[slaveidx][masteridx];
                 }
+
                 relation.Hint.Add(relationType.ToString());
             }
         }
@@ -576,14 +658,30 @@ namespace PingCastle.Graph.Database
                 if (name.StartsWith("S-1-5-", StringComparison.InvariantCultureIgnoreCase))
                 {
                     idx = GetIdx(name, MappingType.Sid);
-                    if (idx >= 0) return idx;
+                    if (idx >= 0)
+                    {
+                        return idx;
+                    }
                 }
+
                 idx = GetIdx(name, MappingType.Shortname);
-                if (idx >= 0) return idx;
+                if (idx >= 0)
+                {
+                    return idx;
+                }
+
                 idx = GetIdx(name, MappingType.DistinguishedName);
-                if (idx >= 0) return idx;
+                if (idx >= 0)
+                {
+                    return idx;
+                }
+
                 idx = GetIdx(name, MappingType.Sid);
-                if (idx >= 0) return idx;
+                if (idx >= 0)
+                {
+                    return idx;
+                }
+
                 return -1;
             }
         }
@@ -597,33 +695,41 @@ namespace PingCastle.Graph.Database
                     {
                         return nodesBySID[name.ToLowerInvariant()].Id;
                     }
+
                     break;
                 case MappingType.DistinguishedName:
                     if (nodesByDN.ContainsKey(name.ToLowerInvariant()))
                     {
                         return nodesByDN[name.ToLowerInvariant()].Id;
                     }
+
                     break;
                 case MappingType.FileName:
                     if (nodesByFilename.ContainsKey(name.ToLowerInvariant()))
                     {
                         return nodesByFilename[name.ToLowerInvariant()].Id;
                     }
+
                     break;
                 case MappingType.GPODirectory:
                     if (nodesGPOByFilename.ContainsKey(name.ToLowerInvariant()))
                     {
                         return nodesGPOByFilename[name.ToLowerInvariant()].Id;
                     }
+
                     break;
                 case MappingType.Shortname:
                     foreach (KeyValuePair<int, Node> nodeEntry in nodes)
                     {
                         if (string.Equals(nodeEntry.Value.Shortname, name, StringComparison.InvariantCultureIgnoreCase))
+                        {
                             return nodeEntry.Key;
+                        }
                     }
+
                     break;
             }
+
             return -1;
         }
 
@@ -647,6 +753,7 @@ namespace PingCastle.Graph.Database
             {
                 output.Add(node, RetrieveNode(node));
             }
+
             return output;
         }
 
@@ -673,6 +780,7 @@ namespace PingCastle.Graph.Database
                     }
                 }
             }
+
             return output;
         }
 

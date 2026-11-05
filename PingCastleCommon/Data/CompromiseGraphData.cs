@@ -14,7 +14,6 @@ using System.Xml.Serialization;
 
 namespace PingCastle.Data
 {
-
     public enum CompromiseGraphDataObjectRisk
     {
         Critical,
@@ -53,6 +52,7 @@ namespace PingCastle.Data
                 {
                     output.Add(d.Domain);
                 }
+
                 return output;
             }
         }
@@ -214,6 +214,7 @@ namespace PingCastle.Data
                 {
                     _domain = DomainKey.Create(FQDN, Sid, Netbios);
                 }
+
                 return _domain;
             }
         }
@@ -233,7 +234,6 @@ namespace PingCastle.Data
         [XmlAttribute]
         public int NumberOfUnresolvedItems { get; set; }
         public List<SingleCompromiseGraphDependancyMemberData> Items { get; set; }
-
     }
 
     [XmlType("deletedData")]
@@ -259,10 +259,18 @@ namespace PingCastle.Data
         [XmlAttribute]
         public CompromiseGraphDataObjectRisk ObjectRisk { get; set; }
 
-        public bool ShouldSerializeNodes() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
+        public bool ShouldSerializeNodes()
+        {
+            return (int)Level <= (int)PingCastleReportDataExportLevel.Full;
+        }
+
         public List<SingleCompromiseGraphNodeData> Nodes { get; set; }
 
-        public bool ShouldSerializeLinks() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
+        public bool ShouldSerializeLinks()
+        {
+            return (int)Level <= (int)PingCastleReportDataExportLevel.Full;
+        }
+
         public List<SingleCompromiseGraphLinkData> Links { get; set; }
 
         [DefaultValue(false)]
@@ -280,19 +288,39 @@ namespace PingCastle.Data
 
         public int NumberOfDeletedObjects { get; set; }
 
-        public bool ShouldSerializeDirectUserMembers() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
+        public bool ShouldSerializeDirectUserMembers()
+        {
+            return (int)Level <= (int)PingCastleReportDataExportLevel.Full;
+        }
+
         public List<SingleCompromiseGraphUserMemberData> DirectUserMembers { get; set; }
 
-        public bool ShouldSerializeDirectComputerMembers() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
+        public bool ShouldSerializeDirectComputerMembers()
+        {
+            return (int)Level <= (int)PingCastleReportDataExportLevel.Full;
+        }
+
         public List<SingleCompromiseGraphComputerMemberData> DirectComputerMembers { get; set; }
 
-        public bool ShouldSerializeIndirectMembers() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
+        public bool ShouldSerializeIndirectMembers()
+        {
+            return (int)Level <= (int)PingCastleReportDataExportLevel.Full;
+        }
+
         public List<SingleCompromiseGraphIndirectMemberData> IndirectMembers { get; set; }
 
-        public bool ShouldSerializeDependancies() { return (int)Level <= (int)PingCastleReportDataExportLevel.Light; }
+        public bool ShouldSerializeDependancies()
+        {
+            return (int)Level <= (int)PingCastleReportDataExportLevel.Light;
+        }
+
         public List<SingleCompromiseGraphDependancyData> Dependancies { get; set; }
 
-        public bool ShouldSerializeDeletedObjects() { return (int)Level <= (int)PingCastleReportDataExportLevel.Full; }
+        public bool ShouldSerializeDeletedObjects()
+        {
+            return (int)Level <= (int)PingCastleReportDataExportLevel.Full;
+        }
+
         public List<SingleCompromiseGraphDeletedData> DeletedObjects { get; set; }
     }
 

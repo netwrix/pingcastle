@@ -4,6 +4,8 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Authentication.ExtendedProtection;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("PingCastleTests")]
+
 namespace PingCastle.misc
 {
     // Wraps the Windows SSPI API (secur32.dll) to perform Negotiate/NTLM/Kerberos
@@ -104,6 +106,21 @@ namespace PingCastle.misc
         [DllImport("secur32.dll", CharSet = CharSet.Unicode, SetLastError = false)]
         static extern int InitializeSecurityContext(
             ref SecurityHandle credential,
+            IntPtr context,
+            string targetName,
+            int contextReq,
+            int reserved1,
+            int targetDataRep,
+            ref SecBufferDesc inputBuffer,
+            int reserved2,
+            ref SecurityHandle newContext,
+            ref SecBufferDesc outputBuffer,
+            out int contextAttr,
+            out long expiry);
+
+        [DllImport("secur32.dll", CharSet = CharSet.Unicode, SetLastError = false)]
+        static extern int InitializeSecurityContext(
+            ref SecurityHandle credential,
             ref SecurityHandle context,
             string targetName,
             int contextReq,
@@ -151,7 +168,6 @@ namespace PingCastle.misc
                 + " (" + (disableSigning ? "ISC_REQ_NO_INTEGRITY" : "ISC_REQ_INTEGRITY") + ")");
 
             IntPtr authDataPtr = IntPtr.Zero;
-            GCHandle authDataHandle = default;
 
             try
             {
@@ -167,8 +183,8 @@ namespace PingCastle.misc
                         PasswordLength = credential.Password?.Length ?? 0,
                         Flags = SecWinntAuthIdentityUnicode,
                     };
-                    authDataHandle = GCHandle.Alloc(authData, GCHandleType.Pinned);
-                    authDataPtr = authDataHandle.AddrOfPinnedObject();
+                    authDataPtr = Marshal.AllocHGlobal(Marshal.SizeOf<SecWinntAuthIdentity>());
+                    Marshal.StructureToPtr(authData, authDataPtr, false);
                 }
 
                 int result = AcquireCredentialsHandle(
@@ -185,9 +201,10 @@ namespace PingCastle.misc
             }
             finally
             {
-                if (authDataHandle.IsAllocated)
+                if (authDataPtr != IntPtr.Zero)
                 {
-                    authDataHandle.Free();
+                    Marshal.DestroyStructure<SecWinntAuthIdentity>(authDataPtr);
+                    Marshal.FreeHGlobal(authDataPtr);
                 }
             }
         }
@@ -245,7 +262,7 @@ namespace PingCastle.misc
                         };
 
                         result = InitializeSecurityContext(
-                            ref _credHandle, ref _ctxHandle, _targetName,
+                            ref _credHandle, IntPtr.Zero, _targetName,
                             _contextFlags, 0, SecurityNativeDrep,
                             ref inDesc, 0,
                             ref _ctxHandle, ref outDesc,

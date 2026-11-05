@@ -26,7 +26,10 @@ namespace PingCastle.Cloud.RESTServices.Azure
         {
             EndPointAttribute[] attrs = (EndPointAttribute[])typeof(T).GetCustomAttributes(typeof(EndPointAttribute));
             if (attrs.Length > 0)
+            {
                 return attrs[0];
+            }
+
             return DefaultEndPointAttribute();
         }
 
@@ -35,5 +38,4 @@ namespace PingCastle.Cloud.RESTServices.Azure
             return new EndPointAttribute(Constants.OAuth2AuthorizeEndPoint, Constants.OAuth2TokenEndPoint);
         }
     }
-
 }

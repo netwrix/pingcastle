@@ -29,7 +29,7 @@ namespace PingCastle.Report
 
         public static int MaxNumberUsersInHtmlReport = 100;
         public static string MaxNumberUsersInHtmlReportMessage = "Output limited to {0} items - go to the advanced menu before running the report or add \"--no-enum-limit\" to remove that limit";
-        
+
         public IAADActionPlan ActionPlanOrchestrator { get; set; }
 
         // Canonical titles from the Risk Definitions store, keyed by RiskId. Takes priority over
@@ -155,12 +155,14 @@ This report has been generated with the ");
                 AddEncoded(_license.CustomerNotice);
                 Add(@"""></i>.");
             }
+
             if (_license.IsBasic())
             {
                 Add(@"
 <br><strong class='auditor'>Being part of a commercial package is forbidden</strong> (selling the information contained in the report).<br>
 If you are an auditor, you MUST purchase an Auditor license to share the development effort.");
             }
+
             Add(@"</div>
 ");
             Add(@"</div></div>
@@ -171,8 +173,22 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 ");
         }
 
+        public static string GetIncompleteDataBanner(IReadOnlyCollection<string> truncatedEndpoints)
+        {
+            if (truncatedEndpoints == null || truncatedEndpoints.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            return @"<div class=""alert alert-warning notif"" id=""incomplete-data-banner"">
+<strong>This report is based on incomplete data.</strong> Some data could not be fully retrieved because a time limit was reached or a request failed, so findings may be missing or understated. Affected data sources: "
+                + System.Net.WebUtility.HtmlEncode(string.Join(", ", truncatedEndpoints))
+                + ".</div>" + Environment.NewLine;
+        }
+
         protected void GenerateContent()
         {
+            Add(GetIncompleteDataBanner(Report.TruncatedEndpoints));
             GenerateSection("Entra ID Indicators", () =>
             {
                 AddParagraph("This section focuses on the core security indicators.<br>Locate the sub-process determining the score and fix some rules in that area to get a score improvement.");
@@ -217,7 +233,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 			</div>
 		</div>
 ");
-
         }
 
         protected void GenerateIndicatorPanel(string id, string title, List<HealthCheckCloudDataRiskRule> rules)
@@ -242,6 +257,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     break;
                 }
             }
+
             if (hasRule)
             {
                 GenerateAccordion("rules" + "Rules", () =>
@@ -262,6 +278,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 Add("<p>No rule matched</p>");
             }
+
             Add(@"
 			</div>
 		</div>");
@@ -270,37 +287,56 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         List<string> GetTokens(List<string> details)
         {
             if (details == null || details.Count == 0 || string.IsNullOrEmpty(details[0]))
+            {
                 return null;
+            }
+
             var tokens = GetTokens(details[0]);
             if (tokens == null)
+            {
                 return null;
+            }
+
             for (int i = 1; i < details.Count; i++)
             {
                 var t = GetTokens(details[i]);
                 if (t == null)
+                {
                     return null;
+                }
+
                 var toRemove = new List<string>();
                 foreach (var t1 in tokens)
                 {
                     if (!t.Contains(t1))
+                    {
                         toRemove.Add(t1);
+                    }
                 }
+
                 foreach (var t1 in toRemove)
                 {
                     tokens.Remove(t1);
                 }
             }
+
             return tokens;
         }
 
         List<string> GetTokens(string detail)
         {
             if (string.IsNullOrEmpty(detail))
+            {
                 return null;
+            }
+
             var tokens = new List<string>();
             var test = detail.Replace("Domain controller:", "Domain_controller:").Split(' ');
             if (test.Length <= 1 || !test[0].EndsWith(":"))
+            {
                 return null;
+            }
+
             for (int i = 0; i < test.Length; i++)
             {
                 if (!string.IsNullOrEmpty(test[i]) && test[i].EndsWith(":"))
@@ -308,6 +344,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     tokens.Add(test[i]);
                 }
             }
+
             return tokens;
         }
 
@@ -325,7 +362,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         internal List<HealthCheckCloudDataRiskRule> GetDeduplicatedRiskRules()
         {
             if (_deduplicatedRiskRules != null)
+            {
                 return _deduplicatedRiskRules;
+            }
 
             var seenRiskIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var result = new List<HealthCheckCloudDataRiskRule>();
@@ -336,6 +375,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     result.Add(rule);
                 }
             }
+
             _deduplicatedRiskRules = result;
             return result;
         }
@@ -348,6 +388,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 return definitionTitle;
             }
+
             return legacyTitle;
         }
 
@@ -405,6 +446,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             AddEncoded(command);
                             Add("\r\n");
                         }
+
                         Add("</code></pre>\r\n");
                     }
 
@@ -427,6 +469,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             AddEncoded(link);
                             Add("</a></li>");
                         }
+
                         Add("</ul>");
                     }
                     else if (hcrule != null && !String.IsNullOrEmpty(hcrule.Documentation))
@@ -435,6 +478,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add(hcrule.Documentation);
                         Add("</p>");
                     }
+
                     if ((rule.Details != null && rule.Details.Count > 0) || (hcrule != null && !String.IsNullOrEmpty(hcrule.ReportLocation)))
                     {
                         Add("<strong>Details:</strong>");
@@ -444,6 +488,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add(hcrule.ReportLocation);
                             Add("</p>");
                         }
+
                         if (rule.Details != null && rule.Details.Count > 0 && !string.IsNullOrEmpty(rule.Details[0]))
                         {
                             var tokens = GetTokens(rule.Details);
@@ -459,15 +504,20 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                                     AddEncoded(token.Replace("Domain_controller:", "Domain controller:").Substring(0, token.Length - 1));
                                     Add("</th>");
                                 }
+
                                 if (ActionPlanOrchestrator != null)
                                 {
                                     Add("<th>Action Plan</th>");
                                 }
+
                                 Add("</tr></thead><tbody>");
                                 foreach (var d in rule.Details)
                                 {
                                     if (string.IsNullOrEmpty(d))
+                                    {
                                         continue;
+                                    }
+
                                     Add("<tr>");
                                     var t = d.Replace("Domain controller:", "Domain_controller:").Split(' ');
                                     for (int i = 0, j = 0; i < t.Length && j <= tokens.Count; i++)
@@ -475,7 +525,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                                         if (j < tokens.Count && t[i] == tokens[j])
                                         {
                                             if (j != 0)
+                                            {
                                                 Add("</td>");
+                                            }
+
                                             j++;
                                             Add("<td>");
                                         }
@@ -485,6 +538,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                                             Add(" ");
                                         }
                                     }
+
                                     Add("</td>");
                                     if (ActionPlanOrchestrator != null)
                                     {
@@ -492,10 +546,11 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                                         ActionPlanOrchestrator.GenerateDetailledActionPlan(sb, rule, hcrule, d);
                                         Add("</td>");
                                     }
+
                                     Add("</tr>");
                                 }
-                                Add("</tbody></table></div></div>");
 
+                                Add("</tbody></table></div></div>");
                             }
                             else
                             {
@@ -520,6 +575,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         {
                             ActionPlanOrchestrator.GenerateMainActionPlan(sb, rule, hcrule);
                         }
+
                         Add("</i>");
                     }
                     else
@@ -531,6 +587,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         {
                             ActionPlanOrchestrator.GenerateMainActionPlan(sb, rule, hcrule);
                         }
+
                         Add("</i>");
                     }
                 }, content);
@@ -545,6 +602,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
                 return;
             }
+
             var data = GetCurrentMaturityLevel();
             Add("<div class='row'><div class='col-sm-6 my-auto'><p class='display-4'>Maturity Level:</span></div><div class='col-sm-6'>");
             for (int i = 1; i <= 5; i++)
@@ -553,6 +611,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     Add("<span class=\"display-1\">");
                 }
+
                 Add("<span class=\"badge grade-");
                 Add(i);
                 Add("\">");
@@ -563,15 +622,16 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     Add("</span>");
                 }
             }
+
             Add("</div></div>");
 
             Add(@"<p>Maturity levels:<p>
 <ul>
     <li><span class='badge grade-1'>1</span> Critical weaknesses and misconfigurations pose an immediate threat to all hosted resources. Corrective actions should be taken as soon as possible;</li>
 	<li><span class='badge grade-2'>2</span> Configuration and management weaknesses put all hosted resources at risk of a short-term compromise. Corrective actions should be carefully planned and implemented shortly;</li>
-    <li><span class='badge grade-3'>3</span> The Active Directory infrastructure does not appear to have been weakened from what default installation settings provide;</li>
-    <li><span class='badge grade-4'>4</span> The Active Directory infrastructure exhibits an enhanced level of security and management;</li>
-    <li><span class='badge grade-5'>5</span> The Active Directory infrastructure correctly implements the latest state-of-the-art administrative model and security features.</li>
+    <li><span class='badge grade-3'>3</span> The Entra ID tenant does not appear to have been weakened from what default installation settings provide;</li>
+    <li><span class='badge grade-4'>4</span> The Entra ID tenant exhibits an enhanced level of security and management;</li>
+    <li><span class='badge grade-5'>5</span> The Entra ID tenant correctly implements the latest state-of-the-art administrative model and security features.</li>
 </ul>");
 
             Add("<div class='row'><div class='col-lg-12'>");
@@ -593,21 +653,29 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     Add("<p class='card-text'>");
                     if (Report.MaturityLevel == i)
+                    {
                         Add("<strong>");
+                    }
+
                     Add(data[i].Count);
                     Add(" rule(s) matched");
                     if (Report.MaturityLevel == i)
+                    {
                         Add("</strong>");
+                    }
+
                     Add("</p>");
                 }
                 else
                 {
                     Add("<p class='card-text'>No rule matched</p>");
                 }
+
                 Add("</div>");
                 Add("</div>");
                 Add("</div>");
             }
+
             Add("</div>");
             Add("</div></div>");
 
@@ -627,6 +695,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add(" active");
                             first = false;
                         }
+
                         Add(@"' data-bs-toggle=""tab"" href=""#maturitylevel");
                         Add(i);
                         Add(Report.GenerationDate.ToFileTime().ToString());
@@ -641,6 +710,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add("</li>");
                     }
                 }
+
                 Add("</ul>");
                 Add("</div></div>");
             }
@@ -652,12 +722,19 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 if (data.ContainsKey(i) && data[i].Count > 0)
                 {
                     if (!nextLevels.ContainsKey(start))
+                    {
                         nextLevels[start] = i;
+                    }
+
                     start = i;
                 }
             }
+
             if (Report.MaturityLevel < 5 && !nextLevels.ContainsKey(Report.MaturityLevel))
+            {
                 nextLevels[Report.MaturityLevel] = 5;
+            }
+
             Add("<div class='row'><div class='col-lg-12'>");
             Add(@"<div class=""tab-content"">");
             for (int i = Report.MaturityLevel; i < 6; i++)
@@ -674,6 +751,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         Add(" active");
                     }
+
                     Add(@""">");
 
                     Add("<p class='mt-2'>");
@@ -693,6 +771,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         Add("To reach the maximum level ");
                     }
+
                     Add(" you need to fix the following rules:</p>");
                     GenerateAccordion("rulesmaturity" + i, () =>
                     {
@@ -706,15 +785,17 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         foreach (HealthCheckCloudDataRiskRule rule in deduplicatedRiskRules)
                         {
                             if (l.Contains(rule.RiskId))
+                            {
                                 GenerateIndicatorPanelDetail("maturity" + i, rule, "maturity" + i);
+                            }
                         }
                     });
                     Add("</div>");
                 }
             }
+
             Add("</div>");
             Add("</div></div>");
-
         }
 
         private Dictionary<int, List<string>> GetCurrentMaturityLevel()
@@ -730,16 +811,23 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         continue;
                     }
+
                     level = hcrule.MaturityLevel;
                 }
+
                 if (level <= 0)
                 {
                     continue;
                 }
+
                 if (!output.ContainsKey(level))
+                {
                     output[level] = new List<string>();
+                }
+
                 output[level].Add(rule.RiskId);
             }
+
             return output;
         }
         #endregion
@@ -754,6 +842,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
                 return;
             }
+
             GenerateMitreTechnique();
             GenerateMitreMitigation();
         }
@@ -803,6 +892,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     }
                 }
             }
+
             var keys = new List<RuleMitreAttackTechniqueAttribute>(reference.Keys);
             keys.Sort((RuleMitreAttackTechniqueAttribute a, RuleMitreAttackTechniqueAttribute b) => { return string.Compare(a.Label, b.Label); });
 
@@ -820,9 +910,13 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     foreach (var l in keys)
                     {
                         if (l.MainTechnique != mainTechnique)
+                        {
                             continue;
+                        }
+
                         num += reference[l].Count;
                     }
+
                     if (num > 0)
                     {
                         Add("<li class='nav-item bg-light'>");
@@ -832,6 +926,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add(" active");
                             first = false;
                         }
+
                         Add(@"' data-bs-toggle=""tab"" href=""#mitre");
                         Add(mainTechnique.ToString());
                         Add(Report.GenerationDate.ToFileTime().ToString());
@@ -845,6 +940,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add("</li>");
                     }
                 }
+
                 Add("</ul>");
                 Add("</div></div>");
 
@@ -858,12 +954,15 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     foreach (var l in keys)
                     {
                         if (l.MainTechnique != mainTechnique)
+                        {
                             continue;
+                        }
+
                         num += reference[l].Count;
                     }
+
                     if (num > 0)
                     {
-
                         Add(@"<div id=""mitre");
                         Add(mainTechnique.ToString());
                         Add(Report.GenerationDate.ToFileTime().ToString());
@@ -873,6 +972,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add(" active");
                             first = false;
                         }
+
                         Add(@""">");
 
                         Add("<div class='row'><div class='col-lg-12'>");
@@ -880,7 +980,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         foreach (var l in keys)
                         {
                             if (l.MainTechnique != mainTechnique)
+                            {
                                 continue;
+                            }
+
                             //title
                             Add("<p class='mt-2'><a href=");
                             Add(((RuleFrameworkReference)l).URL);
@@ -898,10 +1001,12 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                                 }
                             });
                         }
+
                         Add("</div></div>");
                         Add("</div>");
                     }
                 }
+
                 Add("</div>");
                 Add("</div></div>");
             }
@@ -909,7 +1014,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 Add("<p>No technique matched</p>");
             }
-
         }
 
         void GenerateMitreMitigation()
@@ -966,6 +1070,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     notcovered++;
                 }
             }
+
             var keys = new List<RuleMitreAttackMitigationAttribute>(reference.Keys);
             keys.Sort((RuleMitreAttackMitigationAttribute a, RuleMitreAttackMitigationAttribute b) => { return string.Compare(a.Label, b.Label); });
 
@@ -984,9 +1089,13 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     foreach (var l in keys)
                     {
                         if (l.MainTechnique != mainTechnique)
+                        {
                             continue;
+                        }
+
                         num += reference[l].Count;
                     }
+
                     if (num > 0)
                     {
                         Add("<li class='nav-item bg-light'>");
@@ -996,6 +1105,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add(" active");
                             first = false;
                         }
+
                         Add(@"' data-bs-toggle=""tab"" href=""#mitre");
                         Add(mainTechnique.ToString());
                         Add(Report.GenerationDate.ToFileTime().ToString());
@@ -1009,6 +1119,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add("</li>");
                     }
                 }
+
                 Add("</ul>");
                 Add("</div></div>");
 
@@ -1022,12 +1133,15 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     foreach (var l in keys)
                     {
                         if (l.MainTechnique != mainTechnique)
+                        {
                             continue;
+                        }
+
                         num += reference[l].Count;
                     }
+
                     if (num > 0)
                     {
-
                         Add(@"<div id=""mitre");
                         Add(mainTechnique.ToString());
                         Add(Report.GenerationDate.ToFileTime().ToString());
@@ -1037,6 +1151,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add(" active");
                             first = false;
                         }
+
                         Add(@""">");
 
                         Add("<div class='row'><div class='col-lg-12'>");
@@ -1044,7 +1159,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         foreach (var l in keys)
                         {
                             if (l.MainTechnique != mainTechnique)
+                            {
                                 continue;
+                            }
+
                             //title
                             Add("<p class='mt-2'><a href=");
                             Add(((RuleFrameworkReference)l).URL);
@@ -1062,10 +1180,12 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                                 }
                             });
                         }
+
                         Add("</div></div>");
                         Add("</div>");
                     }
                 }
+
                 Add("</div>");
                 Add("</div></div>");
             }
@@ -1108,17 +1228,34 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
     <p class='card-text'>");
 
             if (!string.IsNullOrEmpty(Report.ProvisionStreet))
+            {
                 AddParagraph("Street: " + Report.ProvisionStreet);
+            }
+
             if (!string.IsNullOrEmpty(Report.ProvisionCity))
+            {
                 AddParagraph("City: " + Report.ProvisionCity);
+            }
+
             if (!string.IsNullOrEmpty(Report.ProvisionPostalCode))
+            {
                 AddParagraph("Postal Code: " + Report.ProvisionPostalCode);
+            }
+
             if (!string.IsNullOrEmpty(Report.ProvisionCountry))
+            {
                 AddParagraph("Country: " + Report.ProvisionCountry);
+            }
+
             if (!string.IsNullOrEmpty(Report.ProvisionState))
+            {
                 AddParagraph("State: " + Report.ProvisionState);
+            }
+
             if (!string.IsNullOrEmpty(Report.ProvisionTelephoneNumber))
+            {
                 AddParagraph("Phone: " + Report.ProvisionTelephoneNumber);
+            }
 
             Add(@"</p>
   </div>
@@ -1136,9 +1273,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellText("Marketing notifications");
                     AddCellText(contact);
                     AddEndRow();
-
                 }
             }
+
             if (Report.ProvisionTechnicalNotificationEmails != null)
             {
                 foreach (var contact in Report.ProvisionTechnicalNotificationEmails)
@@ -1147,9 +1284,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellText("Technical notifications");
                     AddCellText(contact);
                     AddEndRow();
-
                 }
             }
+
             if (Report.ProvisionSecurityComplianceNotificationEmails != null)
             {
                 foreach (var contact in Report.ProvisionSecurityComplianceNotificationEmails)
@@ -1158,11 +1295,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellText("Security Compliance notifications");
                     AddCellText(contact);
                     AddEndRow();
-
                 }
             }
-            AddEndTable();
 
+            AddEndTable();
         }
 
         private void GenerateOnPremiseInformation()
@@ -1182,13 +1318,23 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
             AddCellText(Report.ProvisionDirectorySynchronizationStatus);
             if (Report.ProvisionLastDirSyncTime != null)
+            {
                 AddCellDate((DateTime)Report.ProvisionLastDirSyncTime);
+            }
             else
+            {
                 AddCellText(null);
+            }
+
             if (Report.ProvisionLastPasswordSyncTime != null)
+            {
                 AddCellDate((DateTime)Report.ProvisionLastPasswordSyncTime);
+            }
             else
+            {
                 AddCellText(null);
+            }
+
             AddCellText(Report.ProvisionDirSyncApplicationType);
             AddCellText(Report.ProvisionDirSyncClientMachineName);
             AddCellText(Report.ProvisionDirSyncClientVersion);
@@ -1217,13 +1363,11 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     }
                     else
                     {
-
                         Add("<div class='row'><div class='col-lg-12'><p>");
                         AddEncoded("The local domain is: ");
                         Add(domainLink);
                         Add("</p></div></div>");
                     }
-                    
                 }
             }
         }
@@ -1240,12 +1384,14 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
         Dictionary<string, TenantInformation> GenerateTenantInfo()
         {
-
             var dict = new Dictionary<string, TenantInformation>();
             foreach (var domain in Report.ForeignDomains)
             {
                 if (string.IsNullOrEmpty(domain.TenantID))
+                {
                     continue;
+                }
+
                 if (!dict.ContainsKey(domain.TenantID))
                 {
                     dict[domain.TenantID] = new TenantInformation()
@@ -1269,9 +1415,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         d.TopTotal = TopTotal;
                         d.TopDomain = domain;
                     }
-
                 }
             }
+
             foreach (var tenant in Report.ExternalTenantInformation)
             {
                 if (dict.ContainsKey(tenant.TenantID))
@@ -1279,6 +1425,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     dict[tenant.TenantID].TenantInfo = tenant;
                 }
             }
+
             if (dict.ContainsKey("9cd80435-793b-4f48-844b-6b3f37d1c1f3"))
             {
                 dict["9cd80435-793b-4f48-844b-6b3f37d1c1f3"].TenantInfo = new HealthCheckCloudDataTenantInformation
@@ -1287,6 +1434,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     TenantID = "9cd80435-793b-4f48-844b-6b3f37d1c1f3",
                 };
             }
+
             return dict;
         }
 
@@ -1316,6 +1464,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellText(domain.VerificationMethod);
                     AddEndRow();
                 }
+
                 AddEndTable();
             }
 
@@ -1340,6 +1489,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellBool(domain.ApplyToUnknownCountry);
                     AddEndRow();
                 }
+
                 AddEndTable();
             }
         }
@@ -1348,7 +1498,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         {
             Dictionary<string, TenantInformation> tenantInfo = null;
             if (Report.ForeignDomains != null)
+            {
                 tenantInfo = GenerateTenantInfo();
+            }
+
             if (Report.CrossTenantPolicies != null)
             {
                 GenerateSubSection("Cross tenants");
@@ -1356,7 +1509,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddParagraph("This information is extracted from https://learn.microsoft.com/en-us/azure/active-directory/external-identities/cross-tenant-access-settings-b2b-direct-connect");
 
                 if (Report.Domains != null)
+                {
                     Report.Domains.Sort((a, b) => a.Name.CompareTo(b.Name));
+                }
+
                 AddBeginTable("CrossTenantPolicies");
                 AddHeaderText("TenantId");
                 AddHeaderText("Tenant Name");
@@ -1402,6 +1558,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         AddCellText(null);
                     }
+
                     AddCellBool(domain.AllowB2BFrom);
                     AddCellBool(domain.AllowB2BTo);
                     AddCellBool(domain.AllowNativeFederationFrom);
@@ -1409,8 +1566,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellText(domain.lastModified);
                     AddEndRow();
                 }
+
                 AddEndTable();
             }
+
             if (Report.ForeignDomains != null)
             {
                 GenerateSubSection("External Tenant in use");
@@ -1489,6 +1648,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         AddCellText(null);
                     }
+
                     AddCellText(domain.TopDomain.Region);
                     AddCellText(domain.TopDomain.TenantID);
                     AddCellNum(domain.NumberOfDomains);
@@ -1497,6 +1657,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellNum(domain.GuestsCount + domain.MemberCount);
                     AddEndRow();
                 }
+
                 AddEndTable();
                 Add("</div>");
 
@@ -1532,7 +1693,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     int ret = (b.NumMembers > 0).CompareTo((a.NumMembers > 0));
                     if (ret == 0)
+                    {
                         return String.Compare(a.Name, b.Name);
+                    }
+
                     return ret;
                 }
                 );
@@ -1551,6 +1715,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         AddCellText(group.Name);
                     }
+
                     AddCellBool(dangerousRole.Contains(group.Name));
                     AddCellNum(group.NumMembers);
                     AddCellNum(group.NumNoMFA);
@@ -1559,6 +1724,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellNum(group.members.Where(x => x.LastPasswordChangeTimestamp != null && x.LastPasswordChangeTimestamp.Value.AddDays(90) < DateTime.Now).Count());
                     AddEndRow();
                 }
+
                 AddEndTable();
                 foreach (var group in Report.Roles)
                 {
@@ -1648,7 +1814,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 </div>");
             Add("</div>");
             Add("</div>");
-
         }
 
         void GenerateListAccountDetail(string accordion, string id, string title, List<HealthCheckCloudDataUser> list)
@@ -1657,6 +1822,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 return;
             }
+
             GenerateAccordionDetailForDetail(id, accordion, title, list.Count, () =>
             {
                 AddBeginTable("Account list");
@@ -1681,9 +1847,14 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellText((detail.LastPasswordChangeTimestamp != null ? detail.LastPasswordChangeTimestamp.Value.ToString("u") : ""));
 
                     if (detail.ObjectId != null)
+                    {
                         AddCellText(detail.ObjectId.ToString());
+                    }
                     else
+                    {
                         AddCellText(null);
+                    }
+
                     AddEndRow();
                     number++;
                     if (number >= MaxNumberUsersInHtmlReport)
@@ -1691,6 +1862,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         break;
                     }
                 }
+
                 AddEndTable(() =>
                 {
                     if (number >= MaxNumberUsersInHtmlReport)
@@ -1732,35 +1904,54 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 );
                 foreach (var member in members)
                 {
-
                     AddBeginRow();
                     AddCellText(member.DisplayName);
                     AddCellText(member.EmailAddress);
                     AddCellBool(member.HasImmutableId);
                     if (member.WhenCreated != null)
+                    {
                         AddCellDate((DateTime)member.WhenCreated);
+                    }
                     else
+                    {
                         AddCellText(null);
+                    }
+
                     if (member.LastPasswordChangeTimestamp != null)
+                    {
                         AddCellDate((DateTime)member.LastPasswordChangeTimestamp);
+                    }
                     else
+                    {
                         AddCellText(null);
+                    }
+
                     if (member.PasswordNeverExpires != null)
+                    {
                         AddCellText(member.PasswordNeverExpires.ToString(), (bool)member.PasswordNeverExpires);
+                    }
                     else
+                    {
                         AddCellText(null);
+                    }
+
                     AddCellText(member.MFAStatus == null || member.MFAStatus.Count == 0 ? "Unknown" : string.Join(",", member.MFAStatus.ToArray())); ;
                     AddCellText(member.RoleMemberType);
                     AddCellText(member.OverallProvisioningStatus);
                     AddCellText(member.IsLicensed.ToString());
                     if (member.LastDirSyncTime == null)
+                    {
                         AddCellText(null);
+                    }
                     else
+                    {
                         AddCellDate((DateTime)member.LastDirSyncTime);
+                    }
+
                     AddCellText(member.ObjectId.ToString());
                     AddEndRow();
-
                 }
+
                 AddEndTable();
             }
         }
@@ -1846,6 +2037,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         {
             return dangerousAppPermissions.Contains(permission.permission);
         }
+
         bool IsDelegatedPermissionDangerous(HealthCheckCloudDataApplicationOAuth2PermissionGrant permission)
         {
             return dangerousDelegatedPermissions.Contains(permission.permission);
@@ -1859,7 +2051,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         private void GenerateApplicationInformation()
         {
             if (Report.Applications == null || Report.Applications.Count == 0)
+            {
                 return;
+            }
 
             AddBeginModal("application_modal", "",
                 ShowModalType.XL);
@@ -1879,7 +2073,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             AddHeaderText("resourceDisplayName", datafield: "resourceDisplayName");
             AddHeaderText("resourceId", datafield: "resourceId");
             AddHeaderText("permission", datafield: "permission", dataformatter: "permissionFormatter");
-            AddHeaderText("Is Critical", datafield: "permission", dataformatter: "dangerousAppPermission");
+            AddHeaderText("Is Critical", datafield: "isCriticalApp", dataformatter: "dangerousAppPermission", datasorter: "sorterAppCritical");
             AddBeginTableData();
             AddEndTable();
 
@@ -1889,7 +2083,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             AddHeaderText("principalId", datafield: "principalId", dataformatter: "delegatedPrincipal");
             AddHeaderText("resourceId", datafield: "resourceId");
             AddHeaderText("scope", datafield: "permission", dataformatter: "permissionFormatter");
-            AddHeaderText("Is Critical", datafield: "permission", dataformatter: "dangerousDelegatedPermission");
+            AddHeaderText("Is Critical", datafield: "isCriticalDelegated", dataformatter: "dangerousDelegatedPermission", datasorter: "sorterDelegatedCritical");
             AddBeginTableData();
 
             AddEndTable();
@@ -1926,9 +2120,14 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddEncoded(app.objectId);
                 Add(@""">");
                 if (!string.IsNullOrEmpty(app.appDisplayName))
+                {
                     AddEncoded(app.appDisplayName);
+                }
                 else
+                {
                     AddEncoded("AppID_" + app.appId);
+                }
+
                 Add("</a></td>");
                 AddCellBool(app.appOwnerTenantId != Report.TenantId);
                 AddCellNum(app.ApplicationPermissions.Count);
@@ -1940,8 +2139,8 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddCellNum(app.MemberOf.Where(x => IsRoleDangerous(x)).Count());
                 AddCellNum(app.MemberOf.Where(x => !string.IsNullOrEmpty(x.roleTemplateId)).Count());
                 AddEndRow();
-
             }
+
             AddEndTable();
             Add("</div>");
             Add(@"<script type='application/json' data-pingcastle-selector='App'>");
@@ -1971,11 +2170,12 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
             Dictionary<string, TenantInformation> tenantInfo = null;
             if (Report.ForeignDomains != null)
+            {
                 tenantInfo = GenerateTenantInfo();
+            }
 
             foreach (var t in k)
             {
-
                 AddBeginRow();
                 AddCellText(t.tenantId);
                 if (tenantInfo != null && tenantInfo.ContainsKey(t.tenantId))
@@ -2029,17 +2229,24 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     AddCellText(null);
                 }
+
                 Add(@"<td class='text'><a class='data-pc-toggle-app' href=""#");
                 AddEncoded(t.app.objectId);
                 Add(@""">");
                 if (!string.IsNullOrEmpty(t.app.appDisplayName))
+                {
                     AddEncoded(t.app.appDisplayName);
+                }
                 else
+                {
                     AddEncoded("AppID_" + t.app.appId);
+                }
+
                 Add("</a></td>");
                 AddCellNum(t.count);
                 AddEndRow();
             }
+
             AddEndTable();
             Add("</div>");
         }
@@ -2066,13 +2273,14 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         external = false;
                     }
+
                     AddCellBool(external);
                     AddEndRow();
                 }
+
                 AddEndTable();
             }
         }
-
     }
 }
 

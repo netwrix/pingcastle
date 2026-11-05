@@ -11,7 +11,7 @@ namespace PingCastle.Healthcheck.Rules
 {
     [RuleModel("A-BadSuccessor", RiskRuleCategory.Anomalies, RiskModelCategory.ObjectConfig)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
-    [RuleIntroducedIn(3,0,4)]
+    [RuleIntroducedIn(3, 0, 4)]
     [RuleANSSI("R37", "paragraph.3.6.2.1")]
     [RuleDurANSSI(1, "bad_successor_delegation_detected", "One or more Organizational Units (OUs) in your Active Directory domain have delegations granting non-privileged users or groups the ability to create or control msDS-DelegatedManagedServiceAccount objects")]
     [RuleMitreAttackTechnique(MitreAttackTechnique.AccountManipulation)]
@@ -60,14 +60,19 @@ namespace PingCastle.Healthcheck.Rules
                 foreach (var group in healthcheckData.PrivilegedGroups)
                 {
                     if (!string.IsNullOrEmpty(group.Sid))
+                    {
                         privilegedGroups.Add(group.Sid);
+                    }
                 }
             }
+
             var privilegedMembers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             healthcheckData.AllPrivilegedMembers?.ForEach(member =>
             {
                 if (!string.IsNullOrEmpty(member.Sid))
+                {
                     privilegedMembers.Add(member.Sid);
+                }
             });
 
             // Find OU delegations that include the BadSuccessor permissions
@@ -83,7 +88,9 @@ namespace PingCastle.Healthcheck.Rules
                     // Skip privileged users and groups
                     if (privilegedGroups.Contains(delegation.SecurityIdentifier) ||
                         privilegedMembers.Contains(delegation.SecurityIdentifier))
+                    {
                         continue;
+                    }
 
                     // Skip if the OU is under CN=System or starts with "CN="
                     if (delegation.DistinguishedName.Contains("CN=System,DC=")

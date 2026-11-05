@@ -13,7 +13,7 @@ namespace PingCastle.Report
 #if TEST_BENCHMARK
             return "https://localhost:5001/Benchmark";
 #else
-            return "https://stat.pingcastle.com/Benchmark"; 
+            return "https://stat.pingcastle.com/Benchmark";
 #endif
         }
 
@@ -35,10 +35,12 @@ namespace PingCastle.Report
             {
                 key = hashstring.ComputeHash(Encoding.UTF8.GetBytes(license.LicenseKey));
             }
+
             var hmac = new HMACSHA256(key);
             var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(json));
             return Convert.ToBase64String(hash);
         }
+
         static string BuildStatJson(HealthcheckData Report, ADHealthCheckingLicense license, bool shareStat)
         {
             var sb = new StringBuilder();
@@ -72,11 +74,15 @@ namespace PingCastle.Report
                 foreach (var rule in Report.RiskRules)
                 {
                     if (!first)
+                    {
                         sb.Append(",");
+                    }
+
                     sb.Append(rule.RiskId);
                     first = false;
                 }
             }
+
             sb.Append("\"");
 
             if (license.IsBasic() || shareStat)
@@ -86,8 +92,10 @@ namespace PingCastle.Report
                 {
                     sb.Append(Convert.ToBase64String(hashstring.ComputeHash(Encoding.UTF8.GetBytes(Report.DomainFQDN.ToLowerInvariant() + Report.DomainSid.ToUpperInvariant()))));
                 }
+
                 sb.Append("\"");
             }
+
             sb.Append("}");
             return sb.ToString();
         }

@@ -21,8 +21,15 @@ namespace PingCastle.Scanners
     {
         private readonly IWindowsNativeMethods _nativeMethods;
 
-        public string Name { get { return "foreignusers"; } }
-        public string Description { get { return "Use trusts to enumerate users located in domain denied such as bastion or domains too far away."; } }
+        public string Name
+        {
+            get { return "foreignusers"; }
+        }
+
+        public string Description
+        {
+            get { return "Use trusts to enumerate users located in domain denied such as bastion or domains too far away."; }
+        }
 
         public static string EnumInboundSid { get; set; }
 
@@ -44,7 +51,9 @@ namespace PingCastle.Scanners
         {
             var state = Settings.EnsureDataCompleted("Server");
             if (state != DisplayState.Run)
+            {
                 return state;
+            }
 
             IUserInterface userInterface = UserInterfaceFactory.GetUserInterface();
             do
@@ -60,7 +69,8 @@ Example of FQDN: bastion.local";
 
                 // error message in case the query is not complete
                 userInterface.Notice = "The SID of FQDN cannot be empty";
-            } while (String.IsNullOrEmpty(EnumInboundSid));
+            }
+            while (String.IsNullOrEmpty(EnumInboundSid));
             userInterface.Notice = null;
 
             return DisplayState.Run;
@@ -139,6 +149,7 @@ Example of FQDN: bastion.local";
             {
                 DisplayError("Error when connecting to the remote domain LsaOpenPolicy 0x" + ret.ToString("x"));
             }
+
             try
             {
                 DisplayAdvancement("Connection established");
@@ -166,6 +177,7 @@ Example of FQDN: bastion.local";
                             HandleToFree.Add(handlesid);
                             SidHandles[i] = handlesid.AddrOfPinnedObject();
                         }
+
                         GCHandle sidHandle = GCHandle.Alloc(SidHandles, GCHandleType.Pinned);
                         HandleToFree.Add(sidHandle);
 
@@ -206,11 +218,19 @@ Example of FQDN: bastion.local";
                     finally
                     {
                         if (ReferencedDomains != IntPtr.Zero)
+                        {
                             NativeMethods.LsaFreeMemory(ReferencedDomains);
+                        }
+
                         if (Names != IntPtr.Zero)
+                        {
                             NativeMethods.LsaFreeMemory(Names);
+                        }
+
                         foreach (GCHandle handle in HandleToFree)
+                        {
                             handle.Free();
+                        }
                     }
                 }
             }

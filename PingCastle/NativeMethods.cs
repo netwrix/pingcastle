@@ -81,17 +81,25 @@ namespace PingCastle
                     referencedDomainName.EnsureCapacity((int)cchReferencedDomainName);
                     err = NO_ERROR;
                     if (!LookupAccountSid(server, Sid, name, ref cchName, referencedDomainName, ref cchReferencedDomainName, out sidUse))
+                    {
                         err = System.Runtime.InteropServices.Marshal.GetLastWin32Error();
+                    }
                 }
             }
+
             if (err == 0)
             {
                 referencedDomain = referencedDomainName.ToString();
                 if (String.IsNullOrEmpty(referencedDomain))
+                {
                     return name.ToString();
+                }
                 else
+                {
                     return referencedDomainName + "\\" + name;
+                }
             }
+
             Trace.WriteLine(@"Error " + err + " when translating " + sidstring + " on " + server);
             return sidstring;
         }
@@ -117,11 +125,15 @@ namespace PingCastle
                 Marshal.FreeHGlobal(buffer);
                 buffer = IntPtr.Zero;
             }
+
             [SecurityPermission(SecurityAction.LinkDemand)]
             public override string ToString()
             {
                 if (Length == 0)
+                {
                     return String.Empty;
+                }
+
                 return Marshal.PtrToStringUni(buffer, Length / 2);
             }
         }
@@ -154,6 +166,7 @@ namespace PingCastle
                 this.shi1_type = sharetype;
                 this.shi1_remark = remark;
             }
+
             public override string ToString()
             {
                 return shi1_netname;
@@ -259,6 +272,7 @@ namespace PingCastle
                 Trace.WriteLine("LsaOpenPolicy 0x" + ret.ToString("x"));
                 return null;
             }
+
             try
             {
                 UNICODE_STRING usdomain = new UNICODE_STRING();
@@ -270,6 +284,7 @@ namespace PingCastle
                     Trace.WriteLine("LsaLookupNames 0x" + ret.ToString("x"));
                     return null;
                 }
+
                 try
                 {
                     LSA_REFERENCED_DOMAIN_LIST domainList = (LSA_REFERENCED_DOMAIN_LIST)Marshal.PtrToStructure(ReferencedDomains, typeof(LSA_REFERENCED_DOMAIN_LIST));
@@ -289,6 +304,7 @@ namespace PingCastle
             {
                 NativeMethods.LsaClose(PolicyHandle);
             }
+
             return null;
         }
 
@@ -355,6 +371,7 @@ namespace PingCastle
                 Trace.WriteLine("GetStartupTime " + server + " returned " + ret);
                 return DateTime.MinValue;
             }
+
             try
             {
                 STAT_WORKSTATION_0 data = (STAT_WORKSTATION_0)Marshal.PtrToStructure(buffer, typeof(STAT_WORKSTATION_0));
@@ -392,6 +409,7 @@ namespace PingCastle
                 Trace.WriteLine("GetComputerVersion " + server + " returned " + ret);
                 return "not found";
             }
+
             try
             {
                 WKSTA_INFO_100 data = (WKSTA_INFO_100)Marshal.PtrToStructure(buffer, typeof(WKSTA_INFO_100));
@@ -429,7 +447,7 @@ namespace PingCastle
             out IntPtr ppRecords);
 
         [DllImport("Crypt32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool CryptDecodeObject([In] uint dwCertEncodingType, [In] [MarshalAs(UnmanagedType.LPStr)] string lpszStructType, [In] byte[] pbEncoded, [In] uint cbEncoded, [In] uint dwFlags, [Out] IntPtr pvStructInfo, [In] [Out] ref uint pcbStructInfo);
+        public static extern bool CryptDecodeObject([In] uint dwCertEncodingType, [In][MarshalAs(UnmanagedType.LPStr)] string lpszStructType, [In] byte[] pbEncoded, [In] uint cbEncoded, [In] uint dwFlags, [Out] IntPtr pvStructInfo, [In][Out] ref uint pcbStructInfo);
 
         public struct CERT_TEMPLATE_EXT
         {
@@ -466,7 +484,9 @@ namespace PingCastle
 
             // CommandLineToArgvW returns NULL upon failure.
             if (ptrToSplitArgs == IntPtr.Zero)
+            {
                 throw new ArgumentException("Unable to split argument.", new Win32Exception());
+            }
 
             // Make sure the memory ptrToSplitArgs to is freed, even upon failure.
             try
@@ -476,8 +496,10 @@ namespace PingCastle
                 // ptrToSplitArgs is an array of pointers to null terminated Unicode strings.
                 // Copy each of these strings into our split argument array.
                 for (int i = 0; i < numberOfArgs; i++)
+                {
                     splitArgs[i] = Marshal.PtrToStringUni(
                         Marshal.ReadIntPtr(ptrToSplitArgs, i * IntPtr.Size));
+                }
 
                 return splitArgs;
             }
@@ -496,6 +518,7 @@ namespace PingCastle
             {
                 return SplitArgsWindows(commandLine);
             }
+
             var parmChars = commandLine.ToCharArray();
             var inSingleQuote = false;
             var inDoubleQuote = false;
@@ -506,14 +529,19 @@ namespace PingCastle
                     inDoubleQuote = !inDoubleQuote;
                     parmChars[index] = '\n';
                 }
+
                 if (parmChars[index] == '\'' && !inDoubleQuote)
                 {
                     inSingleQuote = !inSingleQuote;
                     parmChars[index] = '\n';
                 }
+
                 if (!inSingleQuote && !inDoubleQuote && parmChars[index] == ' ')
+                {
                     parmChars[index] = '\n';
+                }
             }
+
             return (new string(parmChars)).Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
         }
         #endregion convert command line to argc

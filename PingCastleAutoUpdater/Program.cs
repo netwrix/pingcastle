@@ -20,10 +20,10 @@ namespace PingCastleAutoUpdater
 {
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     class Program
-	{
+    {
         // The only place errors are handled: any failure aborts the update.
         private static async Task<int> Main(string[] args)
-		{
+        {
             try
             {
                 await new Program().RunAsync(args);
@@ -34,11 +34,12 @@ namespace PingCastleAutoUpdater
                 WriteInRed(ex.Message.SanitizeForLog() + " Aborting update.");
                 return 1;
             }
-		}
+        }
 
         bool forceDownload = false;
         bool preview = false;
         bool dryRun = false;
+        bool allowInsecureDownload = false;
         int numberOfDaysToWait = 0;
         string releaseInfoUrl = UpdaterLogic.DefaultApiUrl;
 
@@ -62,6 +63,7 @@ namespace PingCastleAutoUpdater
             forceDownload = parseResult.ForceDownload;
             preview = parseResult.Preview;
             dryRun = parseResult.DryRun;
+            allowInsecureDownload = parseResult.AllowInsecureDownload;
             numberOfDaysToWait = parseResult.WaitForDays;
             releaseInfoUrl = parseResult.ApiUrl;
             Console.WriteLine("Do not forget that there are other command line switches like --help that you can use");
@@ -71,24 +73,26 @@ namespace PingCastleAutoUpdater
             var fromServer = releaseInfoUrl != UpdaterLogic.DefaultApiUrl;
             var release = await GetLatestReleaseFromUpdateUrlAsync();
             if (release == null)
+            {
                 return;
+            }
 
             string currentVersion = GetCurrentVersionFromExecutable();
 
-			// Initialize configuration orchestrator for pre-update migration
-			string exePath = Environment.ProcessPath ?? AppContext.BaseDirectory;
-			string exeDirectory = Path.GetDirectoryName(exePath);
-			var pathContext = new ConfigurationPathContext(exeDirectory);
-			var configOrchestrator = new ConfigurationOrchestrationService(pathContext, dryRun);
+            // Initialize configuration orchestrator for pre-update migration
+            string exePath = Environment.ProcessPath ?? AppContext.BaseDirectory;
+            string exeDirectory = Path.GetDirectoryName(exePath);
+            var pathContext = new ConfigurationPathContext(exeDirectory);
+            var configOrchestrator = new ConfigurationOrchestrationService(pathContext, dryRun);
 
-			// Perform initial state migration if both XML and JSON configs exist
-			// This should happen regardless of whether an update is needed
-			bool migrationPerformed = configOrchestrator.PerformInitialStateMigration();
-			if (migrationPerformed)
-			{
-				Console.WriteLine("Initial configuration state migration completed.");
-				Console.WriteLine();
-			}
+            // Perform initial state migration if both XML and JSON configs exist
+            // This should happen regardless of whether an update is needed
+            bool migrationPerformed = configOrchestrator.PerformInitialStateMigration();
+            if (migrationPerformed)
+            {
+                Console.WriteLine("Initial configuration state migration completed.");
+                Console.WriteLine();
+            }
 
             if (!IsUpdateRequired(currentVersion, release.name))
             {
@@ -115,7 +119,7 @@ namespace PingCastleAutoUpdater
             }
 
             string downloadUrl = asset.browser_download_url;
-            if (!UpdaterLogic.IsValidReleaseUrl(downloadUrl))
+            if (!UpdaterLogic.IsValidReleaseUrl(downloadUrl, UpdaterLogic.IsAllowInsecureEffective(releaseInfoUrl, allowInsecureDownload)))
             {
                 Trace.WriteLine("Invalid asset download URL: " + downloadUrl.SanitizeForLog());
                 WriteInRed("Invalid asset download URL. Aborting update.");
@@ -138,7 +142,7 @@ namespace PingCastleAutoUpdater
             await File.WriteAllTextAsync(downloaded.FullPath, await GetFromUrlAsync(url));
             UpdaterLogic.MergeConsoleSettings(downloaded.FullPath, targetPath);
             Console.WriteLine("Merged " + UpdaterLogic.ConsoleSettingsFileName);
-		}
+        }
 
         /// <summary>
         /// Returns PingCastle.exe version if it's found in the same directory
@@ -188,9 +192,13 @@ namespace PingCastleAutoUpdater
 
             var release = UpdaterLogic.FilterAndSortReleases(releases, preview, numberOfDaysToWait);
             if (release == null)
+            {
                 Console.WriteLine("There is no release matching the requirements");
+            }
             else
+            {
                 Console.WriteLine("Latest release is: " + release.name);
+            }
 
             return release;
         }
@@ -246,12 +254,12 @@ namespace PingCastleAutoUpdater
         }
 
         private static void WriteInRed(string data)
-		{
-			Console.ForegroundColor = ConsoleColor.Red;
-			Console.WriteLine(data);
-			Trace.WriteLine("[Red]" + data);
-			Console.ResetColor();
-		}
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(data);
+            Trace.WriteLine("[Red]" + data);
+            Console.ResetColor();
+        }
 
         private static void BackupExistingConfigurations(ConfigurationPathContext pathContext, bool dryRun)
         {
@@ -440,13 +448,14 @@ namespace PingCastleAutoUpdater
         private static void DisplayHelp()
         {
             Console.WriteLine("switch:");
-            Console.WriteLine("  --help              : display this message");
+            Console.WriteLine("  --help                    : display this message");
             Console.WriteLine("");
-            Console.WriteLine("  --api-url https://xx : update from PingCastle Enterprise instead of GitHub (https://server/api/Release)");
-            Console.WriteLine("  --force-download    : download the latest release even if it is not the most recent. Useful for tests");
-            Console.WriteLine("  --use-preview       : download preview release if it is the most recent");
-            Console.WriteLine("  --dry-run           : preview changes without modifying files");
-            Console.WriteLine("  --wait-for-days  30 : ensure the releases has been made public for at least X days");
+            Console.WriteLine("  --api-url https://xx      : update from PingCastle Enterprise or Pro instead of GitHub (https://server/api/Release)");
+            Console.WriteLine("  --force-download          : download the latest release even if it is not the most recent. Useful for tests");
+            Console.WriteLine("  --use-preview             : download preview release if it is the most recent");
+            Console.WriteLine("  --dry-run                 : preview changes without modifying files");
+            Console.WriteLine("  --wait-for-days  30       : ensure the releases has been made public for at least X days");
+            Console.WriteLine("  --allow-insecure-download : allow insecure (http) download URLs");
         }
     }
 }

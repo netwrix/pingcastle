@@ -18,12 +18,17 @@ namespace PingCastle.Healthcheck.Rules
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.DomainFunctionalLevel < 3)
+            {
                 return 0;
+            }
 
             foreach (var dc in healthcheckData.DomainControllers)
             {
                 if (!dc.RODC)
+                {
                     continue;
+                }
+
                 if (dc.msDSRevealedUsers != null)
                 {
                     foreach (var account in dc.msDSRevealedUsers)
@@ -38,6 +43,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

@@ -13,7 +13,6 @@ using System.ServiceModel.Dispatcher;
 
 namespace PingCastle.ADWS
 {
-
     internal class SoapHeader
     {
         public string Name { get; set; }
@@ -30,7 +29,6 @@ namespace PingCastle.ADWS
 
     internal class HeaderInspector : IClientMessageInspector
     {
-
         SoapHeader[] Headers;
 
         public HeaderInspector(SoapHeader[] headers)
@@ -45,6 +43,7 @@ namespace PingCastle.ADWS
                 MessageHeader header = MessageHeader.CreateHeader(soapHeader.Name, soapHeader.Ns, soapHeader.Value);
                 request.Headers.Add(header);
             }
+
             return null;
         }
 

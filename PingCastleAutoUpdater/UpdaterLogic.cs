@@ -36,6 +36,7 @@ namespace PingCastleAutoUpdater
         public bool ShowHelp { get; set; }
         public int WaitForDays { get; set; }
         public string ApiUrl { get; set; } = UpdaterLogic.DefaultApiUrl;
+        public bool AllowInsecureDownload { get; set; }
     }
 
     internal static class UpdaterLogic
@@ -47,7 +48,7 @@ namespace PingCastleAutoUpdater
         internal const string ServerSettingsName = "appsettings";
 
         /// <summary>
-        /// A custom --api-url is a PingCastle Enterprise /api/Release endpoint: it returns the release list in
+        /// A custom --api-url is a PingCastle Enterprise or Pro /api/Release endpoint: it returns the release list in
         /// the format of the GitHub releases API, and serves the shared licence under it.
         /// </summary>
         internal static string GetServerFileUrl(string apiUrl, string fileName)
@@ -81,12 +82,34 @@ namespace PingCastleAutoUpdater
             new JsonConfigMerger().MergeJsonConfigFiles(targetPath, serverSettingsPath);
         }
 
-        internal static bool IsValidReleaseUrl(string url)
+        /// <summary>
+        /// The default GitHub API URL is always downloaded over HTTPS. A custom --api-url
+        /// (and the release assets it returns) may only be downloaded over HTTP when
+        /// --allow-insecure-download is passed.
+        /// </summary>
+        internal static bool IsAllowInsecureEffective(string apiUrl, bool allowInsecureDownload)
+        {
+            return allowInsecureDownload && apiUrl != DefaultApiUrl;
+        }
+
+        internal static bool IsValidReleaseUrl(string url, bool allowInsecure = false)
         {
             if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+            {
                 return false;
+            }
 
-            return (uri.Scheme == "http" || uri.Scheme == "https") && !string.IsNullOrEmpty(uri.Host);
+            if (string.IsNullOrEmpty(uri.Host))
+            {
+                return false;
+            }
+
+            if (allowInsecure)
+            {
+                return uri.Scheme == "http" || uri.Scheme == "https";
+            }
+
+            return uri.Scheme == "https";
         }
 
         internal static Version ParseReleaseVersion(string releaseName)
@@ -168,6 +191,7 @@ namespace PingCastleAutoUpdater
         internal static ParseResult ParseArguments(string[] args)
         {
             var result = new ParseResult { Success = true };
+            string customUrl = null;
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -179,13 +203,7 @@ namespace PingCastleAutoUpdater
                             return new ParseResult { Success = false, Error = "argument for --api-url is mandatory" };
                         }
 
-                        var customUrl = args[++i];
-                        if (!IsValidReleaseUrl(customUrl))
-                        {
-                            return new ParseResult { Success = false, Error = "Invalid API URL. Only HTTP and HTTPS URLs are allowed." };
-                        }
-
-                        result.ApiUrl = customUrl;
+                        customUrl = args[++i];
                         break;
                     case "--force-download":
                         result.ForceDownload = true;
@@ -198,6 +216,9 @@ namespace PingCastleAutoUpdater
                         break;
                     case "--dry-run":
                         result.DryRun = true;
+                        break;
+                    case "--allow-insecure-download":
+                        result.AllowInsecureDownload = true;
                         break;
                     case "--wait-for-days":
                         if (i + 1 >= args.Length)
@@ -215,6 +236,22 @@ namespace PingCastleAutoUpdater
                     default:
                         return new ParseResult { Success = false, Error = "unknown argument: " + args[i].SanitizeForLog() };
                 }
+            }
+
+            if (customUrl != null)
+            {
+                if (!IsValidReleaseUrl(customUrl, result.AllowInsecureDownload))
+                {
+                    if (Uri.TryCreate(customUrl, UriKind.Absolute, out Uri uri) &&
+                        uri.Scheme == "http" && !result.AllowInsecureDownload)
+                    {
+                        return new ParseResult { Success = false, Error = "Invalid API URL. HTTP URLs require --allow-insecure-download flag." };
+                    }
+
+                    return new ParseResult { Success = false, Error = "Invalid API URL." };
+                }
+
+                result.ApiUrl = customUrl;
             }
 
             return result;

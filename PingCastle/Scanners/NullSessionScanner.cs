@@ -20,8 +20,15 @@ namespace PingCastle.Scanners
         {
         }
 
-        public override string Name { get { return "nullsession"; } }
-        public override string Description { get { return "Check if null sessions are enabled and provide example(s)."; } }
+        public override string Name
+        {
+            get { return "nullsession"; }
+        }
+
+        public override string Description
+        {
+            get { return "Check if null sessions are enabled and provide example(s)."; }
+        }
 
         public static int NullSessionEnumerationLimit = int.MaxValue;
 
@@ -41,6 +48,7 @@ namespace PingCastle.Scanners
                                 {
                                     sb.AppendLine();
                                 }
+
                                 sb.Append(header);
                                 sb.Append(server.Value);
                             });
@@ -57,6 +65,7 @@ namespace PingCastle.Scanners
             {
                 DisplayAdvancement(computer, "MS-SAMR disabled");
             }
+
             if (!enabled)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -72,12 +81,14 @@ namespace PingCastle.Scanners
                     DisplayAdvancement(computer, "MS-LSAT disabled");
                 }
             }
+
             if (!enabled)
             {
                 DisplayAdvancement(computer, "Null session is disabled");
                 sb.Append(computer);
                 sb.Append("\tNone\t");
             }
+
             return sb.ToString();
         }
 
@@ -85,9 +96,11 @@ namespace PingCastle.Scanners
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
             if (ScanningMode == 1)
+            {
                 UserInterfaceFactory.GetUserInterface().DisplayMessage(value);
+            }
+
             Trace.WriteLine(value);
         }
     }
-
 }

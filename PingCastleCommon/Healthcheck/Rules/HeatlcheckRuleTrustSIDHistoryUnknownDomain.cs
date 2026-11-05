@@ -29,12 +29,17 @@ namespace PingCastle.Healthcheck.Rules
                     if (data.FriendlyName.StartsWith("S-1-5-21", StringComparison.InvariantCultureIgnoreCase))
                     {
                         if (!domainList.ContainsKey(data.DomainSid))
+                        {
                             domainList.Add(data.DomainSid, data.Count);
+                        }
                         else
+                        {
                             domainList[data.DomainSid] += data.Count;
+                        }
                     }
                 }
             }
+
             if (healthcheckData.ComputerAccountData != null && healthcheckData.ComputerAccountData.ListDomainSidHistory != null
                 && healthcheckData.ComputerAccountData.ListDomainSidHistory.Count > 0)
             {
@@ -43,12 +48,17 @@ namespace PingCastle.Healthcheck.Rules
                     if (data.FriendlyName.StartsWith("S-1-5-21", StringComparison.InvariantCultureIgnoreCase))
                     {
                         if (!domainList.ContainsKey(data.DomainSid))
+                        {
                             domainList.Add(data.DomainSid, data.Count);
+                        }
                         else
+                        {
                             domainList[data.DomainSid] += data.Count;
+                        }
                     }
                 }
             }
+
             if (domainList.Count > 0)
             {
                 foreach (string domain in domainList.Keys)
@@ -56,6 +66,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(domain, domainList[domain]);
                 }
             }
+
             return null;
         }
     }

@@ -18,9 +18,15 @@ namespace PingCastle.Healthcheck.Rules
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.UserAccountData.NumberActive <= 10)
+            {
                 return 0;
+            }
+
             if (healthcheckData.UserAccountData.Number == 0)
+            {
                 return 0;
+            }
+
             return 100 * healthcheckData.UserAccountData.NumberInactive / healthcheckData.UserAccountData.Number;
         }
     }

@@ -30,6 +30,7 @@ namespace PingCastle.misc
                 Trace.WriteLine(logPrefix + "No handle " + error);
                 return false;
             }
+
             Trace.WriteLine(logPrefix + "Handle acquired");
             var t = new Microsoft.Win32.SafeHandles.SafeFileHandle(p, true);
             t.Close();

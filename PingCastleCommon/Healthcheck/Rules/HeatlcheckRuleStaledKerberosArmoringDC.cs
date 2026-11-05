@@ -22,6 +22,7 @@ namespace PingCastle.Healthcheck.Rules
             {
                 return null;
             }
+
             if (healthcheckData.GPOLsaPolicy != null)
             {
                 foreach (GPPSecurityPolicy policy in healthcheckData.GPOLsaPolicy)
@@ -30,15 +31,18 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         continue;
                     }
+
                     var refGPO = healthcheckData.GPOInfoDic[policy.GPOId];
                     if (refGPO.IsDisabled)
                     {
                         continue;
                     }
+
                     if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
                     {
                         continue;
                     }
+
                     foreach (GPPSecurityPolicyProperty property in policy.Properties)
                     {
                         if (property.Property == "CbacAndArmorLevel")
@@ -48,8 +52,12 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             if (!found)
+            {
                 return 1;
+            }
+
             return 0;
         }
     }

@@ -13,7 +13,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleMaturityLevel(1)]
     [RuleMitreAttackTechnique(MitreAttackTechnique.ValidAccountsLocalAccounts)]
     [RuleMitreAttackMitigation(MitreAttackMitigation.ActiveDirectoryConfiguration)]
-    [RuleIntroducedIn(2,10,1)]
+    [RuleIntroducedIn(2, 10, 1)]
     public class HeatlcheckRuleAnomalyGuest : RuleBase<HealthcheckData>
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)

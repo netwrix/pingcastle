@@ -26,6 +26,7 @@ namespace PingCastle.Healthcheck.Rules
                     w2000++;
                 }
             }
+
             return w2000;
         }
     }

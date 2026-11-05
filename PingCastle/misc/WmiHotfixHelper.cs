@@ -181,7 +181,9 @@ namespace PingCastle.misc
         private void ExtractKbFromString(string input, HashSet<string> hotfixes)
         {
             if (string.IsNullOrEmpty(input))
+            {
                 return;
+            }
 
             var matches = KbRegex.Matches(input);
             foreach (Match match in matches)

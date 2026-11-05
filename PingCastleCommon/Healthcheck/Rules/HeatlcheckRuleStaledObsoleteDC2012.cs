@@ -21,9 +21,15 @@ namespace PingCastle.Healthcheck.Rules
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (DateTime.Now < new DateTime(2023, 10, 10))
+            {
                 return null;
+            }
+
             if (HeatlcheckRuleStaledObsolete2012.IPaidSupportWin2012)
+            {
                 return 0;
+            }
+
             int w2012 = 0;
             foreach (var dc in healthcheckData.DomainControllers)
             {
@@ -32,6 +38,7 @@ namespace PingCastle.Healthcheck.Rules
                     w2012++;
                 }
             }
+
             return w2012;
         }
     }

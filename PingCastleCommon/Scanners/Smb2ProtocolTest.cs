@@ -112,6 +112,7 @@ public class Smb2ProtocolTest
             Trace.WriteLine("Error with " + server + "(port closed)");
             return null;
         }
+
         try
         {
             NetworkStream stream = client.GetStream();

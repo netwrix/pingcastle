@@ -26,10 +26,14 @@ namespace PingCastle.Healthcheck.Rules
                     var sidpart = delegation.Account.Split('-');
                     // ignore well known admin group
                     if (int.Parse(sidpart[sidpart.Length - 1]) < 1000)
+                    {
                         continue;
+                    }
+
                     AddRawDetail(delegation.DistinguishedName, delegation.Account, delegation.Right);
                 }
             }
+
             return null;
         }
     }

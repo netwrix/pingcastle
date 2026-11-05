@@ -89,7 +89,9 @@ namespace PingCastle
             return RunTask("Generate Entra ID Key",
                     () =>
                     {
-                        Ui.DisplayMessage(new List<string> { "Go to portal.azure.com",
+                        Ui.DisplayMessage(new List<string>
+                        {
+                            "Go to portal.azure.com",
                         "Open Microsoft Entra ID",
                         "Go to App registrations",
                         "Select new registration and create an app.",
@@ -99,7 +101,8 @@ namespace PingCastle
                         "Go to Roles adn administrators",
                         "Select the role Global Reader",
                         "Click on Add assignments and add the previously created account",
-                        "Make sure the App registration is listed on Assignments before leaving" });
+                        "Make sure the App registration is listed on Assignments before leaving"
+                        });
 
                         var tenant = "pingcastle.com";
                         PingCastle.Cloud.Credentials.CertificateBuilder.GenerateAzureADCertificate(tenant, "vletoux", DateTime.Now.AddYears(2));
@@ -126,7 +129,7 @@ namespace PingCastle
                 scanner.Initialize(Settings);
 
                 // Only call QueryForAdditionalParameterInInteractiveMode if Server is not already set
-                if (string.IsNullOrEmpty(Settings.Server) 
+                if (string.IsNullOrEmpty(Settings.Server)
                     && scanner.QueryForAdditionalParameterInInteractiveMode() != DisplayState.Run)
                 {
                     return;
@@ -173,7 +176,11 @@ namespace PingCastle
                         for (; ; )
                         {
                             string domain = null;
-                            if (!queue.Dequeue(out domain)) break;
+                            if (!queue.Dequeue(out domain))
+                            {
+                                break;
+                            }
+
                             try
                             {
                                 if (!License.IsAllowedDomain(domain))
@@ -204,16 +211,19 @@ namespace PingCastle
                         threads[i] = new Thread(threadFunction);
                         threads[i].Start();
                     }
+
                     foreach (var domain in domains)
                     {
                         queue.Enqueue(domain.domain);
                     }
+
                     queue.Quit();
                     Trace.WriteLine("examining domains file completed. Waiting for worker thread to complete");
                     for (int i = 0; i < numberOfThread; i++)
                     {
                         threads[i].Join();
                     }
+
                     Trace.WriteLine("Done examining domains");
                 }
                 catch (Exception ex)
@@ -227,8 +237,12 @@ namespace PingCastle
                     for (int i = 0; i < numberOfThread; i++)
                     {
                         if (threads[i] != null)
+                        {
                             if (threads[i].ThreadState == System.Threading.ThreadState.Running)
+                            {
                                 threads[i].Abort();
+                            }
+                        }
                     }
                 }
             });
@@ -238,6 +252,7 @@ namespace PingCastle
                 Trace.WriteLine("Performing demo report transformation");
                 consolidation = PingCastleReportHelper<HealthcheckData>.TransformReportsToDemo(consolidation);
             }
+
             if (!RunTask("Healthcheck consolidation",
                 () =>
                 {
@@ -250,7 +265,11 @@ namespace PingCastle
                     nodeAnalyzer.CenterDomainForSimpliedGraph = Settings.CenterDomainForSimpliedGraph;
                     nodeAnalyzer.GenerateReportFile("ad_carto_simple_node_map.html");
                 }
-            )) return false;
+            ))
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -260,6 +279,7 @@ namespace PingCastle
             {
                 return RetrieveSettingsViaAPI();
             }
+
             return false;
         }
 
@@ -294,6 +314,7 @@ namespace PingCastle
                     Trace.WriteLine(ex.Message);
                 }
             }
+
             return false;
         }
 
@@ -308,6 +329,7 @@ namespace PingCastle
             {
                 AnalysisTask<T>(server);
             }
+
             return true;
         }
 
@@ -345,10 +367,12 @@ namespace PingCastle
                             Trace.WriteLine("Rule " + rule.RiskID + " ignored because not found");
                             continue;
                         }
+
                         if (rule.MaturityLevel != null)
                         {
                             hcrule.MaturityLevel = (int)rule.MaturityLevel;
                         }
+
                         if (rule.Computation != null && rule.Computation.Count > 0)
                         {
                             var computations = new List<RuleComputationAttribute>();
@@ -366,8 +390,10 @@ namespace PingCastle
                                     computations.Clear();
                                     break;
                                 }
+
                                 computations.Add(new RuleComputationAttribute(type, c.Score, c.Threshold, c.Order));
                             }
+
                             if (computations.Count > 0)
                             {
                                 hcrule.RuleComputation.Clear();
@@ -382,11 +408,20 @@ namespace PingCastle
         public bool CompleteTasks()
         {
             if (!string.IsNullOrEmpty(Settings.sendXmlTo))
+            {
                 SendEmail(Settings.sendXmlTo, true, false);
+            }
+
             if (!string.IsNullOrEmpty(Settings.sendHtmlTo))
+            {
                 SendEmail(Settings.sendHtmlTo, false, true);
+            }
+
             if (!string.IsNullOrEmpty(Settings.sendAllTo))
+            {
                 SendEmail(Settings.sendAllTo, true, true);
+            }
+
             if (!string.IsNullOrEmpty(Settings.sharepointdirectory))
             {
                 // TODO: remove this functionality (unused ?) or add AAD support
@@ -395,8 +430,12 @@ namespace PingCastle
                     UploadToWebsite(HealthcheckData.GetMachineReadableFileName(domain, dateReports.ContainsKey(domain) ? dateReports[domain] : DateTime.Now), xmlreports[domain]);
                 }
             }
+
             if (!String.IsNullOrEmpty(Settings.apiKey) && !String.IsNullOrEmpty(Settings.apiEndpoint))
+            {
                 SendViaAPI(xmlreports, aadjsonreport);
+            }
+
             return true;
         }
 
@@ -418,9 +457,9 @@ namespace PingCastle
                             {
                                 DisplayAdvancement("Personal data will NOT be included in the .xml file (add --level Full to add it. Ex: PingCastle.exe --interactive --level Full)");
                             }
+
                             pingCastleReport.SetExportLevel(ExportLevel);
                             DataHelper<HealthcheckData>.SaveAsXml(pingCastleReport, pingCastleReport.GetMachineReadableFileName(), Settings.EncryptReport);
-
                         }
 
                         var reportConso = new ReportHealthCheckConsolidation(License);
@@ -517,8 +556,8 @@ namespace PingCastle
                         {
                             xs.Serialize(wr2, rules);
                         }
-                        xmlDoc.Save("PingCastleRules.xml");
 
+                        xmlDoc.Save("PingCastleRules.xml");
                     }
             );
         }
@@ -536,6 +575,7 @@ namespace PingCastle
                 Trace.WriteLine("Setting reachable domains to on because interactive + server = *");
                 Settings.AnalyzeReachableDomains = true;
             }
+
             if (server.Contains("*"))
             {
                 List<string> domains = GetListOfDomainToExploreFromGenericName(server);
@@ -553,7 +593,6 @@ namespace PingCastle
 
                     PerformTheAnalysis(domain);
                 }
-
             }
             else
             {
@@ -574,24 +613,38 @@ namespace PingCastle
                             string attributes = TrustAnalyzer.GetTrustAttribute(trust.TrustAttributes);
                             string direction = TrustAnalyzer.GetTrustDirection(trust.TrustDirection);
                             if (direction.Contains("Inbound") || direction.Contains("Disabled"))
+                            {
                                 continue;
+                            }
+
                             if (attributes.Contains("Intra-Forest"))
+                            {
                                 continue;
+                            }
+
                             // explore forest trust only if explore forest trust is set
                             if (attributes.Contains("Forest Trust"))
                             {
                                 if (Settings.ExploreForestTrust)
                                 {
                                     if (!ShouldTheDomainBeNotExplored(trust.TrustPartner))
+                                    {
                                         domainToExamine.Add(trust.TrustPartner);
+                                    }
                                     else
+                                    {
                                         Trace.WriteLine("Domain " + trust.TrustPartner + " not to explore (direct domain)");
+                                    }
+
                                     if (trust.KnownDomains != null)
                                     {
                                         foreach (var di in trust.KnownDomains)
                                         {
                                             if (!ShouldTheDomainBeNotExplored(di.DnsName))
+                                            {
                                                 domainToExamine.Add(di.DnsName);
+                                            }
+
                                             Trace.WriteLine("Domain " + di.DnsName + " not to explore (known domain)");
                                         }
                                     }
@@ -602,12 +655,17 @@ namespace PingCastle
                                 if (Settings.ExploreTerminalDomains)
                                 {
                                     if (!ShouldTheDomainBeNotExplored(trust.TrustPartner))
+                                    {
                                         domainToExamine.Add(trust.TrustPartner);
+                                    }
                                     else
+                                    {
                                         Trace.WriteLine("Domain " + trust.TrustPartner + "not to explore (terminal domain)");
+                                    }
                                 }
                             }
                         }
+
                         Ui.DisplayHighlight("List of domains that will be queried");
                         Trace.WriteLine("List of domains that will be queried");
                         foreach (var domain in domainToExamine)
@@ -615,6 +673,7 @@ namespace PingCastle
                             Ui.DisplayWarning(domain);
                             Trace.WriteLine(domain);
                         }
+
                         Trace.WriteLine("End selection");
                         foreach (string domain in domainToExamine)
                         {
@@ -622,9 +681,11 @@ namespace PingCastle
                         }
                     }
                 }
+
                 Trace.WriteLine("done additional exploration");
                 return hcData != null;
             }
+
             return true;
         }
 
@@ -670,7 +731,10 @@ namespace PingCastle
         bool ShouldTheDomainBeNotExplored(string domainToCheck)
         {
             if (Settings.DomainToNotExplore == null)
+            {
                 return false;
+            }
+
             foreach (string domain in Settings.DomainToNotExplore)
             {
                 if (domainToCheck.Equals(domain, StringComparison.InvariantCultureIgnoreCase))
@@ -679,6 +743,7 @@ namespace PingCastle
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -706,15 +771,13 @@ namespace PingCastle
                         AdditionalNamesForDelegationAnalysis = NodesToInvestigate,
                     });
                     string domain = pingCastleReport.Domain.DomainName;
-                    DisplayAdvancement("Generating html report");
-                    var enduserReportGenerator = new ReportHealthCheckSingle(License);
-                    htmlreports[domain] = enduserReportGenerator.GenerateReportFile(pingCastleReport, pingCastleReport.GetHumanReadableFileName());
                     DisplayAdvancement("Generating xml file for consolidation report" + (Settings.EncryptReport ? " (encrypted)" : ""));
                     DisplayAdvancement("Export level is " + ExportLevel);
                     if (ExportLevel != PingCastleReportDataExportLevel.Full)
                     {
                         DisplayAdvancement("Personal data will NOT be included in the .xml file (add --level Full to add it. Ex: PingCastle.exe --interactive --level Full)");
                     }
+
                     pingCastleReport.SetExportLevel(ExportLevel);
                     xmlreports[domain] = DataHelper<HealthcheckData>.SaveAsXml(pingCastleReport, pingCastleReport.GetMachineReadableFileName(), Settings.EncryptReport);
                     if (Settings.JsonExport)
@@ -722,6 +785,10 @@ namespace PingCastle
                         DisplayAdvancement("Generating json file");
                         jsonreports[domain] = DataHelper<HealthcheckData>.SaveAsJson(pingCastleReport, pingCastleReport.GetJsonFileName());
                     }
+
+                    DisplayAdvancement("Generating html report");
+                    var enduserReportGenerator = new ReportHealthCheckSingle(License);
+                    htmlreports[domain] = enduserReportGenerator.GenerateReportFile(pingCastleReport, pingCastleReport.GetHumanReadableFileName());
                     dateReports[domain] = pingCastleReport.GenerationDate;
                     DisplayAdvancement("Done");
                 });
@@ -739,6 +806,7 @@ namespace PingCastle
                             WriteInRed("No report has been found. Please generate one with PingCastle and try again. The task will stop.");
                             return;
                         }
+
                         if (typeof(T) == typeof(HealthcheckData))
                         {
                             var hcconso = consolidation as PingCastleReportCollection<HealthcheckData>;
@@ -791,10 +859,10 @@ namespace PingCastle
                                 {
                                     report = HealthCheckCloudData.LoadFromStream(sr);
                                 }
+
                                 report.CheckIntegrity();
                                 var reportGenerator = new ReportCloud();
                                 reportGenerator.GenerateReportFile(report, License, "pingcastlecloud_" + report.TenantName + ".html");
-
                             }
                         }
                         else if (fi.Name.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
@@ -804,6 +872,7 @@ namespace PingCastle
                             {
                                 DisplayAdvancement("The xml report does not contain personal data. Current reporting level is: " + healthcheckData.Level);
                             }
+
                             var endUserReportGenerator = new ReportHealthCheckSingle(License);
                             endUserReportGenerator.GenerateReportFile(healthcheckData, healthcheckData.GetHumanReadableFileName());
                         }
@@ -858,6 +927,7 @@ namespace PingCastle
                     {
                         sw.Write(report.ToJsonString());
                     }
+
                     aadjsonreport[report.TenantName] = "pingcastlecloud_" + report.TenantName + ".json.gz";
 
                     var reportGenerator = new ReportCloud();
@@ -872,7 +942,10 @@ namespace PingCastle
                 () =>
                 {
                     if (String.IsNullOrEmpty(Settings.apiKey) || String.IsNullOrEmpty(Settings.apiEndpoint))
+                    {
                         throw new PingCastleException("API end point not available");
+                    }
+
                     var files = new List<string>(Directory.GetFiles(Directory.GetCurrentDirectory(), "*ad_*.xml", SearchOption.AllDirectories));
                     files.AddRange(Directory.GetFiles(Directory.GetCurrentDirectory(), "pingcastlecloud_*.json.gz", SearchOption.AllDirectories));
                     files.Sort();
@@ -888,6 +961,7 @@ namespace PingCastle
                             SendViaAPI(reports, aadreports);
                             reports.Clear();
                         }
+
                         if (!file.EndsWith(".json.gz", StringComparison.OrdinalIgnoreCase))
                         {
                             string filename = Path.GetFileNameWithoutExtension(file);
@@ -897,10 +971,14 @@ namespace PingCastle
                         {
                             aadreports.Add(new KeyValuePair<string, string>(file, file));
                         }
+
                         i++;
                     }
+
                     if (reports.Count > 0 || aadreports.Count > 0)
+                    {
                         SendViaAPI(reports, aadreports);
+                    }
                 }
             );
         }
@@ -915,12 +993,14 @@ namespace PingCastle
                         {
                             Directory.CreateDirectory(path);
                         }
+
                         var consolidation = PingCastleReportHelper<HealthcheckData>.LoadXmls(Settings.InputDirectory, Settings.FilterReportDate);
                         if (consolidation.Count == 0)
                         {
                             WriteInRed("No report has been found. Please generate one with PingCastle and the Health Check mode. The program will stop.");
                             return;
                         }
+
                         consolidation = PingCastleReportHelper<HealthcheckData>.TransformReportsToDemo(consolidation);
                         foreach (HealthcheckData data in consolidation)
                         {
@@ -930,7 +1010,6 @@ namespace PingCastle
                             data.SetExportLevel(ExportLevel);
                             string xml = DataHelper<HealthcheckData>.SaveAsXml(data, Path.Combine(path, data.GetMachineReadableFileName()), Settings.EncryptReport);
                         }
-
                     }
                 );
         }
@@ -951,6 +1030,7 @@ namespace PingCastle
                 Trace.WriteLine("Using proxy:" + client.Proxy.GetProxy(new Uri(Settings.apiEndpoint)));
                 Trace.WriteLine("Is bypassed:" + client.Proxy.IsBypassed(new Uri(Settings.apiEndpoint)));
             }
+
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
             client.Headers.Add(HttpRequestHeader.ContentType, "application/json");
             client.Headers.Add(HttpRequestHeader.UserAgent, "PingCastle " + version.ToString(4));
@@ -967,6 +1047,7 @@ namespace PingCastle
                 catch
                 {
                 }
+
                 // try enable TLS1.2
                 try
                 {
@@ -975,6 +1056,7 @@ namespace PingCastle
                 catch
                 {
                 }
+
                 // try enable TLS1.3
                 try
                 {
@@ -983,6 +1065,7 @@ namespace PingCastle
                 catch
                 {
                 }
+
                 string location = Dns.GetHostEntry(Environment.MachineName).HostName;
                 Trace.WriteLine("location: " + location);
                 Trace.WriteLine("apikey: " + Settings.apiKey);
@@ -1000,6 +1083,7 @@ namespace PingCastle
                     WriteInRed("See kb3140245 and KB4019276 for TLS 1.2");
                     WriteInRed("Be sure also that .NET has been patched to handle the TLS version");
                 }
+
                 if (ex.Response != null)
                 {
                     var responseStream = ex.Response.GetResponseStream();
@@ -1012,6 +1096,7 @@ namespace PingCastle
                         }
                     }
                 }
+
                 throw new UnauthorizedAccessException(ex.Message);
             }
         }
@@ -1045,7 +1130,10 @@ namespace PingCastle
                         {
                             string responseText = reader.ReadToEnd();
                             if (string.IsNullOrEmpty(responseText))
+                            {
                                 responseText = ex.Message;
+                            }
+
                             throw new PingCastleException(responseText);
                         }
                     }
@@ -1054,6 +1142,7 @@ namespace PingCastle
                 {
                     Trace.WriteLine("WebException response null");
                 }
+
                 throw;
             }
         }
@@ -1086,7 +1175,10 @@ namespace PingCastle
                         {
                             string responseText = reader.ReadToEnd();
                             if (string.IsNullOrEmpty(responseText))
+                            {
                                 responseText = ex.Message;
+                            }
+
                             throw new PingCastleException(responseText);
                         }
                     }
@@ -1095,6 +1187,7 @@ namespace PingCastle
                 {
                     Trace.WriteLine("WebException response null");
                 }
+
                 throw;
             }
         }
@@ -1106,6 +1199,7 @@ namespace PingCastle
             public int Threshold { get; set; }
             public int Order { get; set; }
         }
+
         public class CustomRule
         {
             public string RiskID { get; set; }
@@ -1134,7 +1228,6 @@ namespace PingCastle
                 // TinyJson is extracted from https://github.com/zanders3/json
                 // MIT License
                 _apiAgentSettings = JSONParser.FromJson<AgentSettings>(answer);
-
             }
             catch (WebException ex)
             {
@@ -1148,6 +1241,7 @@ namespace PingCastle
                         return;
                     }
                 }
+
                 Trace.WriteLine("Status: " + ex.Status);
                 Trace.WriteLine("Message: " + ex.Message);
                 if (ex.Response != null)
@@ -1159,7 +1253,10 @@ namespace PingCastle
                         {
                             string responseText = reader.ReadToEnd();
                             if (string.IsNullOrEmpty(responseText))
+                            {
                                 responseText = ex.Message;
+                            }
+
                             throw new PingCastleException(responseText);
                         }
                     }
@@ -1168,6 +1265,7 @@ namespace PingCastle
                 {
                     Trace.WriteLine("WebException response null");
                 }
+
                 throw;
             }
         }
@@ -1178,7 +1276,10 @@ namespace PingCastle
                     () =>
                     {
                         if (!Settings.apiEndpoint.EndsWith("/"))
+                        {
                             Settings.apiEndpoint += "/";
+                        }
+
                         Trace.WriteLine("apiendpoint: " + Settings.apiEndpoint);
                         using (WebClient client = new WebClient())
                         {
@@ -1192,6 +1293,7 @@ namespace PingCastle
                                 WriteInRed("Login failed (" + ex.Message + ")");
                                 return;
                             }
+
                             foreach (KeyValuePair<string, string> report in xmlreports)
                             {
                                 try
@@ -1209,13 +1311,14 @@ namespace PingCastle
                                     DisplayException(null, ex);
                                 }
                             }
+
                             foreach (KeyValuePair<string, string> report in jsonreports)
                             {
                                 try
                                 {
                                     using (var stream = File.OpenRead(report.Value))
                                     {
-                                        string answer = SendViaAPIUploadOneAADReport(client, report.Key, stream);
+                                        string answer = SendViaAPIUploadOneAADReport(client, report.Value, stream);
                                         DisplayAdvancement(report.Key + "-" + (String.IsNullOrEmpty(answer) ? "OK" : answer));
                                     }
                                 }
@@ -1240,7 +1343,10 @@ namespace PingCastle
                     () =>
                     {
                         if (!Settings.apiEndpoint.EndsWith("/"))
+                        {
                             Settings.apiEndpoint += "/";
+                        }
+
                         Trace.WriteLine("apiendpoint: " + Settings.apiEndpoint);
                         using (WebClient client = new WebClient())
                         {
@@ -1255,6 +1361,7 @@ namespace PingCastle
                                 ret = false;
                                 return;
                             }
+
                             try
                             {
                                 PullSettings(client);
@@ -1295,33 +1402,52 @@ This is the PingCastle program sending reports for:
                 foreach (string domain in xmlreports.Keys)
                 {
                     if (!domains.Contains(domain))
+                    {
                         domains.Add(domain);
+                    }
+
                     Files.Add(Attachment.CreateAttachmentFromString(xmlreports[domain], HealthcheckData.GetMachineReadableFileName(domain, dateReports.ContainsKey(domain) ? dateReports[domain] : DateTime.Now)));
                 }
+
                 foreach (string tenant in aadjsonreport.Keys)
                 {
                     if (!domains.Contains(tenant))
+                    {
                         domains.Add(tenant);
+                    }
+
                     Files.Add(new Attachment(aadjsonreport[tenant]));
                 }
             }
+
             if (html)
             {
                 foreach (string domain in htmlreports.Keys)
                 {
                     if (!domains.Contains(domain))
+                    {
                         domains.Add(domain);
+                    }
+
                     Files.Add(Attachment.CreateAttachmentFromString(htmlreports[domain], HealthcheckData.GetHumanReadableFileName(domain, dateReports.ContainsKey(domain) ? dateReports[domain] : DateTime.Now)));
                 }
+
                 foreach (string tenant in aadhtmlreport.Keys)
                 {
                     if (!domains.Contains(tenant))
+                    {
                         domains.Add(tenant);
+                    }
+
                     Files.Add(new Attachment(aadhtmlreport[tenant]));
                 }
             }
+
             if (Files.Count == 0)
+            {
                 return;
+            }
+
             SendEmail(email, domains, Files);
         }
 
@@ -1405,9 +1531,14 @@ This is the PingCastle program sending reports for:
                     {
                         WebClient client = new WebClient();
                         if (!String.IsNullOrEmpty(Settings.sharepointuser))
+                        {
                             client.Credentials = new NetworkCredential(Settings.sharepointuser, Settings.sharepointpassword);
+                        }
                         else
+                        {
                             client.UseDefaultCredentials = true;
+                        }
+
                         string url = Settings.sharepointdirectory + (Settings.sharepointdirectory.EndsWith("/") ? null : "/") + filename;
                         Trace.WriteLine("url: " + url);
                         client.UploadData(url, "PUT", Encoding.UTF8.GetBytes(filecontent));
@@ -1431,7 +1562,6 @@ This is the PingCastle program sending reports for:
             return RunTask("Running Export",
                     () =>
                     {
-
                         if (Settings.Export == null)
                         {
                             DisplayAdvancement("No export selected");
@@ -1450,7 +1580,10 @@ This is the PingCastle program sending reports for:
                         DisplayAdvancement("Running export " + name);
                         export.Initialize(Settings);
                         if (export.QueryForAdditionalParameterInInteractiveMode() != DisplayState.Run)
+                        {
                             return;
+                        }
+
                         string file = "ad_export_" + name + "_" + Settings.Server + ".txt";
                         export.Export(file);
                         DisplayAdvancement("Results saved to " + new FileInfo(file).FullName);
@@ -1589,6 +1722,7 @@ This is the PingCastle program sending reports for:
                     WriteInRed("Note: you can run the program with the switch --log to get more detail");
                     Trace.WriteLine("An exception occured when doing the task: " + taskName);
                 }
+
                 WriteInRed("Exception: " + ex.Message);
                 Trace.WriteLine("Type:" + ex.GetType());
 

@@ -4,26 +4,33 @@
 //
 // Licensed under the Non-Profit OSL. See LICENSE file in the project root for full license information.
 //
+
+namespace PingCastle.Healthcheck.Rules;
+
+using System;
 using PingCastle.Rules;
 
-namespace PingCastle.Healthcheck.Rules
+[RuleModel("T-Inactive", RiskRuleCategory.Trusts, RiskModelCategory.TrustInactive)]
+[RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
+[RuleDurANSSI(2, "trusts_accounts", "Trust account passwords unchanged for more than a year")]
+[RuleMitreAttackTechnique(MitreAttackTechnique.ManintheMiddle)]
+public class HeatlcheckRuleTrustInactive : RuleBase<HealthcheckData>
 {
-    [RuleModel("T-Inactive", RiskRuleCategory.Trusts, RiskModelCategory.TrustInactive)]
-    [RuleComputation(RuleComputationType.TriggerOnPresence, 20)]
-    [RuleDurANSSI(2, "trusts_accounts", "Trust account passwords unchanged for more than a year")]
-    [RuleMitreAttackTechnique(MitreAttackTechnique.ManintheMiddle)]
-    public class HeatlcheckRuleTrustInactive : RuleBase<HealthcheckData>
+    protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
     {
-        protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
+        foreach (HealthCheckTrustData trust in healthcheckData.Trusts)
         {
-            foreach (HealthCheckTrustData trust in healthcheckData.Trusts)
+            if (!trust.IsActive)
             {
-                if (!trust.IsActive)
+                if (trust.TrustType == 5 || string.Compare(trust.TrustPartner, "kerberos.microsoftonline.com", StringComparison.OrdinalIgnoreCase) == 0)
                 {
-                    AddRawDetail(trust.TrustPartner);
+                    continue;
                 }
+
+                AddRawDetail(trust.TrustPartner);
             }
-            return null;
         }
+
+        return null;
     }
 }

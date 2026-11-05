@@ -58,7 +58,10 @@ namespace PingCastle.Rules
         protected virtual int? AnalyzeDataNew(T healthcheckData, ICollection<DomainKey> AllowedMigrationDomains)
         {
             if (AllowedMigrationDomains == null)
+            {
                 return AnalyzeDataNew(healthcheckData);
+            }
+
             throw new NotImplementedException();
         }
 
@@ -67,13 +70,14 @@ namespace PingCastle.Rules
         private ResourceManager _resourceManager;
         protected ResourceManager ResourceManager
         {
-            get 
-            { 
-                if(_resourceManager != null)
+            get
+            {
+                if (_resourceManager != null)
                 {
                     return _resourceManager;
                 }
-                _resourceManager = InitResourceManager(); 
+
+                _resourceManager = InitResourceManager();
                 return _resourceManager;
             }
         }
@@ -108,6 +112,7 @@ namespace PingCastle.Rules
             {
                 throw new NotImplementedException();
             }
+
             ReloadResource();
         }
 
@@ -129,7 +134,10 @@ namespace PingCastle.Rules
 
             RuleComputation = new List<RuleComputationAttribute>((RuleComputationAttribute[])GetType().GetCustomAttributes(typeof(RuleComputationAttribute), true));
             if (RuleComputation.Count == 0)
+            {
                 throw new NotImplementedException();
+            }
+
             RuleComputation.Sort((RuleComputationAttribute a, RuleComputationAttribute b)
                 =>
             {
@@ -146,17 +154,25 @@ namespace PingCastle.Rules
                 {
                     lines[i] = "<a href=\"" + lines[i] + "\">" + lines[i] + "</a>";
                 }
+
                 Documentation = string.Join("<br>\r\n", lines);
             }
+
             object[] frameworks = GetType().GetCustomAttributes(typeof(RuleFrameworkReference), true);
             if (frameworks != null && frameworks.Length != 0)
             {
                 if (!String.IsNullOrEmpty(Documentation))
+                {
                     Documentation += "<br>\r\n";
+                }
+
                 for (int i = 0; i < frameworks.Length; i++)
                 {
                     if (i > 0)
+                    {
                         Documentation += "<br>\r\n";
+                    }
+
                     Documentation += ((RuleFrameworkReference)frameworks[i]).GenerateLink();
                 }
             }
@@ -166,11 +182,14 @@ namespace PingCastle.Rules
             {
                 MaturityLevel = 0;
             }
+
             MaturityLevel = 6;
             foreach (var m in ruleMaturity)
             {
                 if (MaturityLevel > m.Level)
+                {
                     MaturityLevel = m.Level;
+                }
             }
         }
 
@@ -192,7 +211,9 @@ namespace PingCastle.Rules
         public void AddExtraDetail(ExtraDetail detail)
         {
             if (ExtraDetails == null)
+            {
                 ExtraDetails = new List<ExtraDetail>();
+            }
 
             ExtraDetails.Add(detail);
         }
@@ -212,8 +233,11 @@ namespace PingCastle.Rules
             {
                 valueReturnedByAnalysis = 0;
                 if (Details != null)
+                {
                     valueReturnedByAnalysis = Details.Count;
+                }
             }
+
             foreach (var computation in RuleComputation)
             {
                 int points = 0;
@@ -225,6 +249,7 @@ namespace PingCastle.Rules
                     break;
                 }
             }
+
             return hasTheRuleMatched;
         }
 
@@ -242,6 +267,7 @@ namespace PingCastle.Rules
                     break;
                 }
             }
+
             return hasTheRuleMatched;
         }
 
@@ -258,6 +284,7 @@ namespace PingCastle.Rules
                 {
                     Rationale = Rationale.Replace("{count}", valueReturnedByAnalysis.ToString());
                 }
+
                 Rationale = Rationale.Replace("{threshold}", computation.Threshold.ToString());
                 foreach (var data in ReplacementToDo)
                 {
@@ -286,6 +313,7 @@ namespace PingCastle.Rules
                     output2[entry.Value.Key] = entry.Value.Value;
                 }
             }
+
             return output2;
         }
 
@@ -302,18 +330,22 @@ namespace PingCastle.Rules
                 {
                     continue;
                 }
+
                 var refGPO = healthcheckData.GPOInfoDic[entry.Key.GPOId];
                 if (refGPO.IsDisabled)
                 {
                     continue;
                 }
+
                 if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
                 {
                     continue;
                 }
+
                 Trace.WriteLine("Step 1: " + refGPO.GPOName);
                 GPOData2[refGPO] = entry.Value;
             }
+
             Trace.WriteLine("Step 1: dump");
             foreach (var a in GPOData2)
             {
@@ -323,6 +355,7 @@ namespace PingCastle.Rules
                     Trace.WriteLine("Step 1:       applied to : " + b);
                 }
             }
+
             // step2: project to the OU where the GPO is applied
             Trace.WriteLine("Step 2: projection");
             var applied = new Dictionary<string, Dictionary<int, KeyValuePair<IGPOReference, X>>>();
@@ -336,11 +369,16 @@ namespace PingCastle.Rules
                     {
                         order = v.AppliedOrder[i];
                     }
+
                     if (!applied.ContainsKey(a))
+                    {
                         applied[a] = new Dictionary<int, KeyValuePair<IGPOReference, X>>();
+                    }
+
                     applied[a][order] = new KeyValuePair<IGPOReference, X>(v, GPOData2[v]);
                 }
             }
+
             foreach (var a in applied)
             {
                 Trace.WriteLine("Step 2: OU " + a.Key);
@@ -365,15 +403,18 @@ namespace PingCastle.Rules
                         w = v.Value;
                     }
                 }
+
                 if (w != null)
                 {
                     applied2[a] = (KeyValuePair<IGPOReference, X>)w;
                 }
             }
+
             foreach (var i in applied2)
             {
                 Trace.WriteLine("Step 3: " + i.Key + " gpo " + i.Value.Key.GPOName);
             }
+
             return applied2;
         }
 

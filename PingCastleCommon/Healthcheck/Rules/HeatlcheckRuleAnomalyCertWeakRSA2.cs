@@ -34,6 +34,7 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     Trace.WriteLine("Non RSA key detected in certificate");
                 }
+
                 if (key != null)
                 {
                     RSAParameters rsaparams = key.ExportParameters(false);
@@ -54,6 +55,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

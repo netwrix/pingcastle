@@ -20,8 +20,15 @@ namespace PingCastle.Scanners
         private readonly IIdentityProvider _identityProvider;
         private readonly IWindowsNativeMethods _nativeMethods;
 
-        public string Name { get { return "aclcheck"; } }
-        public string Description { get { return "Check authorization related to users or groups. Default to everyone, authenticated users and domain users"; } }
+        public string Name
+        {
+            get { return "aclcheck"; }
+        }
+
+        public string Description
+        {
+            get { return "Check authorization related to users or groups. Default to everyone, authenticated users and domain users"; }
+        }
 
         List<KeyValuePair<SecurityIdentifier, string>> UsersToMatch;
         public static List<string> UserList = new List<string>();
@@ -83,19 +90,25 @@ namespace PingCastle.Scanners
                             {
                                 sw.WriteLine(x.DistinguishedName + "\t" + match.Value.Value + "\tOwner");
                             }
+
                             foreach (ActiveDirectoryAccessRule accessrule in x.NTSecurityDescriptor.GetAccessRules(true, false, typeof(SecurityIdentifier)))
                             {
                                 // ignore audit / denied ace
                                 if (accessrule.AccessControlType != AccessControlType.Allow)
+                                {
                                     continue;
+                                }
+
                                 match = MatchesUsersToCheck(accessrule.IdentityReference);
                                 if (!match.HasValue)
+                                {
                                     continue;
+                                }
+
                                 if (MatchesBadACL(accessrule))
                                 {
                                     sw.WriteLine(x.DistinguishedName + "\t" + match.Value.Value + "\t" + accessrule.ActiveDirectoryRights.ToString());
                                 }
-
                             }
                         }
                     }
@@ -112,7 +125,9 @@ namespace PingCastle.Scanners
         private void EnrichDomainInfo(IADWebService adws, ADDomainInfo domainInfo)
         {
             // adding the domain sid
-            string[] properties = new string[] {"objectSid",
+            string[] properties = new string[]
+            {
+                "objectSid",
             };
             WorkOnReturnedObjectByADWS callback =
                 (ADItem aditem) =>
@@ -138,6 +153,7 @@ namespace PingCastle.Scanners
                 UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(new SecurityIdentifier(domainInfo.DomainSid.Value + "-515"), GraphObjectReference.DomainComputers));
                 return;
             }
+
             foreach (var user in UserList)
             {
                 var aditem = Search(adws, domainInfo, user);
@@ -146,13 +162,16 @@ namespace PingCastle.Scanners
                     DisplayAdvancement(user + " was not found");
                     continue;
                 }
+
                 if (aditem.ObjectSid == null)
                 {
                     DisplayAdvancement(user + " has been found but it is not an object with a SID and thus cannot be searched for");
                     continue;
                 }
+
                 UsersToMatch.Add(new KeyValuePair<SecurityIdentifier, string>(aditem.ObjectSid, user));
             }
+
             if (UsersToMatch.Count == 0)
             {
                 throw new PingCastleException("The scanner has not ACL to search for");
@@ -165,7 +184,9 @@ namespace PingCastle.Scanners
 
             var state = Settings.EnsureDataCompleted("Server");
             if (state != DisplayState.Run)
+            {
                 return state;
+            }
 
             UserList.Clear();
             do
@@ -183,7 +204,8 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
                 {
                     break;
                 }
-            } while (true);
+            }
+            while (true);
             return DisplayState.Run;
         }
 
@@ -193,15 +215,19 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
             foreach (var user in UsersToMatch)
             {
                 if (sid == user.Key)
+                {
                     return user;
+                }
             }
+
             return null;
         }
 
         private ADItem Search(IADWebService adws, ADDomainInfo domainInfo, string userName)
         {
             ADItem output = null;
-            string[] properties = new string[] {
+            string[] properties = new string[]
+            {
                         "distinguishedname",
                         "displayName",
                         "name",
@@ -224,17 +250,26 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
                                             "(sAMAccountName=" + ADConnection.EscapeLDAP(userName) + ")",
                                             properties, callback);
             if (output != null)
+            {
                 return output;
+            }
+
             adws.Enumerate(domainInfo.DefaultNamingContext,
                                             "(cn=" + ADConnection.EscapeLDAP(userName) + ")",
                                             properties, callback);
             if (output != null)
+            {
                 return output;
+            }
+
             adws.Enumerate(domainInfo.DefaultNamingContext,
                                             "(displayName=" + ADConnection.EscapeLDAP(userName) + ")",
                                             properties, callback);
             if (output != null)
+            {
                 return output;
+            }
+
             return output;
         }
 
@@ -245,21 +280,25 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
             {
                 return true;
             }
+
             // ADS_RIGHT_GENERIC_WRITE
             if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.GenericWrite) == ActiveDirectoryRights.GenericWrite)
             {
                 return true;
             }
+
             // ADS_RIGHT_WRITE_DAC
             if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteDacl) == ActiveDirectoryRights.WriteDacl)
             {
                 return true;
             }
+
             // ADS_RIGHT_WRITE_OWNER
             if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteOwner) == ActiveDirectoryRights.WriteOwner)
             {
                 return true;
             }
+
             if (accessrule.ObjectFlags == ObjectAceFlags.None)
             {
                 // ADS_RIGHT_DS_CONTROL_ACCESS
@@ -267,11 +306,13 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
                 {
                     return true;
                 }
+
                 // ADS_RIGHT_DS_SELF
                 if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.Self) == ActiveDirectoryRights.Self)
                 {
                     return true;
                 }
+
                 // ADS_RIGHT_DS_WRITE_PROP
                 if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteProperty) == ActiveDirectoryRights.WriteProperty)
                 {
@@ -291,6 +332,7 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
                         }
                     }
                 }
+
                 // ADS_RIGHT_DS_SELF
                 if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.Self) == ActiveDirectoryRights.Self)
                 {
@@ -302,6 +344,7 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
                         }
                     }
                 }
+
                 // ADS_RIGHT_DS_WRITE_PROP
                 if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.WriteProperty) == ActiveDirectoryRights.WriteProperty)
                 {
@@ -312,6 +355,7 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
                             return true;
                         }
                     }
+
                     foreach (KeyValuePair<Guid, RelationType> controlpropertyset in RelationFactory.GuidsControlPropertiesSets)
                     {
                         if (controlpropertyset.Key == accessrule.ObjectType)
@@ -320,6 +364,7 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
                         }
                     }
                 }
+
                 // ADS_RIGHT_DS_READ_PROP
                 if ((accessrule.ActiveDirectoryRights & ActiveDirectoryRights.ReadProperty) == ActiveDirectoryRights.ReadProperty)
                 {
@@ -332,6 +377,7 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
                     }
                 }
             }
+
             return false;
         }
 
@@ -342,10 +388,10 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
             {
                 pathToCheck.Add(script);
             }
+
             foreach (var gpo in Directory.GetDirectories(@"\\" + domainInfo.DnsHostName + @"\SYSVOL\" + domainInfo.DomainName + @"\policies", "*", SearchOption.TopDirectoryOnly))
             {
                 pathToCheck.Add(gpo);
-
             }
 
             BlockingQueue<string> queue = new BlockingQueue<string>(200);
@@ -353,14 +399,17 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
             Thread[] threads = new Thread[numberOfThread];
             try
             {
-
                 ThreadStart threadFunction = () =>
                 {
                     adws.ThreadInitialization();
                     for (; ; )
                     {
                         string path = null;
-                        if (!queue.Dequeue(out path)) break;
+                        if (!queue.Dequeue(out path))
+                        {
+                            break;
+                        }
+
                         try
                         {
                             CheckFilePermissionWithPath(domainInfo, sw, path);
@@ -383,14 +432,15 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
                 {
                     queue.Enqueue(path);
                 }
+
                 queue.Quit();
                 Trace.WriteLine("examining file completed. Waiting for worker thread to complete");
                 for (int i = 0; i < numberOfThread; i++)
                 {
                     threads[i].Join();
                 }
-                Trace.WriteLine("Done insert file");
 
+                Trace.WriteLine("Done insert file");
             }
             finally
             {
@@ -398,8 +448,12 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
                 for (int i = 0; i < numberOfThread; i++)
                 {
                     if (threads[i] != null)
+                    {
                         if (threads[i].ThreadState == System.Threading.ThreadState.Running)
+                        {
                             threads[i].Abort();
+                        }
+                    }
                 }
             }
         }
@@ -407,7 +461,10 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
         void CheckFilePermissionWithPath(ADDomainInfo domainInfo, StreamWriter sw, string path)
         {
             if (!Directory.Exists(path))
+            {
                 return;
+            }
+
             var dirs = new List<string>(Directory.GetDirectories(path, "*", SearchOption.AllDirectories));
             dirs.Insert(0, path);
             foreach (var dirname in dirs)
@@ -420,6 +477,7 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
                 {
                 }
             }
+
             foreach (var filename in Directory.GetFiles(path, "*.*", SearchOption.AllDirectories))
             {
                 try
@@ -437,21 +495,34 @@ Or just press enter to use the default (Everyone, Anonymous, Builtin\\Users, Aut
             var Owner = (SecurityIdentifier)security.GetOwner(typeof(SecurityIdentifier));
             var matchOwner = MatchesUsersToCheck(Owner);
             if (matchOwner.HasValue)
+            {
                 sw.WriteLine(name + "\t" + matchOwner.Value.Value + "\tOwner");
+            }
+
             var accessRules = security.GetAccessRules(true, includeInherited, typeof(SecurityIdentifier));
             if (accessRules == null)
+            {
                 return;
+            }
 
             foreach (FileSystemAccessRule accessrule in accessRules)
             {
                 if (accessrule.AccessControlType == AccessControlType.Deny)
+                {
                     continue;
+                }
+
                 if ((FileSystemRights.Write & accessrule.FileSystemRights) != FileSystemRights.Write)
+                {
                     continue;
+                }
 
                 var match = MatchesUsersToCheck(accessrule.IdentityReference);
                 if (!match.HasValue)
+                {
                     continue;
+                }
+
                 sw.WriteLine(name + "\t" + match.Value.Value + "\t" + accessrule.FileSystemRights.ToString());
             }
         }

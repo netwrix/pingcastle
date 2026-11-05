@@ -25,18 +25,30 @@ namespace PingCastle.Healthcheck.Rules
                 foreach (var user in group.Members)
                 {
                     if (user.IsExternal)
+                    {
                         continue;
+                    }
+
                     if (!user.IsEnabled)
+                    {
                         continue;
+                    }
+
                     if (user.Created.AddDays(3 * 365) < DateTime.Now && user.PwdLastSet.AddDays(3 * 365) < DateTime.Now)
                     {
                         if (!users.ContainsKey(user.DistinguishedName))
+                        {
                             users[user.DistinguishedName] = user;
+                        }
                     }
                 }
             }
+
             foreach (var user in users.Values)
+            {
                 AddRawDetail(user.Name, user.Created.ToString("u"), user.PwdLastSet <= DateTime.Parse("1601-01-01 01:00:00Z") ? "Never" : user.PwdLastSet.ToString("u"));
+            }
+
             return null;
         }
     }

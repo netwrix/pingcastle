@@ -19,14 +19,15 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            if (healthcheckData.UserAccountData.NumberActive > 200 && healthcheckData.ComputerAccountData.NumberActive > 200)
+            if (healthcheckData.UserAccountData?.NumberActive > 200 && healthcheckData.ComputerAccountData?.NumberActive > 200)
             {
-                var dangerousGroups = new List<string>() {
+                var dangerousGroups = new List<string>()
+                {
                     GraphObjectReference.DomainAdministrators,
                     GraphObjectReference.Administrators,
                 };
                 bool restrictionFound = false;
-                foreach (var policy in healthcheckData.GPPLoginAllowedOrDeny)
+                foreach (var policy in healthcheckData.GPPLoginAllowedOrDeny ?? [])
                 {
                     if (policy.Privilege == "SeDenyRemoteInteractiveLogonRight" || policy.Privilege == "SeDenyInteractiveLogonRight")
                     {
@@ -37,9 +38,13 @@ namespace PingCastle.Healthcheck.Rules
                         }
                     }
                 }
+
                 if (!restrictionFound)
+                {
                     return 1;
+                }
             }
+
             return 0;
         }
     }

@@ -79,6 +79,7 @@ namespace PingCastle.ADWS
                 {
                     o.Add(d.FullName);
                 }
+
                 return o;
             });
         }

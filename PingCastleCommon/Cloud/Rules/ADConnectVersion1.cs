@@ -28,8 +28,8 @@ namespace PingCastle.Cloud.Rules
                     }
                 }
             }
+
             return null;
         }
-
     }
 }

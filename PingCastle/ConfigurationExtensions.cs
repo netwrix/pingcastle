@@ -60,11 +60,11 @@ public static class ConfigurationExtensions
 
     private static void AddAllScanners(IServiceCollection services)
     {
-        foreach(var assembly in PingCastleFactoryRegistry.GetRegisteredAssemblies())
+        foreach (var assembly in PingCastleFactoryRegistry.GetRegisteredAssemblies())
         {
             // Scanners are either derived from IScanner, or from ScannerBase.
             var scannerTypes = assembly.GetExportedTypes()
-                .Where(t => !t.IsAbstract 
+                .Where(t => !t.IsAbstract
                     && ((typeof(IScanner).IsAssignableFrom(t) && !t.IsInterface)
                         || typeof(ScannerBase).IsAssignableFrom(t)));
             foreach (var scannerType in scannerTypes)

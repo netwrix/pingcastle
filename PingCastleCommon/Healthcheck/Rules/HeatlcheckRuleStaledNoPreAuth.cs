@@ -30,12 +30,14 @@ namespace PingCastle.Healthcheck.Rules
                             break;
                         }
                     }
+
                     if (!fAdmin)
                     {
                         AddRawDetail(i.Name, i.CreationDate, i.LastLogonDate == DateTime.MinValue ? "Never" : i.LastLogonDate.ToString("u"));
                     }
                 }
             }
+
             if (healthcheckData.ComputerAccountData.ListNoPreAuth != null)
             {
                 foreach (var i in healthcheckData.ComputerAccountData.ListNoPreAuth)
@@ -49,12 +51,14 @@ namespace PingCastle.Healthcheck.Rules
                             break;
                         }
                     }
+
                     if (!fAdmin)
                     {
                         AddRawDetail(i.Name, i.CreationDate, i.LastLogonDate == DateTime.MinValue ? "Never" : i.LastLogonDate.ToString("u"));
                     }
                 }
             }
+
             return null;
         }
     }

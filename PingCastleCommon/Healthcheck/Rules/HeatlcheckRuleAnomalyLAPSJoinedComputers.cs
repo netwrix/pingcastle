@@ -11,7 +11,7 @@ namespace PingCastle.Healthcheck.Rules
     [RuleModel("A-LAPS-Joined-Computers", RiskRuleCategory.Anomalies, RiskModelCategory.PassTheCredential)]
     [RuleComputation(RuleComputationType.TriggerOnPresence, 5)]
     [RuleMaturityLevel(3)]
-    [RuleIntroducedIn(2,9,3)]
+    [RuleIntroducedIn(2, 9, 3)]
     [RuleMitreAttackTechnique(MitreAttackTechnique.CredentialsfromPasswordStoresPasswordManagers)]
     public class HeatlcheckRuleAnomalyLAPSJoinedComputers : RuleBase<HealthcheckData>
     {
@@ -21,6 +21,7 @@ namespace PingCastle.Healthcheck.Rules
             {
                 return healthcheckData.ListLAPSJoinedComputersToReview.Count;
             }
+
             return 0;
         }
     }

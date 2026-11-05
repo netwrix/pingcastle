@@ -22,7 +22,10 @@ namespace PingCastle.Healthcheck.Rules
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (IPaidSupportWin8)
+            {
                 return 0;
+            }
+
             foreach (HealthcheckOSData os in healthcheckData.OperatingSystem)
             {
                 if (os.OperatingSystem == "Windows 8")
@@ -30,6 +33,7 @@ namespace PingCastle.Healthcheck.Rules
                     return os.NumberOfOccurence;
                 }
             }
+
             return 0;
         }
     }

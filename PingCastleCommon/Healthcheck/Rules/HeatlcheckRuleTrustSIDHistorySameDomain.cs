@@ -30,6 +30,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             if (healthcheckData.ComputerAccountData != null && healthcheckData.ComputerAccountData.ListDomainSidHistory != null
                 && healthcheckData.ComputerAccountData.ListDomainSidHistory.Count > 0)
             {
@@ -41,6 +42,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return count;
         }
     }

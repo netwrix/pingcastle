@@ -26,14 +26,18 @@ namespace PingCastle.Healthcheck.Rules
                 if (rule.Threshold > 0)
                 {
                     if (rule.Threshold < threshold)
+                    {
                         threshold = rule.Threshold;
+                    }
                 }
             }
+
             // defensive programming in case of incorrect customization
             if (threshold == int.MaxValue)
             {
                 threshold = 35;
             }
+
             Trace.WriteLine("P-AdminLogin: threshold is " + threshold);
 
             // avoid this check on domains created less than 35 days ago
@@ -59,7 +63,10 @@ namespace PingCastle.Healthcheck.Rules
                     days = (int)(healthcheckData.GenerationDate - dc.AdminLocalLogin).TotalDays;
                     // admin login date in the future - can happens when reloading backups
                     if (days < 0)
+                    {
                         continue;
+                    }
+
                     if (days <= threshold)
                     {
                         if (dc.AdminPwdLastSet != DateTime.MinValue)
@@ -73,16 +80,21 @@ namespace PingCastle.Healthcheck.Rules
                                 continue;
                             }
                         }
+
                         AddRawDetail(dc.DCName, dc.AdminLocalLogin.ToString("u"));
                         if (minDays > days)
+                        {
                             minDays = days;
+                        }
                     }
                 }
+
                 if (minDays != int.MaxValue)
                 {
                     Trace.WriteLine("P-AdminLogin: computation value: " + minDays);
                     return minDays;
                 }
+
                 return 3 * threshold;
             }
 
@@ -90,7 +102,10 @@ namespace PingCastle.Healthcheck.Rules
             days = (int)(healthcheckData.GenerationDate - healthcheckData.AdminLastLoginDate).TotalDays;
             // admin login date in the future - can happens when reloading backups
             if (days < 0)
+            {
                 return 3 * threshold;
+            }
+
             return days;
         }
     }

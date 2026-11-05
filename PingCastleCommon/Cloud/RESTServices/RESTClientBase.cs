@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace PingCastle.Cloud.RESTServices.Azure
 {
-    public abstract class RESTClientBase<API> where API: IAzureService
+    public abstract class RESTClientBase<API> where API : IAzureService
     {
         protected IAzureCredential credential;
         protected RESTClientBase(IAzureCredential credential)
@@ -44,7 +44,12 @@ namespace PingCastle.Cloud.RESTServices.Azure
             public string OdataNextLink { get; set; }
 
             [JsonPropertyName("@odata.nextLink")]
-            public string OdataNextLink2 { get { return OdataNextLink; } set { OdataNextLink = value; } }
+            public string OdataNextLink2
+            {
+                get { return OdataNextLink; }
+                set { OdataNextLink = value; }
+            }
+
             public List<T> value { get; set; }
         }
 
@@ -73,14 +78,13 @@ namespace PingCastle.Cloud.RESTServices.Azure
             return CallEndPointWithPaggingAsync<T, U>(function, input, optionalQuery).GetAwaiter().GetResult();
         }
 
-        public List<U> CallEndPointWithPagging<U>(string function,string optionalQuery = "")
+        public List<U> CallEndPointWithPagging<U>(string function, string optionalQuery = "")
         {
             return CallEndPointWithPaggingAsync<object, U>(function, null, optionalQuery).GetAwaiter().GetResult();
         }
 
         public async Task<List<U>> CallEndPointWithPaggingAsync<T, U>(string function, T input, string optionalQuery = "")
         {
-
             var r = await CallEndPointAsync<T, Response<U>>(function, input, optionalQuery);
             var output = new List<U>();
             output.AddRange(r.value);
@@ -97,12 +101,12 @@ namespace PingCastle.Cloud.RESTServices.Azure
 
         public async Task CallEndPointWithPaggingAndActionAsync<T, U>(string function, T input, Action<U> action, string optionalQuery = "")
         {
-
             var r = await CallEndPointAsync<T, Response<U>>(function, input, optionalQuery);
-            foreach(var a in r.value)
+            foreach (var a in r.value)
             {
                 action(a);
             }
+
             while (!string.IsNullOrEmpty(r.OdataNextLink))
             {
                 var builder = new UriBuilder(r.OdataNextLink);
@@ -144,12 +148,13 @@ namespace PingCastle.Cloud.RESTServices.Azure
                     }
                     catch
                     {
-
                     }
+
                     if (error != null && error.OdataError != null && error.OdataError.message != null)
                     {
                         throw new ApplicationException("Error when calling " + requestUri + " : " + error.OdataError.message.value);
                     }
+
                     // default error handling
                     response.EnsureSuccessStatusCode();
                 }

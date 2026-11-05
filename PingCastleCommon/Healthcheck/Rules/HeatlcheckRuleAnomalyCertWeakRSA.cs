@@ -34,6 +34,7 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     Trace.WriteLine("Non RSA key detected in certificate");
                 }
+
                 if (key != null)
                 {
                     RSAParameters rsaparams = key.ExportParameters(false);
@@ -46,6 +47,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             if (healthcheckData.DomainControllers != null)
             {
                 foreach (var dc in healthcheckData.DomainControllers)
@@ -63,6 +65,7 @@ namespace PingCastle.Healthcheck.Rules
                         {
                             Trace.WriteLine("Non RSA key detected in certificate");
                         }
+
                         if (key != null)
                         {
                             RSAParameters rsaparams = key.ExportParameters(false);
@@ -77,12 +80,13 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             if (healthcheckData.GPOWSUS != null)
             {
                 var WSUSCache = new List<string>();
                 foreach (var wsus in healthcheckData.GPOWSUS)
                 {
-                    if (wsus.WSUSserverCertificate != null && wsus.WSUSserverCertificate.Length > 0 
+                    if (wsus.WSUSserverCertificate != null && wsus.WSUSserverCertificate.Length > 0
                         && !string.IsNullOrEmpty(wsus.WSUSserver) && !WSUSCache.Contains(wsus.WSUSserver))
                     {
                         WSUSCache.Add(wsus.WSUSserver);
@@ -97,6 +101,7 @@ namespace PingCastle.Healthcheck.Rules
                         {
                             Trace.WriteLine("Non RSA key detected in certificate");
                         }
+
                         if (key != null)
                         {
                             RSAParameters rsaparams = key.ExportParameters(false);
@@ -106,7 +111,8 @@ namespace PingCastle.Healthcheck.Rules
                             }
                         }
                     }
-                    if (wsus.WSUSserverAlternateCertificate != null && wsus.WSUSserverAlternateCertificate.Length > 0 
+
+                    if (wsus.WSUSserverAlternateCertificate != null && wsus.WSUSserverAlternateCertificate.Length > 0
                         && !string.IsNullOrEmpty(wsus.WSUSserverAlternate) && !WSUSCache.Contains(wsus.WSUSserverAlternate))
                     {
                         WSUSCache.Add(wsus.WSUSserverAlternate);
@@ -121,6 +127,7 @@ namespace PingCastle.Healthcheck.Rules
                         {
                             Trace.WriteLine("Non RSA key detected in certificate");
                         }
+
                         if (key != null)
                         {
                             RSAParameters rsaparams = key.ExportParameters(false);
@@ -132,6 +139,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

@@ -23,7 +23,9 @@ namespace PingCastleCommon.Healthcheck
         private bool DoProcessAccountData(IAddAccountData data, ADItem x, bool computerCheck, DateTime dcWin2008Install, List<HealthcheckAccountDetailData> listHoneyPot = null)
         {
             if (IsHoneyPotAccount(x, listHoneyPot))
+            {
                 return false;
+            }
 
             // TODO: place to refactoring
             // Count of all accounts.
@@ -39,7 +41,7 @@ namespace PingCastleCommon.Healthcheck
                 return false;
             }
 
-            ProcessAccountControlFlags(x, data);
+            ProcessAccountControlFlags(x, data, computerCheck);
             ProcessSIDHistory(x, data);
             ProcessPrimaryGroup(x, data, computerCheck);
             ProcessNotAesEnabled(x, data, dcWin2008Install);
@@ -118,7 +120,9 @@ namespace PingCastleCommon.Healthcheck
             {
                 // Skip disabled accounts - they pose no active security risk
                 if (x.IsAccountDisabled())
+                {
                     return;
+                }
 
                 // not domain users & guest or the guest account
                 if (x.PrimaryGroupID != 513 && x.PrimaryGroupID != 514 && x.ObjectSid != null && !x.ObjectSid.IsWellKnown(System.Security.Principal.WellKnownSidType.AccountGuestSid)
@@ -131,7 +135,9 @@ namespace PingCastleCommon.Healthcheck
             {
                 // Skip disabled computers - they pose no active security risk
                 if (x.IsAccountDisabled())
+                {
                     return;
+                }
 
                 var isDomainCompsAndGuests = x.PrimaryGroupID == 515 || x.PrimaryGroupID == 514;
                 var isDCGroup = (x.PrimaryGroupID == 516 || x.PrimaryGroupID == 521) && x.DistinguishedName.Contains("OU=Domain Controllers,DC="); // 516 = RW DC, 521 = RO DC
@@ -150,7 +156,7 @@ namespace PingCastleCommon.Healthcheck
                    x.PwdLastSet.AddMonths(6) > DateTime.Now;
         }
 
-        private void ProcessAccountControlFlags(ADItem x, IAddAccountData data)
+        private void ProcessAccountControlFlags(ADItem x, IAddAccountData data, bool computerCheck)
         {
             if (x.IsAccountDisabled())
             {
@@ -175,14 +181,17 @@ namespace PingCastleCommon.Healthcheck
                 {
                     data.AddDetail("Inactive", GetAccountDetail(x));
                 }
+
                 if (x.DoesNotRequireKerberosPreauthentication())
                 {
                     data.AddDetail("NoPreAuth", GetAccountDetail(x));
                 }
+
                 if (x.IsAccountLockedOut())
                 {
                     data.AddDetail("Locked", GetAccountDetail(x));
                 }
+
                 if (x.IsPasswordNeverExpires())
                 {
                     // see https://techcommunity.microsoft.com/t5/exchange-team-blog/exchange-2013-2016-monitoring-mailboxes/ba-p/611004?msclkid=bd3898eeb18f11ecb0ad418f45f9d755
@@ -196,6 +205,7 @@ namespace PingCastleCommon.Healthcheck
                         data.AddDetail("PwdNeverExpires", GetAccountDetail(x));
                     }
                 }
+
                 if (x.IsPasswordNotRequired())
                 {
                     // avoid to alert about exchange mailboxes
@@ -204,6 +214,7 @@ namespace PingCastleCommon.Healthcheck
                         data.AddDetail("PwdNotRequired", GetAccountDetail(x));
                     }
                 }
+
                 // see [MS-KILE] && https://learn.microsoft.com/en-us/archive/blogs/openspecification/windows-configurations-for-kerberos-supported-encryption-type
                 // msDSSupportedEncryptionTypes =1 => DES-CBC-CRC ; 2 => DES-CBC-MD5
                 // requires at least Windows 2008 / Vista
@@ -211,6 +222,7 @@ namespace PingCastleCommon.Healthcheck
                 {
                     data.AddDetail("DesEnabled", GetAccountDetail(x));
                 }
+
                 if (x.IsTrustedForDelegation())
                 {
                     // The detail name is "EnabledTrustedToAuthenticateForDelegation", but it checks for the correct flag "TRUSTED_FOR_DELEGATION".
@@ -219,9 +231,24 @@ namespace PingCastleCommon.Healthcheck
                     // Used in risk "P-UnconstrainedDelegation"
                     data.AddDetail("EnabledTrustedToAuthenticateForDelegation", GetAccountDetail(x));
                 }
+
                 if (x.IsNormalAccount())
                 {
                     data.AddDetail("ReversibleEncryption", GetAccountDetail(x));
+                }
+
+                if (!computerCheck)
+                {
+                    if (x.ReplPropertyMetaData != null && x.ReplPropertyMetaData.ContainsKey(FakePasswordChangeDetector.UnicodePwdAttrTyp))
+                    {
+                        var realChangeDate = x.ReplPropertyMetaData[FakePasswordChangeDetector.UnicodePwdAttrTyp].LastOriginatingChange;
+                        if (FakePasswordChangeDetector.IsFakePasswordChange(x.PwdLastSet, realChangeDate))
+                        {
+                            var detail = GetAccountDetail(x);
+                            detail.Event = realChangeDate;
+                            data.AddDetail("FakePwdChangeAllUsers", detail);
+                        }
+                    }
                 }
             }
         }
@@ -242,6 +269,7 @@ namespace PingCastleCommon.Healthcheck
             data.CreationDate = x.WhenCreated;
             data.LastLogonDate = x.LastLogonTimestamp;
             data.PwdLastSet = x.PwdLastSet;
+            data.msDSSupportedEncryptionTypes = x.msDSSupportedEncryptionTypes;
             return data;
         }
     }

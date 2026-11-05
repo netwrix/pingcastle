@@ -1752,6 +1752,32 @@ https://adsecurity.org/?p=1667</value>
   <data name="P_UnconstrainedDelegation_Detail" xml:space="preserve">
     <value>DN: {0} Name: {1}</value>
   </data>
+  <data name="P_DelegationKrbtgt_Title" xml:space="preserve">
+    <value>Ensure that no accounts are configured with delegation to the krbtgt service</value>
+  </data>
+  <data name="P_DelegationKrbtgt_Description" xml:space="preserve">
+    <value>The purpose is to detect accounts configured with constrained delegation to the krbtgt service, since this can be used to forge Kerberos tickets for any user in the domain.</value>
+  </data>
+  <data name="P_DelegationKrbtgt_Solution" xml:space="preserve">
+    <value>Audit msDS-AllowedToDelegateTo across all accounts in the domain for any entry naming the krbtgt service. There is no legitimate operational reason for this configuration to exist, treat any match as a strong indicator of prior compromise, not a misconfiguration to quietly fix. Remove the delegation entry and the TRUSTED_TO_AUTH_FOR_DELEGATION flag immediately, then investigate how administrative access was obtained to set it up, since the delegation itself is a symptom, not the root cause.</value>
+  </data>
+  <data name="P_DelegationKrbtgt_Rationale" xml:space="preserve">
+    <value>Account configured with constrained delegation to the krbtgt service: {count}</value>
+  </data>
+  <data name="P_DelegationKrbtgt_Detail" xml:space="preserve">
+    <value>Account: {0} SamAccountName: {1} DelegationTarget: {2} WhenCreated: {3}</value>
+  </data>
+  <data name="P_DelegationKrbtgt_TechnicalExplanation" xml:space="preserve">
+    <value>Constrained delegation with protocol transition lets an account request a service ticket on behalf of another user without that user's credentials, using the S4U2Self and S4U2Proxy extensions. Which services it can request tickets for is controlled by the msDS-AllowedToDelegateTo attribute, and whether it can do so without any prior authentication from the target user is controlled by the TRUSTED_TO_AUTH_FOR_DELEGATION flag on userAccountControl, shown in the GUI as "Use any authentication protocol."
+Kerberos treats krbtgt as just another service. If msDS-AllowedToDelegateTo includes an entry for krbtgt, the account can request a service ticket for krbtgt on behalf of any user, and a service ticket to krbtgt is functionally a TGT for that user. Combined with protocol transition, this works against any real, privileged user with no interaction or prior ticket required, granting access functionally equivalent to a golden ticket's impact for that user. Attackers favour it as a persistence mechanism because, once configured, it can be reused without needing privileged access to a domain controller again.
+Because this is a configuration set on an ordinary computer or user account rather than a forged artefact, it persists through krbtgt password rotations and DC rebuilds, and doesn't require re-compromising anything to use again later.</value>
+  </data>
+  <data name="P_DelegationKrbtgt_Documentation" xml:space="preserve">
+    <value>https://skyblue.team/posts/delegate-krbtgt/
+https://github.com/vletoux/pingcastle/issues/128
+https://www.thehacker.recipes/ad/persistence/kerberos/delegation-to-krbtgt
+https://www.elastic.co/guide/en/security/current/krbtgt-delegation-backdoor.html</value>
+  </data>
   <data name="P_ExchangeAdminSDHolder_Title" xml:space="preserve">
     <value>Ensure that Exchange did not modify the AdminSDHolder object to introduce vulnerabilities</value>
   </data>
@@ -5541,6 +5567,9 @@ addent -password -p HTTP/server.domain.com@DOMAIN.COM -k 1 -e aes256-cts-hmac-sh
 wkt /etc/krb5.keytab
 quit&lt;/pre&gt;</value>
   </data>
+  <data name="S_AesNotEnabled_Detail" xml:space="preserve">
+    <value>SamAccountName: {0} EncryptionTypes: {1}</value>
+  </data>
   <data name="S_AesNotEnabled_Rationale" xml:space="preserve">
     <value>Presence of service accounts without AES support = {count}</value>
   </data>
@@ -5809,6 +5838,81 @@ The detection triggers when specific high-risk permissions are assigned to OUs w
   <data name="A_BadSuccessor_Documentation" xml:space="preserve">
     <value>https://www.akamai.com/blog/security-research/abusing-dmsa-for-privilege-escalation-in-active-directory#badsuccessor</value>
   </data>
+  <data name="A_SpnUnicodeCollision_Title" xml:space="preserve">
+    <value>SPN containing an invisible Unicode character has been found</value>
+  </data>
+  <data name="A_SpnUnicodeCollision_Description" xml:space="preserve">
+    <value>The purpose is to detect Service Principal Names containing invisible Unicode characters, since these can bypass SPN alias uniqueness checks.</value>
+  </data>
+  <data name="A_SpnUnicodeCollision_Solution" xml:space="preserve">
+    <value>Disable the account holding the disguised SPN and remove the malicious SPN value immediately, this stops the collision from being exploitable while the rest of the investigation continues. There is no legitimate reason for an SPN to contain an invisible character, so its presence should be treated as evidence this technique has already been attempted or used against the environment, not a routine misconfiguration. Apply the March/April 2026 security updates. Audit existing SPN values for invisible characters and investigate any that collide with another SPN once those characters are stripped out.</value>
+  </data>
+  <data name="A_SpnUnicodeCollision_Rationale" xml:space="preserve">
+    <value>SPN containing an invisible Unicode character: {count}</value>
+  </data>
+  <data name="A_SpnUnicodeCollision_Detail" xml:space="preserve">
+    <value>SPN: {0} UnicodeSPNAccount: {1} TargetAccount: {2} Reason: {3}</value>
+  </data>
+  <data name="A_SpnUnicodeCollision_TechnicalExplanation" xml:space="preserve">
+    <value>CVE-2026-25177 (KerberLoss) showed this can disrupt other services, force a fallback to NTLM, and redirect delegation-based ticket requests to an attacker-controlled server. It was patched in the March/April 2026 security updates.
+The technique works because Active Directory's check for conflicting SPNs can be bypassed using certain invisible Unicode characters. The write-time uniqueness check treats a value containing one of these characters as distinct from an existing SPN, so the write is wrongly allowed. A later lookup for the clean value can still match the account holding the disguised one, since the LDAP query at lookup time does not evaluate the invisible character the same way, and that disagreement is what makes the bypass work.
+Even on a patched domain, an SPN containing one of these characters is still worth investigating, the same underlying weakness in Unicode handling could be exploited differently in a future technique.</value>
+  </data>
+  <data name="A_SpnUnicodeCollision_Documentation" xml:space="preserve">
+    <value>https://www.semperis.com/blog/identity-crisis-novel-vulnerabilities-leading-to-kerberos-downgrade-dos-and-full-domain-takeover/
+https://www.zerodaybrief.blog/episodes/ep39.html
+https://github.com/YossiSassi/Search-StringInAD</value>
+  </data>
+  <data name="A_UpnSamCollision_Title" xml:space="preserve">
+    <value>A User Principal Name matching another account's SAM Account Name has been found</value>
+  </data>
+  <data name="A_UpnSamCollision_Description" xml:space="preserve">
+    <value>The purpose is to detect accounts whose User Principal Name matches another account's SAM Account Name, since this condition can be used to obtain a Kerberos ticket that carries the target account's name.</value>
+  </data>
+  <data name="A_UpnSamCollision_Solution" xml:space="preserve">
+    <value>Reset the password of the target account immediately, then investigate how the colliding UPN was set, this is a strong indicator the technique has already been attempted or used, not a routine misconfiguration. Apply the patch addressing CVE-2026-27912. Restrict who can modify their own userPrincipalName where possible, and monitor password changes performed via the Kerberos Change Password protocol against accounts whose current UPN does not match their own SAM Account Name.</value>
+  </data>
+  <data name="A_UpnSamCollision_Rationale" xml:space="preserve">
+    <value>Account with a User Principal Name matching another account's SAM Account Name: {count}</value>
+  </data>
+  <data name="A_UpnSamCollision_Detail" xml:space="preserve">
+    <value>Account: {0} SamAccountName: {1} UserPrincipalName: {2} MatchingAccountSamAccountName: {3} WhenCreated: {4}</value>
+  </data>
+  <data name="A_UpnSamCollision_TechnicalExplanation" xml:space="preserve">
+    <value>CVE-2026-27912 (ResetNightmare) showed that this collision can be used to reset the password of any account, including Domain Admins, using nothing more than the default ability to modify a UPN and a target account with a sufficiently aged password, a condition almost always met, since the default minimum password age is one day.
+The technique works because Kerberos can look up an account by SAM Account Name or by UPN, and setting a UPN to another account's SAM Account Name, without an @ suffix, doesn't violate uniqueness checks. This lets an account request a ticket for the Kerberos Change Password service using the target's name and its own password. Because that protocol skips a validation step normally applied later, the resulting ticket can be used to submit a password change for the target account.
+Even where this specific patch is applied, the underlying naming collision is still worth flagging. It's the kind of confusion Kerberos has been exploited through before and could be exploited through again in a different way.</value>
+  </data>
+  <data name="A_UpnSamCollision_Documentation" xml:space="preserve">
+    <value>https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27912</value>
+  </data>
+  <data name="A_DnsHostnameMismatch_Title" xml:space="preserve">
+    <value>DNS host name mismatching the computer's SAM account name has been found</value>
+  </data>
+  <data name="A_DnsHostnameMismatch_Description" xml:space="preserve">
+    <value>The purpose is to detect computer accounts where the dNSHostName attribute does not match the sAMAccountName. This kind of mismatch can result from several techniques that manipulate these two attributes independently, the most well-documented example being CVE-2022-26923 (Certifried), where a certificate obtained under the spoofed dNSHostName is used to impersonate another computer, including a domain controller.</value>
+  </data>
+  <data name="A_DnsHostnameMismatch_Solution" xml:space="preserve">
+    <value>For every flagged account, determine whether the current dNSHostName is legitimate or reflects a leftover or malicious value, and correct or remove it accordingly. Confirm all domain controllers and certificate authorities have the May 2022 security update applied (KB5014754), since this is what enables the KDC to verify a certificate actually belongs to the account presenting it, rather than trusting the name on the certificate at face value. If A-CertTempNoSecurity is also triggering for this domain, treat that as the higher-priority fix.
+It's also worth restricting how easily an attacker can get the foothold this attack needs in the first place: by default, any regular domain user can create up to 10 computer accounts with no special permissions. Lowering this default limit (the ms-DS-MachineAccountQuota setting, ideally to zero) makes it much harder for an ordinary user to obtain a computer account to attempt this attack with.
+Legitimately renamed computer objects where dNSHostName wasn't updated immediately, or environments with non-standard naming or DNS delegation practices, can trigger this without malicious intent. Cross-reference against certificate issuance history and CA patch status before treating a match as a confirmed compromise indicator rather than administrative drift.</value>
+  </data>
+  <data name="A_DnsHostnameMismatch_Rationale" xml:space="preserve">
+    <value>Computer account with mismatched DNS hostname and SAM account name: {count}</value>
+  </data>
+  <data name="A_DnsHostnameMismatch_Detail" xml:space="preserve">
+    <value>Account: {0} SamAccountName: {1} DnsHostName: {2} WhenCreated: {3}</value>
+  </data>
+  <data name="A_DnsHostnameMismatch_TechnicalExplanation" xml:space="preserve">
+    <value>Kerberos validates certificate-based authentication for a computer account by checking that the sAMAccountName matches the computer name embedded in the certificate. Active Directory Certificate Services, however, issues machine certificates based on the dNSHostName attribute, not sAMAccountName. This gap between what Kerberos checks and what AD CS uses is what makes a dNSHostName/sAMAccountName mismatch worth flagging on its own, independent of how it got there.
+The best documented way to produce this mismatch is CVE-2022-26923 (Certifried): before write restrictions were tightened, an attacker able to create or modify a computer account, which by default is any domain user via ms-DS-MachineAccountQuota, could set dNSHostName to match a domain controller's hostname, request a machine certificate reflecting that name, and authenticate with it as if they were the domain controller.
+This rule complements PingCastle's existing A-CertTempNoSecurity: that rule checks whether certificate templates are configured to allow the technique, this one checks whether an account already shows evidence it was used.
+Microsoft's May 2022 patch embeds an objectSid-based security extension in new certificates and restricts the "Validated write to DNS host name" permission so it can only be set to a value matching the account's own sAMAccountName going forward. This rule looks for an existing inconsistency between dNSHostName and sAMAccountName on an account today, which represents either a leftover artefact predating that patch, or evidence that a more privileged write (such as GenericWrite on the object) was used to bypass the tightened validation.</value>
+  </data>
+  <data name="A_DnsHostnameMismatch_Documentation" xml:space="preserve">
+    <value>https://msrc.microsoft.com/update-guide/vulnerability/CVE-2022-26923
+https://research.ifcr.dk/certifried-active-directory-domain-privilege-escalation-cve-2022-26923-9e098fe298f4</value>
+  </data>
   <data name="P_AdminEmailOn_RelevantProducts" xml:space="preserve">
     <value>Netwrix Directory Manager| helps automate account creation while enforcing policies to exclude specific attributes, such as email enablement, ensuring compliance and reducing the risk of misconfiguration. \r\nNetwrix Threat Manager| monitors and optionally blocks changes to admin account properties, to detect potential misconfigurations or abuse and ensure security and compliance.</value>
   </data>
@@ -5943,5 +6047,47 @@ The detection triggers when specific high-risk permissions are assigned to OUs w
   </data>
   <data name="S_Inactive_RelevantProducts" xml:space="preserve">
     <value>Netwrix Directory Manager| helps manage user and group lifecycles effectively, eliminating stale users and outdated group memberships.\r\n Netwrix Identity Manager| prevents stale users and memberships by automating identity lifecycle management and role-based provisioning or deprovisioning.\r\nNetwrix Privilege Secure| helps minimize stale secondary accounts with one-time ephemeral accounts, ensuring a clean and secure environment. </value>
+  </data>
+  <data name="P_FakePwdChangeAdmin_Title" xml:space="preserve">
+    <value>Privileged account with fake password change detected</value>
+  </data>
+  <data name="P_FakePwdChangeAdmin_Description" xml:space="preserve">
+    <value>The purpose is to detect privileged accounts where pwdLastSet was refreshed without a matching change to the account's real password-change time (recorded in unicodePwd replication metadata). This poses a higher risk for privileged accounts as it can mask a stale or compromised administrative password behind a "User must change password at next logon" toggle.</value>
+  </data>
+  <data name="P_FakePwdChangeAdmin_Solution" xml:space="preserve">
+    <value>Immediately investigate privileged accounts with fake password changes to determine if the password is stale or has been compromised. Reset the password genuinely if the account is in use. Audit who reset pwdLastSet without an actual password change and determine if this was intentional or evidence of a compromise. Review all activities performed by this account since the fake password change occurred.</value>
+  </data>
+  <data name="P_FakePwdChangeAdmin_Rationale" xml:space="preserve">
+    <value>Privileged accounts with fake password changes: {count}</value>
+  </data>
+  <data name="P_FakePwdChangeAdmin_Detail" xml:space="preserve">
+    <value>Account: {0} PwdLastSet: {1} RealPwdChange: {2} Reason: {3}</value>
+  </data>
+  <data name="P_FakePwdChangeAdmin_TechnicalExplanation" xml:space="preserve">
+    <value>Active Directory tracks password changes in two ways: pwdLastSet (user-visible) and the unicodePwd attribute's replication metadata (ground truth). When an administrator toggles "User must change password at next logon" on then off without changing the actual password, pwdLastSet is updated but unicodePwd's timestamp remains unchanged. For privileged accounts, this creates an elevated risk window where the password appears fresh but is actually stale, potentially allowing re-use of compromised credentials or masking their age.</value>
+  </data>
+  <data name="P_FakePwdChangeAdmin_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| detects and alerts on suspicious password change patterns for privileged accounts, enabling early detection of compromised or stale passwords masquerading as fresh.\r\nNetwrix Auditor| provides complete audit trails of password-related operations for privileged accounts, including pwdLastSet changes and real password modifications, for forensic investigation.\r\nNetwrix Privilege Secure| helps enforce mandatory regular password changes for privileged accounts and detects unusual password modification patterns.</value>
+  </data>
+  <data name="A_FakePwdChangeAllUsers_Title" xml:space="preserve">
+    <value>Fake password change detected</value>
+  </data>
+  <data name="A_FakePwdChangeAllUsers_Description" xml:space="preserve">
+    <value>The purpose is to detect user accounts where pwdLastSet was refreshed without a matching change to the account's real password-change time (recorded in unicodePwd replication metadata). This can mask a stale or compromised password behind a "User must change password at next logon" toggle.</value>
+  </data>
+  <data name="A_FakePwdChangeAllUsers_Solution" xml:space="preserve">
+    <value>Investigate accounts with fake password changes to determine if the password is stale or has been compromised. Reset the password genuinely if the account is in use, or disable the account if it is no longer needed. Audit who reset pwdLastSet without an actual password change and determine if this was intentional or evidence of a compromise.</value>
+  </data>
+  <data name="A_FakePwdChangeAllUsers_Rationale" xml:space="preserve">
+    <value>Accounts with fake password changes: {count}</value>
+  </data>
+  <data name="A_FakePwdChangeAllUsers_Detail" xml:space="preserve">
+    <value>Account: {0} PwdLastSet: {1} RealPwdChange: {2} Reason: {3}</value>
+  </data>
+  <data name="A_FakePwdChangeAllUsers_TechnicalExplanation" xml:space="preserve">
+    <value>Active Directory tracks password changes in two ways: pwdLastSet (user-visible) and the unicodePwd attribute's replication metadata (ground truth). When an administrator toggles "User must change password at next logon" on then off without changing the actual password, pwdLastSet is updated but unicodePwd's timestamp remains unchanged. This creates a window where the password appears fresh but is actually stale, potentially allowing re-use of compromised credentials or masking their age.</value>
+  </data>
+  <data name="A_FakePwdChangeAllUsers_RelevantProducts" xml:space="preserve">
+    <value>Netwrix Threat Manager| detects and alerts on suspicious password change patterns, enabling early detection of compromised or stale passwords masquerading as fresh.\r\nNetwrix Auditor| provides complete audit trails of password-related operations, including pwdLastSet changes and real password modifications, for forensic investigation.</value>
   </data>
 </root>

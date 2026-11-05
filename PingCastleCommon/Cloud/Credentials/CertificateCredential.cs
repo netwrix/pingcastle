@@ -32,7 +32,9 @@ namespace PingCastle.Cloud.Credentials
         public static CertificateCredential LoadFromCertificate(string clientId, string tenantId, X509Certificate2 certificate, ITokenFactory tokenFactory)
         {
             if (!certificate.HasPrivateKey)
+            {
                 throw new ApplicationException("Certificate without private key");
+            }
 
             var cred = new CertificateCredential(tokenFactory);
             cred.PrivateKey = (RSA)certificate.PrivateKey;
@@ -65,12 +67,15 @@ namespace PingCastle.Cloud.Credentials
                 Trace.WriteLine("Before loading p12 " + p12file);
                 handle = PFXImportCertStore(ref pfxBlob, password, CRYPT_EXPORTABLE | CRYPT_USER_KEYSET);
                 if (handle == IntPtr.Zero)
+                {
                     throw new Win32Exception();
+                }
             }
             finally
             {
                 Marshal.FreeHGlobal(buffer);
             }
+
             var store = new X509Store(handle);
             {
                 foreach (var certificate in store.Certificates)
@@ -86,8 +91,10 @@ namespace PingCastle.Cloud.Credentials
                         return cred;
                     }
                 }
+
                 store.Close();
             }
+
             throw new ApplicationException("No private key found in pfx file");
         }
 
@@ -107,7 +114,10 @@ namespace PingCastle.Cloud.Credentials
         public void Dispose()
         {
             if (PrivateKey != null)
+            {
                 PrivateKey.Dispose();
+            }
+
             PrivateKey = null;
         }
 
@@ -146,6 +156,7 @@ namespace PingCastle.Cloud.Credentials
                     Trace.WriteLine("Unable to decode the private key");
                     throw new Win32Exception();
                 }
+
                 byte[] keybytes = new byte[buflen];
                 Marshal.Copy(buffer, keybytes, 0, (int)buflen);
                 return keybytes;
@@ -161,7 +172,9 @@ namespace PingCastle.Cloud.Credentials
 
         sealed class LocalAllocHandle : SafeHandleZeroOrMinusOneIsInvalid
         {
-            private LocalAllocHandle() : base(ownsHandle: true) { }
+            private LocalAllocHandle() : base(ownsHandle: true)
+            {
+            }
 
             public static LocalAllocHandle Alloc(int cb)
             {
@@ -278,7 +291,6 @@ namespace PingCastle.Cloud.Credentials
 
         static RSA PKCS8BlobToCNG(LocalAllocHandle BlobHandle, int BlobSize)
         {
-
             //
             // Decode RSA PublicKey DER -> CSP blob.
             //
@@ -310,6 +322,7 @@ namespace PingCastle.Cloud.Credentials
             Marshal.Copy(new IntPtr(data.ToInt64() + offset), managedArray, 0, size);
             return managedArray;
         }
+
         static RSA BlobToRSA(LocalAllocHandle keyBlobHandle)
         {
             IntPtr data = keyBlobHandle.DangerousGetHandle();
@@ -321,6 +334,7 @@ namespace PingCastle.Cloud.Credentials
             {
                 throw new ApplicationException("Invalid blob");
             }
+
             int offset = Marshal.SizeOf(blob);
             param.Exponent = ReadData(data, offset, blob.cbPublicExp);
             offset += blob.cbPublicExp;

@@ -21,6 +21,7 @@ namespace PingCastle.Healthcheck.Rules
             {
                 AddRawDetail(pass.GPOName, pass.UserName, pass.Password);
             }
+
             return null;
         }
     }

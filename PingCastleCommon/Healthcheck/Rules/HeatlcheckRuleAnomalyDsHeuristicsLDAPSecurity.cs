@@ -29,6 +29,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail("LDAPAddAuthZVerifications", "28th", v);
                 }
             }
+
             if (string.IsNullOrEmpty(healthcheckData.DSHeuristics) || healthcheckData.DSHeuristics.Length < 29)
             {
                 AddRawDetail("LDAPOwnerModify", "29th", "Not Set");
@@ -41,6 +42,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail("LDAPOwnerModify", "29th", v);
                 }
             }
+
             return null;
         }
     }

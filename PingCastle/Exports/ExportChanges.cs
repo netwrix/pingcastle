@@ -102,7 +102,6 @@ namespace PingCastle.Exports
 
                     using (ChangeNotifier notifier = new ChangeNotifier(connect))
                     {
-
                         //register some objects for notifications (limit 5)
                         notifier.Register(root, SearchScope.Subtree);
 
@@ -194,7 +193,6 @@ namespace PingCastle.Exports
             }
 
             public SearchResultEntry Result { get; set; }
-
         }
     }
 }

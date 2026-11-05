@@ -1,5 +1,4 @@
-﻿
-namespace PingCastle
+﻿namespace PingCastle
 {
     using System;
     using System.Collections.Generic;
@@ -57,7 +56,9 @@ namespace PingCastle
             ConsoleMenuImplementation.DisplayHeader();
 
             if (isClearTopic)
+            {
                 ConsoleMenuImplementation.ClearTopic();
+            }
 
             return Console.ReadLine();
         }
@@ -73,6 +74,7 @@ namespace PingCastle
                 list.Add(line);
                 line = Console.ReadLine();
             }
+
             return list;
         }
 
@@ -115,6 +117,7 @@ namespace PingCastle
         {
             DisplayWithColour(message, ConsoleColor.DarkRed);
         }
+
         public void DisplayError(string message)
         {
             DisplayWithColour(message, ConsoleColor.Red);
@@ -158,7 +161,10 @@ namespace PingCastle
             int currentLineCursor = Console.CursorTop;
             Console.SetCursorPosition(0, Console.CursorTop - 1);
             for (int i = 0; i < Console.WindowWidth; i++)
+            {
                 Console.Write(" ");
+            }
+
             Console.SetCursorPosition(0, currentLineCursor - 1);
         }
 
@@ -186,8 +192,10 @@ namespace PingCastle
                     password.AppendChar(nextKey.KeyChar);
                     Console.Write("*");
                 }
+
                 nextKey = Console.ReadKey(true);
             }
+
             Console.WriteLine();
             return password;
         }
@@ -195,7 +203,6 @@ namespace PingCastle
 
     internal static class ConsoleMenuImplementation
     {
-
         public static string Header { get; set; }
         public static string Title { get; set; }
         public static string Notice { get; set; }
@@ -212,11 +219,17 @@ namespace PingCastle
             for (int i = 0; i < items.Count; i++)
             {
                 if (!String.IsNullOrEmpty(items[i].ShortDescription))
+                {
                     hasDescription = true;
+                }
+
                 int l = items[i].Choice.Length;
                 if (l > largerChoice)
+                {
                     largerChoice = l;
+                }
             }
+
             Console.SetCursorPosition(left, top);
             for (int i = 0; i < items.Count; i++)
             {
@@ -226,20 +239,31 @@ namespace PingCastle
                     Console.ForegroundColor = ConsoleColor.Black;
                     description = items[i].LongDescription;
                 }
+
                 if (!String.IsNullOrEmpty(items[i].LongDescription) && maxDescription < items[i].LongDescription.Length)
+                {
                     maxDescription = items[i].LongDescription.Length;
+                }
+
                 Console.Write("  " + (char)(i < 9 ? i + '1' : i - 9 + 'a') + "-" + items[i].Choice);
                 if (hasDescription)
                 {
                     int diff = largerChoice - items[i].Choice.Length;
                     if (diff > 0)
+                    {
                         Console.Write(new String(' ', diff));
+                    }
+
                     if (!String.IsNullOrEmpty(items[i].ShortDescription))
+                    {
                         Console.Write("-" + items[i].ShortDescription);
+                    }
                 }
+
                 Console.WriteLine();
                 Console.ResetColor();
             }
+
             if (IsAddExitItem)
             {
                 if (0 == currentIndex)
@@ -247,9 +271,11 @@ namespace PingCastle
                     Console.BackgroundColor = ConsoleColor.Gray;
                     Console.ForegroundColor = ConsoleColor.Black;
                 }
+
                 Console.WriteLine("  0-Exit");
                 Console.ResetColor();
             }
+
             if (!String.IsNullOrEmpty(description))
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -281,14 +307,18 @@ namespace PingCastle
                     Console.ForegroundColor = ConsoleColor.Black;
                     description = items[i].ShortDescription;
                 }
+
                 if (!String.IsNullOrEmpty(items[i].ShortDescription) && maxDescription < items[i].ShortDescription.Length)
+                {
                     maxDescription = items[i].ShortDescription.Length;
+                }
 
                 item = "  " + (char)(i < 9 ? i + '1' : i - 9 + 'a') + "-" + items[i].Choice;
                 Console.SetCursorPosition(left + (i < (items.Count + 1) / 2 ? 0 : Console.WindowWidth / 2), top + i + (i < (items.Count + 1) / 2 ? 0 : -(items.Count + 1) / 2));
                 Console.Write(item + new string(' ', Console.WindowWidth / 2 - item.Length - 1));
                 Console.ResetColor();
             }
+
             if (IsAddExitItem)
             {
                 if (0 == currentIndex)
@@ -296,11 +326,13 @@ namespace PingCastle
                     Console.BackgroundColor = ConsoleColor.Gray;
                     Console.ForegroundColor = ConsoleColor.Black;
                 }
+
                 Console.SetCursorPosition(left, top + (items.Count + 1) / 2);
                 item = "  0-Exit";
                 Console.WriteLine(item + new string(' ', Console.WindowWidth / 2 - item.Length - 1));
                 Console.ResetColor();
             }
+
             if (!String.IsNullOrEmpty(description))
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -311,7 +343,6 @@ namespace PingCastle
                 Console.SetCursorPosition(0, currentLineCursor);
                 Console.WriteLine(description);
             }
-
         }
 
         internal static void DisplayHeader()
@@ -321,6 +352,7 @@ namespace PingCastle
             {
                 Console.WriteLine(Header);
             }
+
             if (!String.IsNullOrEmpty(Title))
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -328,10 +360,12 @@ namespace PingCastle
                 Console.WriteLine(new string('=', Title.Length));
                 Console.ResetColor();
             }
+
             if (!String.IsNullOrEmpty(Information))
             {
                 Console.WriteLine(Information);
             }
+
             if (!String.IsNullOrEmpty(Notice))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -353,6 +387,7 @@ namespace PingCastle
             IsAddExitItem = true;
             IsCompactStyle = false;
         }
+
         internal static int SelectMenuInternal(List<MenuItem> items, int defaultIndex = 1)
         {
             int top = Console.CursorTop;
@@ -362,9 +397,13 @@ namespace PingCastle
             while (true)
             {
                 if (IsCompactStyle)
+                {
                     printCompactSelectMenu(items, index, top, left);
+                }
                 else
+                {
                     printSelectMenu(items, index, top, left);
+                }
 
                 ConsoleKeyInfo readKey = Console.ReadKey(true);
 
@@ -374,6 +413,7 @@ namespace PingCastle
                     Console.ResetColor();
                     return 0;
                 }
+
                 if (readKey.Key == ConsoleKey.DownArrow)
                 {
                     if (index == items.Count)
@@ -387,7 +427,10 @@ namespace PingCastle
                     else if (index == 0)
                     {
                     }
-                    else { index++; }
+                    else
+                    {
+                        index++;
+                    }
                 }
                 else if (readKey.Key == ConsoleKey.UpArrow)
                 {
@@ -405,7 +448,10 @@ namespace PingCastle
                             index = items.Count;
                         }
                     }
-                    else { index--; }
+                    else
+                    {
+                        index--;
+                    }
                 }
                 else if (readKey.Key == ConsoleKey.LeftArrow && IsCompactStyle)
                 {
@@ -433,18 +479,22 @@ namespace PingCastle
                     if (Int32.TryParse(key.ToString(), out var number) && number >= 0 && number <= 9 && (number <= items.Count))
                     {
                         if (number == 0 && !IsAddExitItem)
+                        {
                             continue;
+                        }
 
                         Console.CursorVisible = true;
                         Console.ResetColor();
                         return number;
                     }
+
                     if (key >= 'a' && key <= 'z' && ((key - 'a' + 10) <= items.Count))
                     {
                         Console.CursorVisible = true;
                         Console.ResetColor();
                         return (key - 'a' + 10);
                     }
+
                     if (key >= 'A' && key <= 'Z' && ((key - 'A' + 10) <= items.Count))
                     {
                         Console.CursorVisible = true;

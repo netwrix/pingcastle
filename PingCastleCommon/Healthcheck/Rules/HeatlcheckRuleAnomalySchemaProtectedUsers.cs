@@ -19,7 +19,10 @@ namespace PingCastle.Healthcheck.Rules
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.SchemaVersion < 69)
+            {
                 return 1;
+            }
+
             return 0;
         }
     }

@@ -20,12 +20,17 @@ namespace PingCastle.Healthcheck.Rules
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.DomainFunctionalLevel < 3)
+            {
                 return 0;
+            }
 
             foreach (var dc in healthcheckData.DomainControllers)
             {
                 if (!dc.RODC)
+                {
                     continue;
+                }
+
                 var mandatoryDN = new Dictionary<string, string>();
 
                 mandatoryDN.Add("S-1-5-32-544", GraphObjectReference.Administrators);
@@ -39,14 +44,18 @@ namespace PingCastle.Healthcheck.Rules
                     foreach (var member in dc.msDSNeverRevealGroup)
                     {
                         if (!string.IsNullOrEmpty(member) && mandatoryDN.ContainsKey(member))
+                        {
                             mandatoryDN.Remove(member);
+                        }
                     }
                 }
+
                 foreach (var missing in mandatoryDN.Values)
                 {
                     AddRawDetail(dc.DCName, missing);
                 }
             }
+
             return null;
         }
     }

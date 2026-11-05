@@ -16,7 +16,6 @@ namespace PingCastle.ADWS
 {
     public class ADDomainInfo
     {
-
         public string ConfigurationNamingContext { get; set; }
         public DateTime CreationDate { get; set; }
         public string DefaultNamingContext { get; set; }
@@ -31,9 +30,11 @@ namespace PingCastle.ADWS
                 {
                     _domainName = DefaultNamingContext.Replace(",DC=", ".").Replace("DC=", "").ToLowerInvariant();
                 }
+
                 return _domainName;
             }
         }
+
         private string _forestName = null;
         public string ForestName
         {
@@ -43,9 +44,11 @@ namespace PingCastle.ADWS
                 {
                     _forestName = ConfigurationNamingContext.Replace("CN=Configuration,", "").Replace(",DC=", ".").Replace("DC=", "").ToLowerInvariant();
                 }
+
                 return _forestName;
             }
         }
+
         public SecurityIdentifier DomainSid { get; set; }
         public int ForestFunctionality { get; set; }
         public string NetBIOSName { get; set; }
@@ -63,6 +66,7 @@ namespace PingCastle.ADWS
             {
                 return input.Substring(index + 1);
             }
+
             return input;
         }
 
@@ -73,6 +77,7 @@ namespace PingCastle.ADWS
             {
                 return child.InnerText;
             }
+
             return String.Empty;
         }
 
@@ -83,6 +88,7 @@ namespace PingCastle.ADWS
             {
                 return int.Parse(child.InnerText);
             }
+
             return 0;
         }
 
@@ -95,6 +101,7 @@ namespace PingCastle.ADWS
                 list.Add(child.InnerText);
                 child = child.NextSibling;
             }
+
             return list.ToArray();
         }
 
@@ -106,33 +113,49 @@ namespace PingCastle.ADWS
             info.ConfigurationNamingContext = rootDSE.Properties["configurationNamingContext"].Value as string;
             info.DnsHostName = rootDSE.Properties["dnsHostName"].Value as string;
             if (rootDSE.Properties.Contains("domainFunctionality"))
+            {
                 info.DomainFunctionality = int.Parse(rootDSE.Properties["domainFunctionality"].Value as string);
+            }
+
             if (rootDSE.Properties.Contains("forestFunctionality"))
+            {
                 info.ForestFunctionality = int.Parse(rootDSE.Properties["forestFunctionality"].Value as string);
+            }
+
             if (rootDSE.Properties.Contains("netBIOSName"))
+            {
                 info.NetBIOSName = rootDSE.Properties["netBIOSName"].Value as string;
+            }
+
             info.RootDomainNamingContext = rootDSE.Properties["rootDomainNamingContext"].Value as string;
             info.SchemaNamingContext = rootDSE.Properties["schemaNamingContext"].Value as string;
             Trace.WriteLine("supportedLDAPVersion: ");
             object[] supportedLDAPVersion = rootDSE.Properties["supportedLDAPVersion"].Value as object[];
             if (supportedLDAPVersion != null)
+            {
                 foreach (string version in supportedLDAPVersion)
                 {
                     Trace.WriteLine(version);
                 }
+            }
+
             Trace.WriteLine("supportedControl: ");
             object[] supportedControl = rootDSE.Properties["supportedControl"].Value as object[];
             if (supportedControl != null)
+            {
                 foreach (string control in supportedControl)
                 {
                     Trace.WriteLine(control);
                 }
+            }
+
             Trace.WriteLine("supportedLDAPVersion: ");
             info.NamingContexts = new List<string>();
             foreach (var nc in (object[])rootDSE.Properties["namingContexts"].Value)
             {
                 info.NamingContexts.Add((string)nc);
             }
+
             return info;
         }
 
@@ -177,29 +200,35 @@ namespace PingCastle.ADWS
                         if (item.ChildNodes != null)
                         {
                             foreach (XmlNode child in item.ChildNodes)
+                            {
                                 if (child != null)
                                 {
                                     Trace.WriteLine(child.InnerText);
                                 }
+                            }
                         }
+
                         break;
                     case "supportedControl":
                         Trace.WriteLine("supportedControl: ");
                         if (item.ChildNodes != null)
                         {
                             foreach (XmlNode child in item.ChildNodes)
+                            {
                                 if (child != null)
                                 {
                                     Trace.WriteLine(child.InnerText);
                                 }
+                            }
                         }
+
                         break;
                     default:
                         Trace.WriteLine("Other attribute found:" + attribute);
                         break;
-
                 }
             }
+
             return info;
         }
     }

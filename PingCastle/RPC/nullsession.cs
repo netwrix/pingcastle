@@ -35,7 +35,10 @@ namespace PingCastle.RPC
         public bool EnumerateAccount(int MaximumNumber = int.MaxValue)
         {
             if (EnumerateAccount(TypeOfEnumeration.Samr, MaximumNumber))
+            {
                 return true;
+            }
+
             return EnumerateAccount(TypeOfEnumeration.Lsa, MaximumNumber);
         }
 
@@ -49,6 +52,7 @@ namespace PingCastle.RPC
             {
                 return EnumerateAccountUsingLsa(method, MaximumNumber);
             }
+
             return false;
         }
 
@@ -67,6 +71,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("LsarOpenPolicy " + returnCode);
                 return false;
             }
+
             try
             {
                 LSA_DOMAIN_INFORMATION PolicyInformation;
@@ -76,6 +81,7 @@ namespace PingCastle.RPC
                     Trace.WriteLine("LsarQueryInformationPolicy " + returnCode);
                     return false;
                 }
+
                 uint currentRid = 500;
                 int iteration = 0;
                 // allows 10*1000 sid non resolved
@@ -88,6 +94,7 @@ namespace PingCastle.RPC
                     {
                         enumBuffer[i] = BuildSIDFromDomainSidAndRid(PolicyInformation.DomainSid, currentRid++);
                     }
+
                     UInt32 MappedCount;
                     LSA_LOOKUP_RESULT[] LookupResult;
                     returnCode = lsa.LsarLookupSids(PolicyHandle, enumBuffer, out LookupResult, 2, out MappedCount);
@@ -118,6 +125,7 @@ namespace PingCastle.RPC
             {
                 returnCode = lsa.LsarClose(ref PolicyHandle);
             }
+
             Trace.WriteLine("EnumerateAccountUsingLsa done");
             return UserEnumerated > 0;
         }
@@ -137,6 +145,7 @@ namespace PingCastle.RPC
                 Trace.WriteLine("SamrConnect " + returnCode);
                 return false;
             }
+
             try
             {
                 IntPtr enumerationContext = IntPtr.Zero;
@@ -148,6 +157,7 @@ namespace PingCastle.RPC
                     Trace.WriteLine("SamrEnumerateDomainsInSamServer " + returnCode);
                     return false;
                 }
+
                 for (ulong i = 0; i < CountReturned; i++)
                 {
                     Trace.WriteLine("Domain:" + Buffer[i].Name);
@@ -162,12 +172,14 @@ namespace PingCastle.RPC
                         Trace.WriteLine("SamrLookupDomainInSamServer " + returnCode);
                         continue;
                     }
+
                     returnCode = sam.SamrOpenDomain(ServerHandle, 0x100, DomainId, out DomainHandle);
                     if (returnCode < 0)
                     {
                         Trace.WriteLine("SamrOpenDomain " + returnCode);
                         continue;
                     }
+
                     try
                     {
                         int iteration = 0;
@@ -188,6 +200,7 @@ namespace PingCastle.RPC
                                 }
                             }
                         }
+
                         Trace.WriteLine("SamrEnumerateUsersInDomain " + returnCode);
                     }
                     finally
@@ -200,6 +213,7 @@ namespace PingCastle.RPC
             {
                 sam.SamrCloseHandle(ref ServerHandle);
             }
+
             Trace.WriteLine("EnumerateAccountUsingSamr done");
             return UserEnumerated > 0;
         }
@@ -222,6 +236,5 @@ namespace PingCastle.RPC
             handle.Free();
             return output;
         }
-
     }
 }

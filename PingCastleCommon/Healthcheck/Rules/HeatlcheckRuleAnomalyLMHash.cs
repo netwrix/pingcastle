@@ -26,15 +26,18 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         continue;
                     }
+
                     var refGPO = healthcheckData.GPOInfoDic[policy.GPOId];
                     if (refGPO.IsDisabled)
                     {
                         continue;
                     }
+
                     if (refGPO.AppliedTo == null || refGPO.AppliedTo.Count == 0)
                     {
                         continue;
                     }
+
                     foreach (GPPSecurityPolicyProperty property in policy.Properties)
                     {
                         if (property.Property == "LmCompatibilityLevel" || property.Property == "NoLMHash")
@@ -48,6 +51,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

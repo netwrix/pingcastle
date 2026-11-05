@@ -24,9 +24,12 @@ namespace PingCastle.Healthcheck.Rules
                 {
                     AddRawDetail(ou);
                     if (i++ >= 10)
+                    {
                         break;
+                    }
                 }
             }
+
             return null;
         }
     }

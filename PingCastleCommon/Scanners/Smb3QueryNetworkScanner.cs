@@ -22,8 +22,15 @@ namespace PingCastle.Scanners
             _smb2Test = smb2Test;
         }
 
-        public override string Name { get { return "smb3querynetwork"; } }
-        public override string Description { get { return "List all IP of the computer and the interface speed using SMB3. Authentication required. Used to find other networks such as the one used for administration."; } }
+        public override string Name
+        {
+            get { return "smb3querynetwork"; }
+        }
+
+        public override string Description
+        {
+            get { return "List all IP of the computer and the interface speed using SMB3. Authentication required. Used to find other networks such as the one used for administration."; }
+        }
 
         override protected string GetCsvHeader()
         {
@@ -48,7 +55,10 @@ namespace PingCastle.Scanners
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     if (sb.Length != 0)
+                    {
                         sb.Append("\r\n");
+                    }
+
                     sb.Append(computer);
                     sb.Append("\t");
                     sb.Append(info.Index);
@@ -58,6 +68,7 @@ namespace PingCastle.Scanners
                     sb.Append(info.LinkSpeed);
                 }
             }
+
             return sb.ToString();
         }
 
@@ -65,9 +76,11 @@ namespace PingCastle.Scanners
         {
             string value = "[" + DateTime.Now.ToLongTimeString() + "] " + data;
             if (ScanningMode == 1)
+            {
                 UserInterfaceFactory.GetUserInterface().DisplayError(value);
+            }
+
             Trace.WriteLine(value);
         }
     }
-
 }

@@ -22,13 +22,14 @@ namespace PingCastle.Report
 {
     public class ReportHealthCheckSingle : ReportRiskControls<HealthcheckData>, IPingCastleReportUser<HealthcheckData>
     {
-
         protected HealthcheckData Report;
         public static int MaxNumberUsersInHtmlReport = 100;
         public static string MaxNumberUsersInHtmlReportMessage = "Output limited to {0} items - go to the advanced menu before running the report or add \"--no-enum-limit\" to remove that limit";
 
-        public ReportHealthCheckSingle(ADHealthCheckingLicense license) : base(license) { }
-        
+        public ReportHealthCheckSingle(ADHealthCheckingLicense license) : base(license)
+        {
+        }
+
         public string GenerateReportFile(HealthcheckData report, string filename)
         {
             Report = report;
@@ -66,6 +67,7 @@ namespace PingCastle.Report
                     {
                         Report.RiskRules.RemoveAt(rnd.Next(Report.RiskRules.Count));
                     }
+
                     RuleSet<HealthcheckData>.ReComputeTotals(Report, Report.RiskRules.ConvertAll(x => x));
                 }
             }
@@ -107,12 +109,12 @@ namespace PingCastle.Report
         <div class=""col-lg-12"">
  <div class=""d-flex justify-content-between align-items-center report-header"">
         <h1>");
-           Add(@"Healthcheck analysis</h1>
+            Add(@"Healthcheck analysis</h1>
     <h3 class=""report-date"">Date: ");
-Add(Report.GenerationDate.ToString("yyyy-MM-dd"));
-Add(@" - Engine version: ");
-Add(Report.EngineVersion);
-Add(@"</h3></div>
+            Add(Report.GenerationDate.ToString("yyyy-MM-dd"));
+            Add(@" - Engine version: ");
+            Add(Report.EngineVersion);
+            Add(@"</h3></div>
 ");
             Add(@"<div class=""alert alert-info notif"">
 This report has been generated with the ");
@@ -125,16 +127,19 @@ This report has been generated with the ");
                 AddEncoded(_license.CustomerNotice);
                 Add(@"""></i>.");
             }
+
             if (_license.IsBasic())
             {
                 Add(@"
 <br><strong class='auditor'>Being part of a commercial package is forbidden</strong> (selling the information contained in the report).<br>
 If you are an auditor, you MUST purchase an Auditor license to share the development effort.");
             }
+
             if (Report.WinTrustLevel != 0)
             {
                 Add(@"<br>You are not using a supported version of PingCastle.");
             }
+
             Add(@"</div>
 ");
             Add(@"</div></div>
@@ -196,6 +201,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 AddHiddenValue(item.Key, item.Value);
             }
+
             Add(@"<button type='submit' class='btn submit-btn'>Compare with statistics</button></form>");
             AddParagraph("<a href='#' data-bs-toggle='modal' data-bs-target='#privacyNoticeStatistics' class='d-print-none'>Privacy notice</a>");
         }
@@ -209,6 +215,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     Add(@"<div class=""alert alert-warning""><p>PingCastle has detected that the report has been modified before being uploaded to the application.</p></div>");
                 }
             }
+
             GenerateSection("Active Directory Indicators", () =>
             {
                 AddParagraph("This section focuses on the core security indicators.<br>Locate the sub-process determining the score and fix some rules in that area to get a score improvement.");
@@ -266,6 +273,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
                 return;
             }
+
             var data = GetCurrentMaturityLevel();
             Add("<div class='row'><div class='col-sm-6 my-auto'><p class='display-4'>Maturity Level:</span></div><div class='col-sm-6'>");
             for (int i = 1; i <= 5; i++)
@@ -274,6 +282,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     Add("<span class=\"display-1\">");
                 }
+
                 Add("<span class=\"badge grade-");
                 Add(i);
                 Add("\">");
@@ -284,6 +293,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     Add("</span>");
                 }
             }
+
             Add("</div></div>");
 
             Add(@"<p>Maturity levels:<p>
@@ -314,21 +324,29 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     Add("<p class='card-text'>");
                     if (Report.MaturityLevel == i)
+                    {
                         Add("<strong>");
+                    }
+
                     Add(data[i].Count);
                     Add(" rule(s) matched");
                     if (Report.MaturityLevel == i)
+                    {
                         Add("</strong>");
+                    }
+
                     Add("</p>");
                 }
                 else
                 {
                     Add("<p class='card-text'>No rule matched</p>");
                 }
+
                 Add("</div>");
                 Add("</div>");
                 Add("</div>");
             }
+
             Add("</div>");
             Add("</div></div>");
 
@@ -348,6 +366,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add(" active");
                             first = false;
                         }
+
                         Add(@"' data-bs-toggle=""tab"" href=""#maturitylevel");
                         Add(i);
                         Add(Report.GenerationDate.ToFileTime().ToString());
@@ -362,6 +381,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add("</li>");
                     }
                 }
+
                 Add("</ul>");
                 Add("</div></div>");
             }
@@ -373,12 +393,19 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 if (data.ContainsKey(i) && data[i].Count > 0)
                 {
                     if (!nextLevels.ContainsKey(start))
+                    {
                         nextLevels[start] = i;
+                    }
+
                     start = i;
                 }
             }
+
             if (Report.MaturityLevel < 5 && !nextLevels.ContainsKey(Report.MaturityLevel))
+            {
                 nextLevels[Report.MaturityLevel] = 5;
+            }
+
             Add("<div class='row'><div class='col-lg-12'>");
             Add(@"<div class=""tab-content"">");
             for (int i = Report.MaturityLevel; i < 6; i++)
@@ -395,6 +422,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         Add(" active");
                     }
+
                     Add(@""">");
 
                     Add("<p class='mt-2'>");
@@ -414,6 +442,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         Add("To reach the maximum level ");
                     }
+
                     Add(" you need to fix the following rules:</p>");
                     GenerateAccordion("rulesmaturity" + i, () =>
                     {
@@ -426,15 +455,17 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         foreach (HealthcheckRiskRule rule in Report.RiskRules)
                         {
                             if (l.Contains(rule.RiskId))
+                            {
                                 GenerateIndicatorPanelDetail("maturity" + i, rule, "maturity" + i);
+                            }
                         }
                     });
                     Add("</div>");
                 }
             }
+
             Add("</div>");
             Add("</div></div>");
-
         }
 
         private Dictionary<int, List<string>> GetCurrentMaturityLevel()
@@ -447,11 +478,16 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     continue;
                 }
+
                 int level = hcrule.MaturityLevel;
                 if (!output.ContainsKey(level))
+                {
                     output[level] = new List<string>();
+                }
+
                 output[level].Add(hcrule.RiskId);
             }
+
             return output;
         }
         #endregion
@@ -466,6 +502,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
                 return;
             }
+
             GenerateMitreTechnique();
             GenerateMitreMitigation();
         }
@@ -480,6 +517,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     continue;
                 }
+
                 object[] frameworks = hcrule.GetType().GetCustomAttributes(typeof(RuleMitreAttackTechniqueAttribute), true);
                 foreach (RuleMitreAttackTechniqueAttribute f in frameworks)
                 {
@@ -487,9 +525,11 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         reference[f] = new List<HealthcheckRiskRule>();
                     }
+
                     reference[f].Add(rule);
                 }
             }
+
             var keys = new List<RuleMitreAttackTechniqueAttribute>(reference.Keys);
             keys.Sort((RuleMitreAttackTechniqueAttribute a, RuleMitreAttackTechniqueAttribute b) => { return string.Compare(a.Label, b.Label); });
 
@@ -507,9 +547,13 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     foreach (var l in keys)
                     {
                         if (l.MainTechnique != mainTechnique)
+                        {
                             continue;
+                        }
+
                         num += reference[l].Count;
                     }
+
                     if (num > 0)
                     {
                         Add("<li class='nav-item bg-light'>");
@@ -519,6 +563,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add(" active");
                             first = false;
                         }
+
                         Add(@"' data-bs-toggle=""tab"" href=""#mitre");
                         Add(mainTechnique.ToString());
                         Add(Report.GenerationDate.ToFileTime().ToString());
@@ -532,6 +577,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add("</li>");
                     }
                 }
+
                 Add("</ul>");
                 Add("</div></div>");
 
@@ -545,12 +591,15 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     foreach (var l in keys)
                     {
                         if (l.MainTechnique != mainTechnique)
+                        {
                             continue;
+                        }
+
                         num += reference[l].Count;
                     }
+
                     if (num > 0)
                     {
-
                         Add(@"<div id=""mitre");
                         Add(mainTechnique.ToString());
                         Add(Report.GenerationDate.ToFileTime().ToString());
@@ -560,6 +609,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add(" active");
                             first = false;
                         }
+
                         Add(@""">");
 
                         Add("<div class='row'><div class='col-lg-12'>");
@@ -567,7 +617,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         foreach (var l in keys)
                         {
                             if (l.MainTechnique != mainTechnique)
+                            {
                                 continue;
+                            }
+
                             //title
                             Add("<p class='mt-2'><a href=");
                             Add(((RuleFrameworkReference)l).URL);
@@ -585,10 +638,12 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                                 }
                             });
                         }
+
                         Add("</div></div>");
                         Add("</div>");
                     }
                 }
+
                 Add("</div>");
                 Add("</div></div>");
             }
@@ -596,7 +651,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 Add("<p>No technique matched</p>");
             }
-
         }
 
         void GenerateMitreMitigation()
@@ -610,18 +664,24 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     continue;
                 }
+
                 object[] frameworks = hcrule.GetType().GetCustomAttributes(typeof(RuleMitreAttackMitigationAttribute), true);
                 if (frameworks == null || frameworks.Length == 0)
+                {
                     notcovered++;
+                }
+
                 foreach (RuleMitreAttackMitigationAttribute f in frameworks)
                 {
                     if (!reference.ContainsKey(f))
                     {
                         reference[f] = new List<HealthcheckRiskRule>();
                     }
+
                     reference[f].Add(rule);
                 }
             }
+
             var keys = new List<RuleMitreAttackMitigationAttribute>(reference.Keys);
             keys.Sort((RuleMitreAttackMitigationAttribute a, RuleMitreAttackMitigationAttribute b) => { return string.Compare(a.Label, b.Label); });
 
@@ -640,9 +700,13 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     foreach (var l in keys)
                     {
                         if (l.MainTechnique != mainTechnique)
+                        {
                             continue;
+                        }
+
                         num += reference[l].Count;
                     }
+
                     if (num > 0)
                     {
                         Add("<li class='nav-item bg-light'>");
@@ -652,6 +716,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add(" active");
                             first = false;
                         }
+
                         Add(@"' data-bs-toggle=""tab"" href=""#mitre");
                         Add(mainTechnique.ToString());
                         Add(Report.GenerationDate.ToFileTime().ToString());
@@ -665,6 +730,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add("</li>");
                     }
                 }
+
                 Add("</ul>");
                 Add("</div></div>");
 
@@ -678,12 +744,15 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     foreach (var l in keys)
                     {
                         if (l.MainTechnique != mainTechnique)
+                        {
                             continue;
+                        }
+
                         num += reference[l].Count;
                     }
+
                     if (num > 0)
                     {
-
                         Add(@"<div id=""mitre");
                         Add(mainTechnique.ToString());
                         Add(Report.GenerationDate.ToFileTime().ToString());
@@ -693,6 +762,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             Add(" active");
                             first = false;
                         }
+
                         Add(@""">");
 
                         Add("<div class='row'><div class='col-lg-12'>");
@@ -700,7 +770,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         foreach (var l in keys)
                         {
                             if (l.MainTechnique != mainTechnique)
+                            {
                                 continue;
+                            }
+
                             //title
                             Add("<p class='mt-2'><a href=");
                             Add(((RuleFrameworkReference)l).URL);
@@ -718,10 +791,12 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                                 }
                             });
                         }
+
                         Add("</div></div>");
                         Add("</div>");
                     }
                 }
+
                 Add("</div>");
                 Add("</div></div>");
             }
@@ -753,6 +828,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 AddHeaderText(@"Recycle Bin enabled");
             }
+
             AddBeginTableData();
             AddBeginRow();
             AddCellText(Report.DomainFQDN);
@@ -773,6 +849,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellText("FALSE", true);
                 }
             }
+
             AddEndRow();
             AddEndTable();
 
@@ -799,6 +876,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         html = GetUrlCallbackAzureAD(AzureADKey.Create(Report.AzureADName, Report.AzureADId), Report.AzureADName, null);
                     }
+
                     if (string.IsNullOrEmpty(html))
                     {
                         AddEncoded(Report.AzureADName);
@@ -811,6 +889,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         Add(html);
                     }
+
                     Add(@"</td>");
 
                     AddCellText(Report.AzureADId);
@@ -837,6 +916,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddHeaderText("Nb Locked", "Indicates the number of enabled accounts set as locked.");
                 AddHeaderText("Nb pwd never Expire", "Indicates the number of enabled accounts which have a password which never expires.");
             }
+
             AddHeaderText("Nb SidHistory", "Indicates the number of enabled accounts having the attribute SIDHistory set. This attributes indicates a foreign origin.");
             AddHeaderText("Nb Bad PrimaryGroup", "Indicates the number of enabled accounts whose group, set as primary, is not the default one.");
             if (!computerView)
@@ -844,6 +924,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddHeaderText("Nb Password not Req.", "Indicates the number of enabled accounts which have a flag set in useraccountcontrol allowing empty passwords.");
                 AddHeaderText("Nb Des enabled.", "Indicates the number of enabled accounts allowing the unsafe DES algorithm for authentication.");
             }
+
             AddHeaderText("Nb unconstrained delegations (enabled)", "Indicates the number of enabled accounts having been granted the right to impersonate any users without any restrictions. PingCastle checks if the flag TRUSTED_FOR_DELEGATION is present in the useraccountcontrol attribute.");
             AddHeaderText("Nb unconstrained delegations (disabled)", "Indicates the number of disabled accounts having been granted the right to impersonate any users without any restrictions. PingCastle checks if the flag TRUSTED_FOR_DELEGATION is present in the useraccountcontrol attribute.");
             AddHeaderText("Nb Reversible password", "Indicates the number of enabled accounts whose password can be retrieved in clear text using hacking tools.");
@@ -858,6 +939,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddParagraph("A honey pot has been configured. It is used to generate fake security issues that are heavily monitored and that a hacker will spot using security tools like PingCastle. By enabling this feature, all the accounts listed below will not be evaluated with PingCastle rules.");
                 GenerateAccordion("honeypotaccordion", () => GenerateListAccountDetail("honeypotaccordion", "honeypotid", "Honey pot accounts", Report.ListHoneyPot));
             }
+
             GenerateSubSection("Account analysis", "useraccountanalysis");
             AddBeginTable("Account analysis list", true);
             AddHeaderText("Nb User Accounts");
@@ -895,6 +977,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddDistributionChart(Report.PasswordDistribution.Select(x => new DistributionItem { HigherBound = x.HigherBound, Value = x.Value }), "general");
                 }
             }
+
             GenerateDomainSIDHistoryList(Report.UserAccountData);
         }
 
@@ -910,35 +993,43 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         GenerateListAccountDetail(accordion, "sectioninactive" + root, "Inactive objects (Last usage > 6 months) ", data.ListInactive);
                     }
+
                     if (data.ListLocked != null && data.ListLocked.Count > 0)
                     {
                         GenerateListAccountDetail(accordion, "sectionlocked" + root, "Locked objects ", data.ListLocked);
                     }
+
                     if (data.ListPwdNeverExpires != null && data.ListPwdNeverExpires.Count > 0)
                     {
                         GenerateListAccountDetail(accordion, "sectionneverexpires" + root, "Objects with a password which never expires ", data.ListPwdNeverExpires);
                     }
+
                     if (data.ListSidHistory != null && data.ListSidHistory.Count > 0)
                     {
                         GenerateListAccountDetail(accordion, "sectionsidhistory" + root, "Objects having the SIDHistory populated ", data.ListSidHistory);
                     }
+
                     if (data.ListBadPrimaryGroup != null && data.ListBadPrimaryGroup.Count > 0)
                     {
                         GenerateListAccountDetail(accordion, "sectionbadprimarygroup" + root, "Objects having the primary group attribute changed ", data.ListBadPrimaryGroup);
                     }
+
                     if (data.ListPwdNotRequired != null && data.ListPwdNotRequired.Count > 0)
                     {
                         GenerateListAccountDetail(accordion, "sectionpwdnotrequired" + root, "Objects which can have an empty password ", data.ListPwdNotRequired);
                     }
+
                     if (data.ListDesEnabled != null && data.ListDesEnabled.Count > 0)
                     {
                         GenerateListAccountDetail(accordion, "sectiondesenabled" + root, "Objects which can use DES in kerberos authentication ", data.ListDesEnabled);
                     }
+
                     if (data.ListNotAesEnabled != null && data.ListNotAesEnabled.Count > 0)
                     {
                         GenerateListAccountDetail(accordion, "sectionnotaesenabled" + root, "Objects where AES usage with kerberos may be cause issues", data.ListNotAesEnabled,
                             tooltip: "Accounts are listed if 1) no password changed occured after the first DC Win 2008 install to initate AES secrets or 2) they have a SPN and the account is not flaged to use AES for encryption with msDS-SupportedEncryptionTypes");
                     }
+
                     var dcDns = root == "computer" && Report.DomainControllers?.Count > 0
                         ? new HashSet<string>(
                             Report.DomainControllers.Select(dc => dc.DistinguishedName),
@@ -952,6 +1043,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             tooltip: dcDns != null ? DcDelegationTooltip : null,
                             domainControllerDns: dcDns);
                     }
+
                     if (data.ListDisabledTrustedToAuthenticateForDelegation != null && data.ListDisabledTrustedToAuthenticateForDelegation.Count > 0)
                     {
                         GenerateListAccountDetail(accordion, "sectiondisabledtrusteddelegation" + root,
@@ -960,14 +1052,17 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             tooltip: dcDns != null ? DcDelegationTooltip : null,
                             domainControllerDns: dcDns);
                     }
+
                     if (data.ListReversibleEncryption != null && data.ListReversibleEncryption.Count > 0)
                     {
                         GenerateListAccountDetail(accordion, "sectionreversible" + root, "Objects having a reversible password ", data.ListReversibleEncryption);
                     }
+
                     if (data.ListDuplicate != null && data.ListDuplicate.Count > 0)
                     {
                         GenerateListAccountDetail(accordion, "sectionduplicate" + root, "Objects being duplicates ", data.ListDuplicate);
                     }
+
                     if (data.ListNoPreAuth != null && data.ListNoPreAuth.Count > 0)
                     {
                         GenerateListAccountDetail(accordion, "sectionnopreauth" + root, "Objects without kerberos preauthentication ", data.ListNoPreAuth);
@@ -1000,6 +1095,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 return;
             }
+
             bool eventDate = false;
             foreach (var u in list)
             {
@@ -1009,6 +1105,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     break;
                 }
             }
+
             GenerateAccordionDetailForDetail(id, accordion, title, list.Count, () =>
                 {
                     AddBeginTable("Account list");
@@ -1020,10 +1117,12 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         AddHeaderText("Domain Controller");
                     }
+
                     if (eventDate)
                     {
                         AddHeaderText("Event date");
                     }
+
                     AddHeaderText("Distinguished name");
                     AddBeginTableData();
 
@@ -1045,6 +1144,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         {
                             AddCellText(domainControllerDns.Contains(detail.DistinguishedName) ? "Yes" : "No");
                         }
+
                         if (eventDate)
                         {
                             if (detail.Event == DateTime.MinValue)
@@ -1056,6 +1156,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                                 AddCellText(detail.Event.ToString("u"));
                             }
                         }
+
                         AddCellText(detail.DistinguishedName);
                         AddEndRow();
                         number++;
@@ -1064,6 +1165,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             break;
                         }
                     }
+
                     AddEndTable(() =>
                     {
                         if (number >= MaxNumberUsersInHtmlReport)
@@ -1082,7 +1184,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         private void GenerateDomainSIDHistoryList(HealthcheckAccountData data)
         {
             if (data.ListDomainSidHistory == null || data.ListDomainSidHistory.Count == 0)
+            {
                 return;
+            }
 
             GenerateSubSection("SID History", "sidhistory");
             AddBeginTable("SID History list");
@@ -1094,6 +1198,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 AddHeaderText("Dangerous SID Found");
             }
+
             AddBeginTableData();
 
             data.ListDomainSidHistory.Sort(
@@ -1113,8 +1218,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     AddCellText(domainSidHistory.DangerousSID.ToString());
                 }
+
                 AddEndRow();
             }
+
             AddEndTable();
         }
 
@@ -1171,6 +1278,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             {"New LAPS", Report.LapsNewDistribution == null ? null : Report.LapsNewDistribution.Select(x => new DistributionItem { HigherBound = x.HigherBound, Value = x.Value })},
                         }, "generallapsdistribution");
                     }
+
                     if (Report.ComputerAccountData != null && Report.OperatingSystemVersion != null)
                     {
                         AddParagraph("Here is the application of LAPS");
@@ -1179,14 +1287,15 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         {
                             note += " There is currently " + Report.DomainControllers.Count + " domain controllers or Entra ID gateway listed in this report.";
                         }
+
                         AddParagraph(note);
 
                         Add("<div class='row'>");
 
-                        int total = 0; 
+                        int total = 0;
                         var laps = new List<int>();
                         var tooltip = new List<string>();
-                        int totalServer = 0; 
+                        int totalServer = 0;
                         var lapsServer = new List<int>();
                         var tooltipServer = new List<string>();
 
@@ -1221,7 +1330,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add(@"<div class=""card"">
   <div class=""card-body pie-chart"">
     <h5 class=""card-title"">All Enabled Computers with LAPS <br>");
-                        Add((laps.Sum()+ lapsServer.Sum()).ToString("#,##0"));
+                        Add((laps.Sum() + lapsServer.Sum()).ToString("#,##0"));
                         Add(@" out of ");
                         Add((Report.ComputerAccountData.NumberEnabled).ToString("#,##0"));
                         Add(@"</h5>");
@@ -1300,7 +1409,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             AddCellText(unknownOs.OperatingSystem);
                             AddCellNum(unknownOs.NumberOfOccurence);
                             for (int i = 0; i < 6; i++)
+                            {
                                 AddCellNum(0);
+                            }
+
                             AddEndRow();
                         }
 
@@ -1346,6 +1458,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         AddEndRow();
                     }
                 }
+
                 AddEndTable();
             }
             else if (Report.OperatingSystemVersion == null || Report.OperatingSystemVersion.Count == 0)
@@ -1380,6 +1493,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         AddEndRow();
                     }
                 }
+
                 AddEndTable();
             }
             else
@@ -1393,7 +1507,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 foreach (HealthcheckOSData os in Report.OperatingSystem)
                 {
                     if (os.OperatingSystem.Contains("Windows"))
+                    {
                         continue;
+                    }
+
                     AddBeginRow();
                     AddCellText(os.OperatingSystem);
                     AddCellNum(os.data.Number);
@@ -1408,6 +1525,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellNum(os.data.NumberReversibleEncryption);
                     AddEndRow();
                 }
+
                 foreach (HealthcheckOSVersionData os in Report.OperatingSystemVersion)
                 {
                     AddBeginRow();
@@ -1424,6 +1542,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellNum(os.data.NumberReversibleEncryption);
                     AddEndRow();
                 }
+
                 AddEndTable();
             }
         }
@@ -1431,7 +1550,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         private void GenerateDCInformation()
         {
             if (Report.DomainControllers == null || Report.DomainControllers.Count == 0)
+            {
                 return;
+            }
 
             GenerateSubSection("Domain controllers", "domaincontrollersection");
             AddParagraph("Here is a specific zoom related to the Active Directory servers: the domain controllers.");
@@ -1456,14 +1577,17 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                             {
                                 AddHeaderText("Remote spooler", "Indicates if the spooler service is remotely accessible.");
                             }
+
                             if (Report.version >= new Version(2, 7))
                             {
                                 AddHeaderText("FSMO role", "Flexible Single Master Operation. Indicates the server responsible for each role.");
                             }
+
                             if (Report.version >= new Version(2, 11))
                             {
                                 AddHeaderText("WebDAV", "Detect if the WebClient service is running, which provide the ability to call http server from native command line.");
                             }
+
                             AddBeginTableData();
 
                             int count = 0;
@@ -1486,6 +1610,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                                 {
                                     AddCellText((dc.RemoteSpoolerDetected ? "YES" : "NO"), true, !dc.RemoteSpoolerDetected);
                                 }
+
                                 if (Report.version >= new Version(2, 7))
                                 {
                                     Add(@"<Td>");
@@ -1493,20 +1618,23 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                                     {
                                         Add(string.Join(",<br>", dc.FSMO.ConvertAll(x => ReportHelper.Encode(x)).ToArray()));
                                     }
+
                                     Add("</Td>");
                                 }
+
                                 if (Report.version >= new Version(2, 11))
                                 {
                                     AddCellText((dc.WebClientEnabled ? "YES" : "NO"), true, !dc.WebClientEnabled);
                                 }
+
                                 AddEndRow();
                             }
+
                             AddEndTable();
                         }
                     );
                 }
             );
-
         }
 
         #endregion computer info
@@ -1529,16 +1657,19 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     AddHeaderText("Nb Smart Card required", "This is the number of enabled user accounts required to have a smart card");
                 }
+
                 if (Report.version >= new Version(2, 5, 3))
                 {
                     AddHeaderText("Nb Service accounts", "This is the number of enabled user accounts authorized to be a service. This is defined by setting the attribute servicePrincipalName.");
                 }
+
                 AddHeaderText("Nb can be delegated", "This is the number of enabled user accounts which doesn't have the flag 'this account is sensitive and cannot be delegated'. This is an effective mitigation against unconstrained delegation attacks.");
                 AddHeaderText("Nb external users", "This is the number of item identified as coming from a foreign domain");
                 if (Report.version >= new Version(2, 9))
                 {
                     AddHeaderText("Nb protected users", "This is the number of users in the Protected Users group");
                 }
+
                 AddBeginTableData();
 
                 Report.PrivilegedGroups.Sort((HealthCheckGroupData a, HealthCheckGroupData b)
@@ -1562,6 +1693,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         AddCellText(group.GroupName);
                     }
+
                     AddCellNum(group.NumberOfMember);
                     AddCellNum(group.NumberOfMemberEnabled);
                     AddCellNum(group.NumberOfMemberDisabled);
@@ -1571,18 +1703,22 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         AddCellNum(group.NumberOfSmartCardRequired);
                     }
+
                     if (Report.version >= new Version(2, 5, 3))
                     {
                         AddCellNum(group.NumberOfServiceAccount);
                     }
+
                     AddCellNum(group.NumberOfMemberCanBeDelegated);
                     AddCellNum(group.NumberOfExternalMember);
                     if (Report.version >= new Version(2, 9))
                     {
                         AddCellNum(group.NumberOfMemberInProtectedUsers);
                     }
+
                     AddEndRow();
                 }
+
                 AddEndTable();
                 foreach (HealthCheckGroupData group in Report.PrivilegedGroups)
                 {
@@ -1608,6 +1744,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     });
                 Add("</div></div>");
             }
+
             if (Report.ProtectedUsersNotPrivileged != null && Report.ProtectedUsersNotPrivileged.Members != null && Report.ProtectedUsersNotPrivileged.Members.Count > 0)
             {
                 Add(@"
@@ -1621,6 +1758,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     });
                 Add("</div></div>");
             }
+
             GenerateSubSection("Last Logon Distribution", "adminlastlogondistribution");
             if (_license.IsBasic())
             {
@@ -1634,7 +1772,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 ComputePrivilegedDistribution(lastLogon, pwdLastSet);
 
                 if (lastLogon.Count == 0)
+                {
                     lastLogon = Report.PrivilegedDistributionLastLogon.Select(x => new DistributionItem { HigherBound = x.HigherBound, Value = x.Value }).ToList();
+                }
+
                 if (lastLogon != null && lastLogon.Count > 0)
                 {
                     AddParagraph("Here is the distribution of the last logon of privileged users. Only enabled accounts are analyzed.");
@@ -1643,13 +1784,17 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
                 GenerateSubSection("Password Age Distribution", "adminpwdagedistribution");
                 if (pwdLastSet.Count == 0)
+                {
                     pwdLastSet = Report.PrivilegedDistributionPwdLastSet.Select(x => new DistributionItem { HigherBound = x.HigherBound, Value = x.Value }).ToList();
+                }
+
                 if (pwdLastSet != null && pwdLastSet.Count > 0)
                 {
                     AddParagraph("Here is the distribution of the password age for privileged users. Only enabled accounts are analyzed.");
                     AddDistributionChart(pwdLastSet, "pwdlastsetadmin");
                 }
             }
+
             if (Report.Delegations != null && Report.Delegations.Count > 0)
             {
                 Add(@"
@@ -1684,8 +1829,13 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
                 List<HealthcheckDelegationData> dcsync = new List<HealthcheckDelegationData>();
                 foreach (var d in Report.Delegations)
+                {
                     if (d.Right.Contains(RelationType.EXT_RIGHT_REPLICATION_GET_CHANGES_ALL.ToString()))
+                    {
                         dcsync.Add(d);
+                    }
+                }
+
                 AddParagraph("In particular for AD database access (DCSync, AADConnect, ...).");
                 GenerateAccordion("delegationaccordeondcsync",
                     () =>
@@ -1734,6 +1884,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         {
                             i = HealthcheckHelper.ConvertDateToKey(user.Created);
                         }
+
                         if (pwdDistribution.ContainsKey(i))
                         {
                             pwdDistribution[i].Value++;
@@ -1768,13 +1919,17 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 int dcPathPos = delegation.DistinguishedName.IndexOf(",DC=");
                 string path = delegation.DistinguishedName;
                 if (dcPathPos > 0)
+                {
                     path = delegation.DistinguishedName.Substring(0, dcPathPos);
+                }
+
                 AddBeginRow();
                 AddCellText(path);
                 AddCellText(delegation.Account);
                 AddCellText(delegation.Right);
                 AddEndRow();
             }
+
             AddEndTable();
         }
 
@@ -1792,21 +1947,25 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     AddHeaderText("Smart Card required", "Indicates for enabled accounts if a smart card is required to login");
                 }
+
                 if (Report.version >= new Version(2, 5, 3))
                 {
                     AddHeaderText("Service account", "Indicates for enabled accounts if it has been marked as service. This is done by setting the servicePrincipalName attribute.");
                 }
+
                 AddHeaderText("Flag Cannot be delegated present", "Indicates for enabled accounts if the protection 'this is account is sensitive and cannot be delegated' is in place.");
                 if (Report.version >= new Version(2, 8, 0))
                 {
                     AddHeaderText("Creation date", "Indicates when the account has been created.");
                 }
+
                 AddHeaderText("Last login", "Indicates the last login date. Note: this value has a 14 days error margin.");
                 AddHeaderText("Password last set", "Indicates when the password has been changed for the last time");
                 if (Report.version >= new Version(2, 9, 0))
                 {
                     AddHeaderText("In Protected Users", "Indicates if the account is a member of the special group Protected Users.");
                 }
+
                 AddHeaderText("Distinguished name", "Indicates the location of the object in the AD tree.");
                 AddBeginTableData();
                 members.Sort((HealthCheckGroupMemberData a, HealthCheckGroupMemberData b)
@@ -1830,20 +1989,24 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         {
                             AddCellText("External");
                         }
+
                         if (Report.version >= new Version(2, 5, 3))
                         {
                             AddCellText("External");
                         }
+
                         if (Report.version >= new Version(2, 8, 0))
                         {
                             AddCellText("External");
                         }
+
                         AddCellText("External");
                         AddCellText("External");
                         if (Report.version >= new Version(2, 9, 0))
                         {
                             AddCellText("External");
                         }
+
                         AddCellText(member.DistinguishedName);
                         AddEndRow();
                     }
@@ -1859,25 +2022,30 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         {
                             AddCellText((member.SmartCardRequired ? "YES" : "NO"), true, member.SmartCardRequired);
                         }
+
                         if (Report.version >= new Version(2, 5, 3))
                         {
                             AddCellText((member.IsService ? "YES" : "NO"), true, !member.IsService);
                         }
+
                         AddCellText((!member.CanBeDelegated ? "YES" : "NO"), true, !member.CanBeDelegated);
                         if (Report.version >= new Version(2, 8, 0))
                         {
                             AddCellDate(member.Created);
                         }
+
                         AddCellDate(member.LastLogonTimestamp);
                         AddCellDate(member.PwdLastSet);
                         if (Report.version >= new Version(2, 9, 0))
                         {
                             AddCellText((member.IsInProtectedUser ? "YES" : "NO"), true, member.IsInProtectedUser);
                         }
+
                         AddCellText(member.DistinguishedName);
                         AddEndRow();
                     }
                 }
+
                 AddEndTable();
             }
         }
@@ -1892,12 +2060,17 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 apart1[i] = apart[apart.Length - 1 - i];
             }
+
             return String.Join(",", apart1);
         }
+
         private int OrderDelegationData(HealthcheckDelegationData a, HealthcheckDelegationData b)
         {
             if (a.DistinguishedName == b.DistinguishedName)
+            {
                 return String.Compare(a.Account, b.Account);
+            }
+
             return String.Compare(GetDelegationSortKey(a), GetDelegationSortKey(b));
         }
 
@@ -1907,7 +2080,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         protected void GenerateCompromissionGraphInformation()
         {
             if (Report.ControlPaths == null)
+            {
                 return;
+            }
+
             AddAnchor("controlpath");
             GenerateCompromissionGraphDependanciesInformation();
             GenerateCompromissionGraphIndirectLinksInformation();
@@ -1938,6 +2114,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddHeaderText(ReportHelper.GetEnumDescription(typology), colspan: 3);
                 numTypology++;
             }
+
             AddEndRow();
             AddBeginRow();
             for (int i = 0; i < numTypology; i++)
@@ -1946,6 +2123,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddHeaderText("Resolved", "Number of unique SID (account, group, computer, ...) resolved");
                 AddHeaderText("Unresolved", "Number of unique SID (account, group, computer, ...) NOT resolved meaning that the underlying object may have been removed");
             }
+
             AddBeginTableData();
             foreach (var header in Report.ControlPaths.Dependancies)
             {
@@ -1959,6 +2137,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     Add(GetUrlCallbackDomain(header.Domain, !string.IsNullOrEmpty(header.FQDN) ? header.FQDN : header.Netbios, null));
                 }
+
                 Add("</td>");
                 AddCellText(header.Netbios);
                 AddCellText(header.Sid);
@@ -1968,13 +2147,17 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     foreach (var item in header.Details)
                     {
                         if (item.Typology != typology)
+                        {
                             continue;
+                        }
+
                         found = true;
                         AddCellNum(item.NumberOfGroupImpacted);
                         AddCellNum(item.NumberOfResolvedItems);
                         AddCellNum(item.NumberOfUnresolvedItems);
                         break;
                     }
+
                     if (!found)
                     {
                         AddCellNum(0, true);
@@ -1982,8 +2165,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         AddCellNum(0, true);
                     }
                 }
+
                 AddEndRow();
             }
+
             AddEndTable();
         }
 
@@ -1996,6 +2181,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddParagraph("No data has been found.");
                 return;
             }
+
             AddBeginTable("Compromise Grapth Indirect links list");
             AddHeaderText("Priority to remediate", "Indicates a set of objects considered as a priority when establishing a remediation plan.");
             AddHeaderText("Critical Object Found", "Indicates if critical objects such as everyone, authenticated users or domain users can take control, directly or not, of one of the objects.");
@@ -2011,7 +2197,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 foreach (var analysis in Report.ControlPaths.AnomalyAnalysis)
                 {
                     if (analysis.ObjectRisk != objectRisk)
+                    {
                         continue;
+                    }
+
                     found = true;
                     AddCellText(analysis.CriticalObjectFound ? "YES" : "NO", true, !analysis.CriticalObjectFound);
                     AddCellNum(analysis.NumberOfObjectsWithIndirect);
@@ -2019,6 +2208,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellNum(analysis.MaximumDirectIndirectRatio);
                     break;
                 }
+
                 if (!found)
                 {
                     AddCellNum(0, true);
@@ -2026,15 +2216,19 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     AddCellNum(0, true);
                     AddCellNum(0, true);
                 }
+
                 AddEndRow();
             }
+
             AddEndTable();
         }
 
         private void GenerateCompromissionGraphDetailedAnalysis()
         {
             if (Report.ControlPaths.Data == null || Report.ControlPaths.Data.Count == 0)
+            {
                 return;
+            }
 
             foreach (var typology in (CompromiseGraphDataTypology[])Enum.GetValues(typeof(CompromiseGraphDataTypology)))
             {
@@ -2043,12 +2237,17 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     var data = Report.ControlPaths.Data[i];
                     if (data.Typology != typology)
+                    {
                         continue;
+                    }
+
                     line.Add(i, data);
                 }
 
                 if (line.Count == 0)
+                {
                     continue;
+                }
 
                 GenerateSubSection(ReportHelper.GetEnumDescription(typology));
                 AddParagraph("If the report has been saved which the full details, each object can be zoomed with its full detail. If it is not the case, for privacy reasons, only general statistics are available.");
@@ -2066,6 +2265,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     GenerateSummary(i, line[i]);
                 }
+
                 AddEndTable();
             }
 
@@ -2095,6 +2295,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddEncoded(data.Description);
                 Add(@"</a></td>");
             }
+
             AddCellText(ReportHelper.GetEnumDescription(data.ObjectRisk));
             bool isAGroup = true;
             foreach (var node in data.Nodes)
@@ -2102,10 +2303,14 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 if (node.Id == 0)
                 {
                     if (node.Type != "group")
+                    {
                         isAGroup = false;
+                    }
+
                     break;
                 }
             }
+
             if (isAGroup)
             {
                 Add("<td class=\"num\">");
@@ -2118,6 +2323,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     Add("(Details)");
                     Add(@"</a>");
                 }
+
                 Add("</td>");
 
                 Add("<td class=\"num\">");
@@ -2130,6 +2336,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     Add("(Details)");
                     Add(@"</a>");
                 }
+
                 Add("</td>");
             }
             else
@@ -2144,6 +2351,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 Add(" including <span class='unticked'>EVERYONE</span>");
             }
+
             if (data.IndirectMembers.Count > 0)
             {
                 Add(@" <a href=""#mod-indirectmember-");
@@ -2152,6 +2360,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 Add("(Details)");
                 Add(@"</a>");
             }
+
             Add("</td>");
 
             Add("<td class=\"num\">");
@@ -2164,6 +2373,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 Add("(Details)");
                 Add(@"</a>");
             }
+
             Add("</td>");
 
             if (data.Dependancies.Count != 0)
@@ -2173,7 +2383,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     var d = data.Dependancies[i];
                     if (i > 0)
+                    {
                         Add("<br>");
+                    }
+
                     Add(@"<a href = ""#mod-dependancy-");
                     Add(index);
                     Add(@""" data-bs-toggle=""modal"">");
@@ -2186,18 +2399,21 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add("Unknown&nbsp;Domain&nbsp;");
                         Add(i);
                     }
+
                     Add("[");
                     Add(d.NumberOfResolvedItems);
                     Add("+");
                     Add(d.NumberOfUnresolvedItems);
                     Add("]</a>");
                 }
+
                 Add("</td>");
             }
             else
             {
                 AddCellText(@"None");
             }
+
             if (data.Nodes == null || data.Nodes.Count == 0)
             {
                 AddCellText("Not available");
@@ -2209,6 +2425,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 Add(@""" data-bs-toggle=""modal"">Analysis");
                 Add(@"</a></td>");
             }
+
             AddEndRow();
         }
 
@@ -2226,6 +2443,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     Add("Unknown&nbsp;Domain");
                 }
+
                 Add(@"</h4>");
                 Add(@"<div class=""row""><div class=""col-lg-12""><dl class=""row"">
     <dt class=""col-sm-3"">NetBios</dt>
@@ -2253,6 +2471,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         }
                     }
                 }
+
                 if (dependancy.NumberOfUnresolvedItems > 0)
                 {
                     Add(@"<h5>Unresolved accounts (");
@@ -2268,6 +2487,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     }
                 }
             }
+
             AddEndModal();
         }
 
@@ -2285,6 +2505,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 DisplayIndirectMember(member);
             }
+
             AddEndTable();
             AddEndModal();
         }
@@ -2302,6 +2523,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddCellText(member.Sid);
                 AddEndRow();
             }
+
             AddEndTable();
             AddEndModal();
         }
@@ -2317,6 +2539,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 AddCellText(member.Name);
             }
+
             AddCellNum(member.Distance);
             AddCellText(member.AuthorizedObject);
             AddCellText(member.Path);
@@ -2326,7 +2549,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         private void GenerateUserModalMember(int i)
         {
             if (Report.ControlPaths.Data[i].DirectUserMembers == null || Report.ControlPaths.Data[i].DirectUserMembers.Count == 0)
+            {
                 return;
+            }
+
             AddBeginModal("mod-member-" + i, Report.ControlPaths.Data[i].Description, ShowModalType.XL);
             Add(@"<div class=""row""><div class=""col-lg-12""><h4>Direct User Members</h4></div></div>");
             AddBeginTable("User list");
@@ -2344,6 +2570,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 DisplayUserMember(member);
             }
+
             AddEndTable();
             AddEndModal();
         }
@@ -2366,7 +2593,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         private void GenerateModalComputerMember(int i)
         {
             if (Report.ControlPaths.Data[i].DirectComputerMembers == null || Report.ControlPaths.Data[i].DirectComputerMembers.Count == 0)
+            {
                 return;
+            }
+
             AddBeginModal("mod-cmember-" + i, Report.ControlPaths.Data[i].Description, ShowModalType.XL);
             Add(@"<div class=""row""><div class=""col-lg-12""><h4>Direct Computer Members</h4></div></div>");
             AddBeginTable("Computer list");
@@ -2381,6 +2611,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 DisplayComputerMember(member);
             }
+
             AddEndTable();
             AddEndModal();
         }
@@ -2405,7 +2636,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
         private void GenerateModalGraph(int i)
         {
             if (Report.ControlPaths.Data[i].Nodes == null || Report.ControlPaths.Data[i].Nodes.Count == 0)
+            {
                 return;
+            }
+
             AddBeginModal("mcg-" + GenerateModalId(Report.ControlPaths.Data[i].Description), Report.ControlPaths.Data[i].Description, ShowModalType.FullScreen);
             Add(@"<div class=""progress mt-2 d-none"" id=""progress");
             Add(GenerateModalId(Report.ControlPaths.Data[i].Description));
@@ -2457,15 +2691,21 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddLine(BuildJasonFromSingleCompromiseGraph(Report.ControlPaths.Data[i]));
                 AddLine("</script>");
             }
+
             AddLine(@"<script type=""application/json"" data-pingcastle-selector=""RelationTypeDescription"">");
             AddLine("{");
             bool first = true;
             foreach (var relationtype in (RelationType[])Enum.GetValues(typeof(RelationType)))
             {
                 if (!first)
+                {
                     AddLine(",");
+                }
                 else
+                {
                     first = false;
+                }
+
                 var description = ReportHelper.GetEnumDescription(relationtype);
                 Add("\"");
                 AddJsonEncoded(relationtype.ToString());
@@ -2473,6 +2713,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddJsonEncoded(description);
                 Add("\"");
             }
+
             AddLine("}");
             AddLine("</script>");
         }
@@ -2490,7 +2731,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 var node = data.Nodes[i];
                 if (i != 0)
+                {
                     output.Append("    },");
+                }
+
                 output.Append("    {");
                 output.Append("      \"id\": " + node.Id + ",");
                 output.Append("      \"name\": \"" + ReportHelper.EscapeJsonString(node.Name) + "\",");
@@ -2500,15 +2744,22 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     output.Append("      \"suspicious\": 1,");
                 }
+
                 if (node.Critical)
                 {
                     output.Append("      \"critical\": 1,");
                 }
+
                 if (node.Distance == 0)
+                {
                     output.Append("      \"dist\": null");
+                }
                 else
+                {
                     output.Append("      \"dist\": \"" + node.Distance + "\"");
+                }
             }
+
             output.Append("    }");
             output.Append("  ],");
             // END OF NODES
@@ -2520,7 +2771,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 var relation = data.Links[i];
                 if (i != 0)
+                {
                     output.Append("    },");
+                }
 
                 output.Append("    {");
                 output.Append("      \"source\": " + relation.Source + ",");
@@ -2534,10 +2787,12 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 
                 output.Append("       ]");
             }
+
             if (data.Links.Count > 0)
             {
                 output.Append("    }");
             }
+
             output.Append("  ]");
             // END OF LINKS
             output.Append("}");
@@ -2576,6 +2831,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             {
                 AddHeaderText("Algorithm", "Indicates which algorithms are suitable for kerberos tickets signature");
             }
+
             AddBeginTableData();
 
             foreach (HealthCheckTrustData trust in Report.Trusts)
@@ -2591,6 +2847,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     sidfiltering = "<span class=\"unticked\">" + sidfiltering + "</span>";
                 }
+
                 string tgtDelegation = TrustAnalyzer.GetTGTDelegation(trust);
                 if (tgtDelegation == "Yes")
                 {
@@ -2600,6 +2857,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     tgtDelegation = "<span class=\"ticked\">" + tgtDelegation + "</span>";
                 }
+
                 AddBeginRow();
                 Add(@"<td class='text'>");
                 if (GetUrlCallbackDomain == null)
@@ -2616,6 +2874,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     Add(GetUrlCallbackDomain(trust.Domain, trust.TrustPartner, null));
                 }
+
                 Add(@"</td>");
                 AddCellText(TrustAnalyzer.GetTrustType(trust.TrustType));
                 AddCellText(TrustAnalyzer.GetTrustAttribute(trust.TrustAttributes));
@@ -2640,8 +2899,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         Add("</td>");
                     }
                 }
+
                 AddEndRow();
             }
+
             AddEndTable();
 
             GenerateSubSection("Reachable Domains");
@@ -2656,7 +2917,10 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
             foreach (HealthCheckTrustData trust in Report.Trusts)
             {
                 if (trust.KnownDomains == null)
+                {
                     continue;
+                }
+
                 trust.KnownDomains.Sort((HealthCheckTrustDomainInfoData a, HealthCheckTrustDomainInfoData b)
                     =>
                 {
@@ -2675,6 +2939,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         Add(GetUrlCallbackDomain(di.Domain, di.DnsName, null));
                     }
+
                     Add(@"</td><td class='text'>");
                     if (GetUrlCallbackDomain == null)
                     {
@@ -2684,6 +2949,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         Add(GetUrlCallbackDomain(trust.Domain, trust.TrustPartner, null));
                     }
+
                     Add(@"</td><td class='text'>");
                     AddEncoded(di.NetbiosName);
                     Add(@"</td><td class='text'>");
@@ -2695,10 +2961,12 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         Add(di.CreationDate);
                     }
+
                     Add(@"</td>");
                     AddEndRow();
                 }
             }
+
             if (Report.ReachableDomains != null)
             {
                 foreach (HealthCheckTrustDomainInfoData di in Report.ReachableDomains)
@@ -2713,6 +2981,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     {
                         Add(GetUrlCallbackDomain(di.Domain, di.DnsName, null));
                     }
+
                     Add(@"</td>");
                     AddCellText("Unknown");
                     AddCellText(di.NetbiosName);
@@ -2737,7 +3006,6 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
 		</div></div>
 ");
             }
-
         }
 
         #endregion trust
@@ -2749,6 +3017,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 AddCellText("[null GPO]");
                 return;
             }
+
             Add(@"<td class='text'>");
             AddEncoded(GPO.GPOName);
             if (!string.IsNullOrEmpty(GPO.GPOId))
@@ -2759,16 +3028,19 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                     Add("</td>");
                     return;
                 }
+
                 var refGPO = Report.GPOInfoDic[GPO.GPOId];
                 if (refGPO == null)
                 {
                     Add("[null GPO]</td>");
                     return;
                 }
+
                 if (refGPO.IsDisabled)
                 {
                     Add(@" <span class=""font-weight-light"">[Disabled]</span>");
                 }
+
                 if (refGPO.AppliedTo != null && refGPO.AppliedTo.Count > 0)
                 {
                     AddBeginTooltip(true, true);
@@ -2779,7 +3051,9 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         AddEncoded(i);
                         Add("</li>");
                     }
+
                     Add("</ul></div>");
+                    AddGPODomainName(refGPO);
                     Add("<div class='text-start'>Technical id:<br>");
                     AddEncoded(GPO.GPOId);
                     Add("</div>");
@@ -2789,13 +3063,27 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                 {
                     Add(@" <span class=""font-weight-light"">[Not&nbsp;linked]</span>");
                     AddBeginTooltip(html: true);
+                    AddGPODomainName(refGPO);
                     Add("<div class='text-start'>Technical id:<br>");
                     AddEncoded(GPO.GPOId);
                     Add("</div>");
                     AddEndTooltip();
                 }
             }
+
             Add("</td>");
+        }
+
+        void AddGPODomainName(GPOInfo gpo)
+        {
+            if (string.IsNullOrEmpty(gpo.DomainName))
+            {
+                return;
+            }
+
+            Add("<div class='text-start'>Domain:<br>");
+            AddEncoded(gpo.DomainName);
+            Add("</div>");
         }
 
         #region infrastructure
@@ -2845,6 +3133,7 @@ If you are an auditor, you MUST purchase an Auditor license to share the develop
                         AddEndRow();
                     }
                 }
+
                 AddEndTable();
             }
         }
@@ -2881,6 +3170,7 @@ Here are the settings found in GPO.");
                         AddEndRow();
                     }
                 }
+
                 AddEndTable();
             }
         }
@@ -2970,6 +3260,7 @@ Here are the settings found in GPO.");
 		</div></div>
 ");
                 }
+
                 if (Report.ExchangeSchemaVersion > 0)
                 {
                     Add(@"
@@ -2978,6 +3269,7 @@ Here are the settings found in GPO.");
 		</div></div>
 ");
                 }
+
                 AddBeginTable("Exchange servers");
                 AddHeaderText("Name");
                 AddHeaderText("In service date");
@@ -2996,6 +3288,7 @@ Here are the settings found in GPO.");
                         AddEndRow();
                     }
                 }
+
                 AddEndTable();
             }
         }
@@ -3036,7 +3329,9 @@ Here are the settings found in GPO.");
                             doc.LoadXml(a.Capabilities);
                             var node = doc.SelectSingleNode(@"//ClientOperationalSettings/Version");
                             if (node != null)
+                            {
                                 version = node.InnerText;
+                            }
 
                             node = doc.SelectSingleNode(@"//ClientOperationalSettings/AADConfig/Tenants/Tenant");
                             if (node != null)
@@ -3044,12 +3339,17 @@ Here are the settings found in GPO.");
                                 foreach (XmlAttribute b in node.Attributes)
                                 {
                                     if (b.Name == "ID")
+                                    {
                                         tenantID = b.Value;
+                                    }
                                     else if (b.Name == "Name")
+                                    {
                                         tenantName = b.Value;
+                                    }
                                 }
                             }
                         }
+
                         AddBeginRow();
                         AddCellText(a.MPName);
                         AddCellNum(a.Version);
@@ -3059,6 +3359,7 @@ Here are the settings found in GPO.");
                         AddEndRow();
                     }
                 }
+
                 AddEndTable();
             }
         }
@@ -3102,6 +3403,7 @@ Here are the settings found in GPO.");
                         {
                             AddCellText(null);
                         }
+
                         AddCellText(a.ClassName);
                         AddCellText(a.DNS);
                         string bindingInfo = null;
@@ -3109,11 +3411,13 @@ Here are the settings found in GPO.");
                         {
                             bindingInfo = string.Join("\r\n", a.BindingInfo.ToArray());
                         }
+
                         AddCellText(bindingInfo);
                         AddCellText(a.DN);
                         AddEndRow();
                     }
                 }
+
                 AddEndTable();
             }
         }
@@ -3128,11 +3432,13 @@ Here are the settings found in GPO.");
                 AddParagraph("This feature is reserved for customers who have <a href='https://www.pingcastle.com/services/'>purchased a license</a>");
                 return;
             }
+
             if (Report.DCWin2008Install == default(DateTime))
             {
                 AddParagraph("PingCastle could not determine the creation date of the group 'Read-Only Domain Controllers'. As a consequence, it cannot evaluate the AES section");
                 return;
             }
+
             AddParagraph("This section is here to evaluate the know problems when removing RC4. If you plan to do so, you should check all the items highlighted below and proceed with a small group of test computers.");
             AddParagraph("Please see the following articles:");
             AddListStart();
@@ -3199,8 +3505,10 @@ Here are the settings found in GPO.");
                     AddCellText("No", true, false);
                     OK = false;
                 }
+
                 AddEndRow();
             }
+
             AddEndTable();
             Add("<p>" + (OK ? "<span class='ticked'>OK</span>" : "<span class='unticked'>Not OK</span>") + @"</p>");
             Add("<h3>Trusts</h3>");
@@ -3242,6 +3550,7 @@ Here are the settings found in GPO.");
                     {
                         Add(GetUrlCallbackDomain(trust.Domain, trust.TrustPartner, null));
                     }
+
                     Add(@"</td>");
                     AddCellDate(trust.CreationDate);
                     AddCellText((trust.IsActive ? "TRUE" : "FALSE"), true, trust.IsActive);
@@ -3255,6 +3564,7 @@ Here are the settings found in GPO.");
                         Add(SupportedEncryptionTypeToString(trust.msDSSupportedEncryptionTypes));
                         Add("</td>");
                     }
+
                     var aescompatible = (trust.msDSSupportedEncryptionTypes & (8 + 16)) != 0;
                     if (aescompatible)
                     {
@@ -3265,10 +3575,13 @@ Here are the settings found in GPO.");
                         AddCellText("No", true, false);
                         OK = false;
                     }
+
                     AddEndRow();
                 }
+
                 AddEndTable();
             }
+
             Add("<p>" + (OK ? "<span class='ticked'>OK</span>" : "<span class='unticked'>Not OK</span>") + @"</p>");
 
             Add("<h3>Azure</h3>");
@@ -3288,6 +3601,7 @@ Here are the settings found in GPO.");
                 var aescompatible = (Report.AzureADSSOEncryptionType & (8 + 16)) != 0;
                 OK = aescompatible;
             }
+
             Add("<p>" + (OK ? "<span class='ticked'>OK</span>" : "<span class='unticked'>Not OK</span>") + @"</p>");
 
             Add("<h3>Service accounts</h3>");
@@ -3307,9 +3621,15 @@ Here are the settings found in GPO.");
             {
                 var list = new List<HealthcheckAccountDetailData>();
                 if (Report.UserAccountData.ListNotAesEnabled != null)
+                {
                     list.AddRange(Report.UserAccountData.ListNotAesEnabled);
+                }
+
                 if (Report.ComputerAccountData.ListNotAesEnabled != null)
+                {
                     list.AddRange(Report.ComputerAccountData.ListNotAesEnabled);
+                }
+
                 GenerateAccordion("globalNotAesEnabled", () => GenerateListAccountDetail("globalNotAesEnabled", "globalNotAesEnabledpanel", "Accounts with a SPN but without AES declared as supported or having a password not compatible with AES", list));
             }
 
@@ -3349,6 +3669,7 @@ Here are the settings found in GPO.");
                             AddCellText("No", true, false);
                             OK = false;
                         }
+
                         var rc4compatible = (property.Value & (4)) != 0;
                         if (rc4compatible)
                         {
@@ -3358,10 +3679,12 @@ Here are the settings found in GPO.");
                         {
                             AddCellText("No", true, true);
                         }
+
                         AddEndRow();
                     }
                 }
             }
+
             AddEndTable();
             Add("<p>" + (OK ? "<span class='ticked'>OK</span>" : "<span class='unticked'>Not OK</span>") + @"</p>");
             if (!found)
@@ -3433,7 +3756,10 @@ Here is the list of servers configured for WEF found in GPO</p>
                                     {
                                         int comp = String.Compare(a.GPOName, b.GPOName);
                                         if (comp == 0)
+                                        {
                                             comp = (a.Order > b.Order ? 1 : (a.Order == b.Order ? 0 : -1));
+                                        }
+
                                         return comp;
                                     }
                                     );
@@ -3446,6 +3772,7 @@ Here is the list of servers configured for WEF found in GPO</p>
                                     AddCellText(info.Server);
                                     AddEndRow();
                                 }
+
                                 AddEndTable();
                             });
                     });
@@ -3535,6 +3862,7 @@ This is a vulnerability similar to the log4shell vulnerability.</p>
                         countnullsession++;
                     }
                 }
+
                 if (countnullsession > 0)
                 {
                     GenerateSubSection("NULL SESSION (anonymous access)", "nullsession");
@@ -3563,6 +3891,7 @@ Hackers can then perform a reconnaissance of the environement with only a networ
                                             AddEndRow();
                                         }
                                     }
+
                                     AddEndTable();
                                 }
                             );
@@ -3622,6 +3951,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         break;
                     }
                 }
+
                 Add(@"
 				</tbody>");
                 if (number >= MaxNumberUsersInHtmlReport)
@@ -3630,6 +3960,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     Add(MaxNumberUsersInHtmlReport);
                     Add(" items - go to the advanced menu before running the report or add \"--no-enum-limit\" to remove that limit</td></tr></tfoot>");
                 }
+
                 Add(@"
 			</table>
 		</div>
@@ -3655,8 +3986,10 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         AddCellText(e);
                         AddEndRow();
                     }
+
                     AddEndTable();
                 }
+
                 if (Report.GPOHardenedPath != null && Report.GPOHardenedPath.Count > 0)
                 {
                     AddAnchor("HardenedPaths");
@@ -3684,6 +4017,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         AddCellText(e.RequirePrivacy == null ? null : ((bool)e.RequirePrivacy ? "Required" : "Disabled"), e.RequirePrivacy == false, false);
                         AddEndRow();
                     }
+
                     AddEndTable();
                 }
             }
@@ -3724,7 +4058,10 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     foreach (HealthcheckCertificateData data in Report.TrustedCertificates)
                     {
                         if (data.Certificate == null || data.Certificate.Length == 0)
+                        {
                             continue;
+                        }
+
                         X509Certificate2 cert = null;
                         try
                         {
@@ -3734,6 +4071,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         {
                             continue;
                         }
+
                         bool SCLogonAllowed = false;
                         foreach (X509Extension ext in cert.Extensions)
                         {
@@ -3743,6 +4081,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                                 break;
                             }
                         }
+
                         int modulesize = 0;
                         RSA key = null;
                         try
@@ -3752,11 +4091,13 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         catch (Exception)
                         {
                         }
+
                         if (key != null)
                         {
                             RSAParameters rsaparams = key.ExportParameters(false);
                             modulesize = rsaparams.Modulus.Length * 8;
                         }
+
                         AddBeginRow();
                         if (data.Source == "NTLMStore")
                         {
@@ -3771,6 +4112,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         {
                             AddCellText(data.Source);
                         }
+
                         AddCellText(data.Store);
                         AddCellTextNoWrap(cert.Subject);
                         AddCellTextNoWrap(cert.Issuer);
@@ -3781,6 +4123,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         AddCellText(SCLogonAllowed.ToString());
                         AddEndRow();
                     }
+
                     AddEndTable();
                 }
                 );
@@ -3839,6 +4182,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                             AddCellText(data.NoSecurityExtension ? "YES" : "NO", data.NoSecurityExtension);
                             AddEndRow();
                         }
+
                         AddEndTable();
                     }
                     );
@@ -3854,7 +4198,9 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     foreach (var data in Report.CertificateTemplates)
                     {
                         if (data.Delegations != null)
+                        {
                             ctdelegations.AddRange(data.Delegations);
+                        }
                     }
 
                     Add(@"
@@ -3877,8 +4223,11 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             foreach (var dc in Report.DomainControllers)
             {
                 if (dc.LDAPCertificate != null && dc.LDAPCertificate.Length > 0)
+                {
                     DCCertCount++;
+                }
             }
+
             if (DCCertCount > 0)
             {
                 // certificate template
@@ -3912,7 +4261,10 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         foreach (var dc in Report.DomainControllers)
                         {
                             if (dc.LDAPCertificate == null || dc.LDAPCertificate.Length == 0)
+                            {
                                 continue;
+                            }
+
                             X509Certificate2 cert = null;
                             try
                             {
@@ -3922,6 +4274,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                             {
                                 continue;
                             }
+
                             string san = cert.GetNameInfo(X509NameType.DnsFromAlternativeName, false);
                             var intendedpurposes = string.Empty;
                             var templateName = string.Empty;
@@ -3935,6 +4288,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                                         intendedpurposes += oid.FriendlyName + ", ";
                                     }
                                 }
+
                                 // X509CertificateTemplateExtension not available in .net 2
                                 else if (ext.Oid.Value == "1.3.6.1.4.1.311.21.7")
                                 {
@@ -3959,6 +4313,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                                     }
                                 }
                             }
+
                             int modulesize = 0;
                             RSA key = null;
                             try
@@ -3968,11 +4323,13 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                             catch (Exception)
                             {
                             }
+
                             if (key != null)
                             {
                                 RSAParameters rsaparams = key.ExportParameters(false);
                                 modulesize = rsaparams.Modulus.Length * 8;
                             }
+
                             AddBeginRow();
                             AddCellText(dc.DCName);
                             AddCellText(cert.Subject);
@@ -3984,8 +4341,8 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                             AddCellNum(modulesize);
                             AddCellText(cert.SignatureAlgorithm.FriendlyName);
                             AddEndRow();
-
                         }
+
                         AddEndTable();
                     }
                     );
@@ -4009,11 +4366,15 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                 int dcPathPos = item.IndexOf(",DC=");
                 string path = item;
                 if (dcPathPos > 0)
+                {
                     path = item.Substring(0, dcPathPos);
+                }
+
                 AddBeginRow();
                 AddCellText(path);
                 AddEndRow();
             }
+
             AddEndTable();
         }
 
@@ -4031,9 +4392,11 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     AddEncoded(i);
                     Add("</li>");
                 }
+
                 Add("</ul></div>");
                 AddEndTooltip();
             }
+
             Add("</td>");
         }
 
@@ -4075,6 +4438,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     AddEndRow();
                 }
             }
+
             AddEndTable();
 
             GenerateSubSection("Screensaver policies");
@@ -4099,6 +4463,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     AddEndRow();
                 }
             }
+
             AddEndTable();
         }
 
@@ -4131,6 +4496,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     AddCellText(password.Other);
                     AddEndRow();
                 }
+
                 AddEndTable();
             }
 
@@ -4142,9 +4508,15 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                 {
                     int sort = String.Compare(a.GPOName, b.GPOName);
                     if (sort == 0)
+                    {
                         sort = String.Compare(a.User, b.User);
+                    }
+
                     if (sort == 0)
+                    {
                         sort = String.Compare(a.MemberOf, b.MemberOf);
+                    }
+
                     return sort;
                 }
                 );
@@ -4162,6 +4534,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     AddCellText(membership.MemberOf);
                     AddEndRow();
                 }
+
                 AddEndTable();
             }
 
@@ -4189,6 +4562,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     }
                 }
             }
+
             AddEndTable();
 
             if (Report.version >= new Version(2, 8))
@@ -4217,6 +4591,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         AddEndRow();
                     }
                 }
+
                 if (Report.GPOAuditSimple != null)
                 {
                     foreach (var a in Report.GPOAuditAdvanced)
@@ -4229,6 +4604,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         AddEndRow();
                     }
                 }
+
                 AddEndTable();
             }
 
@@ -4250,6 +4626,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     AddCellText(right.User);
                     AddEndRow();
                 }
+
                 AddEndTable();
             }
 
@@ -4275,6 +4652,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         AddCellText(right.User);
                         AddEndRow();
                     }
+
                     AddEndTable();
                 }
             }
@@ -4301,8 +4679,10 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     AddCellText(loginscript.Parameters);
                     AddEndRow();
                 }
+
                 AddEndTable();
             }
+
             if (Report.version >= new Version(2, 7, 0, 0))
             {
                 GenerateSubSection("GPO Deployed Files", "gpodeployedfiles");
@@ -4323,6 +4703,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         AddCellText(file.FileName);
                         AddEndRow();
                     }
+
                     AddEndTable();
                 }
             }
@@ -4349,6 +4730,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         AddCellText(ext.OpenApp);
                         AddEndRow();
                     }
+
                     AddEndTable();
                 }
             }
@@ -4393,8 +4775,10 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                                 AddCellText(asr.Action.ToString());
                                 break;
                         }
+
                         AddEndRow();
                     }
+
                     AddEndTable();
                 }
             }
@@ -4428,15 +4812,21 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         {
                             ip += string.Join(",", fw.RA4);
                         }
+
                         if (fw.RA6 != null)
                         {
                             if (!string.IsNullOrEmpty(ip))
+                            {
                                 ip += ",";
+                            }
+
                             ip += string.Join(",", fw.RA6);
                         }
+
                         AddCellText(ip);
                         AddEndRow();
                     }
+
                     AddEndTable();
                 }
             }
@@ -4488,13 +4878,17 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                     break;
                 }
             }
+
             if (Option == null)
             {
                 if (name == "UseWUServer")
+                {
                     return "The WUServer value is not respected unless this key is set";
-                return null;
+                }
 
+                return null;
             }
+
             if (Option.Name == "AUOptions")
             {
                 switch (Option.Value)
@@ -4543,6 +4937,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                         return "Users in the Users security group are allowed to approve or disapprove updates";
                 }
             }
+
             return "Unknown option (" + Option.Value + ")";
         }
 
@@ -4571,7 +4966,6 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                 default:
                     return category;
             }
-
         }
 
         private class AuditAdvancedDescription
@@ -4584,6 +4978,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                 subcategory = s;
             }
         }
+
         static Dictionary<Guid, AuditAdvancedDescription> auditAdvancedDescription = new Dictionary<Guid, AuditAdvancedDescription>
         {
             {new Guid("{0CCE9213-69AE-11D9-BED3-505054503030}"), new AuditAdvancedDescription("System", "IPsec Driver")},
@@ -4644,7 +5039,6 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             {new Guid("{0cce9247-69ae-11d9-bed3-505054503030}"), new AuditAdvancedDescription("System", "User/Device Claims")},
             {new Guid("{0cce9248-69ae-11d9-bed3-505054503030}"), new AuditAdvancedDescription("System", "PNP Activity")},
             {new Guid("{0cce9249-69ae-11d9-bed3-505054503030}"), new AuditAdvancedDescription("System", "Group Membership")},
-
         };
 
         private string GetAuditAdvancedCategory(Guid guid)
@@ -4690,30 +5084,46 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
         private string GetAuditUserValue(int value)
         {
             if (value == 1)
+            {
                 return "Success";
+            }
+
             if (value == 4)
+            {
                 return "Failure";
+            }
+
             if (value == 5)
+            {
                 return "Success and Failure";
+            }
+
             if (value == 0)
+            {
                 return "None";
+            }
+
             var match = new List<string>();
             if ((value & 1) != 0)
             {
                 match.Add("Success");
             }
+
             if ((value & 2) != 0)
             {
                 match.Add("Exclude Success");
             }
+
             if ((value & 4) != 0)
             {
                 match.Add("Failure");
             }
+
             if ((value & 8) != 0)
             {
                 match.Add("Exclude Failure");
             }
+
             return string.Join(" and ", match.ToArray());
         }
 
@@ -4812,6 +5222,7 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
             {
                 gpodescr = "Replace a process level token";
             }
+
             if (gpodescr == null)
             {
                 AddEncoded(privilege);
@@ -4823,7 +5234,6 @@ The best practice is to reset these passwords on a regular basis or to uncheck a
                 AddEncoded(privilege);
                 AddEndTooltip();
             }
-
         }
         #endregion GPO
     }

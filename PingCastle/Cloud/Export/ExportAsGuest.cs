@@ -43,7 +43,9 @@ namespace PingCastle.Cloud.Export
         {
             var state = settings.EnsureDataCompleted("AzureADTenant", "AzureADSeed");
             if (state != DisplayState.Run)
+            {
                 return state;
+            }
 
             if (string.IsNullOrEmpty(settings.InitForExportAsGuest))
             {
@@ -56,9 +58,12 @@ namespace PingCastle.Cloud.Export
                     {
                         break;
                     }
+
                     _ui.Notice = "The seed cannot be empty";
-                } while (true);
+                }
+                while (true);
             }
+
             return DisplayState.Run;
         }
 
@@ -110,6 +115,7 @@ namespace PingCastle.Cloud.Export
                         _ui.DisplayMessage("Unable to locate " + t.Trim() + "(" + ex.Message + ")");
                     }
                 }
+
                 if (userToAnalyse.Count == 0)
                 {
                     _ui.DisplayMessage("No user found to start the analyze");
@@ -134,8 +140,11 @@ namespace PingCastle.Cloud.Export
                             {
                                 _ui.DisplayMessage("Analyzed " + count + " users. " + (userToAnalyse.Count - count) + " to go.");
                             }
+
                             if (knownObjects.Contains(user))
+                            {
                                 return;
+                            }
 
                             knownObjects.Add(user);
 
@@ -147,9 +156,15 @@ namespace PingCastle.Cloud.Export
                                     {
                                         swrolemember.WriteLine($"{roleMember.Id},{user}");
                                         if (knownObjects.Contains(roleMember.Id))
+                                        {
                                             continue;
+                                        }
+
                                         if (roleToAnalyse.Contains(roleMember.Id))
+                                        {
                                             continue;
+                                        }
+
                                         _ui.DisplayMessage("Found role " + roleMember.DisplayName);
                                         roleToAnalyse.Add(roleMember.Id);
                                         swrole.WriteLine($"{roleMember.Id},{roleMember.DisplayName}");
@@ -157,9 +172,15 @@ namespace PingCastle.Cloud.Export
                                     else if (m is Group groupMember)
                                     {
                                         if (knownObjects.Contains(groupMember.Id))
+                                        {
                                             continue;
+                                        }
+
                                         if (groupToAnalyse.Contains(groupMember.Id))
+                                        {
                                             continue;
+                                        }
+
                                         _ui.DisplayMessage("Found group " + groupMember.DisplayName);
                                         swgroup.WriteLine(groupMember.Id + "," + groupMember.DisplayName);
                                         groups[m.Id] = groupMember.DisplayName;
@@ -168,7 +189,10 @@ namespace PingCastle.Cloud.Export
                                     else if (m is AdministrativeUnit adminUnitMember)
                                     {
                                         if (knownObjects.Contains(adminUnitMember.Id))
+                                        {
                                             continue;
+                                        }
+
                                         swadministrativeunit.WriteLine(adminUnitMember.Id);
                                         knownObjects.Add(adminUnitMember.Id);
                                     }
@@ -196,7 +220,10 @@ namespace PingCastle.Cloud.Export
                         allGroupAnalyzeTasks.Add(Task.Run(async () =>
                         {
                             if (knownObjects.Contains(group))
+                            {
                                 return;
+                            }
+
                             try
                             {
                                 knownObjects.Add(group);
@@ -204,27 +231,40 @@ namespace PingCastle.Cloud.Export
                                 await foreach (var m in g.GetGroupDirectMembersAsync(group))
                                 {
                                     if (!(m is User userMember))
+                                    {
                                         continue;
+                                    }
 
                                     swgroupmember.WriteLine($"{group},{userMember.Id}");
 
                                     if (knownObjects.Contains(userMember.Id))
+                                    {
                                         return;
+                                    }
+
                                     if (userToAnalyse.Contains(userMember.Id))
+                                    {
                                         return;
+                                    }
+
                                     swuser.WriteLine($"{userMember.Id},{userMember.UserType},{userMember.UserPrincipalName},{userMember.DisplayName}");
                                     // usertype may be empty (member, guest). Avoid to analyze these users.
                                     if (!string.IsNullOrEmpty(userMember.UserType))
+                                    {
                                         userToAnalyse.Add(userMember.Id);
+                                    }
+
                                     users++;
                                     if ((users % 1000) == 0)
                                     {
                                         _ui.DisplayMessage($"Busy enumerating group {groups[group]} (currently {users} users)");
                                     }
-
                                 }
+
                                 if (users > 0)
+                                {
                                     _ui.DisplayMessage($"Found {users} user(s) in {groups[group]}");
+                                }
                             }
                             catch (Exception ex)
                             {
@@ -238,8 +278,8 @@ namespace PingCastle.Cloud.Export
 
                     _ui.DisplayMessage("Done");
                 }
-
             }
+
             HttpClientHelper.LogComment = "";
         }
     }

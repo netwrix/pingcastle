@@ -24,7 +24,10 @@ namespace PingCastle.Healthcheck.Rules
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (IPaidSupport)
+            {
                 return 0;
+            }
+
             foreach (var loginscript in healthcheckData.GPOLoginScript)
             {
                 if (string.Equals(loginscript.CommandLine, "Activate-ProductOnline.ps1", StringComparison.OrdinalIgnoreCase))
@@ -33,6 +36,7 @@ namespace PingCastle.Healthcheck.Rules
                     return 0;
                 }
             }
+
             foreach (HealthcheckOSData os in healthcheckData.OperatingSystem)
             {
                 if (os.OperatingSystem == "Windows 7")
@@ -40,6 +44,7 @@ namespace PingCastle.Healthcheck.Rules
                     return os.NumberOfOccurence;
                 }
             }
+
             return 0;
         }
     }

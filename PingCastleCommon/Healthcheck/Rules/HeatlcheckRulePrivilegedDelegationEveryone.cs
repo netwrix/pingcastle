@@ -30,6 +30,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(delegation.DistinguishedName, delegation.Account, delegation.Right);
                 }
             }
+
             return null;
         }
     }

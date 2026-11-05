@@ -12,5 +12,7 @@ namespace PingCastle.RPC
             LowPart = 0;
             HighPart = 0;
         }
-    };
+    }
+
+;
 }

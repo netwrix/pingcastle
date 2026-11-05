@@ -124,10 +124,12 @@ namespace PingCastle.ADWS
                 {
                     flags |= DSGETDCNAME_FLAGS.DS_WEB_SERVICE_REQUIRED;
                 }
+
                 if (forceRediscovery)
                 {
                     flags |= DSGETDCNAME_FLAGS.DS_FORCE_REDISCOVERY;
                 }
+
                 int val = DsGetDcName("", domain, IntPtr.Zero, "", flags, out pDCI);
                 //check return value for error
                 if (ERROR_SUCCESS == val)
@@ -141,6 +143,7 @@ namespace PingCastle.ADWS
                         Trace.WriteLine("DsGetDcName-empty-name: DsGetDcName returned ERROR_SUCCESS but DomainControllerName was null or empty for domain \"" + domain.SanitizeForLog() + "\"");
                         return name;
                     }
+
                     return name.StartsWith(@"\\") ? name.Substring(2) : name;
                 }
                 else
@@ -151,7 +154,9 @@ namespace PingCastle.ADWS
             finally
             {
                 if (pDCI != IntPtr.Zero)
+                {
                     NetApiBufferFree(pDCI);
+                }
             }
         }
 
@@ -172,6 +177,7 @@ namespace PingCastle.ADWS
             {
                 ret = DsGetDcName(Server, intput, IntPtr.Zero, null, flag, out DomainInfoResolution);
             }
+
             if (ret == 0)
             {
                 Trace.WriteLine("DsGetDcName for " + intput + " succeeded (" + DateTime.Now.ToString("u") + ")");
@@ -189,6 +195,7 @@ namespace PingCastle.ADWS
             {
                 Trace.WriteLine("DsGetDcName for " + intput + " failed 0x" + ret.ToString("x") + " (" + DateTime.Now.ToString("u") + ")");
             }
+
             return false;
         }
     }

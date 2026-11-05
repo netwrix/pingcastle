@@ -96,6 +96,7 @@ namespace PingCastle
             p12pass = p12Pass;
             p12passSet = true;
         }
+
         public void SetUsePrt(bool usePrt) => this.usePrt = usePrt;
 
         private bool CheckCertificate()
@@ -107,27 +108,32 @@ namespace PingCastle
                     WriteError("--thumbprint must be completed when --private-key is set");
                     return false;
                 }
+
                 if (string.IsNullOrEmpty(privateKey))
                 {
                     WriteError("--private-key must be completed when --thumbprint is set");
                     return false;
                 }
+
                 if (string.IsNullOrEmpty(clientid))
                 {
                     WriteError("--clientid must be set when certificate authentication is configured");
                     return false;
                 }
+
                 if (string.IsNullOrEmpty(tenantid))
                 {
                     WriteError("--tenantid must be set when certificate authentication is configured");
                     return false;
                 }
+
                 if (!string.IsNullOrEmpty(p12file))
                 {
                     WriteError("--p12-file cannot be combined with --private-key");
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -140,43 +146,57 @@ namespace PingCastle
                 {
                     var state = DisplayScannerMenu();
                     if (state != DisplayState.Run)
+                    {
                         return state;
+                    }
                 }
             }
+
             if (requirements.Contains("Export"))
             {
                 if (Export == null)
                 {
                     var state = DisplayExportMenu();
                     if (state != DisplayState.Run)
+                    {
                         return state;
+                    }
                 }
             }
+
             if (requirements.Contains("Server"))
             {
                 if (InteractiveMode)
                 {
                     var state = DisplayAskServer();
                     if (state != DisplayState.Run)
+                    {
                         return state;
+                    }
                 }
+
                 if (string.IsNullOrEmpty(Server))
                 {
                     Server = IPGlobalProperties.GetIPGlobalProperties().DomainName;
                 }
+
                 if (string.IsNullOrEmpty(Server))
                 {
                     WriteError("This computer is not connected to a domain. The program couldn't guess the domain or server to connect.");
                     WriteError("Please run again this program with the flag --server <my.domain.com> or --server <mydomaincontroller.my.domain.com>");
                     return DisplayState.Exit;
                 }
+
                 if (!string.IsNullOrEmpty(User))
                 {
                     if (Password == null)
                     {
                         if (!AskCredential())
+                        {
                             return DisplayState.Exit;
+                        }
                     }
+
                     if (!string.IsNullOrEmpty(Userdomain))
                     {
                         Credential = new NetworkCredential(User, Password, Userdomain);
@@ -187,6 +207,7 @@ namespace PingCastle
                     }
                 }
             }
+
             if (requirements.Contains("AzureADCredential") || requirements.Contains("AzureADTenant"))
             {
                 if (AzureCredential == null)
@@ -196,51 +217,67 @@ namespace PingCastle
                         var key = File.ReadAllText(privateKey);
                         AzureCredential = CertificateCredential.LoadFromKeyFile(clientid, tenantid, key, thumbprint, _tokenFactory);
                     }
+
                     if (!string.IsNullOrEmpty(p12file))
                     {
                         AzureCredential = CertificateCredential.LoadFromP12(clientid, tenantid, p12file, p12pass, _tokenFactory);
                     }
+
                     if (usePrt)
                     {
                         AzureCredential = new PRTCredential(tenantid, _tokenFactory);
                     }
                 }
+
                 if (AzureCredential == null)
                 {
                     var state = DisplayAskAzureADCredential();
                     if (state != DisplayState.Run)
+                    {
                         return state;
+                    }
                 }
             }
+
             if (requirements.Contains("AzureADTenant"))
             {
                 var state = DisplayAskAzureADTenant();
                 if (state != DisplayState.Run)
+                {
                     return state;
+                }
             }
+
             if (requirements.Contains("File"))
             {
                 var state = DisplayAskForFile();
                 if (state != DisplayState.Run)
+                {
                     return state;
+                }
             }
+
             if (requirements.Contains("Directory"))
             {
                 if (string.IsNullOrEmpty(InputDirectory))
                 {
                     InputDirectory = Directory.GetCurrentDirectory();
                 }
+
                 if (!Directory.Exists(InputDirectory))
                 {
                     WriteError("No input directory has been provided");
                     return DisplayState.Exit;
                 }
             }
+
             if (requirements.Contains("AzureADSeed"))
             {
                 var state = DisplayAskForSeed();
                 if (state != DisplayState.Run)
+                {
                     return state;
+                }
             }
 
             return DisplayState.Run;
@@ -258,6 +295,7 @@ namespace PingCastle
                 string description = iscanner.Description;
                 choices.Add(new MenuItem(scanner.Key, description));
             }
+
             choices.Sort((MenuItem a, MenuItem b)
                 =>
             {
@@ -273,6 +311,7 @@ namespace PingCastle
             {
                 return DisplayState.MainMenu;
             }
+
             Scanner = scanners[choices[choice - 1].Choice];
             return DisplayState.AskForScannerParameter;
         }
@@ -286,6 +325,7 @@ namespace PingCastle
                 scanner.Initialize(this);
                 return scanner.QueryForAdditionalParameterInInteractiveMode();
             }
+
             return DisplayState.Run;
         }
 
@@ -337,6 +377,7 @@ namespace PingCastle
                 string description = iexport.Description;
                 choices.Add(new MenuItem(export.Key, description));
             }
+
             choices.Sort((MenuItem a, MenuItem b)
                 =>
             {
@@ -351,6 +392,7 @@ namespace PingCastle
             {
                 return DisplayState.MainMenu;
             }
+
             Export = exports[choices[choice - 1].Choice];
             return DisplayState.Run;
         }
@@ -369,34 +411,39 @@ namespace PingCastle
                 {
                     _ui.Information = "Please specify the domain or server to investigate:";
                 }
+
                 _ui.Title = "Select a domain or server";
                 Server = _ui.AskForString();
                 if (!String.IsNullOrEmpty(Server))
                 {
                     break;
                 }
+
                 if (!string.IsNullOrEmpty(defaultServer))
                 {
                     Server = defaultServer;
                     break;
                 }
             }
+
             return DisplayState.Run;
         }
 
         public DisplayState AskAgentLogin()
         {
-            if(!string.IsNullOrEmpty(apiEndpoint) && !string.IsNullOrEmpty(apiKey))
+            if (!string.IsNullOrEmpty(apiEndpoint) && !string.IsNullOrEmpty(apiKey))
+            {
                 return DisplayState.Run;
+            }
 
             _ui.Title = "Please specify the agent login settings:";
-            while(true)
+            while (true)
             {
-                if(string.IsNullOrEmpty(apiEndpoint))
+                if (string.IsNullOrEmpty(apiEndpoint))
                 {
                     _ui.Information = "Enter the agent api endpoint:";
                     apiEndpoint = _ui.AskForString(false);
-                    
+
                     if (!Uri.TryCreate(apiEndpoint, UriKind.Absolute, out var uri))
                     {
                         apiEndpoint = null;
@@ -407,14 +454,18 @@ namespace PingCastle
                     _ui.Notice = "";
 
                     if (!string.IsNullOrEmpty(apiKey))
+                    {
                         break;
+                    }
                 }
-                else if(string.IsNullOrEmpty(apiKey))
+                else if (string.IsNullOrEmpty(apiKey))
                 {
                     _ui.Information = "Enter the agent api key:";
                     apiKey = _ui.AskForString(false);
-                    if(string.IsNullOrEmpty(apiKey))
+                    if (string.IsNullOrEmpty(apiKey))
+                    {
                         continue;
+                    }
 
                     break;
                 }
@@ -425,7 +476,8 @@ namespace PingCastle
 
         private DisplayState DisplayAskAzureADCredential()
         {
-            List<MenuItem> choices = new List<MenuItem>() {
+            List<MenuItem> choices = new List<MenuItem>()
+            {
                 new MenuItem("askcredential","Ask credentials", "The identity may be asked multiple times during the healthcheck."),
             };
 
@@ -443,7 +495,9 @@ namespace PingCastle
             _ui.Information = "The program will use the coosen identity to perform the operation on the Azure Tenant.";
             int choice = _ui.SelectMenu(choices);
             if (choice == 0)
+            {
                 return DisplayState.MainMenu;
+            }
 
             AzureCredential = null;
 
@@ -493,7 +547,9 @@ namespace PingCastle
             _ui.Information = "The program will use the chosen tenant to perform the operation on the Azure Tenant.";
             int choice = _ui.SelectMenu(choices);
             if (choice == 0)
+            {
                 return DisplayState.MainMenu;
+            }
 
             string whattodo = choices[choice - 1].Choice;
             AzureCredential.TenantidToQuery = whattodo;
@@ -510,6 +566,7 @@ namespace PingCastle
                 InputFile = _ui.AskForString();
                 _ui.Notice = "The file " + InputFile + " was not found";
             }
+
             return DisplayState.Run;
         }
 
@@ -522,6 +579,7 @@ namespace PingCastle
                 InputFile = _ui.AskForString();
                 _ui.Notice = "The directory " + InputFile + " was not found";
             }
+
             return DisplayState.Run;
         }
 
@@ -536,6 +594,7 @@ namespace PingCastle
                 // error message in case the query is not complete
                 _ui.Notice = "The seed cannot be empty";
             }
+
             return DisplayState.Run;
         }
 

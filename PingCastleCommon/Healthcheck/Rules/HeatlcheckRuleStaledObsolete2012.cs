@@ -24,9 +24,15 @@ namespace PingCastle.Healthcheck.Rules
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (DateTime.Now < new DateTime(2023, 10, 10))
+            {
                 return null;
+            }
+
             if (IPaidSupportWin2012)
+            {
                 return 0;
+            }
+
             foreach (HealthcheckOSData os in healthcheckData.OperatingSystem)
             {
                 if (os.OperatingSystem == "Windows 2012")
@@ -34,6 +40,7 @@ namespace PingCastle.Healthcheck.Rules
                     return os.NumberOfOccurence;
                 }
             }
+
             return 0;
         }
     }

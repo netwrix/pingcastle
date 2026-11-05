@@ -17,13 +17,20 @@ namespace PingCastle.Scanners
         private readonly IWindowsNativeMethods _nativeMethods;
 
         public localAdminsScanner(IWindowsNativeMethods nativeMethods, IIdentityProvider identityProvider)
-        :base(identityProvider)
+        : base(identityProvider)
         {
             _nativeMethods = nativeMethods;
         }
 
-        public override string Name { get { return "localadmin"; } }
-        public override string Description { get { return "Enumerate the local administrators of a computer."; } }
+        public override string Name
+        {
+            get { return "localadmin"; }
+        }
+
+        public override string Description
+        {
+            get { return "Enumerate the local administrators of a computer."; }
+        }
 
         override protected string GetCsvHeader()
         {
@@ -40,9 +47,13 @@ namespace PingCastle.Scanners
                 cancellationToken.ThrowIfCancellationRequested();
                 string account = ConvertSIDToName(user.Value, computer);
                 if (!String.IsNullOrEmpty(output))
+                {
                     output += "\r\n";
+                }
+
                 output += computer + "\t" + user.Value + "\t" + account;
             }
+
             return output;
         }
 

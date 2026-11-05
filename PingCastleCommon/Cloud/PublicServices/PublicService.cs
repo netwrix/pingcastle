@@ -15,7 +15,7 @@ namespace PingCastle.Cloud.PublicServices
 
     public class PublicService
     {
-        public  static async Task<UserRealmV1> GetUserRealmv1(string domain)
+        public static async Task<UserRealmV1> GetUserRealmv1(string domain)
         {
             var httpClient = HttpClientHelper.GetHttpClient();
 
@@ -75,7 +75,7 @@ namespace PingCastle.Cloud.PublicServices
                 {
                     return OpenIDConfiguration.LoadFromString(response);
                 }
-                catch(Exception exInner)
+                catch (Exception exInner)
                 {
                     Trace.WriteLine($"Error while parsing OpenID configuration for domain {domain}: response was [{response}]");
                     throw;

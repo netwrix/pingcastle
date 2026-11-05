@@ -13,6 +13,7 @@ public class OUExploration : IComparable<OUExploration>
         Scope = scope;
         Level = level;
     }
+
     // revert an OU string order to get a string orderable
     // ex: OU=myOU,DC=DC   => DC=DC,OU=myOU
     private string GetSortKey(string ou)
@@ -23,8 +24,10 @@ public class OUExploration : IComparable<OUExploration>
         {
             apart1[i] = apart[apart.Length - 1 - i];
         }
+
         return String.Join(",", apart1);
     }
+
     public int CompareTo(OUExploration other)
     {
         return String.Compare(GetSortKey(OU), GetSortKey(other.OU));

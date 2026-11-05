@@ -16,7 +16,7 @@ namespace PingCastle.Healthcheck.Rules
     public class HeatlcheckRuleAnomalyCertTempCustomSubject : HeatlcheckRuleAnomalyCertTempBase
     {
         protected override bool IsVulnerable(HealthCheckCertificateTemplate ct)
-                {
+        {
             return !ct.CAManagerApproval && ct.IssuanceRequirementsEmpty && ct.LowPrivCanEnroll && ct.HasAuthenticationEku
                             && ct.EnrolleeSupplies > 0 && ct.EnrollmentLowPrivilegePrincipals.Count > 0;
         }

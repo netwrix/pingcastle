@@ -63,7 +63,8 @@ namespace PingCastle.Scanners
         {
             if (ScanningMode == 0)
             {
-                var choices = new List<MenuItem>(){
+                var choices = new List<MenuItem>()
+                {
                     new MenuItem("all","This is a domain. Scan all computers."),
                     new MenuItem("one","This is a computer. Scan only this computer."),
                     new MenuItem("workstation","Scan all computers except servers."),
@@ -76,11 +77,18 @@ namespace PingCastle.Scanners
                 _ui.Information = "This scanner can collect all the active computers from a domain and scan them one by one automatically. Or scan only one computer";
                 int choice = _ui.SelectMenu(choices);
                 if (choice == 0)
+                {
                     return DisplayState.ScannerMenu;
+                }
+
                 ScanningMode = choice;
             }
+
             if (ScanningMode == 6)
+            {
                 return Settings.EnsureDataCompleted("File");
+            }
+
             return Settings.EnsureDataCompleted("Server");
         }
 
@@ -91,6 +99,7 @@ namespace PingCastle.Scanners
                 ExportAllComputers(filename);
                 return;
             }
+
             try
             {
                 IPAddress[] ipaddresses = Dns.GetHostAddresses(Settings.Server);
@@ -101,11 +110,13 @@ namespace PingCastle.Scanners
                 DisplayAdvancement("Unable to translate the server into ip");
                 throw;
             }
+
             using (StreamWriter sw = File.CreateText(filename))
             {
                 sw.WriteLine(GetCsvHeader());
                 sw.WriteLine(GetCsvData(Settings.Server));
             }
+
             DisplayAdvancement("Done");
         }
 
@@ -172,7 +183,9 @@ namespace PingCastle.Scanners
                                 {
                                     sw.WriteLine(s);
                                     if ((newCount % 20) == 0)
+                                    {
                                         sw.Flush();
+                                    }
                                 }
                             }
                         }
@@ -258,6 +271,7 @@ namespace PingCastle.Scanners
 
                 connection.Enumerate(domainInfo.DefaultNamingContext, "(&(ObjectCategory=computer)" + filterClause + "(!userAccountControl:1.2.840.113556.1.4.803:=2)(lastLogonTimeStamp>=" + DateTime.Now.AddDays(-60).ToFileTimeUtc() + "))", properties, callback);
             }
+
             return computers;
         }
 

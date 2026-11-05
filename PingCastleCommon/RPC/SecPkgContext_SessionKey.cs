@@ -8,5 +8,7 @@ namespace PingCastle.RPC
     {
         public uint SessionKeyLength;
         public IntPtr Sessionkey;
-    };
+    }
+
+;
 }

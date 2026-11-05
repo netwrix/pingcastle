@@ -1,4 +1,3 @@
-
 namespace PingCastle.Rules
 {
     using System;
@@ -58,6 +57,7 @@ namespace PingCastle.Rules
                     throw new ApplicationException("Could not configure Custom Rules options.");
                 }
             }
+
             return cachedSettings;
         }
 
@@ -84,6 +84,7 @@ namespace PingCastle.Rules
             get; set;
         }
     }
+
     public class ComputationCollection : List<CustomRuleComputationSettings>
     {
     }

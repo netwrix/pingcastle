@@ -20,7 +20,10 @@ namespace PingCastle.Healthcheck.Rules
             foreach (var dc in healthcheckData.DomainControllers)
             {
                 if (dc.LDAPSProtocols == null)
+                {
                     continue;
+                }
+
                 foreach (var protocol in dc.LDAPSProtocols)
                 {
                     switch (protocol)
@@ -32,6 +35,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

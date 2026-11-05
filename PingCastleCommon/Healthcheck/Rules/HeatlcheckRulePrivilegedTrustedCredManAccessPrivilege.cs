@@ -24,12 +24,19 @@ namespace PingCastle.Healthcheck.Rules
                 if (string.Equals(privilege.Privilege, "SeTrustedCredManAccessPrivilege", StringComparison.OrdinalIgnoreCase))
                 {
                     if (string.IsNullOrEmpty(privilege.User))
+                    {
                         continue;
+                    }
+
                     if (string.Equals(privilege.User, HealthCheckConstants.EmptyUserPrivilege))
+                    {
                         continue;
+                    }
+
                     AddRawDetail(privilege.GPOName, privilege.User);
                 }
             }
+
             return null;
         }
     }

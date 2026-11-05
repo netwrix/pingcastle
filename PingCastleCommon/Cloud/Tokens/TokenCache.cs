@@ -20,14 +20,18 @@ namespace PingCastle.Cloud.Tokens
             {
                 output.Add(Token.LoadFromString(File.ReadAllText(file)));
             }
+
             return output;
         }
 
         public static void Save(Token token)
         {
             if (!Directory.Exists(DirectoryName))
+            {
                 Directory.CreateDirectory(DirectoryName);
-            File.WriteAllText(Path.Combine(DirectoryName, token .resource.Replace("https://", "").Replace("/", "") + "-" + Guid.NewGuid() + ".json"), token.ToJsonString());
+            }
+
+            File.WriteAllText(Path.Combine(DirectoryName, token.resource.Replace("https://", "").Replace("/", "") + "-" + Guid.NewGuid() + ".json"), token.ToJsonString());
         }
     }
 }

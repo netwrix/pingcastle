@@ -14,11 +14,15 @@ public static class NetworkHelper
     public static bool IsValidHostName(string hostName)
     {
         if (string.IsNullOrWhiteSpace(hostName))
+        {
             return false;
+        }
 
         // Check length - DNS hostnames limited to 253 characters
         if (hostName.Length > 253)
+        {
             return false;
+        }
 
         // Try to parse as IP address first
         if (IPAddress.TryParse(hostName, out IPAddress ip))

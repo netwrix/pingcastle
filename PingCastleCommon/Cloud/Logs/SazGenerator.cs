@@ -23,8 +23,8 @@ namespace PingCastle.Cloud.Logs
         private static readonly SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
         public SazGenerator() : this("log.saz")
         {
-
         }
+
         public SazGenerator(string filename)
         {
             CreateFile(filename);
@@ -60,7 +60,7 @@ namespace PingCastle.Cloud.Logs
         // called from multiple threads
         public async Task<int> RecordBeginQueryAsync(HttpRequestMessage request)
         {
-            await  semaphore.WaitAsync();
+            await semaphore.WaitAsync();
 
             try
             {
@@ -100,8 +100,9 @@ namespace PingCastle.Cloud.Logs
             {
                 newContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
+
             response.Content = newContent;
-            
+
             await semaphore.WaitAsync();
 
             try
@@ -149,6 +150,7 @@ namespace PingCastle.Cloud.Logs
             {
                 SerializeHeaderFields(sb, request.Content.Headers);
             }
+
             sb.Append("\r\n");
             return Encoding.UTF8.GetBytes(sb.ToString());
         }
@@ -162,6 +164,7 @@ namespace PingCastle.Cloud.Logs
             {
                 SerializeHeaderFields(sb, response.Content.Headers);
             }
+
             sb.Append("\r\n");
             return Encoding.UTF8.GetBytes(sb.ToString());
         }
@@ -187,6 +190,7 @@ namespace PingCastle.Cloud.Logs
                 }
             }
         }
+
         private static void SerializeStatusLine(StringBuilder message, HttpResponseMessage httpResponse)
         {
             message.Append("HTTP/" + ((httpResponse.Version != null) ? httpResponse.Version.ToString(2) : "1.1") + " ");
@@ -226,6 +230,7 @@ namespace PingCastle.Cloud.Logs
             {
                 metadata.SessionFlags.Add(new SessionFlag { Name = SessionFlag.Comment, Value = SessionComment });
             }
+
             return metadata;
         }
 
@@ -250,6 +255,7 @@ namespace PingCastle.Cloud.Logs
                 // free managed resources
                 CloseFile();
             }
+
             // free native resources if there are any.
         }
 
@@ -317,7 +323,6 @@ namespace PingCastle.Cloud.Logs
             public const string HostIP = "x-hostip";
             public const string ProcessInfo = "x-processinfo";
             public const string Comment = "ui-comments";
-
         }
 
         public class SessionTimers
@@ -369,7 +374,6 @@ namespace PingCastle.Cloud.Logs
 
             [XmlAttribute]
             public string ClientDoneResponse { get; set; }
-
         }
     }
 }

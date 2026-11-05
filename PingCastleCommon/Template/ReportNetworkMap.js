@@ -346,7 +346,7 @@ $('#InputIpMap').keyup(function (e) {
     var val = $(this).val();
     if (val == '') {
         $('#validationfeedback').removeClass('d-block');
-        $('#validationfeedback').html('');
+        $('#validationfeedback').text('');
         return;
     }
     var ipVal = val.split('.').reduce(function (ipInt, octet) { return (ipInt << 8) + parseInt(octet, 10); }, 0) >>> 0;
@@ -360,11 +360,11 @@ $('#InputIpMap').keyup(function (e) {
     });
     if (ipVal < view.start || ipVal > view.end) {
         $('#validationfeedback').addClass('d-block');
-        $('#validationfeedback').html('Ip address ' + val + ' not in range ' + view.name);
+        $('#validationfeedback').text('Ip address ' + val + ' not in range ' + view.name);
         return;
     }
     $('#validationfeedback').removeClass('d-block');
-    $('#validationfeedback').html('');
+    $('#validationfeedback').text('');
     var d = (ipVal - view.start) * (order * order) / (view.end - view.start);
     var xy = d2xy(order, d);
     ShowTooltip(viewjq, xy.x, xy.y);

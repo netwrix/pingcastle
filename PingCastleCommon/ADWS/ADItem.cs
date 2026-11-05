@@ -70,6 +70,7 @@ namespace PingCastle.ADWS
                 ValueKind = valueKind;
                 DefaultValue = defaultValue;
             }
+
             public string ADAttribute { get; set; }
             public ADAttributeValueKind ValueKind { get; set; }
             public object DefaultValue { get; set; }
@@ -108,7 +109,6 @@ namespace PingCastle.ADWS
                 this.aDAttributeAttribute = aDAttributeAttribute;
                 this.prop = prop;
             }
-
         }
 
         static Dictionary<string, ADAttributeTranslation> AttributeTranslation;
@@ -341,6 +341,8 @@ namespace PingCastle.ADWS
         public int TrustType { get; set; }
         [ADAttributeAttribute("userAccountControl", ADAttributeValueKind.IntValue)]
         public int UserAccountControl { get; set; }
+        [ADAttributeAttribute("userPrincipalName", ADAttributeValueKind.StringValue)]
+        public string UserPrincipalName { get; set; }
         [ADAttributeAttribute("wellKnownObjects", ADAttributeValueKind.StringArrayValue)]
         public string[] WellKnownObjects { get; set; }
         [ADAttributeAttribute("whenCreated", ADAttributeValueKind.DateValue2)]
@@ -355,29 +357,41 @@ namespace PingCastle.ADWS
         {
             var output = new List<string>();
             if (string.IsNullOrEmpty(GPLink))
+            {
                 return output;
+            }
+
             string[] gplinks = GPLink.Split(']');
             foreach (string gplink in gplinks)
             {
                 if (string.IsNullOrEmpty(gplink.TrimEnd()))
+                {
                     continue;
+                }
+
                 string[] gpodata = gplink.Split(';');
                 if (gpodata.Length != 2)
                 {
                     Trace.WriteLine("invalid gpolink1:" + gplink);
                     continue;
                 }
+
                 int flag = int.Parse(gpodata[1]);
                 if (flag == 1)
+                {
                     continue;
+                }
+
                 if (!gpodata[0].StartsWith("[LDAP://", StringComparison.InvariantCultureIgnoreCase))
                 {
                     Trace.WriteLine("invalid gpolink2:" + gplink);
                     continue;
                 }
+
                 string dn = gpodata[0].Substring(8);
                 output.Add(dn);
             }
+
             return output;
         }
 
@@ -388,6 +402,7 @@ namespace PingCastle.ADWS
             {
                 return input.Substring(index + 1);
             }
+
             return input;
         }
 
@@ -398,6 +413,7 @@ namespace PingCastle.ADWS
             {
                 return child.InnerText;
             }
+
             return String.Empty;
         }
 
@@ -408,6 +424,7 @@ namespace PingCastle.ADWS
             {
                 return int.Parse(child.InnerText);
             }
+
             return 0;
         }
 
@@ -418,6 +435,7 @@ namespace PingCastle.ADWS
             {
                 return long.Parse(child.InnerText);
             }
+
             return 0;
         }
 
@@ -428,6 +446,7 @@ namespace PingCastle.ADWS
             {
                 return bool.Parse(child.InnerText);
             }
+
             return false;
         }
 
@@ -438,6 +457,7 @@ namespace PingCastle.ADWS
             {
                 return SafeExtractDateTimeFromLong(long.Parse(child.InnerText));
             }
+
             return DateTime.MinValue;
         }
 
@@ -468,6 +488,7 @@ namespace PingCastle.ADWS
                 Trace.WriteLine("trust info version incompatible : " + version);
                 return output;
             }
+
             int recordcount = BitConverter.ToInt32(data, 4);
             Trace.WriteLine("Number of records to analyze: " + recordcount);
             int pointer = 8;
@@ -513,8 +534,10 @@ namespace PingCastle.ADWS
                 else
                 {
                 }
+
                 pointer += 4 + recordLen;
             }
+
             return output;
         }
 
@@ -527,6 +550,7 @@ namespace PingCastle.ADWS
                 Trace.WriteLine("trust info version incompatible : " + version);
                 return output;
             }
+
             int recordcount = BitConverter.ToInt32(data, 8);
             int pointer = 16;
             for (int i = 0; i < recordcount; i++)
@@ -544,6 +568,7 @@ namespace PingCastle.ADWS
                 pointer += 48;
                 output[item.AttrType] = item;
             }
+
             return output;
         }
 
@@ -581,11 +606,13 @@ namespace PingCastle.ADWS
                             break;
                     }
                 }
+
                 if (!String.IsNullOrEmpty(metaData.AttrName))
                 {
                     output[metaData.AttrName] = metaData;
                 }
             }
+
             return output;
         }
 
@@ -612,31 +639,43 @@ namespace PingCastle.ADWS
             try
             {
                 if (string.IsNullOrEmpty(dnBinaryEntry))
+                {
                     return null;
+                }
 
                 var result = new DNWithBinaryData();
 
                 int firstColon = dnBinaryEntry.IndexOf(':');
                 if (firstColon < 0 || dnBinaryEntry[0] != 'B')
+                {
                     throw new FormatException("Invalid DN-Binary format: must start with B:");
+                }
 
                 int secondColon = dnBinaryEntry.IndexOf(':', firstColon + 1);
                 if (secondColon < 0)
+                {
                     throw new FormatException("Invalid DN-Binary format: hex length not found");
+                }
 
                 int thirdColon = dnBinaryEntry.IndexOf(':', secondColon + 1);
                 if (thirdColon < 0)
+                {
                     throw new FormatException("Invalid DN-Binary format: DN not found");
+                }
 
                 string hexLengthStr = dnBinaryEntry.Substring(firstColon + 1, secondColon - firstColon - 1);
                 if (!int.TryParse(hexLengthStr, out int hexLength))
+                {
                     throw new FormatException($"Invalid hex length: {hexLengthStr}");
+                }
 
                 string hexBinary = dnBinaryEntry.Substring(secondColon + 1, hexLength);
                 result.DistinguishedName = dnBinaryEntry.Substring(thirdColon + 1);
 
                 if (hexLength < 96)
+                {
                     return result;
+                }
 
                 byte[] binaryData = new byte[hexLength / 2];
                 for (int i = 0; i < hexLength; i += 2)
@@ -695,6 +734,7 @@ namespace PingCastle.ADWS
                 list.Add(child.InnerText);
                 child = child.NextSibling;
             }
+
             return list.ToArray();
         }
 
@@ -714,8 +754,10 @@ namespace PingCastle.ADWS
                     Trace.WriteLine(ex.Message);
                     Trace.WriteLine(ex.StackTrace);
                 }
+
                 child = child.NextSibling;
             }
+
             return store;
         }
 
@@ -729,6 +771,7 @@ namespace PingCastle.ADWS
                 list.Add(new SecurityIdentifier(data, 0));
                 child = child.NextSibling;
             }
+
             return list.ToArray();
         }
 
@@ -747,6 +790,7 @@ namespace PingCastle.ADWS
                 }
                 );
             }
+
             return output;
         }
 
@@ -765,6 +809,7 @@ namespace PingCastle.ADWS
                 {
                     lookupName = name.Substring(0, rangeIndex);
                 }
+
                 if (AttributeTranslation.ContainsKey(lookupName))
                 {
                     try
@@ -800,8 +845,10 @@ namespace PingCastle.ADWS
                                     {
                                         b.Add(Convert.FromBase64String(s));
                                     }
+
                                     translation.prop.SetValue(aditem, b.ToArray(), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.StringValue:
                                 translation.prop.SetValue(aditem, ExtractStringValue(child), null);
@@ -841,8 +888,10 @@ namespace PingCastle.ADWS
                                     {
                                         o.Add(Convert.FromBase64String(k));
                                     }
+
                                     translation.prop.SetValue(aditem, ExtractDnsProperty(o), null);
                                 }
+
                                 break;
                         }
                     }
@@ -865,8 +914,10 @@ namespace PingCastle.ADWS
                             break;
                     }
                 }
+
                 child = child.NextSibling;
             }
+
             return aditem;
         }
 
@@ -895,18 +946,23 @@ namespace PingCastle.ADWS
             {
                 aditem.NTSecurityDescriptor = directoryEntry.ObjectSecurity;
             }
+
             aditem.Class = directoryEntry.SchemaClassName;
 
             foreach (string name in sr.Properties.PropertyNames)
             {
                 if (name == "ntsecuritydescriptor")
+                {
                     continue;
+                }
+
                 string lookupName = name;
                 int rangeIndex = name.IndexOf(";range=", StringComparison.OrdinalIgnoreCase);
                 if (rangeIndex >= 0)
                 {
                     lookupName = name.Substring(0, rangeIndex);
                 }
+
                 if (AttributeTranslation.ContainsKey(lookupName))
                 {
                     try
@@ -942,8 +998,10 @@ namespace PingCastle.ADWS
                                     {
                                         list.Add(data);
                                     }
+
                                     translation.prop.SetValue(aditem, list.ToArray(), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.StringValue:
                                 translation.prop.SetValue(aditem, sr.Properties[name][0] as string, null);
@@ -958,8 +1016,10 @@ namespace PingCastle.ADWS
                                     {
                                         list.Add(data);
                                     }
+
                                     translation.prop.SetValue(aditem, list.ToArray(), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.SecurityDescriptorValue:
                                 {
@@ -967,6 +1027,7 @@ namespace PingCastle.ADWS
                                     sd.SetSecurityDescriptorBinaryForm((byte[])sr.Properties[name][0], AccessControlSections.Access);
                                     translation.prop.SetValue(aditem, sd, null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.ReplMetadataValue:
                                 translation.prop.SetValue(aditem, ConvertByteToMetaDataInfo((byte[])sr.Properties[name][0]), null);
@@ -978,8 +1039,10 @@ namespace PingCastle.ADWS
                                     {
                                         list.Add(data);
                                     }
+
                                     translation.prop.SetValue(aditem, ConvertStringArrayToMetaDataInfo(list), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.CertificateStore:
                                 {
@@ -997,8 +1060,10 @@ namespace PingCastle.ADWS
                                             Trace.WriteLine(ex.StackTrace);
                                         }
                                     }
+
                                     translation.prop.SetValue(aditem, store, null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.ForestInfoValue:
                                 translation.prop.SetValue(aditem, ConvertByteToTrustInfo((byte[])sr.Properties[name][0]), null);
@@ -1013,8 +1078,10 @@ namespace PingCastle.ADWS
                                     {
                                         list.Add(new SecurityIdentifier(data, 0));
                                     }
+
                                     translation.prop.SetValue(aditem, list.ToArray(), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.DnsProperty:
                                 {
@@ -1023,8 +1090,10 @@ namespace PingCastle.ADWS
                                     {
                                         o.Add((byte[])sr.Properties[name][k]);
                                     }
+
                                     translation.prop.SetValue(aditem, ExtractDnsProperty(o), null);
                                 }
+
                                 break;
                         }
                     }
@@ -1051,6 +1120,7 @@ namespace PingCastle.ADWS
                     }
                 }
             }
+
             if (string.IsNullOrEmpty(aditem.DistinguishedName))
             {
                 string path = (string)sr.Properties["adspath"][0];
@@ -1060,6 +1130,7 @@ namespace PingCastle.ADWS
                     aditem.DistinguishedName = path.Substring(i + 1);
                 }
             }
+
             return aditem;
         }
 
@@ -1069,7 +1140,10 @@ namespace PingCastle.ADWS
             ui.DisplayMessage("name:" + name);
             ui.DisplayMessage("kind: " + kind.ToString());
             if (val == null)
+            {
                 return;
+            }
+
             ui.DisplayMessage("val: " + val[0].ToString());
             throw new NotImplementedException();
         }
@@ -1087,6 +1161,7 @@ namespace PingCastle.ADWS
                 {
                     lookupName = name.Substring(0, rangeIndex);
                 }
+
                 if (AttributeTranslation.ContainsKey(lookupName))
                 {
                     Trace.WriteLine("Working on " + lookupName);
@@ -1104,6 +1179,7 @@ namespace PingCastle.ADWS
                                 {
                                     translation.prop.SetValue(aditem, bool.Parse(Marshal.PtrToStringAnsi(data[name2][0].bv_val)), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.IntValue:
                                 if (data[name2] == null)
@@ -1114,6 +1190,7 @@ namespace PingCastle.ADWS
                                 {
                                     translation.prop.SetValue(aditem, int.Parse(Marshal.PtrToStringAnsi(data[name2][0].bv_val)), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.LongValue:
                                 if (data[name2] == null)
@@ -1124,6 +1201,7 @@ namespace PingCastle.ADWS
                                 {
                                     translation.prop.SetValue(aditem, long.Parse(Marshal.PtrToStringAnsi(data[name2][0].bv_val)), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.DateValue:
                                 if (data[name2] == null)
@@ -1134,6 +1212,7 @@ namespace PingCastle.ADWS
                                 {
                                     translation.prop.SetValue(aditem, SafeExtractDateTimeFromLong(long.Parse(data[name2][0].GetString())), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.DateValue2:
                                 if (data[name2] == null)
@@ -1144,6 +1223,7 @@ namespace PingCastle.ADWS
                                 {
                                     translation.prop.SetValue(aditem, DateTime.ParseExact(Marshal.PtrToStringAnsi(data[name2][0].bv_val), "yyyyMMddHHmmss.f'Z'", CultureInfo.InvariantCulture), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.GUIDValue:
                                 translation.prop.SetValue(aditem, new Guid(data[name2][0].GetByteArray()), null);
@@ -1157,6 +1237,7 @@ namespace PingCastle.ADWS
                                 {
                                     translation.prop.SetValue(aditem, data[name2][0].GetByteArray(), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.ArrayOfByteArray:
                                 {
@@ -1171,9 +1252,11 @@ namespace PingCastle.ADWS
                                         {
                                             list.Add(d.GetByteArray());
                                         }
+
                                         translation.prop.SetValue(aditem, list.ToArray(), null);
                                     }
                                 }
+
                                 break;
                             case ADAttributeValueKind.StringValue:
                                 if (data[name2] == null)
@@ -1184,6 +1267,7 @@ namespace PingCastle.ADWS
                                 {
                                     translation.prop.SetValue(aditem, data[name2][0].GetString(), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.StringValueLowerInvariant:
                                 if (data[name2] == null)
@@ -1194,6 +1278,7 @@ namespace PingCastle.ADWS
                                 {
                                     translation.prop.SetValue(aditem, data[name2][0].GetString().ToLowerInvariant(), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.StringArrayValue:
                                 {
@@ -1203,15 +1288,16 @@ namespace PingCastle.ADWS
                                     }
                                     else
                                     {
-
                                         List<string> list = new List<string>();
                                         foreach (var d in data[name2])
                                         {
                                             list.Add(d.GetString());
                                         }
+
                                         translation.prop.SetValue(aditem, list.ToArray(), null);
                                     }
                                 }
+
                                 break;
                             case ADAttributeValueKind.SecurityDescriptorValue:
                                 {
@@ -1219,6 +1305,7 @@ namespace PingCastle.ADWS
                                     sd.SetSecurityDescriptorBinaryForm(data[name2][0].GetByteArray(), AccessControlSections.All);
                                     translation.prop.SetValue(aditem, sd, null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.ReplMetadataValue:
                                 translation.prop.SetValue(aditem, ConvertByteToMetaDataInfo(data[name2][0].GetByteArray()), null);
@@ -1230,8 +1317,10 @@ namespace PingCastle.ADWS
                                     {
                                         list.Add(d.GetString());
                                     }
+
                                     translation.prop.SetValue(aditem, ConvertStringArrayToMetaDataInfo(list), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.CertificateStore:
                                 {
@@ -1249,8 +1338,10 @@ namespace PingCastle.ADWS
                                             Trace.WriteLine(ex.StackTrace);
                                         }
                                     }
+
                                     translation.prop.SetValue(aditem, store, null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.ForestInfoValue:
                                 if (data[name2] == null)
@@ -1261,6 +1352,7 @@ namespace PingCastle.ADWS
                                 {
                                     translation.prop.SetValue(aditem, ConvertByteToTrustInfo(data[name2][0].GetByteArray()), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.SIDValue:
                                 if (data[name2] == null)
@@ -1271,6 +1363,7 @@ namespace PingCastle.ADWS
                                 {
                                     translation.prop.SetValue(aditem, new SecurityIdentifier(data[name2][0].bv_val), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.SIDArrayValue:
                                 if (data[name2] == null)
@@ -1284,8 +1377,10 @@ namespace PingCastle.ADWS
                                     {
                                         list.Add(new SecurityIdentifier(d.bv_val));
                                     }
+
                                     translation.prop.SetValue(aditem, list.ToArray(), null);
                                 }
+
                                 break;
                             case ADAttributeValueKind.DnsProperty:
                                 if (data[name2] == null)
@@ -1299,8 +1394,10 @@ namespace PingCastle.ADWS
                                     {
                                         o.Add(data[name2][k].GetByteArray());
                                     }
+
                                     translation.prop.SetValue(aditem, ExtractDnsProperty(o), null);
                                 }
+
                                 break;
                             default:
                                 NotImplemented(name2, translation.aDAttributeAttribute.ValueKind, data[name2]);
@@ -1327,6 +1424,7 @@ namespace PingCastle.ADWS
                     }
                 }
             }
+
             return aditem;
         }
     }

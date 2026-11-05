@@ -27,11 +27,14 @@ namespace PingCastle.Healthcheck.Rules
                     // workaround for timeproblem with DC that sets lastlongdate in the future
                     var date = c.LastLogonDate;
                     if (date > DateTime.Now)
+                    {
                         date = DateTime.Now;
+                    }
 
                     AddRawDetail(c.Name, c.CreationDate, c.LastLogonDate, c.PwdLastSet);
                 }
             }
+
             return null;
         }
     }

@@ -35,8 +35,9 @@ namespace PingCastle.Cloud.RESTServices.Azure
             var r = new TenantListRequest
             {
                 requests = new List<TenantListRequestItem>()
-                { 
-                    new TenantListRequestItem {
+                {
+                    new TenantListRequestItem
+                    {
                         httpMethod = "GET",
                         name = Guid.NewGuid().ToString(),
                         url = "/tenants?api-version=2019-03-01&`$includeAllTenantCategories=true",
@@ -123,6 +124,5 @@ namespace PingCastle.Cloud.RESTServices.Azure
         {
             public List<TenantListResponseItem> responses { get; set; }
         }
-
     }
 }

@@ -16,25 +16,30 @@ namespace PingCastle.Healthcheck.Rules
     [RuleIntroducedIn(3, 3)]
     public class HeatlcheckRuleStaledFolderOptions : RuleBase<HealthcheckData>
     {
+        public static readonly string[] DangerousFileExtensions = new string[] { "js", "jse", "vbs", "vbe", "vb", "wsh", "wsf" };
+
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            var dangerousFileExtensions = new string[] { "js", "jse", "vbs", "vbe", "vb", "wsh", "wsf" };
             var found = new List<string>();
             if (healthcheckData.GPOFolderOptions != null)
             {
                 foreach (var option in healthcheckData.GPOFolderOptions)
                 {
                     if (!found.Contains(option.FileExt.ToLowerInvariant()))
+                    {
                         found.Add(option.FileExt.ToLowerInvariant());
+                    }
                 }
             }
-            foreach (var ext in dangerousFileExtensions)
+
+            foreach (var ext in DangerousFileExtensions)
             {
                 if (!found.Contains(ext))
                 {
                     AddRawDetail(ext, "Not found in Folder Options");
                 }
             }
+
             return null;
         }
     }

@@ -25,6 +25,7 @@ namespace PingCastle.Report
             EntityData = ownerInformationReferences;
             FullNodeMap = true;
         }
+
         public ReportHealthCheckMapBuilder(PingCastleReportCollection<HealthcheckData> consolidation, ADHealthCheckingLicense license) : this(consolidation, (OwnerInformationReferences)null)
         {
             Brand(license);
@@ -47,7 +48,10 @@ namespace PingCastle.Report
             get
             {
                 if (_nodes == null)
+                {
                     _nodes = GraphNodeCollection.BuildModel(Report, EntityData);
+                }
+
                 return _nodes;
             }
         }
@@ -124,12 +128,18 @@ namespace PingCastle.Report
             {
                 AddLine(GenerateJsonFileSimple(CenterDomainForSimpliedGraph));
             }
+
             AddLine(@"</script>");
             AddLine(@"<script type=""application/json"" data-pingcastle-selector=""FullNodeMap"">");
             if (FullNodeMap)
+            {
                 Add("true");
+            }
             else
+            {
                 Add("false");
+            }
+
             AddLine(@"</script>");
         }
 
@@ -156,6 +166,7 @@ namespace PingCastle.Report
                 {
                     firstnode = false;
                 }
+
                 sb.Append("    {");
                 sb.Append("      \"id\": " + nodenumber + ",");
                 var nodeShortName = !string.IsNullOrEmpty(node.Domain.DomainNetBIOS) ? node.Domain.DomainNetBIOS : (node.Domain.DomainName.Split('.')[0]);
@@ -164,15 +175,18 @@ namespace PingCastle.Report
                 {
                     sb.Append("      ,\"forest\": \"" + ReportHelper.EscapeJsonString(ReportHelper.Encode(node.Forest.DomainName)) + "\"");
                 }
+
                 if (node.IsPotentiallyRemoved)
                 {
                     sb.Append("      ,\"potentiallyremoved\": 1");
                 }
+
                 var entity = node.Entity;
                 if (entity != null)
                 {
                     sb.Append(entity.GetJasonOutput());
                 }
+
                 HealthcheckData data = node.HealthCheckData;
                 sb.Append("      ,\"name\": \"" + ReportHelper.EscapeJsonString(ReportHelper.Encode(node.Domain.DomainName)) + "\"");
                 if (data != null)
@@ -184,17 +198,25 @@ namespace PingCastle.Report
                     sb.Append("      ,\"trustScore\": " + data.TrustScore);
                     sb.Append("      ,\"anomalyScore\": " + data.AnomalyScore);
                     if (data.UserAccountData != null)
+                    {
                         sb.Append("      ,\"activeusers\": " + data.UserAccountData.NumberActive);
+                    }
+
                     if (data.ComputerAccountData != null)
+                    {
                         sb.Append("      ,\"activecomputers\": " + data.ComputerAccountData.NumberActive);
+                    }
                 }
+
                 sb.Append("      ,\"dist\": null");
                 idconversiontable[node.Id] = nodenumber++;
             }
+
             if (Nodes.Count > 0)
             {
                 sb.Append("    }");
             }
+
             sb.Append("  ],");
             // END OF NODES
             // START LINKS
@@ -209,16 +231,24 @@ namespace PingCastle.Report
             {
                 foreach (GraphEdge edge in node.Trusts.Values)
                 {
-
                     if (SkipLink.Contains(edge))
+                    {
                         continue;
+                    }
+
                     // for unidirectional trusts
                     // keep only the remote part of the trust. SID Filtering is unknown (avoid evaluating SID Filtering when no value is available)
                     if (edge.TrustDirection == 2 && edge.IsAuthoritative == false)
+                    {
                         continue;
+                    }
+
                     // keep only the reception of the trust. SID Filtering status is sure
                     if (edge.TrustDirection == 1 && edge.Destination.Trusts[edge.Source.Domain].IsAuthoritative == true)
+                    {
                         continue;
+                    }
+
                     // trying to simplify bidirectional trusts
                     bool isBidirectional = false;
                     if (edge.IsEquivalentToReverseEdge(migrationChecker))
@@ -228,6 +258,7 @@ namespace PingCastle.Report
                         SkipLink.Add(reverseEdge);
                         isBidirectional = true;
                     }
+
                     if (!absenceOfLinks)
                     {
                         sb.Append("    },");
@@ -236,6 +267,7 @@ namespace PingCastle.Report
                     {
                         absenceOfLinks = false;
                     }
+
                     sb.Append("    {");
                     if (edge.TrustDirection == 2)
                     {
@@ -247,6 +279,7 @@ namespace PingCastle.Report
                         sb.Append("      \"source\": " + idconversiontable[edge.Source.Id] + ",");
                         sb.Append("      \"target\": " + idconversiontable[edge.Destination.Id] + ",");
                     }
+
                     // blue: 25AEE4
                     // orange: FA9426
                     string sidFiltering = edge.GetSIDFilteringStatus(migrationChecker);
@@ -277,26 +310,30 @@ namespace PingCastle.Report
                                 break;
                         }
                     }
+
                     if (isBidirectional)
                     {
                         sb.Append("      \"type\": \"double\",");
                     }
+
                     sb.Append("      \"rels\": [\"");
                     sb.Append("Attributes=" + edge.GetTrustAttributes() + ",");
                     if (edge.CreationDate != DateTime.MinValue)
                     {
                         sb.Append("CreationDate=" + edge.CreationDate.ToString("yyyy-MM-dd") + ",");
                     }
+
                     sb.Append("SIDFiltering=" + sidFiltering);
                     sb.Append((edge.IsActive ? null : ",Inactive"));
                     sb.Append("\"]");
-
                 }
             }
+
             if (!absenceOfLinks)
             {
                 sb.Append("    }");
             }
+
             sb.Append("  ]");
             // END OF LINKS
             sb.Append("}");
@@ -327,6 +364,7 @@ namespace PingCastle.Report
                         center = nodeToInvestigate;
                     }
                 }
+
                 if (center == null)
                 {
                     string output = null;
@@ -337,6 +375,7 @@ namespace PingCastle.Report
                     coveredNodesCount = 0;
                     return output;
                 }
+
                 if (Log != null)
                 {
                     Log.Invoke("Simplified graph: automatic center on " + center);
@@ -357,16 +396,21 @@ namespace PingCastle.Report
                     {
                         Log.Invoke("Simplified graph: domain " + domainToCenter + " not found.");
                     }
+
                     coveredNodesCount = 1;
                     return output;
                 }
             }
+
             GraphNode newCentralNode = GenerateSimplifiedGraph(Nodes, center);
             coveredNodesCount = CountSimplifiedNodes(newCentralNode); if (Log != null)
+            {
                 if (Log != null)
                 {
                     Log.Invoke("Simplified graph: contains " + coveredNodesCount + " nodes on a total of " + Nodes.Count);
                 }
+            }
+
             GenerateSimplifiedJason(sb, newCentralNode);
             return sb.ToString();
         }
@@ -394,6 +438,7 @@ namespace PingCastle.Report
                 {
                     nodeAlreadyExamined.Add(nodeToExamine);
                 }
+
                 foreach (GraphNode nodeToExamine in nodesToExamine)
                 {
                     foreach (GraphEdge edge in nodeToExamine.Trusts.Values)
@@ -410,10 +455,15 @@ namespace PingCastle.Report
                         }
                     }
                 }
+
                 if (nodesToExamineForNextLevel.Count == 0)
+                {
                     break;
+                }
+
                 nodesToExamine = nodesToExamineForNextLevel;
             }
+
             return output;
         }
 
@@ -424,6 +474,7 @@ namespace PingCastle.Report
             {
                 num += CountSimplifiedNodes(edge.Destination);
             }
+
             return num;
         }
 
@@ -437,10 +488,12 @@ namespace PingCastle.Report
             {
                 sb.Append("      ,\"forest\": \"" + ReportHelper.EscapeJsonString(node.Forest.DomainName) + "\"");
             }
+
             if (node.IsPotentiallyRemoved)
             {
                 sb.Append("      ,\"potentiallyremoved\": 1");
             }
+
             HealthcheckData data = node.HealthCheckData;
             if (data != null)
             {
@@ -451,11 +504,13 @@ namespace PingCastle.Report
                 sb.Append("      ,\"trustScore\": " + data.TrustScore);
                 sb.Append("      ,\"anomalyScore\": " + data.AnomalyScore);
             }
+
             var entity = node.Entity;
             if (entity != null)
             {
                 sb.Append(entity.GetJasonOutput());
             }
+
             if (node.Trusts.Count > 0)
             {
                 sb.Append("      ,\"children\": [\r\n");
@@ -466,11 +521,14 @@ namespace PingCastle.Report
                     {
                         sb.Append(",\r\n");
                     }
+
                     GenerateSimplifiedJason(sb, edge.Destination);
                     numChildren++;
                 }
+
                 sb.Append("      ]\r\n");
             }
+
             sb.Append("}");
         }
 
@@ -489,17 +547,20 @@ namespace PingCastle.Report
                 {
                     firstnode = false;
                 }
+
                 sb.Append("    {");
                 sb.Append("      \"name\": \"" + ReportHelper.EscapeJsonString(node.Domain.DomainName) + "\"");
                 if (node.IsPotentiallyRemoved)
                 {
                     sb.Append("      ,\"potentiallyremoved\": 1");
                 }
+
                 var entity = node.Entity;
                 if (entity != null)
                 {
                     sb.Append(entity.GetJasonOutput());
                 }
+
                 HealthcheckData data = node.HealthCheckData;
                 if (data != null)
                 {
@@ -510,10 +571,16 @@ namespace PingCastle.Report
                     sb.Append("      ,\"trustScore\": " + data.TrustScore);
                     sb.Append("      ,\"anomalyScore\": " + data.AnomalyScore);
                     if (data.UserAccountData != null)
+                    {
                         sb.Append("      ,\"activeusers\": " + data.UserAccountData.NumberActive);
+                    }
+
                     if (data.ComputerAccountData != null)
+                    {
                         sb.Append("      ,\"activecomputers\": " + data.ComputerAccountData.NumberActive);
+                    }
                 }
+
                 sb.Append("      ,\"trusts\": [");
                 bool firstTrust = true;
                 foreach (var edge in node.Trusts.Values)
@@ -527,6 +594,7 @@ namespace PingCastle.Report
                     {
                         firstTrust = false;
                     }
+
                     sb.Append("    {");
                     sb.Append("\"name\": \"");
                     sb.Append(ReportHelper.EscapeJsonString(destination.Domain.DomainName));
@@ -536,11 +604,12 @@ namespace PingCastle.Report
                     {
                         sb.Append(entity2.GetJasonOutput());
                     }
+
                     sb.Append("}");
                 }
+
                 sb.Append("]");
                 sb.Append("}");
-
             }
 
             sb.AppendLine("]");

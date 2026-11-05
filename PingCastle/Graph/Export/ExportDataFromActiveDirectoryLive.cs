@@ -7,20 +7,24 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using PingCastle.ADWS;
 using PingCastle.Data;
 using PingCastle.Graph.Database;
 using PingCastle.Graph.Reporting;
+using PingCastle.Healthcheck;
 using PingCastle.UserInterface;
 using PingCastle.Utility;
+using PingCastleCommon.Utility;
 
 namespace PingCastle.Graph.Export
 {
     public class ExportDataFromActiveDirectoryLive
     {
-        List<string> properties = new List<string> {
+        List<string> properties = new List<string>
+        {
                         "adminCount",
                         "displayName",
                         "distinguishedname",
@@ -50,13 +54,17 @@ namespace PingCastle.Graph.Export
         private ADDomainInfo domainInfo;
         private ADWebService adws;
         private NetworkCredential Credential;
+        private readonly IDictionary<string, string> remoteDomainHosts;
+        private readonly Dictionary<string, ADWebService> remoteConnections = new Dictionary<string, ADWebService>(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> failedRemoteDomains = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly IUserInterface _ui = UserInterfaceFactory.GetUserInterface();
 
-        public ExportDataFromActiveDirectoryLive(ADDomainInfo domainInfo, ADWebService adws, NetworkCredential credential)
+        public ExportDataFromActiveDirectoryLive(ADDomainInfo domainInfo, ADWebService adws, NetworkCredential credential, IDictionary<string, string> remoteDomainHosts = null)
         {
             this.domainInfo = domainInfo;
             this.adws = adws;
             Credential = credential;
+            this.remoteDomainHosts = remoteDomainHosts ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             Storage = new LiveDataStorage();
         }
 
@@ -69,31 +77,102 @@ namespace PingCastle.Graph.Export
 
         public GraphObjectReference ExportData(List<string> UsersToInvestigate)
         {
+            try
+            {
+                GraphObjectReference objectReference = null;
+                DisplayAdvancement("- Initialize");
+                Storage.Initialize(domainInfo, adws);
+                Trace.WriteLine("- Creating new relation factory");
+                var remoteHosts = remoteDomainHosts
+                    .Where(x => !string.IsNullOrEmpty(x.Value))
+                    .ToDictionary(x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase);
+                RelationFactory = new RelationFactory(Storage, domainInfo, adws, remoteHosts);
+                RelationFactory.Initialize(adws);
+                DisplayAdvancement("- Searching for critical and infrastructure objects");
+                objectReference = new GraphObjectReference(domainInfo);
+                AddDnsAdmins(objectReference);
+                BuildDirectDelegationData();
 
-            GraphObjectReference objectReference = null;
-            DisplayAdvancement("- Initialize");
-            Storage.Initialize(domainInfo, adws);
-            Trace.WriteLine("- Creating new relation factory");
-            RelationFactory = new RelationFactory(Storage, domainInfo, adws);
-            RelationFactory.Initialize(adws);
-            DisplayAdvancement("- Searching for critical and infrastructure objects");
-            objectReference = new GraphObjectReference(domainInfo);
-            AddDnsAdmins(objectReference);
-            BuildDirectDelegationData();
+                ExportReportData(objectReference, UsersToInvestigate);
+                DisplayAdvancement("- Completing object collection");
+                Trace.WriteLine("Inserting relations on hold");
+                Storage.InsertRelationOnHold();
+                Trace.WriteLine("Done");
+                DisplayAdvancement("- Export completed");
+                DumpObjectReferenceOnTrace();
+                return objectReference;
+            }
+            finally
+            {
+                foreach (var connection in remoteConnections.Values)
+                {
+                    connection.Dispose();
+                }
 
-            ExportReportData(objectReference, UsersToInvestigate);
-            DisplayAdvancement("- Completing object collection");
-            Trace.WriteLine("Inserting relations on hold");
-            Storage.InsertRelationOnHold();
-            Trace.WriteLine("Done");
-            DisplayAdvancement("- Export completed");
-            DumpObjectReferenceOnTrace();
-            return objectReference;
+                remoteConnections.Clear();
+            }
+        }
+
+        private ADWebService GetRemoteConnection(string domainDN)
+        {
+            if (remoteConnections.TryGetValue(domainDN, out ADWebService cached))
+            {
+                return cached;
+            }
+
+            string fqdn = RemoteGPOHelper.DomainDNToFqdn(domainDN);
+            bool known = remoteDomainHosts.TryGetValue(fqdn, out string host);
+            if (failedRemoteDomains.Contains(domainDN) || (known && host == null))
+            {
+                return null;
+            }
+
+            try
+            {
+                string server = known ? host : fqdn;
+                var connection = adws.CreateForServer(server);
+                remoteConnections[domainDN] = connection;
+                return connection;
+            }
+            catch (Exception ex)
+            {
+                failedRemoteDomains.Add(domainDN);
+                Trace.WriteLine("Unable to connect to remote domain " + fqdn.SanitizeForLog() + ": " + ex.Message.SanitizeForLog());
+                return null;
+            }
+        }
+
+        private List<ADItem> SearchRemoteGPO(string distinguishedName)
+        {
+            var output = new List<ADItem>();
+            string domainDN = RemoteGPOHelper.GetDomainDN(distinguishedName);
+            var remote = GetRemoteConnection(domainDN);
+            if (remote == null)
+            {
+                return output;
+            }
+
+            try
+            {
+                remote.Enumerate(
+                    distinguishedName,
+                    "(distinguishedname=" + ADConnection.EscapeLDAP(distinguishedName) + ")",
+                    properties.ToArray(),
+                    (ADItem aditem) => output.Add(aditem),
+                    "Base");
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("Unable to read remote GPO " + distinguishedName.SanitizeForLog() + ": " + ex.Message.SanitizeForLog());
+            }
+
+            return output;
         }
 
         private void AddDnsAdmins(GraphObjectReference objectReference)
         {
-            string[] properties = new string[] {
+            string[] properties = new string[]
+            {
                         "name",
                         "objectSid"
             };
@@ -113,15 +192,17 @@ namespace PingCastle.Graph.Export
                     adws.Enumerate("CN=Users," + domainInfo.DefaultNamingContext, "(&(objectClass=group)(sAMAccountName=DNSAdmins))", properties, callback, "OneLevel");
                 }
             }
-            catch(Exception)
+            catch (Exception)
             {
                 // trap silently the exception if the users container has been removed
             }
+
             if (!dnsAdminFound)
             {
                 // then full tree. This is an optimization for LDAP request
                 adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=group)(description=DNS Administrators Group))", properties, callback);
             }
+
             if (!dnsAdminFound)
             {
                 adws.Enumerate(domainInfo.DefaultNamingContext, "(&(objectClass=group)(sAMAccountName=DNSAdmins))", properties, callback);
@@ -150,13 +231,17 @@ namespace PingCastle.Graph.Export
                     Trace.WriteLine(node.Name + " -> <ALONE>");
                 }
             }
+
             Trace.WriteLine("============================");
         }
 
         private void BuildDirectDelegationData()
         {
             if (domainInfo.ForestFunctionality < 2)
+            {
                 return;
+            }
+
             var map = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             var protocolTransitionSid = new List<string>();
             WorkOnReturnedObjectByADWS callback =
@@ -166,13 +251,22 @@ namespace PingCastle.Graph.Export
                         {
                             var spn = d.Split('/');
                             if (spn.Length < 2)
+                            {
                                 continue;
+                            }
+
                             if (!map.ContainsKey(spn[1]))
+                            {
                                 map[spn[1]] = new List<string>();
+                            }
+
                             var sid = aditem.ObjectSid.Value;
                             if (!map[spn[1]].Contains(sid))
+                            {
                                 map[spn[1]].Add(sid);
+                            }
                         }
+
                         if (aditem.IsPasswordExpired())
                         {
                             protocolTransitionSid.Add(aditem.ObjectSid.Value);
@@ -181,8 +275,8 @@ namespace PingCastle.Graph.Export
             adws.Enumerate(domainInfo.DefaultNamingContext,
                                                 "(&(msDS-AllowedToDelegateTo=*)(!(userAccountControl:1.2.840.113556.1.4.804:=2)))",
                                                 new string[] { "objectSid", "msDS-AllowedToDelegateTo", "userAccountControl" }, callback);
-                    RelationFactory.InitializeDelegation(map, protocolTransitionSid);
-                    }
+            RelationFactory.InitializeDelegation(map, protocolTransitionSid);
+        }
 
         private void ExportReportData(GraphObjectReference objectReference, List<string> UsersToInvestigate)
         {
@@ -195,18 +289,22 @@ namespace PingCastle.Graph.Export
                     Trace.WriteLine("Working on " + obj.Description);
                     aditems = Search(obj.Name);
                     if (aditems.Count != 0)
+                    {
                         RelationFactory.AnalyzeADObject(aditems[0]);
+                    }
                     else
                     {
                         Trace.WriteLine("Unable to find the user: " + obj.Description);
                         toDelete.Add(obj);
                     }
                 }
+
                 foreach (var obj in toDelete)
                 {
                     objectReference.Objects[typology].Remove(obj);
                 }
             }
+
             if (UsersToInvestigate != null)
             {
                 foreach (string user in UsersToInvestigate)
@@ -220,6 +318,7 @@ namespace PingCastle.Graph.Export
                         {
                             userKey = aditems[0].ObjectSid.Value;
                         }
+
                         objectReference.Objects[Data.CompromiseGraphDataTypology.UserDefined].Add(new GraphSingleObject(userKey, user));
                         RelationFactory.AnalyzeADObject(aditems[0]);
                     }
@@ -229,12 +328,16 @@ namespace PingCastle.Graph.Export
                     }
                 }
             }
+
             foreach (var item in objectReference.TechnicalObjects)
             {
                 aditems = Search(item);
                 if (aditems.Count != 0)
+                {
                     RelationFactory.AnalyzeADObject(aditems[0]);
+                }
             }
+
             AnalyzeMissingObjets();
         }
 
@@ -257,18 +360,21 @@ namespace PingCastle.Graph.Export
                         }
                     }
                 }
+
                 List<string> files = Storage.GetFilesToInvestigate();
                 if (files.Count > 0)
                 {
                     num += files.Count;
                     ExportFilesData(files, false);
                 }
+
                 List<string> gpo = Storage.GetGPOToInvestigate();
                 if (gpo.Count > 0)
                 {
                     num += gpo.Count;
                     ExportFilesData(gpo, true);
                 }
+
                 if (num == 0)
                 {
                     return;
@@ -283,14 +389,17 @@ namespace PingCastle.Graph.Export
             {
                 var aditem = Search(item, searchType);
                 if (aditem.Count > 0)
+                {
                     output.AddRange(aditem);
+                }
             }
+
             return output;
         }
 
         private void ExportFilesData(List<string> files, bool isGPO)
         {
-            ExportFilesDataWithImpersonation(files, isGPO);            
+            ExportFilesDataWithImpersonation(files, isGPO);
         }
 
         private void ExportFilesDataWithImpersonation(List<string> files, bool isGPO)
@@ -308,15 +417,22 @@ namespace PingCastle.Graph.Export
                     for (; ; )
                     {
                         string fileName = null;
-                        if (!queue.Dequeue(out fileName)) break;
+                        if (!queue.Dequeue(out fileName))
+                        {
+                            break;
+                        }
 
                         // function is safe and will never trigger an exception
                         if (isGPO)
+                        {
                             RelationFactory.AnalyzeGPO(fileName);
+                        }
                         else
+                        {
                             RelationFactory.AnalyzeFile(fileName);
-
+                        }
                     }
+
                     Trace.WriteLine("Consumer quitting");
                 };
 
@@ -332,23 +448,28 @@ namespace PingCastle.Graph.Export
                 {
                     queue.Enqueue(file);
                 }
+
                 queue.Quit();
                 Trace.WriteLine("insert file completed. Waiting for worker thread to complete");
                 for (int i = 0; i < numberOfThread; i++)
                 {
                     threads[i].Join();
                 }
+
                 Trace.WriteLine("Done insert file");
             }
             finally
             {
-
                 queue.Quit();
                 for (int i = 0; i < numberOfThread; i++)
                 {
                     if (threads[i] != null)
+                    {
                         if (threads[i].ThreadState == System.Threading.ThreadState.Running)
+                        {
                             threads[i].Abort();
+                        }
+                    }
                 }
             }
         }
@@ -366,31 +487,51 @@ namespace PingCastle.Graph.Export
                     {
                         output = Search(userName, SearchType.Sid);
                         if (output != null)
+                        {
                             return output;
+                        }
                     }
+
                     if (userName.StartsWith("CN=") && userName.EndsWith(domainInfo.DefaultNamingContext))
                     {
                         output = Search(userName, SearchType.DistinguishedName);
                         if (output != null)
+                        {
                             return output;
+                        }
                     }
+
                     if (userName.Length <= 20)
                     {
                         output = Search(userName, SearchType.SAMAccountName);
                         if (output != null)
+                        {
                             return output;
+                        }
                     }
+
                     output = Search(userName, SearchType.Name);
                     if (output != null)
+                    {
                         return output;
+                    }
+
                     output = Search(userName, SearchType.DisplayName);
                     if (output != null)
+                    {
                         return output;
+                    }
+
                     return null;
                 case SearchType.Sid:
                     searchString = "(|(objectSid=" + ADConnection.EncodeSidToString(userName) + ")(sidhistory=" + ADConnection.EncodeSidToString(userName) + "))";
                     break;
                 case SearchType.DistinguishedName:
+                    if (!HealthcheckAnalyzer.SkipGpoForestLookup && RemoteGPOHelper.IsRemoteGPODN(userName, domainInfo))
+                    {
+                        return SearchRemoteGPO(userName);
+                    }
+
                     searchString = "(distinguishedname=" + ADConnection.EscapeLDAP(userName) + ")";
                     if (userName.EndsWith(domainInfo.ConfigurationNamingContext, StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -400,6 +541,7 @@ namespace PingCastle.Graph.Export
                     {
                         namingContext = domainInfo.SchemaNamingContext;
                     }
+
                     break;
                 case SearchType.SAMAccountName:
                     searchString = "(&(objectCategory=person)(objectClass=user)(sAMAccountName=" + ADConnection.EscapeLDAP(userName) + "))";
@@ -414,6 +556,7 @@ namespace PingCastle.Graph.Export
                     searchString = "(primaryGroupID=" + userName + ")";
                     break;
             }
+
             WorkOnReturnedObjectByADWS callback =
                     (ADItem aditem) =>
                     {

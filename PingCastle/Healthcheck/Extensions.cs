@@ -14,12 +14,21 @@ namespace PingCastle.Healthcheck
         {
             securityDescriptor = null;
 
-            if (ca.DnsHostName == null) throw new ArgumentException("DnsHostname is null");
-            if (ca.Name == null) throw new ArgumentException("Name is null");
+            if (ca.DnsHostName == null)
+            {
+                throw new ArgumentException("DnsHostname is null");
+            }
+
+            if (ca.Name == null)
+            {
+                throw new ArgumentException("Name is null");
+            }
 
             var keyPath = $"SYSTEM\\CurrentControlSet\\Services\\CertSvc\\Configuration\\{ca.Name}";
             if (!RegistryHelper.TryGetHKLMKeyBinaryValue(keyPath, "Security", ca.DnsHostName, out var security))
+            {
                 return false;
+            }
 
             securityDescriptor = new ActiveDirectorySecurity();
             securityDescriptor.SetSecurityDescriptorBinaryForm(security, AccessControlSections.All);
@@ -31,12 +40,21 @@ namespace PingCastle.Healthcheck
         {
             securityDescriptor = null;
 
-            if (ca.DnsHostName == null) throw new ArgumentException("DnsHostname is null");
-            if (ca.Name == null) throw new ArgumentException("Name is null");
+            if (ca.DnsHostName == null)
+            {
+                throw new ArgumentException("DnsHostname is null");
+            }
+
+            if (ca.Name == null)
+            {
+                throw new ArgumentException("Name is null");
+            }
 
             var keyPath = $"SYSTEM\\CurrentControlSet\\Services\\CertSvc\\Configuration\\{ca.Name}";
             if (!RegistryHelper.TryGetHKLMKeyBinaryValue(keyPath, "EnrollmentAgentRights", ca.DnsHostName, out var security))
+            {
                 return false;
+            }
 
             securityDescriptor = new RawSecurityDescriptor(security, 0);
 

@@ -5,6 +5,7 @@ using System.IO;
 
 namespace PingCastle.misc
 {
+    using PingCastleCommon.Utility;
 
     class ConnectionTesterHttp : ConnectionTester
     {
@@ -27,6 +28,7 @@ namespace PingCastle.misc
                 output.Add(answer);
                 answer = sr.ReadLine();
             }
+
             return output;
         }
 
@@ -53,13 +55,16 @@ namespace PingCastle.misc
                     if (headers[0].EndsWith("200 OK"))
                     {
                         if (i == 0)
+                        {
                             return ConnectionTesterStatus.NoAuthenticationNeeded;
+                        }
+
                         return ConnectionTesterStatus.AuthenticationSuccessfull;
                     }
 
                     if (!headers[0].EndsWith("401 Unauthorized"))
                     {
-                        Trace.WriteLine("Header returned: " + headers[0]);
+                        Trace.WriteLine("Header returned: " + headers[0].SanitizeForLog());
                         return ConnectionTesterStatus.InternalError;
                     }
 

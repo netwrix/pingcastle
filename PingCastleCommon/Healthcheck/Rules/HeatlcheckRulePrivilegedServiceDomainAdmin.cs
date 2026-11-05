@@ -31,15 +31,18 @@ namespace PingCastle.Healthcheck.Rules
                     break;
                 }
             }
+
             if (domainadmins == null)
             {
                 Trace.WriteLine("Group domain admins not found");
                 return 0;
             }
+
             if (domainadmins.Members == null)
             {
                 return domainadmins.NumberOfMemberPwdNeverExpires;
             }
+
             int countexception = 0;
             foreach (var member in domainadmins.Members)
             {
@@ -56,6 +59,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

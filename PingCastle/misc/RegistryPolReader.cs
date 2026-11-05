@@ -15,7 +15,6 @@ using System.Text;
 
 namespace PingCastle.misc
 {
-
     /// <summary>
     /// Platform-agnostic registry value types, replacing Microsoft.Win32.RegistryValueKind.
     /// Values correspond to Windows registry types.
@@ -40,7 +39,6 @@ namespace PingCastle.misc
     [DebuggerDisplay("{Key}: {Value}")]
     public class RegistryPolRecord
     {
-
         public string Key { get; set; }
         public string Value { get; set; }
         public RegistryValueType Type { get; set; }
@@ -57,7 +55,6 @@ namespace PingCastle.misc
 
     public class RegistryPolReader
     {
-
         private static readonly uint PolHeader = 0x67655250;
         private static readonly uint PolVersion = 1;
 
@@ -78,20 +75,26 @@ namespace PingCastle.misc
                 using (var fs = fileConnection.GetFileStream(filename))
                 {
                     if (fs.Length < 8)
+                    {
                         throw new InvalidDataException("the file " + filename + " doesn't contain a header");
+                    }
+
                     tempBuffer = new byte[fs.Length];
                     fs.Read(tempBuffer, 0, (int)fs.Length);
                 }
+
                 return tempBuffer;
             });
             if (BitConverter.ToUInt32(buffer, 0) != PolHeader)
             {
                 throw new InvalidDataException("Header of the file incorrect");
             }
+
             if (BitConverter.ToUInt32(buffer, 4) != PolVersion)
             {
                 throw new InvalidDataException("Version of registry.pol not handled");
             }
+
             int size = buffer.Length;
             int cursor = 8;
             while (cursor < size)
@@ -115,26 +118,45 @@ namespace PingCastle.misc
             {
                 throw new InvalidDataException("Registry pol overflow at record located at " + cursor);
             }
+
             if (ReadSingleChar(buffer, ref cursor, size) != '[')
+            {
                 throw new InvalidDataException("Record not starting with a bracket");
+            }
+
             string key = ReadNullTerminardString(buffer, ref cursor, size);
             if (ReadSingleChar(buffer, ref cursor, size) != ';')
+            {
                 throw new InvalidDataException("Record without ';'");
+            }
+
             string value = ReadNullTerminardString(buffer, ref cursor, size);
             if (ReadSingleChar(buffer, ref cursor, size) != ';')
+            {
                 throw new InvalidDataException("Record without ';'");
+            }
+
             RegistryValueType registryType = (RegistryValueType)BitConverter.ToUInt32(buffer, cursor);
             cursor += 4;
             if (ReadSingleChar(buffer, ref cursor, size) != ';')
+            {
                 throw new InvalidDataException("Record without ';'");
+            }
+
             uint datasize = BitConverter.ToUInt32(buffer, cursor);
             cursor += 4;
             if (ReadSingleChar(buffer, ref cursor, size) != ';')
+            {
                 throw new InvalidDataException("Record without ';'");
+            }
+
             int dataOffset = cursor;
             cursor += (int)datasize;
             if (ReadSingleChar(buffer, ref cursor, size) != ']')
+            {
                 throw new InvalidDataException("Record without ']'");
+            }
+
             byte[] byteValue = new byte[datasize];
             Array.Copy(buffer, dataOffset, byteValue, 0, datasize);
             return new RegistryPolRecord(key, value, registryType, byteValue);
@@ -163,6 +185,7 @@ namespace PingCastle.misc
                     return output.ToString();
                 }
             }
+
             throw new InvalidDataException("Record overflow");
         }
 
@@ -171,14 +194,21 @@ namespace PingCastle.misc
             RegistryPolRecord record = SearchRecord(key, value);
             data = 0;
             if (record == null)
+            {
                 return false;
+            }
+
             if (record.Type != RegistryValueType.DWord)
             {
                 Trace.WriteLine("Type for " + key + " is not DWORD: " + record.Type);
                 return false;
             }
+
             if (record.ByteValue.Length != 4)
+            {
                 return false;
+            }
+
             data = (int)BitConverter.ToUInt32(record.ByteValue, 0);
             return true;
         }
@@ -193,6 +223,7 @@ namespace PingCastle.misc
                     return record;
                 }
             }
+
             return null;
         }
 
@@ -206,6 +237,7 @@ namespace PingCastle.misc
                     output.Add(record);
                 }
             }
+
             return output;
         }
 
@@ -214,12 +246,16 @@ namespace PingCastle.misc
             RegistryPolRecord record = SearchRecord(key, value);
             stringvalue = null;
             if (record == null)
+            {
                 return false;
+            }
+
             if (record.Type != RegistryValueType.String)
             {
                 Trace.WriteLine("Type for " + key + " is not String: " + record.Type);
                 return false;
             }
+
             stringvalue = UnicodeEncoding.Unicode.GetString(record.ByteValue).TrimEnd('\0');
             return true;
         }
@@ -229,9 +265,15 @@ namespace PingCastle.misc
             string stringvalue;
             intvalue = 0;
             if (!IsValueSet(key, value, out stringvalue))
+            {
                 return false;
+            }
+
             if (!int.TryParse(stringvalue, out intvalue))
+            {
                 return false;
+            }
+
             return true;
         }
 
@@ -244,12 +286,19 @@ namespace PingCastle.misc
                     && record.Value.Equals("Blob", StringComparison.InvariantCultureIgnoreCase))
                 {
                     if (store == null)
+                    {
                         store = new X509Certificate2Collection();
+                    }
+
                     store.Add(new X509Certificate2(record.ByteValue));
                 }
             }
+
             if (store == null)
+            {
                 return false;
+            }
+
             return true;
         }
     }

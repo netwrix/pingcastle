@@ -9,7 +9,6 @@ using System.Collections.Generic;
 
 namespace PingCastle.Data
 {
-
     public class PingCastleReportCollection<T> : ICollection<T> where T : IPingCastleReport
     {
         Dictionary<string, T> data { get; set; }
@@ -27,7 +26,10 @@ namespace PingCastle.Data
         public void Add(T item)
         {
             if (item == null)
+            {
                 return;
+            }
+
             // taking the more recent report
             var sid = item.Domain.DomainSID;
             if (data.ContainsKey(sid))
@@ -41,7 +43,6 @@ namespace PingCastle.Data
             {
                 data.Add(sid, item);
             }
-
         }
 
         public void EnrichInformation()
@@ -65,15 +66,23 @@ namespace PingCastle.Data
                     }
                 }
             }
+
             // second pass, build AmbigiousNameReference
             foreach (var domain in sidreference.Values)
             {
                 if (!AmbigiousNameReference.ContainsKey(domain.DomainName))
+                {
                     AmbigiousNameReference[domain.DomainName] = new List<string> { domain.DomainSID };
+                }
                 else if (!string.IsNullOrEmpty(domain.DomainSID))
+                {
                     if (!AmbigiousNameReference[domain.DomainName].Contains(domain.DomainSID))
+                    {
                         AmbigiousNameReference[domain.DomainName].Add(domain.DomainSID);
+                    }
+                }
             }
+
             // third pass, update incomplete information based on the information we have
             foreach (var item in data.Values)
             {
@@ -83,14 +92,20 @@ namespace PingCastle.Data
                     {
                         continue;
                     }
+
                     // try to complete based on sid
                     if (!String.IsNullOrEmpty(domainKey.DomainSID) && sidreference.ContainsKey(domainKey.DomainSID))
                     {
                         var reference = sidreference[domainKey.DomainSID];
                         if (string.IsNullOrEmpty(domainKey.DomainNetBIOS))
+                        {
                             domainKey.DomainNetBIOS = reference.DomainNetBIOS;
+                        }
+
                         if (string.IsNullOrEmpty(domainKey.DomainName))
+                        {
                             domainKey.DomainName = reference.DomainName;
+                        }
                     }
                     else if (!String.IsNullOrEmpty(domainKey.DomainName))
                     {
@@ -99,7 +114,10 @@ namespace PingCastle.Data
                             if (reference.DomainName == domainKey.DomainName)
                             {
                                 if (string.IsNullOrEmpty(domainKey.DomainNetBIOS))
+                                {
                                     domainKey.DomainNetBIOS = reference.DomainNetBIOS;
+                                }
+
                                 break;
                             }
                         }
@@ -114,8 +132,12 @@ namespace PingCastle.Data
                                 {
                                     domainKey.DomainName = reference.DomainName;
                                 }
+
                                 if (string.IsNullOrEmpty(domainKey.DomainName))
+                                {
                                     domainKey.DomainName = reference.DomainName;
+                                }
+
                                 break;
                             }
                         }
@@ -152,7 +174,10 @@ namespace PingCastle.Data
         public bool Remove(T item)
         {
             if (item == null)
+            {
                 return false;
+            }
+
             return data.Remove(item.Domain.DomainSID);
         }
 
@@ -169,29 +194,44 @@ namespace PingCastle.Data
         public T GetDomain(DomainKey key)
         {
             if (key == null)
+            {
                 return default(T);
+            }
+
             if (key.DomainSID != null)
             {
                 if (data.ContainsKey(key.DomainSID))
+                {
                     return data[key.DomainSID];
+                }
+
                 return default(T);
             }
+
             foreach (T hc in data.Values)
             {
                 if (string.Equals(hc.Domain.DomainName, key.DomainName, StringComparison.InvariantCultureIgnoreCase))
+                {
                     return hc;
+                }
             }
+
             return default(T);
         }
 
         public bool HasDomainAmbigiousName(DomainKey domainKey)
         {
             if (domainKey == null || string.IsNullOrEmpty(domainKey.DomainName))
+            {
                 return false;
+            }
+
             if (AmbigiousNameReference.ContainsKey(domainKey.DomainName))
+            {
                 return AmbigiousNameReference[domainKey.DomainName].Count > 1;
+            }
+
             return true;
         }
-
     }
 }

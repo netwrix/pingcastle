@@ -44,7 +44,7 @@ public class DryRunConfigurationStrategy : ConfigurationStrategyBase
         }
     }
 
-    public override void HandleJsonConfigDuringExtraction(ZipArchiveEntry entry, string targetFilePath) 
+    public override void HandleJsonConfigDuringExtraction(ZipArchiveEntry entry, string targetFilePath)
         => Console.WriteLine($"[DRY-RUN] Would merge JSON config file: {Path.GetFileName(targetFilePath)}");
 
     public override bool PerformInitialStateMigration()
@@ -84,7 +84,13 @@ public class DryRunConfigurationStrategy : ConfigurationStrategyBase
                 // Clean up the temporary JSON backup
                 if (File.Exists(tempJsonBackupPath))
                 {
-                    try { File.Delete(tempJsonBackupPath); } catch { }
+                    try
+                    {
+                        File.Delete(tempJsonBackupPath);
+                    }
+                    catch
+                    {
+                    }
                 }
             }
 
@@ -97,7 +103,13 @@ public class DryRunConfigurationStrategy : ConfigurationStrategyBase
             // Clean up temp file
             if (File.Exists(tempConvertedJsonPath))
             {
-                try { File.Delete(tempConvertedJsonPath); } catch { }
+                try
+                {
+                    File.Delete(tempConvertedJsonPath);
+                }
+                catch
+                {
+                }
             }
 
             SaveAndLogReport(report, "Initial state migration preview report saved:", "InitialSettingsUpdate");

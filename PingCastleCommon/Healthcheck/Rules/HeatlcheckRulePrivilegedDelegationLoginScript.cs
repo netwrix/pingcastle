@@ -29,6 +29,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             foreach (var script in healthcheckData.GPOLoginScript)
             {
                 if (script.Delegation != null)
@@ -39,6 +40,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

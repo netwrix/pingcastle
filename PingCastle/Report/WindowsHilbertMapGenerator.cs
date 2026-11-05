@@ -22,19 +22,32 @@ public class WindowsHilbertMapGenerator : IHilbertMapGenerator
             foreach (var subnet in data.NetworkRange[key])
             {
                 if (subnet.Network.StartAddress.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
+                {
                     continue;
+                }
+
                 if (!view.FrameNetwork.MatchIp(subnet.Network.StartAddress) || !view.FrameNetwork.MatchIp(subnet.Network.EndAddress))
+                {
                     continue;
+                }
+
                 if (subnet.Network.MatchIp(view.FrameNetwork.StartAddress) && subnet.Network.MatchIp(view.FrameNetwork.EndAddress))
+                {
                     continue;
+                }
+
                 subnets.Add(subnet.Network);
                 if (!uniqueForestSID.Contains(key))
+                {
                     uniqueForestSID.Add(key);
+                }
             }
         }
 
         if (subnets.Count == 0)
+        {
             return false;
+        }
 
         view.RecordCount = subnets.Count;
         view.ForestCount = uniqueForestSID.Count;
@@ -61,7 +74,10 @@ public class WindowsHilbertMapGenerator : IHilbertMapGenerator
             foreach (var dc in data.DomainControllers)
             {
                 if (!view.FrameNetwork.MatchIp(dc.Ip))
+                {
                     continue;
+                }
+
                 ulong a = ConvertToN(dc.Ip, view.FrameNetwork, order);
                 int x = 0, y = 0;
                 D2xy(order, (int)a, ref x, ref y);
@@ -97,6 +113,7 @@ public class WindowsHilbertMapGenerator : IHilbertMapGenerator
             d += s * s * ((3 * rx) ^ ry);
             Rot(s, ref x, ref y, rx, ry);
         }
+
         return d;
     }
 

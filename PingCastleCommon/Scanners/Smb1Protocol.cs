@@ -10,7 +10,6 @@ namespace PingCastle.Scanners
 {
     public class Smb1Protocol
     {
-
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1900:ValueTypeFieldsShouldBePortable"), StructLayout(LayoutKind.Explicit)]
         struct SMB_Header
         {
@@ -38,7 +37,9 @@ namespace PingCastle.Scanners
             public UInt16 UID;
             [FieldOffset(30)]
             public UInt16 MID;
-        };
+        }
+
+;
 
         const int SMB_COM_NEGOTIATE = 0x72;
 
@@ -137,6 +138,7 @@ namespace PingCastle.Scanners
             {
                 throw new SmbPortClosedException(server);
             }
+
             try
             {
                 NetworkStream stream = client.GetStream();
@@ -148,13 +150,22 @@ namespace PingCastle.Scanners
                 stream.Flush();
                 byte[] netbios = new byte[4];
                 if (stream.Read(netbios, 0, netbios.Length) != netbios.Length)
+                {
                     return false;
+                }
+
                 byte[] smbHeader = new byte[Marshal.SizeOf(typeof(SMB_Header))];
                 if (stream.Read(smbHeader, 0, smbHeader.Length) != smbHeader.Length)
+                {
                     return false;
+                }
+
                 byte[] negotiateresponse = new byte[4];
                 if (stream.Read(negotiateresponse, 0, negotiateresponse.Length) != negotiateresponse.Length)
+                {
                     return false;
+                }
+
                 if (negotiateresponse[1] == 0 && negotiateresponse[2] == 0)
                 {
                     Trace.WriteLine(logPrefix + "Checking " + server + " for SMBV1 dialect " + dialect + " = Supported");
@@ -171,8 +182,10 @@ namespace PingCastle.Scanners
                     {
                         securityMode = SMBSecurityModeEnum.None;
                     }
+
                     return true;
                 }
+
                 Trace.WriteLine(logPrefix + "Checking " + server + " for SMBV1 dialect " + dialect + " = Not supported");
                 return false;
             }

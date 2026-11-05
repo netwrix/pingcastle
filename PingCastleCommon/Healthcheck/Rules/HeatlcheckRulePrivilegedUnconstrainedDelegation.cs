@@ -39,7 +39,10 @@ namespace PingCastle.Healthcheck.Rules
                 foreach (var delegation in delegations)
                 {
                     if (skipDomainControllers && dcDistinguishedNames.Contains(delegation.DistinguishedName))
+                    {
                         continue;
+                    }
+
                     AddRawDetail(delegation.DistinguishedName, delegation.Name);
                 }
             }

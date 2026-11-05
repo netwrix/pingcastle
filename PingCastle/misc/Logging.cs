@@ -14,6 +14,5 @@ namespace PingCastle.misc
             PingCastle.Cloud.Common.HttpClientHelper.EnableLoging(sazGenerator);
             GraphServiceClientFactory.SazGenerator = sazGenerator;
         }
-
     }
 }

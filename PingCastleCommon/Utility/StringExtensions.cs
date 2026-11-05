@@ -55,7 +55,9 @@ namespace PingCastleCommon.Utility
         public static string SanitizeForLog(this string value, int maxLength = 200)
         {
             if (string.IsNullOrEmpty(value))
+            {
                 return string.Empty;
+            }
 
             // Truncate to prevent log flooding/DoS
             var truncated = value.Length > maxLength
@@ -85,6 +87,7 @@ namespace PingCastleCommon.Utility
                     sb.Append(c);
                 }
             }
+
             return sb.ToString();
         }
 

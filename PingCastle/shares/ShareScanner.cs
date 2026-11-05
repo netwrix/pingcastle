@@ -18,8 +18,15 @@ namespace PingCastle.shares
         {
         }
 
-        public override string Name { get { return "share"; } }
-        public override string Description { get { return "List all shares published on a computer and determine if the share can be accessed by anyone"; } }
+        public override string Name
+        {
+            get { return "share"; }
+        }
+
+        public override string Description
+        {
+            get { return "List all shares published on a computer and determine if the share can be accessed by anyone"; }
+        }
 
         override protected string GetCsvHeader()
         {
@@ -37,10 +44,14 @@ namespace PingCastle.shares
                     bool everyone = ShareEnumerator.IsEveryoneAllowed(computer, path);
                     bool currentUser = ShareEnumerator.IsCurrentUserAllowed(computer, path);
                     if (!String.IsNullOrEmpty(output))
+                    {
                         output += "\r\n";
+                    }
+
                     output += computer + "\t" + path + "\t" + everyone + "\t" + currentUser;
                 }
             }
+
             return output;
         }
 
@@ -69,6 +80,7 @@ namespace PingCastle.shares
                             // The result was positiv
                             result = client.Connected;
                         }
+
                         // ensure the ending-call
                         client.EndConnect(asyncResult);
                     }
@@ -82,6 +94,7 @@ namespace PingCastle.shares
                 {
                 }
             }
+
             return result;
         }
     }

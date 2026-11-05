@@ -13,8 +13,15 @@ namespace PingCastle.Scanners
         private readonly IIdentityProvider _identityProvider;
         private readonly IWindowsNativeMethods _nativeMethods;
 
-        public string Name { get { return "laps_bitlocker"; } }
-        public string Description { get { return "Check on the AD if LAPS and/or BitLocker has been enabled for all computers on the domain."; } }
+        public string Name
+        {
+            get { return "laps_bitlocker"; }
+        }
+
+        public string Description
+        {
+            get { return "Check on the AD if LAPS and/or BitLocker has been enabled for all computers on the domain."; }
+        }
 
         RuntimeSettings Settings;
 
@@ -60,7 +67,10 @@ namespace PingCastle.Scanners
 
                 var lapsAnalyzer = new PingCastle.Healthcheck.LAPSAnalyzer(adws);
                 if (string.IsNullOrEmpty(lapsAnalyzer.LegacyLAPSName))
+                {
                     DisplayAdvancement("LAPS attribute is " + lapsAnalyzer.LegacyLAPSName);
+                }
+
                 DisplayAdvancement("Iterating through computer objects (all except disabled ones)");
                 string[] properties = new string[] { "DistinguishedName", "dNSHostName", "replPropertyMetaData", "whenCreated", "lastLogonTimestamp", "operatingSystem" };
 
@@ -82,19 +92,24 @@ namespace PingCastle.Scanners
                                 computer.HasLegacyLAPS = true;
                                 computer.LegacyLAPSLastChange = x.ReplPropertyMetaData[lapsAnalyzer.LegacyLAPSIntId].LastOriginatingChange;
                             }
+
                             if (lapsAnalyzer.MsLAPSIntId != 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSIntId))
                             {
                                 computer.HasMsLAPS = true;
                                 computer.MsLAPSLastChange = x.ReplPropertyMetaData[lapsAnalyzer.MsLAPSIntId].LastOriginatingChange;
                             }
+
                             if (lapsAnalyzer.MsLAPSEncryptedIntId != 0 && x.ReplPropertyMetaData.ContainsKey(lapsAnalyzer.MsLAPSEncryptedIntId))
                             {
                                 computer.HasMsLAPS = true;
                                 var date = x.ReplPropertyMetaData[lapsAnalyzer.MsLAPSIntId].LastOriginatingChange;
                                 if (date > computer.MsLAPSLastChange)
+                                {
                                     computer.MsLAPSLastChange = date;
+                                }
                             }
                         }
+
                         computers.Add(computer);
                     };
 
@@ -118,16 +133,20 @@ namespace PingCastle.Scanners
                             // + sign has to be escaped in LDAP
                             var date = DateTime.Parse(m.Groups[1].ToString().Replace("\\+", "+"));
                             if (computer.BitLockerLastChange < date)
+                            {
                                 computer.BitLockerLastChange = date;
+                            }
                         }
                         else
                         {
                             Trace.WriteLine("Object found but didn't match the regex: " + x.DistinguishedName);
                         }
+
                         var d = x.DistinguishedName;
                     };
                     adws.Enumerate(computer.DN, "(objectClass=*)", null, callbackBitLocker, "OneLevel");
                 }
+
                 DisplayAdvancement("Writing to file");
                 using (var sw = File.CreateText(filename))
                 {
@@ -147,6 +166,7 @@ namespace PingCastle.Scanners
                             (computer.HasBitLocker ? computer.BitLockerLastChange.ToString("u") : ""));
                     }
                 }
+
                 DisplayAdvancement("Done");
             }
         }

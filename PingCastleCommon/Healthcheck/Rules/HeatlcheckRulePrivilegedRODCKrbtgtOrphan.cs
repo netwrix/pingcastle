@@ -18,7 +18,10 @@ namespace PingCastle.Healthcheck.Rules
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.DomainFunctionalLevel < 3)
+            {
                 return 0;
+            }
+
             if (healthcheckData.RODCKrbtgtOrphans != null)
             {
                 foreach (var member in healthcheckData.RODCKrbtgtOrphans)
@@ -26,6 +29,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(member.DistinguishedName, member.CreationDate);
                 }
             }
+
             return null;
         }
     }

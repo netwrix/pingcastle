@@ -39,22 +39,30 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             // if option is set, stop the rule evaluation here
             if (DenyUnauthenticatedBind == 1)
+            {
                 return 0;
+            }
+
             // check DC OS for support
             if (healthcheckData.DomainControllers != null)
             {
                 foreach (var dc in healthcheckData.DomainControllers)
                 {
                     if (string.IsNullOrEmpty(dc.OperatingSystemVersion))
+                    {
                         continue;
+                    }
 
                     // write this algorithm to support later version of Windows Server
                     Regex re = new Regex("(?<major>\\d+).(?<minor>\\d+) \\((?<release>\\d+)\\)");
                     var m = re.Match(dc.OperatingSystemVersion);
                     if (!m.Success)
+                    {
                         continue;
+                    }
 
                     int major = int.Parse(m.Groups["major"].Value);
                     int minor = int.Parse(m.Groups["minor"].Value);
@@ -65,16 +73,19 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         return 1;
                     }
+
                     if (major == 10 && minor > 0)
                     {
                         return 1;
                     }
+
                     if (major == 10 && minor == 0 && release >= 17763)
                     {
                         return 1;
                     }
                 }
             }
+
             return 0;
         }
     }

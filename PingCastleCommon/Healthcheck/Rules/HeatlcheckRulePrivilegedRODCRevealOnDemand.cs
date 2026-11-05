@@ -19,7 +19,9 @@ namespace PingCastle.Healthcheck.Rules
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
             if (healthcheckData.DomainFunctionalLevel < 3)
+            {
                 return 0;
+            }
 
             foreach (var dc in healthcheckData.DomainControllers)
             {
@@ -29,6 +31,7 @@ namespace PingCastle.Healthcheck.Rules
                     // https://techcommunity.microsoft.com/t5/azure-active-directory-identity/public-preview-of-azure-ad-support-for-fido2-security-keys-in/ba-p/1187929
                     continue;
                 }
+
                 if (dc.msDSRevealOnDemandGroup != null)
                 {
                     foreach (var account in dc.msDSRevealOnDemandGroup)
@@ -42,6 +45,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

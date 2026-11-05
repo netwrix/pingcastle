@@ -212,7 +212,8 @@ namespace PingCastleCommon.Scanners
                 var preAuthData = new List<byte>();
 
                 // Add preauth integrity data - use explicit cast to get the underlying ushort value
-                preAuthData.AddRange(new byte[] {
+                preAuthData.AddRange(new byte[]
+                {
                     0x01, 0x00, // HashAlgorithmCount = 1
                     0x20, 0x00, // SaltLength = 32 (changed from 0x00, 0x00)
                     (byte)((ushort)SMB2_HASH_ALGORITHM.SMB2_SHA_512 & 0xFF),
@@ -244,7 +245,8 @@ namespace PingCastleCommon.Scanners
                 fullRequest.AddRange(encryptContextHeader);
 
                 // Add encryption capabilities data - use explicit cast to get the underlying ushort value
-                byte[] encryptData = new byte[] {
+                byte[] encryptData = new byte[]
+                {
                     0x01, 0x00, // CipherCount = 1
                     (byte)((ushort)SMB2_ENCRYPTION_ALGORITHM.SMB2_ENCRYPTION_AES128_GCM & 0xFF),
                     (byte)((ushort)SMB2_ENCRYPTION_ALGORITHM.SMB2_ENCRYPTION_AES128_GCM >> 8)  // Ciphers[0] = AES-128-GCM (0x0002)
@@ -533,6 +535,7 @@ namespace PingCastleCommon.Scanners
             {
                 MICPrefix = new byte[] { 0xA3, LowByte(MIC.Length + 2), 0x04, LowByte(MIC.Length) };
             }
+
             return BuildPacket(header, message, SpNegoToken, NTLMSSPMessage, MICPrefix, MIC);
         }
 
@@ -562,7 +565,10 @@ namespace PingCastleCommon.Scanners
             {
                 bytesRead = _stream.Read(netbios, totalRead, netbios.Length - totalRead);
                 if (bytesRead == 0)
+                {
                     throw new IOException("Connection closed by remote host");
+                }
+
                 totalRead += bytesRead;
             }
 
@@ -570,7 +576,9 @@ namespace PingCastleCommon.Scanners
             int size = ((netbios[1] & 0xFF) << 16) | ((netbios[2] & 0xFF) << 8) | (netbios[3] & 0xFF);
 
             if (size == 0)
+            {
                 return new byte[0];
+            }
 
             byte[] output = new byte[size];
             totalRead = 0;
@@ -580,7 +588,10 @@ namespace PingCastleCommon.Scanners
             {
                 bytesRead = _stream.Read(output, totalRead, size - totalRead);
                 if (bytesRead == 0)
+                {
                     throw new IOException("Connection closed while reading message body");
+                }
+
                 totalRead += bytesRead;
             }
 
@@ -609,7 +620,10 @@ namespace PingCastleCommon.Scanners
             foreach (var array in bytes)
             {
                 if (array == null)
+                {
                     continue;
+                }
+
                 size += array.Length;
             }
 
@@ -633,7 +647,10 @@ namespace PingCastleCommon.Scanners
             foreach (var array in bytes)
             {
                 if (array == null)
+                {
                     continue;
+                }
+
                 Array.Copy(array, 0, output, offset, array.Length);
                 offset += array.Length;
             }
@@ -663,6 +680,7 @@ namespace PingCastleCommon.Scanners
                     return NegoPacket2;
                 }
             }
+
             throw new ApplicationException("SSP answer not found");
         }
 
@@ -715,6 +733,7 @@ namespace PingCastleCommon.Scanners
             {
                 MyHelper.LoginClient(optionalCredential);
             }
+
             byte[] ServerSSPIPacket = null;
             byte[] ClientSSPIPacket;
             byte[] MIC = null;
@@ -730,6 +749,7 @@ namespace PingCastleCommon.Scanners
                     Array.Copy(temp, mechTypes.Length, MIC, 0, temp.Length - mechTypes.Length);
                     sessionkey = MyHelper.GetSessionKey();
                 }
+
                 var packet = BuildSessionSetupPacket(ClientSSPIPacket, MIC);
                 SendPacket(packet);
 
@@ -741,11 +761,13 @@ namespace PingCastleCommon.Scanners
                 {
                     return ReadResponse<SMB2_SessionSetupResponse>(answer);
                 }
+
                 if (header.Status != STATUS_MORE_PROCESSING_REQUIRED)
                 {
                     Trace.WriteLine(LogPrefix + "Checking " + _server + "Error " + header.Status);
                     throw new Win32Exception((int)header.Status);
                 }
+
                 if (!bContinueProcessing)
                 {
                     Trace.WriteLine(LogPrefix + "Checking " + _server + "Error " + header.Status + " when no processing needed");
@@ -758,6 +780,7 @@ namespace PingCastleCommon.Scanners
                 // extract SSP answer from GSSPAPI answer
                 ServerSSPIPacket = ExtractSSP(answer, sessionSetupResponse);
             }
+
             throw new NotImplementedException("Not supposed to be here");
         }
 
@@ -775,6 +798,7 @@ namespace PingCastleCommon.Scanners
                 Trace.WriteLine(LogPrefix + "Checking " + _server + "Error " + header.Status);
                 throw new Win32Exception((int)header.Status);
             }
+
             var r = ReadResponse<SMB2_TreeConnectResponse>(answer);
             _TreeId = header.TreeId;
             return r;
@@ -794,9 +818,13 @@ namespace PingCastleCommon.Scanners
                 Trace.WriteLine(LogPrefix + "Checking " + _server + "Error " + header.Status);
                 throw new Win32Exception((int)header.Status);
             }
+
             var response = ReadResponse<SMB2_IOCTLResponse>(answer);
             if (response.OutputCount == 0)
+            {
                 return null;
+            }
+
             var output = new byte[response.OutputCount];
             Array.Copy(answer, response.OutputOffset, output, 0, response.OutputCount);
             return output;
@@ -831,16 +859,22 @@ namespace PingCastleCommon.Scanners
                     Array.Copy(o, offset + Marshal.OffsetOf(typeof(SMB2_NETWORK_INTERFACE_INFO), "SockAddr_Storage_Buffer").ToInt32() + 6, t, 0, t.Length);
                     ni.IP = new IPAddress(t);
                 }
-                else throw new NotImplementedException("SockAddr_Storage_Family unknown: " + n.SockAddr_Storage_Family);
+                else
+                {
+                    throw new NotImplementedException("SockAddr_Storage_Family unknown: " + n.SockAddr_Storage_Family);
+                }
 
                 output.Add(ni);
                 Marshal.FreeHGlobal(pt);
 
                 if (n.Next == 0)
+                {
                     break;
+                }
 
                 offset += n.Next;
-            } while (offset != 0);
+            }
+            while (offset != 0);
             return output;
         }
 

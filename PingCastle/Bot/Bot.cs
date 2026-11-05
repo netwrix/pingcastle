@@ -48,7 +48,10 @@ namespace PingCastle.Bot
                         var buffer = new byte[4];
                         int read = pipe.Read(buffer, 0, 4);
                         if (read < 4)
+                        {
                             return;
+                        }
+
                         int count = BitConverter.ToInt32(buffer, 0);
                         var data = new byte[count];
                         read = 0;
@@ -60,8 +63,10 @@ namespace PingCastle.Bot
                                 _userIo.DisplayMessage("Pipe shutdown");
                                 return;
                             }
+
                             read += r;
                         }
+
                         _userIo.DisplayMessage("Bot: message received");
                         using (var ms = new MemoryStream(data))
                         {
@@ -123,6 +128,7 @@ namespace PingCastle.Bot
                     }
                 }
             }
+
             _userIo.DisplayMessage("Exiting");
         }
 
@@ -131,8 +137,11 @@ namespace PingCastle.Bot
             foreach (var k in input.Data)
             {
                 if (k.Key == key)
+                {
                     return k.Value;
+                }
             }
+
             return null;
         }
 
@@ -146,6 +155,7 @@ namespace PingCastle.Bot
             {
                 AddData(o, "StackTrace", stacktrace);
             }
+
             return o;
         }
 
@@ -159,10 +169,16 @@ namespace PingCastle.Bot
                 var login = GetItem(input, "Login");
                 var password = GetItem(input, "Password");
                 if (!string.IsNullOrEmpty(login) && !string.IsNullOrEmpty(password))
+                {
                     parameters.Credential = new System.Net.NetworkCredential(login, password);
+                }
+
                 var port = GetItem(input, "Port");
                 if (!string.IsNullOrEmpty(port))
+                {
                     parameters.Port = int.Parse(port);
+                }
+
                 var healthcheck = analyze.PerformAnalyze(parameters);
 
                 var o = new BotInputOutput();

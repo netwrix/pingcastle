@@ -38,6 +38,7 @@ namespace PingCastle.Healthcheck.Rules
                             }
                         }
                     }
+
                     if (!string.IsNullOrEmpty(gpo.WSUSserverAlternate) && !cache.Contains(gpo.WSUSserverAlternate)
                         && gpo.WSUSserverAlternateSSLProtocol != null)
                     {
@@ -55,6 +56,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

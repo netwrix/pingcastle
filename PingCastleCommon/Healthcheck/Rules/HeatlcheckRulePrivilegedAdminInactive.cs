@@ -18,17 +18,20 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-
             int adminEnabledAndInactive = 0;
             if (healthcheckData.AllPrivilegedMembers.Count > 20)
             {
                 foreach (var member in healthcheckData.AllPrivilegedMembers)
                 {
                     if (member.IsEnabled && !member.IsActive)
+                    {
                         adminEnabledAndInactive++;
+                    }
                 }
+
                 return 100 * adminEnabledAndInactive / healthcheckData.AllPrivilegedMembers.Count;
             }
+
             return 0;
         }
     }

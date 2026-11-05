@@ -108,6 +108,7 @@ public abstract class ConfigurationStrategyBase : IConfigurationStrategy
                 {
                     File.Delete(backupPath);
                 }
+
                 File.Move(PathContext.XmlConfigPath, backupPath);
                 Console.WriteLine($"Archived old configuration file: {Path.GetFileName(PathContext.XmlConfigPath)} → {Path.GetFileName(backupPath)}");
             }

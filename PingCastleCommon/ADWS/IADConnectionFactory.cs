@@ -8,11 +8,11 @@ using System.Net;
 
 namespace PingCastle.ADWS
 {
-	/// <summary>
-	/// Factory for creating AD connections with the specified parameters.
-	/// </summary>
-	public interface IADConnectionFactory
-	{
+    /// <summary>
+    /// Factory for creating AD connections with the specified parameters.
+    /// </summary>
+    public interface IADConnectionFactory
+    {
         /// <summary>
         /// Creates an AD connection with the specified parameters.
         /// The returned connection implements IDisposable and should be disposed after use.
@@ -23,5 +23,5 @@ namespace PingCastle.ADWS
         /// <param name="identityProvider">Instance for connection to use to retrieve identity and convert SIDs</param>
         /// <returns>An IADWebService instance ready for use</returns>
         IADWebService CreateConnection(string server, int port, NetworkCredential credential, IIdentityProvider identityProvider, IWindowsNativeMethods nativeMethods);
-	}
+    }
 }

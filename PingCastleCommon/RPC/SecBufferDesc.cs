@@ -6,7 +6,6 @@ namespace PingCastle.RPC
     [StructLayout(LayoutKind.Sequential)]
     public struct SecBufferDesc : IDisposable
     {
-
         public int ulVersion;
         public int cBuffers;
         public IntPtr pBuffers; //Point to SecBuffer

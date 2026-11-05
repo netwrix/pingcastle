@@ -30,15 +30,16 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         gpo.Add(policy, policy.MaxIdleTime.Value);
                     }
+
                     if (policy.MaxDisconnectionTime != null)
                     {
                         gpo2.Add(policy, policy.MaxDisconnectionTime.Value);
                     }
+
                     if (policy.fDisableCpm != null)
                     {
                         gpo3.Add(policy, policy.fDisableCpm.Value);
                     }
-
                 }
             }
 
@@ -58,6 +59,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(v.Key.GPOName, "MaxIdleTime is set to NEVER");
                 }
             }
+
             foreach (var v in o2)
             {
                 found2 = true;
@@ -66,6 +68,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(v.Key.GPOName, "MaxDisconnectionTime is set to NEVER");
                 }
             }
+
             foreach (var v in o3)
             {
                 found3 = true;
@@ -79,14 +82,17 @@ namespace PingCastle.Healthcheck.Rules
             {
                 AddRawDetail("Windows default without an active GPO", "MaxIdleTime is not set");
             }
+
             if (!found2)
             {
                 AddRawDetail("Windows default without an active GPO", "MaxDisconnectionTime is not set");
             }
+
             if (!found3)
             {
                 AddRawDetail("Windows default without an active GPO", "fDisableCpm is not set");
             }
+
             return null;
         }
     }

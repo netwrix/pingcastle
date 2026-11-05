@@ -28,6 +28,7 @@ namespace PingCastle.Healthcheck.Rules
                         }
                     }
                 }
+
                 if (healthcheckData.ComputerAccountData.ListDesEnabled != null)
                 {
                     if (healthcheckData.ComputerAccountData.NumberDesEnabled < maxNumDisplayAccount)
@@ -41,7 +42,10 @@ namespace PingCastle.Healthcheck.Rules
             }
 
             if (healthcheckData.UserAccountData.NumberDesEnabled + healthcheckData.ComputerAccountData.NumberDesEnabled < maxNumDisplayAccount)
+            {
                 return null;
+            }
+
             return healthcheckData.UserAccountData.NumberDesEnabled + healthcheckData.ComputerAccountData.NumberDesEnabled;
         }
     }

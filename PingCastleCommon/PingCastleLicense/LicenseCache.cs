@@ -7,7 +7,9 @@ namespace PingCastle.PingCastleLicense
         private ADHealthCheckingLicense _license;
         private static LicenseCache _instance;
 
-        private LicenseCache() { }
+        private LicenseCache()
+        {
+        }
 
         public static LicenseCache Instance
         {
@@ -17,6 +19,7 @@ namespace PingCastle.PingCastleLicense
                 {
                     _instance = new LicenseCache();
                 }
+
                 return _instance;
             }
         }
@@ -36,5 +39,4 @@ namespace PingCastle.PingCastleLicense
             _license = license;
         }
     }
-
 }

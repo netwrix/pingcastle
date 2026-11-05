@@ -21,7 +21,9 @@ namespace PingCastle.Factories
         public static void RegisterAssembly(Assembly assembly)
         {
             if (assembly == null)
+            {
                 throw new ArgumentNullException(nameof(assembly));
+            }
 
             lock (_lock)
             {
@@ -29,6 +31,7 @@ namespace PingCastle.Factories
                 {
                     _registeredAssemblies.Add(assembly);
                 }
+
                 _initialized = true;
             }
         }

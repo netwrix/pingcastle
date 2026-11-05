@@ -487,6 +487,19 @@ a {
         color: #3A3652;
     }
 
+.accordion-title {
+    -webkit-user-select: text;
+    user-select: text;
+    cursor: pointer;
+    text-align: left;
+    padding-left: 0;
+    padding-right: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+    margin-left: 0.75rem;
+    margin-right: 0.75rem;
+}
+
 .tooltip-wide {
     max-width: 100%;
     min-width: 80%;

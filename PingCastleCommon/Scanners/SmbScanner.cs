@@ -23,6 +23,7 @@ namespace PingCastle.Scanners
         {
             Server = server;
         }
+
         protected SmbScannerException(System.Runtime.Serialization.SerializationInfo info,
             System.Runtime.Serialization.StreamingContext context)
             : base(info, context)
@@ -100,7 +101,10 @@ namespace PingCastle.Scanners
             try
             {
                 if (DoNotTestSMBv1)
+                {
                     return false;
+                }
+
                 return Smb1Protocol.DoesServerSupportDialect(server, "NT LM 0.12", out securityMode, logPrefix);
             }
             catch (Exception)
@@ -134,11 +138,19 @@ namespace PingCastle.Scanners
                 {
                 }
             }
+
             return result;
         }
 
-        public override string Name { get { return "smb"; } }
-        public override string Description { get { return "Scan a computer and determine the smb version available. Also if SMB signing is active."; } }
+        public override string Name
+        {
+            get { return "smb"; }
+        }
+
+        public override string Description
+        {
+            get { return "Scan a computer and determine the smb version available. Also if SMB signing is active."; }
+        }
 
         override protected string GetCsvHeader()
         {
@@ -167,6 +179,7 @@ namespace PingCastle.Scanners
                 catch (Smb1NotSupportedException)
                 {
                 }
+
                 try
                 {
                     SMBv2_0x0202 = _smb2Test.DoesServerSupportDialectWithSmbV2(computer, 0x0202, out smbv2secmode);
@@ -187,6 +200,7 @@ namespace PingCastle.Scanners
             {
                 isPortOpened = false;
             }
+
             return computer + "\t" + (isPortOpened ? "Yes" : "No") + "\t" + (SMBv1 ? "Yes" : "No")
                                                             + "\t" + ((smbv1secmode & SMBSecurityModeEnum.SmbSigningRequired) != 0 ? "Yes" : "No")
                                                             + "\t" + (SMBv2_0x0202 ? "Yes" : "No")
@@ -200,22 +214,32 @@ namespace PingCastle.Scanners
         private static SMBSecurityModeEnum CombineSecurityMode(SMBSecurityModeEnum smbv2secmode, SMBSecurityModeEnum smbv2temp)
         {
             if (smbv2temp == SMBSecurityModeEnum.NotTested)
+            {
                 return smbv2secmode;
+            }
+
             if (smbv2secmode == SMBSecurityModeEnum.NotTested)
+            {
                 return smbv2temp;
+            }
+
             if (smbv2temp == SMBSecurityModeEnum.None || smbv2secmode == SMBSecurityModeEnum.None)
+            {
                 return SMBSecurityModeEnum.None;
+            }
+
             if ((smbv2temp & SMBSecurityModeEnum.SmbSigningEnabled) != 0 && (smbv2secmode & SMBSecurityModeEnum.SmbSigningEnabled) != 0)
             {
                 if ((smbv2temp & SMBSecurityModeEnum.SmbSigningRequired) != 0 && (smbv2secmode & SMBSecurityModeEnum.SmbSigningRequired) != 0)
                 {
                     return SMBSecurityModeEnum.SmbSigningEnabled | SMBSecurityModeEnum.SmbSigningRequired;
                 }
+
                 return SMBSecurityModeEnum.SmbSigningEnabled;
             }
+
             // defensive programming
             return SMBSecurityModeEnum.NotTested;
         }
-
     }
 }

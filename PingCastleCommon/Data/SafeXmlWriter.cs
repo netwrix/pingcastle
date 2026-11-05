@@ -40,10 +40,12 @@ namespace PingCastle.Data
                     sb.Append(c);
                 }
             }
+
             if (unsafestring)
             {
                 Trace.WriteLine("unsafe string found: " + text);
             }
+
             x.WriteString(sb.ToString());
         }
 
@@ -167,5 +169,4 @@ namespace PingCastle.Data
             x.WriteWhitespace(ws);
         }
     }
-
 }

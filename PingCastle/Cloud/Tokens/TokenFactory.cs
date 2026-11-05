@@ -71,7 +71,7 @@ namespace PingCastle.Cloud.Tokens
 
                     Trace.WriteLine("Could not extract authentication URL, falling back to regular authentication");
                 }
-                catch(ApplicationException aex)
+                catch (ApplicationException aex)
                 {
                     throw;
                 }

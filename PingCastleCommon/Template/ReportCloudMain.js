@@ -10,6 +10,13 @@ function dangerousDelegatedPermission(value, row) {
     return dangerousDelegatedPermissions.find(x => x == row.permission) != null;
 }
 
+function sorterAppCritical(valueA, valueB, rowA, rowB) {
+    return dangerousAppPermission(null, rowA) - dangerousAppPermission(null, rowB);
+}
+function sorterDelegatedCritical(valueA, valueB, rowA, rowB) {
+    return dangerousDelegatedPermission(null, rowA) - dangerousDelegatedPermission(null, rowB);
+}
+
 function delegatedPrincipal(value, row) {
     if (row.principalDisplayName)
         return row.principalDisplayName;

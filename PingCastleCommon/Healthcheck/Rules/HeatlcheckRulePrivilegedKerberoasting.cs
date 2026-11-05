@@ -20,7 +20,7 @@ namespace PingCastle.Healthcheck.Rules
     {
         protected override int? AnalyzeDataNew(HealthcheckData healthcheckData)
         {
-            var dangerousGroups = new List<string>() 
+            var dangerousGroups = new List<string>()
             {
                 GraphObjectReference.DomainAdministrators,
                 GraphObjectReference.EnterpriseAdministrators,

@@ -241,7 +241,6 @@ public class SSPIHelper : ISSPIHelper
                     out ClientToken,//ref SecBufferDesc pOutput, //PSecBufferDesc
                     out ContextAttributes,//ref int pfContextAttr,
                     out ClientLifeTime); //ref IntPtr ptsExpiry ); //PTimeStamp
-
             }
             else
             {

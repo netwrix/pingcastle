@@ -14,9 +14,9 @@ namespace PingCastle.Cloud.MsGraph
 
         public async IAsyncEnumerable<UserDto> GetUsersAsync(string groupId)
         {
-            await foreach(var user in _api.GetGroupTransitiveMembersAsync(groupId))
+            await foreach (var user in _api.GetGroupTransitiveMembersAsync(groupId))
             {
-                yield return new UserDto() { DisplayName = user.DisplayName , Email = user.Mail};
+                yield return new UserDto() { DisplayName = user.DisplayName, Email = user.Mail };
             }
         }
     }

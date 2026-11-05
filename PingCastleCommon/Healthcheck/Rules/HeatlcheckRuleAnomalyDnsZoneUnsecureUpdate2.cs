@@ -23,7 +23,9 @@ namespace PingCastle.Healthcheck.Rules
                 foreach (var zone in healthcheckData.DnsZones)
                 {
                     if (!zone.InsecureUpdate)
+                    {
                         continue;
+                    }
 
                     if (!(zone.name.Equals(healthcheckData.DomainFQDN, StringComparison.OrdinalIgnoreCase) || zone.name == "RootDNSServers" || zone.name.StartsWith("_msdcs.", StringComparison.OrdinalIgnoreCase)))
                     {

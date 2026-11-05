@@ -32,6 +32,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             if (healthcheckData.ComputerAccountData.ListNoPreAuth != null)
             {
                 foreach (var i in healthcheckData.ComputerAccountData.ListNoPreAuth)
@@ -46,6 +47,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

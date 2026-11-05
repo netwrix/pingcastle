@@ -6,7 +6,6 @@ namespace PingCastle.misc
 {
     class RestrictedToken
     {
-
         private static uint STANDARD_RIGHTS_READ = 0x00020000;
         private static uint TOKEN_QUERY = 0x0008;
         private static uint TOKEN_READ = (STANDARD_RIGHTS_READ | TOKEN_QUERY);
@@ -73,6 +72,7 @@ namespace PingCastle.misc
                     Trace.WriteLine("Could not get process token.  Win32 Error Code: " + Marshal.GetLastWin32Error());
                     return false;
                 }
+
                 try
                 {
                     TOKEN_ELEVATION_TYPE elevationResult = TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault;

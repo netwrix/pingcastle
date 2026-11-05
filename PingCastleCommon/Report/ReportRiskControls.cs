@@ -23,8 +23,11 @@ namespace PingCastle.Report
             foreach (var rule in rules)
             {
                 if (rule.Category == category)
+                {
                     count++;
+                }
             }
+
             return count;
         }
 
@@ -46,7 +49,10 @@ namespace PingCastle.Report
             Add(@" / 100</p>");
             AddParagraph("It is the maximum score of the 4 indicators and one score cannot be higher than 100. The lower the better");
             if (statistics != null)
+            {
                 statistics();
+            }
+
             Add(@"
 			</div>
 		</div>
@@ -69,15 +75,17 @@ namespace PingCastle.Report
                 foreach (var rule in rules)
                 {
                     if (rule.Category == RiskRuleCategory)
+                    {
                         numrules++;
+                    }
                 }
             }
+
             GenerateSubIndicator(category, globalScore, score, numrules, explanation);
         }
 
         protected void GenerateSubIndicator(string category, int globalScore, int score, int numrules, string explanation)
         {
-
             Add(@"
 			<div class=""col-xs-12 col-md-6 col-sm-6"">
 				<div class=""row"">
@@ -134,6 +142,7 @@ namespace PingCastle.Report
             {
                 riskmodel[category] = new List<RiskModelCategory>();
             }
+
             for (int j = 0; j < 4; j++)
             {
                 for (int i = 0; ; i++)
@@ -144,9 +153,12 @@ namespace PingCastle.Report
                         riskmodel[(RiskRuleCategory)j].Add((RiskModelCategory)id);
                     }
                     else
+                    {
                         break;
+                    }
                 }
             }
+
             foreach (RiskRuleCategory category in Enum.GetValues(typeof(RiskRuleCategory)))
             {
                 riskmodel[category].Sort(
@@ -155,6 +167,7 @@ namespace PingCastle.Report
                                             return string.Compare(ReportHelper.GetEnumDescription(a), ReportHelper.GetEnumDescription(b));
                                         });
             }
+
             for (int i = 0; ; i++)
             {
                 string line = "<tr>";
@@ -177,6 +190,7 @@ namespace PingCastle.Report
                                 rulematched.Add(rule);
                             }
                         }
+
                         string tdclass = "";
                         if (numrules == 0)
                         {
@@ -198,6 +212,7 @@ namespace PingCastle.Report
                         {
                             tdclass = "model_danger";
                         }
+
                         string tooltip = "Rules: " + numrules + " Score: " + (numberOfDomain == 0 ? 100 : score / numberOfDomain);
                         string tooltipdetail = null;
                         string modelstring = ReportHelper.GetEnumDescription(model);
@@ -215,19 +230,28 @@ namespace PingCastle.Report
                                 tooltipdetail += "<small  class='text-muted'>" + ReportHelper.Encode(hcrule.ReportLocation) + "</small><br>";
                             }
                         }
+
                         line += "<td class=\"model_cell " + tdclass + "\"><div class=\"div_model\" placement=\"auto right\" data-bs-toggle=\"popover\" title=\"" +
                             tooltip + "\" data-bs-html=\"true\" data-bs-content=\"" +
                             (String.IsNullOrEmpty(tooltipdetail) ? "No rule matched" : "<p>" + tooltipdetail + "</p>") + "\"><span class=\"small\">" + modelstring + "</span></div></td>";
                     }
                     else
+                    {
                         line += "<td class=\"model_empty_cell\"></td>";
+                    }
                 }
+
                 line += "</tr>";
                 if (HasValue)
+                {
                     Add(line);
+                }
                 else
+                {
                     break;
+                }
             }
+
             Add(@"
 					</tbody>
 				</table>
@@ -270,6 +294,7 @@ namespace PingCastle.Report
                     break;
                 }
             }
+
             if (hasRule)
             {
                 GenerateAccordion("rules" + category.ToString(), () =>
@@ -283,7 +308,9 @@ namespace PingCastle.Report
                         foreach (HealthcheckRiskRule rule in rules)
                         {
                             if (rule.Category == category)
+                            {
                                 GenerateIndicatorPanelDetail(category.ToString(), rule);
+                            }
                         }
                     });
             }
@@ -291,6 +318,7 @@ namespace PingCastle.Report
             {
                 Add("<p>No rule matched</p>");
             }
+
             Add(@"
 			</div>
 		</div>");
@@ -302,14 +330,16 @@ namespace PingCastle.Report
             foreach (var rule in applicableRules)
             {
                 if (rule.Category == category)
+                {
                     count++;
+                }
             }
+
             return count;
         }
 
         protected void GenerateSubIndicatorHeader(string category, int globalScore, int score, string explanation)
         {
-
             Add(@"
 			<div class="""">
 				<div class=""row"">
@@ -351,6 +381,7 @@ namespace PingCastle.Report
                         {
                             ActionPlanOrchestrator.GenerateMainActionPlan(sb, rule, hcrule);
                         }
+
                         Add("</i>");
                     }
                     else
@@ -362,6 +393,7 @@ namespace PingCastle.Report
                         {
                             ActionPlanOrchestrator.GenerateMainActionPlan(sb, rule, hcrule);
                         }
+
                         Add("</i>");
                     }
                 }, content);
@@ -370,32 +402,44 @@ namespace PingCastle.Report
         List<string> GetTokens(List<string> details)
         {
             if (details == null || details.Count == 0 || string.IsNullOrEmpty(details[0]))
+            {
                 return null;
+            }
+
             var tokens = GetTokens(details[0]);
             if (tokens == null)
+            {
                 return null;
+            }
 
             foreach (var detail in details.Skip(1))
             {
                 var curTokens = GetTokens(detail);
                 if (curTokens == null)
+                {
                     return null;
+                }
 
                 tokens.RemoveAll(t => !curTokens.Contains(t));
             }
+
             return tokens;
         }
 
         List<string> GetTokens(string detail)
         {
             if (string.IsNullOrEmpty(detail))
+            {
                 return null;
+            }
 
             detail = detail.Replace("Domain controller:", "Domain_controller:");
-            
+
             var items = detail.Split(' ');
             if (items.Length <= 1 || !items[0].EndsWith(":"))
+            {
                 return null;
+            }
 
             var tokens = new List<string>();
             foreach (var item in items)
@@ -406,13 +450,16 @@ namespace PingCastle.Report
                     tokens.Add(itemWithoutDetiailIndex);
                 }
             }
+
             return tokens;
         }
-              
+
         private void AddExtendedDetailInfo(ExtraDetail detail)
         {
             if (detail?.DetailItems == null)
+            {
                 return;
+            }
 
             AddBeginTooltip(true, true);
 
@@ -433,13 +480,16 @@ namespace PingCastle.Report
                                 AddEncoded(value);
                                 Add("</li>");
                             }
+
                             Add("</ul>");
                         }
+
                         break;
                     case TextDetailItem text:
                         {
                             AddEncoded($"{text.Name}: {text.Value}");
                         }
+
                         break;
                 }
 
@@ -470,14 +520,15 @@ namespace PingCastle.Report
                         if (!string.IsNullOrEmpty(rule.Notice))
                         {
                             Add($"<div class=\"alert alert-info warn\">{NewLineToBR(rule.Notice)}");
-                            if(!string.IsNullOrEmpty(rule.NoticeTooltip))
+                            if (!string.IsNullOrEmpty(rule.NoticeTooltip))
                             {
                                 AddBeginTooltip(true, true);
                                 Add($"<div class='text-start'>{NewLineToBR(rule.NoticeTooltip)}</div>");
                                 AddEndTooltip();
                             }
+
                             Add("</div>");
-                            Add("<br>"); 
+                            Add("<br>");
                         }
 
                         Add("<strong>Rule ID:</strong><p class=\"text-justify\">");
@@ -490,7 +541,10 @@ namespace PingCastle.Report
                         Add(NewLineToBR(hcrule.Solution));
                         Add("</p>\r\n");
                         if (_license.IsBasic() && hcrule.RelevantProducts != null)
+                        {
                             Add(GenerateRelevantProductsElement(hcrule.RiskId.Replace("-", "_"), hcrule.RelevantProducts));
+                        }
+
                         Add("<strong>Points:</strong><p>");
                         Add(NewLineToBR(hcrule.GetComputationModelString()));
                         Add("</p>\r\n");
@@ -501,6 +555,7 @@ namespace PingCastle.Report
                             Add("</p>");
                         }
                     }
+
                     if ((rule.Details != null && rule.Details.Count > 0) || (hcrule != null && !String.IsNullOrEmpty(hcrule.ReportLocation)))
                     {
                         Add("<strong>Details:</strong>");
@@ -510,6 +565,7 @@ namespace PingCastle.Report
                             Add(hcrule.ReportLocation);
                             Add("</p>");
                         }
+
                         if (rule.Details != null && rule.Details.Count > 0 && !string.IsNullOrEmpty(rule.Details[0]))
                         {
                             var tokens = GetTokens(rule.Details);
@@ -525,15 +581,20 @@ namespace PingCastle.Report
                                     AddEncoded(token.Replace("Domain_controller:", "Domain controller:").Substring(0, token.Length - 1));
                                     Add("</th>");
                                 }
+
                                 if (ActionPlanOrchestrator != null)
                                 {
                                     Add("<th>Action Plan</th>");
                                 }
+
                                 Add("</tr></thead><tbody>");
                                 foreach (var detail in rule.Details)
                                 {
                                     if (string.IsNullOrEmpty(detail))
+                                    {
                                         continue;
+                                    }
+
                                     Add("<tr>");
 
                                     var t = detail.Replace("Domain controller:", "Domain_controller:").Split(' ');
@@ -548,11 +609,16 @@ namespace PingCastle.Report
                                         if (item.StartsWith("<"))
                                         {
                                             var namePosition = item.IndexOf('>', 1);
+                                            if (namePosition < 0)
+                                            {
+                                                continue;
+                                            }
+
                                             var temp = item.Substring(namePosition + 1);
 
                                             var strIndex = item.Substring(1, namePosition - 1);
                                             item = temp;
-                                                                                       
+
                                             if (!int.TryParse(strIndex, out currentDetailIndex))
                                             {
                                                 continue;
@@ -577,14 +643,14 @@ namespace PingCastle.Report
 
                                             j++;
                                             Add("<td>");
-                                           
                                         }
                                         else
                                         {
-                                            Add(item);
+                                            AddEncoded(item);
                                             Add(" ");
                                         }
                                     }
+
                                     Add("</td>");
                                     if (ActionPlanOrchestrator != null)
                                     {
@@ -592,15 +658,16 @@ namespace PingCastle.Report
                                         ActionPlanOrchestrator.GenerateDetailledActionPlan(sb, rule, hcrule, detail);
                                         Add("</td>");
                                     }
+
                                     Add("</tr>");
                                 }
-                                Add("</tbody></table></div></div>");
 
+                                Add("</tbody></table></div></div>");
                             }
                             else
                             {
                                 Add("<p>");
-                                Add(String.Join("<br>\r\n", rule.Details));
+                                Add(String.Join("<br>\r\n", rule.Details.ConvertAll(x => ReportHelper.Encode(x))));
                                 Add("</p>");
                             }
                         }
@@ -634,9 +701,13 @@ namespace PingCastle.Report
             {
                 var parts = product.Split('|');
                 if (ReportBase.RelevantProductsLinks.TryGetValue(parts[0], out string productLink))
+                {
                     sb.AppendLine($"<li class=\"icon-padded-text\">{productLink}{parts[1]}</li>");
+                }
                 else
+                {
                     sb.AppendLine($"<li class=\"icon-padded-text\">{product}</li>");
+                }
             }
 
             sb.AppendLine("</ul>");

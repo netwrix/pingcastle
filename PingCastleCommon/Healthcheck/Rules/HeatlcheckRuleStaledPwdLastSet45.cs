@@ -27,7 +27,9 @@ namespace PingCastle.Healthcheck.Rules
                     // workaround for timeproblem with DC that sets lastlongdate in the future
                     var date = c.LastLogonDate;
                     if (date > DateTime.Now)
+                    {
                         date = DateTime.Now;
+                    }
 
                     if (c.PwdLastSet.AddDays(45) < date && c.PwdLastSet.AddDays(90) > date)
                     {
@@ -35,6 +37,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

@@ -25,12 +25,14 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         AddRawDetail(ce.Name, "CES");
                     }
+
                     if (ce.WebEnrollmentHttp)
                     {
                         AddRawDetail(ce.Name, "WebEnrollment");
                     }
                 }
             }
+
             return null;
         }
     }

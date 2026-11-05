@@ -24,6 +24,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(member.Name, member.Email);
                 }
             }
+
             return null;
         }
     }

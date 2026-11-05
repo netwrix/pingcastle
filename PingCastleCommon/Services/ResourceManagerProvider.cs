@@ -5,6 +5,6 @@ using PingCastle.Rules;
 
 public class ResourceManagerProvider : IResourceManagerProvider
 {
-    public ResourceManager GetHealthCheckRuleResourceManager() 
+    public ResourceManager GetHealthCheckRuleResourceManager()
         => new("PingCastleCommon.Healthcheck.Rules.RuleDescription", typeof(RuleBase<>).Assembly);
 }

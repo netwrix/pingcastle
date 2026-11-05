@@ -23,6 +23,7 @@ namespace PingCastle.Healthcheck.Rules
             {
                 AddRawDetail(delegation.GPOName, delegation.Item, delegation.Account, delegation.Right);
             }
+
             return null;
         }
     }

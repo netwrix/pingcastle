@@ -24,6 +24,7 @@ namespace PingCastle.Healthcheck.Rules
                     AddRawDetail(healthcheckData.PreWindows2000Members[i]);
                 }
             }
+
             return null;
         }
     }

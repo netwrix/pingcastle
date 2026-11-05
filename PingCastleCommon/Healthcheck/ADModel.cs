@@ -11,7 +11,6 @@ using System.Diagnostics;
 
 namespace PingCastle.Healthcheck
 {
-
     public class GraphNodeCollection : ICollection<GraphNode>
     {
         Dictionary<DomainKey, GraphNode> data;
@@ -35,6 +34,7 @@ namespace PingCastle.Healthcheck
             {
                 output = data[Domain];
             }
+
             return output;
         }
 
@@ -96,7 +96,10 @@ namespace PingCastle.Healthcheck
         public GraphNode Locate(DomainKey domain)
         {
             if (data.ContainsKey(domain))
+            {
                 return data[domain];
+            }
+
             return null;
         }
 
@@ -121,13 +124,17 @@ namespace PingCastle.Healthcheck
                     di.Domain = data.Domain;
                     break;
                 }
+
                 foreach (var trust in data.Trusts)
                 {
                     // for old report: no netbios name defined in domain object !
                     string[] values = trust.TrustPartner.Split('.');
                     string netbios = values[0];
                     if (!String.IsNullOrEmpty(trust.NetBiosName))
+                    {
                         netbios = trust.NetBiosName;
+                    }
+
                     if (netbios.Equals(di.NetbiosName, StringComparison.InvariantCultureIgnoreCase))
                     {
                         di.DnsName = trust.TrustPartner;
@@ -135,6 +142,7 @@ namespace PingCastle.Healthcheck
                         enriched = true;
                         break;
                     }
+
                     foreach (var forestinfo in trust.KnownDomains)
                     {
                         if (!String.IsNullOrEmpty(forestinfo.NetbiosName) && forestinfo.NetbiosName.Equals(di.NetbiosName, StringComparison.InvariantCultureIgnoreCase))
@@ -147,11 +155,17 @@ namespace PingCastle.Healthcheck
                             break;
                         }
                     }
+
                     if (enriched)
+                    {
                         break;
+                    }
                 }
+
                 if (enriched)
+                {
                     break;
+                }
             }
         }
 
@@ -169,6 +183,7 @@ namespace PingCastle.Healthcheck
                 node.HealthCheckData = data;
                 node.SetForest(data.Forest);
             }
+
             Trace.WriteLine("direct trust");
             // get trust map based on direct trusts data
             foreach (HealthcheckData data in consolidation)
@@ -180,6 +195,7 @@ namespace PingCastle.Healthcheck
                     source.Link(destination, trust);
                 }
             }
+
             Trace.WriteLine("forest trust");
             foreach (HealthcheckData data in consolidation)
             {
@@ -187,7 +203,10 @@ namespace PingCastle.Healthcheck
                 {
                     // do not examine if we have more accurate information (aka the forest report)
                     if (consolidation.GetDomain(trust.Domain) != null)
+                    {
                         continue;
+                    }
+
                     if (trust.KnownDomains != null)
                     {
                         GraphNode source = nodes.Locate(trust);
@@ -196,25 +215,34 @@ namespace PingCastle.Healthcheck
                             GraphNode destination = nodes.CreateNodeIfNeeded(ref nodeNumber, domainInfo.Domain, data.GenerationDate);
                             source.LinkInsideAForest(destination, domainInfo.CreationDate);
                             if (domainInfo.Forest == null)
+                            {
                                 destination.SetForest(trust.Domain);
+                            }
                             else
+                            {
                                 destination.SetForest(domainInfo.Forest);
+                            }
                         }
                     }
                 }
             }
+
             Trace.WriteLine("Building reachable links");
             // make links based on reachable domains. Information is less reliable.
             foreach (HealthcheckData data in consolidation)
             {
                 // ignore report without reachable domains
                 if (data.ReachableDomains == null)
+                {
                     continue;
+                }
+
                 // ignore reachable links if we have the forest domain report
                 if (consolidation.GetDomain(data.Forest) != null)
                 {
                     continue;
                 }
+
                 foreach (HealthCheckTrustDomainInfoData di in data.ReachableDomains)
                 {
                     // domain info can contain only netbios name (not FQDN)
@@ -223,6 +251,7 @@ namespace PingCastle.Healthcheck
                     {
                         EnrichDomainInfo(consolidation, di);
                     }
+
                     // if no information was given (only Netbios name!) fallback to a forest trust
                     if (String.IsNullOrEmpty(di.ForestName) || di.ForestName == di.DnsName)
                     {
@@ -235,7 +264,9 @@ namespace PingCastle.Healthcheck
                     {
                         // ignore the domain if the forest trust is known (information should be already there)
                         if (consolidation.GetDomain(di.Forest) != null)
+                        {
                             continue;
+                        }
 
                         // add the forest trust if needed
                         GraphNode remoteForestRoot = nodes.CreateNodeIfNeeded(ref nodeNumber, di.Forest, data.GenerationDate);
@@ -254,6 +285,7 @@ namespace PingCastle.Healthcheck
                     }
                 }
             }
+
             Trace.WriteLine("enrich forest information");
             nodes.EnrichForestInformation();
             Trace.WriteLine("done");
@@ -268,12 +300,16 @@ namespace PingCastle.Healthcheck
             foreach (GraphNode node in data.Values)
             {
                 if (node.Entity == null)
+                {
                     continue;
+                }
+
                 if (node.Entity.ShouldDomainBeHidden)
                 {
                     nodesToBeDeleted.Add(node);
                 }
             }
+
             foreach (var node in nodesToBeDeleted)
             {
                 data.Remove(node.Domain);
@@ -282,7 +318,9 @@ namespace PingCastle.Healthcheck
                     if (data.ContainsKey(remoteDomain))
                     {
                         if (data[remoteDomain].Trusts.ContainsKey(node.Domain))
+                        {
                             data[remoteDomain].Trusts.Remove(node.Domain);
+                        }
                     }
                 }
             }
@@ -296,6 +334,7 @@ namespace PingCastle.Healthcheck
             {
                 node.EnrichForestInformation();
             }
+
             // 2: then to the root to the other childs
             foreach (var node in data.Values)
             {
@@ -306,7 +345,10 @@ namespace PingCastle.Healthcheck
         private void EnrichEntity(OwnerInformationReferences EntityData)
         {
             if (EntityData == null)
+            {
                 return;
+            }
+
             foreach (var entity in EntityData)
             {
                 foreach (GraphNode node in data.Values)
@@ -338,16 +380,28 @@ namespace PingCastle.Healthcheck
             get
             {
                 if (CloneIsPotentiallyRemoved)
+                {
                     return true;
+                }
+
                 if (HealthCheckData != null)
+                {
                     return false;
+                }
+
                 if (Trusts.Count == 0)
+                {
                     return false;
+                }
+
                 foreach (var edge in Trusts.Values)
                 {
                     if (edge.IsActive)
+                    {
                         return false;
+                    }
                 }
+
                 return true;
             }
         }
@@ -365,6 +419,7 @@ namespace PingCastle.Healthcheck
         {
             Link(destination, trust, true);
         }
+
         // authoritative data is considered as coming from the AD directly
         // non authoritative is deducted data
         private void Link(GraphNode destination, HealthCheckTrustData trust, bool isAuthoritative)
@@ -392,8 +447,11 @@ namespace PingCastle.Healthcheck
             {
                 return;
             }
+
             if (forest != null && Forest == null)
+            {
                 Forest = forest;
+            }
         }
 
         public override string ToString()
@@ -418,6 +476,7 @@ namespace PingCastle.Healthcheck
                     output.TrustDirection = trust.TrustDirection;
                     break;
             }
+
             output.TrustPartner = Domain.DomainName;
             output.SID = (!String.IsNullOrEmpty(Domain.DomainSID) ? Domain.DomainSID : null);
             output.TrustAttributes = trust.TrustAttributes;
@@ -428,6 +487,7 @@ namespace PingCastle.Healthcheck
         {
             LinkInsideAForest(destination, DateTime.MinValue);
         }
+
         public void LinkInsideAForest(GraphNode destination, DateTime CreationDate)
         {
             HealthCheckTrustData externalTrust = new HealthCheckTrustData();
@@ -438,6 +498,7 @@ namespace PingCastle.Healthcheck
             {
                 externalTrust.SID = destination.Domain.DomainSID;
             }
+
             externalTrust.CreationDate = DateTime.MinValue;
             externalTrust.IsActive = true;
             Link(destination, externalTrust, false);
@@ -453,6 +514,7 @@ namespace PingCastle.Healthcheck
             {
                 externalTrust.SID = destination.Domain.DomainSID;
             }
+
             externalTrust.CreationDate = DateTime.MinValue;
             externalTrust.IsActive = true;
             Link(destination, externalTrust, false);
@@ -462,11 +524,15 @@ namespace PingCastle.Healthcheck
         {
             CloneIsPotentiallyRemoved = true;
         }
+
         public static GraphNode CloneWithoutTrusts(GraphNode inputNode)
         {
             GraphNode output = new GraphNode(inputNode.Id, inputNode.Domain, inputNode.ReferenceDate);
             if (inputNode.IsPotentiallyRemoved)
+            {
                 output.SetCloneIsPotentiallyRemoved();
+            }
+
             output.Forest = inputNode.Forest;
             output.HealthCheckData = inputNode.HealthCheckData;
             output.Entity = inputNode.Entity;
@@ -476,9 +542,15 @@ namespace PingCastle.Healthcheck
         public bool IsPartOfARealForest()
         {
             if (Trusts == null || Trusts.Count == 0)
+            {
                 return false;
+            }
+
             if (Forest == null)
+            {
                 return false;
+            }
+
             foreach (var trust in Trusts.Keys)
             {
                 if ((Trusts[trust].TrustAttributes & 32) != 0)
@@ -486,13 +558,17 @@ namespace PingCastle.Healthcheck
                     return true;
                 }
             }
+
             return false;
         }
 
         public void EnrichForestInformation()
         {
             if (Forest != null)
+            {
                 return;
+            }
+
             foreach (var trust in Trusts.Keys)
             {
                 if ((Trusts[trust].TrustAttributes & 32) != 0)
@@ -524,6 +600,7 @@ namespace PingCastle.Healthcheck
             {
                 SetTrustData(trust, isAuthoritative);
             }
+
             Source = source;
             Destination = destination;
         }
@@ -552,17 +629,26 @@ namespace PingCastle.Healthcheck
             if (migrationChecker != null)
             {
                 if (migrationChecker.IsMigrationTrust(Source.ReferenceDate, Source.Domain, Destination.Domain))
+                {
                     return "Migration";
+                }
             }
+
             if (TrustDirection == 1)
+            {
                 return "Remote";
+            }
+
             return TrustAnalyzer.GetSIDFiltering(TrustDirection, TrustAttributes);
         }
 
         public bool IsEquivalentToReverseEdge(IMigrationChecker migrationChecker)
         {
             if (TrustDirection != 3)
+            {
                 return false;
+            }
+
             // when there is a bidirectional trust, there are two GraphEdge
             // one starting from source and one starting from the other domain
             GraphEdge reverseEdge = Destination.Trusts[Source.Domain];
@@ -571,6 +657,7 @@ namespace PingCastle.Healthcheck
             {
                 return true;
             }
+
             return false;
         }
 
@@ -578,6 +665,5 @@ namespace PingCastle.Healthcheck
         {
             return TrustAnalyzer.GetTrustAttribute(TrustAttributes);
         }
-
     }
 }

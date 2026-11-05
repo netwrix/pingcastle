@@ -25,6 +25,7 @@ namespace PingCastle.Healthcheck.Rules
                     {
                         continue;
                     }
+
                     if (DC.StartupTime != DateTime.MinValue)
                     {
                         if (DC.StartupTime.AddMonths(6) < DateTime.Now)
@@ -41,6 +42,7 @@ namespace PingCastle.Healthcheck.Rules
                     }
                 }
             }
+
             return null;
         }
     }

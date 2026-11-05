@@ -46,6 +46,7 @@ namespace PingCastle.ADWS
                 ConnectionTime = DateTime.Now;
                 domainInfo = GetDomainInfoInternal();
             }
+
             return domainInfo;
         }
 
@@ -111,7 +112,7 @@ namespace PingCastle.ADWS
 
         public abstract SecurityIdentifier ConvertNameToSID(string nameToResolve);
 
-        public abstract IFileConnection FileConnection {get;}
+        public abstract IFileConnection FileConnection { get; }
 
         protected void OneRecord()
         {

@@ -99,7 +99,9 @@ namespace PingCastle.RPC
             public string Password;
             public int PasswordLength;
             public int Flags;
-        };
+        }
+
+;
 
         [StructLayout(LayoutKind.Sequential)]
         public struct RPC_SECURITY_QOS
@@ -108,7 +110,9 @@ namespace PingCastle.RPC
             public Int32 Capabilities;
             public Int32 IdentityTracking;
             public Int32 ImpersonationType;
-        };
+        }
+
+;
 
         [DllImport("Rpcrt4.dll", EntryPoint = "RpcBindingSetAuthInfoW", CallingConvention = CallingConvention.StdCall,
             CharSet = CharSet.Unicode, SetLastError = false)]
@@ -143,6 +147,5 @@ namespace PingCastle.RPC
 
         [DllImport("advapi32.dll", SetLastError = true)]
         internal static extern IntPtr GetSidSubAuthorityCount(IntPtr psid);
-
     }
 }

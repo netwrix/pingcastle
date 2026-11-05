@@ -33,8 +33,15 @@
         /// <returns>The merged configuration document</returns>
         public XmlDocument MergeConfigs(XmlDocument target, XmlDocument source)
         {
-            if (target == null) throw new ArgumentNullException(nameof(target));
-            if (source == null) throw new ArgumentNullException(nameof(source));
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
 
             // Reset tracking lists
             _mergedElements = new List<string>();
@@ -44,7 +51,9 @@
             var sourceRoot = source.DocumentElement;
 
             if (targetRoot == null || sourceRoot == null)
+            {
                 throw new ConfigException("Invalid configuration document structure");
+            }
 
             // Create a cache of existing comments in the target document
             var existingComments = GetAllComments(target);
@@ -71,7 +80,9 @@
                 foreach (XmlNode node in source.ChildNodes)
                 {
                     if (node.NodeType != XmlNodeType.Element)
+                    {
                         continue;
+                    }
 
                     var sourceElement = (XmlElement)node;
                     var elementName = sourceElement.LocalName;
@@ -81,7 +92,9 @@
                     foreach (XmlNode candidateNode in target.ChildNodes)
                     {
                         if (candidateNode.NodeType != XmlNodeType.Element)
+                        {
                             continue;
+                        }
 
                         var candidate = (XmlElement)candidateNode;
                         if (candidate.LocalName == elementName && HasMatchingAttributes(candidate, sourceElement))
@@ -118,14 +131,18 @@
         {
             // If either element has no attributes, only match on name
             if (first.Attributes.Count == 0 && second.Attributes.Count == 0)
+            {
                 return true;
+            }
 
             // Check that all attributes match -  partial matches are not processed.
             foreach (XmlAttribute attr in first.Attributes)
             {
                 var secondAttr = second.GetAttributeNode(attr.Name);
                 if (secondAttr == null || secondAttr.Value != attr.Value)
+                {
                     return false;
+                }
             }
 
             return true;
